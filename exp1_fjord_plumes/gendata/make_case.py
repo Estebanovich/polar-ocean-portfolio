@@ -181,6 +181,10 @@ def _c_stages(p) -> list[dict]:
         return [dict(off, nIter0=0, nTimeSteps=n_tot, pChkptFreq=432000.0,
                      stage_label="single stage")]
     n1 = int(round(p["wind_stage1_s"] / dt))
+    if n_tot <= n1:   # short run inside stage 1: one stage, wind file on
+        return [dict(nIter0=0, nTimeSteps=n_tot, pChkptFreq=432000.0,
+                     windLine=" zonalWindFile='windx.bin',",
+                     stage_label="single stage (wind on; run not longer than stage 1)")]
     return [dict(nIter0=0, nTimeSteps=n1, pChkptFreq=p["wind_stage1_s"],
                  windLine=" zonalWindFile='windx.bin',",
                  stage_label="stage 1 of 2 (wind on)"),

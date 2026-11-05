@@ -112,8 +112,12 @@ MITgcm** (la campaña de (a) sigue en curso). El Step 5 (corrida cronometrada de
       (iteración 1440);
     - etapa 2 (`data.stage2`): `nIter0 = 1440` hasta los 30 d, sin
       `zonalWindFile`. Sin esto, el pulso se repetiría cada ciclo (6 d).
-  - El runner de la etapa 2 (copiar el pickup y `data.stage2` → `data`) queda
-    para el Step 6.
+  - El runner de la etapa 2 está en `scripts/run_campaign.py`
+    (`run_stage2`). Si la etapa 1 está OK, copia (nunca enlaza) las entradas y
+    todos los `pickup*.<n1>*`, incluido `pickup_orlanskiE` (lección C3 de (a)),
+    a `<run>/input_stage2` y corre en `<run>/stage2`. Cada etapa tiene su
+    `run_status.json`, y `<run>/run_status_final.json` está OK solo si ambas
+    lo están y last_iter = nIter0 + nTimeSteps de la etapa 2.
   - Nota: en `BayIW_Rectan` el protocolo está en su `README.md`.
 - **Plataforma** (`shelf`, `all`): picnoclina en la boca con
   η(t) = A sin(2πt/P), A = 30 m y P = 6 d. Jackson et al. 2018: "hS of 30 m
@@ -198,6 +202,34 @@ cerca de la cara.
   - Opciones: dt = 90 s (onda interna 0.52); 20 d en vez de 30; o un solo caso
     `all` más los de un solo forzamiento acortados.
 
+## Comandos (Steps 5–7)
+
+```bash
+cd ~/Phd_project/portfolio
+PY=/opt/anaconda3/envs/pyocean/bin/python
+# Step 5: corrida cronometrada de 1 día (ejercita pluma, viento, OB y el
+# reinicio de la etapa 2: etapa 1 de 12 h con viento, etapa 2 de 12 h)
+$PY exp1_fjord_plumes/scripts/run_campaign.py --config c_fjord3d --cases c_fjord_all \
+    --np 5 --end-time 86400 --set wind_stage1_s=43200 --run-suffix _short1d \
+    > /Volumes/LaCie/portfolio_runs/exp1/c_short1d_campaign.log 2>&1
+# Step 6: campaña de 4 casos de 30 d (tras PD1; --skip-ok para reanudar)
+$PY exp1_fjord_plumes/scripts/run_campaign.py --config c_fjord3d --cases 'c_fjord_*' \
+    --np 5 --skip-ok > /Volumes/LaCie/portfolio_runs/exp1/campaign_c.log 2>&1
+# Step 7: Fig. 3 (+ C5') y GIF
+$PY exp1_fjord_plumes/analysis/fig3_exchange_partition.py
+$PY exp1_fjord_plumes/analysis/animate_c.py /Volumes/LaCie/portfolio_runs/exp1/c_fjord_all --check-scales
+for c in plume wind shelf all; do
+  $PY exp1_fjord_plumes/analysis/animate_c.py /Volumes/LaCie/portfolio_runs/exp1/c_fjord_$c
+done
+```
+
+- Disco adicional por la animación: la lista `animV` (VVEL en el nivel 19,
+  medias de 3 h) suma 240 × 48 kB ≈ 12 MB por caso, ≈ 46 MB en total. Los
+  cuadros reutilizan `mean3h` (medias de 3 h de U y T 3D), que ya existía para
+  la Fig. 3.
+- GIF: ≈ 0.07 MB por cuadro con datos sintéticos ruidosos a tamaño real. Con
+  240 cuadros la zancada sube sola a 2–4 para quedar ≤ 8 MB.
+
 ## Pendiente (Steps 5–6)
 
 - Corrida cronometrada de 1 día (`c_fjord_all`, que ejercita todo: pluma,
@@ -207,4 +239,3 @@ cerca de la cara.
   - `salt_addMass = 1.234567E+05`;
   - CFL;
   - monitor de T/S (C5': T y S dentro del rango inicial y de la fuente).
-- Runner de 2 etapas para `wind` y `all`.

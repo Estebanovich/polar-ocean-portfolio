@@ -26,6 +26,19 @@ campaign refuses to start), and the build is skipped when ``mitgcmuv`` is newer
 than every file in ``config/<cfg>/code`` and its Makefile matches the MPI
 choice (``-DALLOW_USE_MPI`` iff N > 1).
 
+Two-stage cases (config (c) wind cases: make_case writes ``data.stage2``,
+thesis protocol, verification/BayIW_Rectan/README.md): stage 1 runs in
+``<run_dir>``; if it is OK and the pickups of its last iteration exist
+(``pickup.<n1>.data/.meta`` AND ``pickup_orlanskiE.<n1>.*`` -- the C3 lesson
+of (a): the restart is bit-exact only with the Orlanski pickup), they are
+COPIED (never linked: LaCie is exFAT) with the inputs into
+``<run_dir>/input_stage2`` (``data.stage2`` -> ``data``) and stage 2 runs in
+``<run_dir>/stage2``. Each stage keeps its own run_status.json; every case
+gets ``<run_dir>/run_status_final.json``, state OK only if all stages are OK
+and the last iteration equals nIter0 + nTimeSteps of the last stage.
+``--set KEY=VALUE`` overrides any numeric case parameter (e.g.
+``wind_stage1_s=43200`` so that a 1-day timed run has both stages).
+
 ``--end-time`` overrides ``endTime`` (e.g. 7200 for the timed 2 h short run of
 Task 4; nTimeSteps is derived from it by make_case). A FAILED case is reported
 and the series continues; the exit code is 1 if any case is not OK.
@@ -110,13 +123,96 @@ SKIP_KEYS = ("deltaT", "endTime")  # must match for --skip-ok to reuse an OK run
 
 
 def finished_ok(run_dir: Path) -> bool:
-    """True if run_dir/run_status.json says OK and the last time step was reached."""
-    f = Path(run_dir) / "run_status.json"
+    """True if the run says OK and the last time step was reached; for a
+    two-stage case (input/data.stage2) only run_status_final.json counts."""
+    run_dir = Path(run_dir)
+    f = run_dir / "run_status.json"
+    if (run_dir / "input" / "data.stage2").exists():
+        f = run_dir / "run_status_final.json"
     try:
         st = json.loads(f.read_text())
     except (OSError, json.JSONDecodeError):
         return False
+    if f.name == "run_status_final.json":
+        return st.get("state") == "OK" and st.get("last_iter") == st.get("expected_last_iter")
     return st.get("state") == "OK" and st.get("last_iter", -1) >= st.get("n_timesteps", 1 << 62)
+
+
+def parse_sets(items: list[str] | None) -> dict:
+    """['KEY=VALUE', ...] -> {KEY: float(VALUE)} (``--set``)."""
+    out = {}
+    for it in items or []:
+        if "=" not in it:
+            raise ValueError(f"--set expects KEY=VALUE, got {it!r}")
+        k, v = it.split("=", 1)
+        out[k.strip()] = float(v)
+    return out
+
+
+def _status(run_dir: Path) -> dict | None:
+    f = Path(run_dir) / "run_status.json"
+    try:
+        return json.loads(f.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def _nml_int(text: str, key: str) -> int:
+    for ln in text.splitlines():
+        if ln.lstrip().startswith("#"):
+            continue
+        m = re.match(rf"\s*{key}\s*=\s*(\d+)", ln, re.IGNORECASE)
+        if m:
+            return int(m.group(1))
+    raise RuntimeError(f"{key} not found")
+
+
+def _write_final(run_dir: Path, state: str, stages: dict, expected: int | None,
+                 reason: str | None = None) -> str:
+    last = [st for st in stages.values() if st]
+    fin = {"state": state, "last_iter": last[-1].get("last_iter") if last else None,
+           "expected_last_iter": expected, "stages": stages}
+    if reason:
+        fin["reason"] = reason
+    (Path(run_dir) / "run_status_final.json").write_text(json.dumps(fin, indent=2))
+    return state
+
+
+def run_stage2(run_dir: Path, inp: Path, build_dir: Path, np_: int,
+               sh: Callable[[list], int]) -> str:
+    """Stage 2 of a two-stage case (module docstring). Returns the final state."""
+    import shutil
+    run_dir, inp = Path(run_dir), Path(inp)
+    st1 = _status(run_dir)
+    s2_text = (inp / "data.stage2").read_text()
+    n1, n2 = _nml_int(s2_text, "nIter0"), _nml_int(s2_text, "nTimeSteps")
+    stages = {"1": st1, "2": None}
+    if not (st1 and st1.get("state") == "OK" and st1.get("last_iter") == n1):
+        return _write_final(run_dir, "FAILED", stages, n1 + n2,
+                            f"stage 1 not OK or did not reach iteration {n1}")
+    tag = f"{n1:010d}"
+    pick = sorted(run_dir.glob(f"pickup*.{tag}*"))
+    names = {f.name for f in pick}
+    missing = [f for f in (f"pickup.{tag}.data", f"pickup.{tag}.meta") if f not in names]
+    if not any(n.startswith(f"pickup_orlanskiE.{tag}") for n in names):
+        missing.append(f"pickup_orlanskiE.{tag}.* (Orlanski pickup)")
+    if missing:
+        return _write_final(run_dir, "FAILED", stages, n1 + n2,
+                            "missing stage-1 pickup: " + ", ".join(missing))
+    inp2 = run_dir / "input_stage2"
+    if inp2.exists():
+        shutil.rmtree(inp2)
+    shutil.copytree(inp, inp2, symlinks=False)          # copies, never links
+    (inp2 / "data").write_text(s2_text)
+    (inp2 / "data.stage2").unlink()
+    for f in pick:
+        shutil.copyfile(f, inp2 / f.name)                # content copy (follows links)
+    sh([RUN_SH, build_dir, inp2, run_dir / "stage2", np_])
+    st2 = _status(run_dir / "stage2")
+    stages["2"] = st2
+    ok = bool(st2 and st2.get("state") == "OK" and st2.get("last_iter") == n1 + n2)
+    return _write_final(run_dir, "OK" if ok else "FAILED", stages, n1 + n2,
+                        None if ok else "stage 2 not OK or wrong last iteration")
 
 
 def _requested(name: str, overrides: dict | None, cases_file: Path | None) -> dict:
@@ -192,13 +288,27 @@ def run_campaign(config: str, pattern: str, np_: int, *,
         check_size(inp, cfg_dir / "code" / "SIZE.h")
         print(f"[run_campaign] {name}: running in {run_dir}", flush=True)
         sh([RUN_SH, build_dir, inp, run_dir, np_])
-        st_file = run_dir / "run_status.json"
-        results[name] = (json.loads(st_file.read_text()).get("state", "NO_STATUS")
-                         if st_file.exists() else "NO_STATUS")
-        print(f"[run_campaign] {name}: {results[name]}", flush=True)
+        st1 = _status(run_dir)
+        results[name] = st1.get("state", "NO_STATUS") if st1 else "NO_STATUS"
         left = other_mitgcm_processes(pgrep)
         if left:
             raise RuntimeError(f"processes left after {name}: " + " | ".join(left))
+        if (inp / "data.stage2").exists():
+            print(f"[run_campaign] {name}: stage 1 {results[name]}; stage 2 in "
+                  f"{run_dir / 'stage2'}", flush=True)
+            results[name] = run_stage2(run_dir, inp, build_dir, np_, sh)
+            left = other_mitgcm_processes(pgrep)
+            if left:
+                raise RuntimeError(f"processes left after {name} stage 2: " + " | ".join(left))
+        else:
+            n_exp = None
+            if st1:
+                d = (inp / "data").read_text()
+                n_exp = _nml_int(d, "nIter0") + _nml_int(d, "nTimeSteps")
+            ok = bool(st1 and st1.get("state") == "OK")
+            _write_final(run_dir, results[name], {"1": st1}, n_exp,
+                         None if ok else "stage 1 not OK")
+        print(f"[run_campaign] {name}: {results[name]}", flush=True)
     return results
 
 
@@ -211,6 +321,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--run-suffix", default="", help="appended to each run directory name")
     ap.add_argument("--runs-root", type=Path, default=RUNS_ROOT)
     ap.add_argument("--build-root", type=Path, default=BUILD_ROOT)
+    ap.add_argument("--set", action="append", default=[], metavar="KEY=VALUE",
+                    help="override a numeric case parameter (repeatable)")
     ap.add_argument("--dry-run", action="store_true", help="list the cases and exit")
     ap.add_argument("--skip-ok", action="store_true",
                     help="do not rerun cases already OK (same deltaT/endTime); skip an up-to-date build")
@@ -218,7 +330,10 @@ def main(argv: list[str] | None = None) -> int:
     if a.dry_run:
         print("\n".join(select_cases(a.config, a.cases)))
         return 0
-    ov = {"endTime": a.end_time} if a.end_time is not None else None
+    ov = parse_sets(a.set)
+    if a.end_time is not None:
+        ov["endTime"] = a.end_time
+    ov = ov or None
     res = run_campaign(a.config, a.cases, a.np_, runs_root=a.runs_root,
                        build_root=a.build_root, overrides=ov, run_suffix=a.run_suffix,
                        skip_ok=a.skip_ok)

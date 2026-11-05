@@ -182,3 +182,18 @@
 - Procedimiento en `notes/pd1_b_twoplume3d.md` §7: primer caso → gate (+ `--check-scales`) → solo con PASS, `'b_3d_*' --skip-ok`. La explicación de Orlanski para el 110 % a los 30 min queda como hipótesis hasta leer el gate.
 - Menores: `eta_retention` también marca una retención < −0.5. `animate_b`: aviso si el GIF sigue pasando de `--max-mb`, `write_within_budget` probado, `ffmpeg_path` se fija antes de crear el writer, `--check-scales` (fracción de píxeles saturados por panel; en la corrida corta < 0.7 %). La prueba de la corrida FAILED verifica el mensaje.
 - TDD: RED 5 fallos (`run_campaign`) y 10 fallos (gate, flag negativo, presupuesto del GIF, saturación) → GREEN; suite completa 181 PASS. No se corrió MITgcm.
+
+## 2026-11-05 — Task 7: preparación de la campaña de (c) (sin correr MITgcm)
+
+- `run_campaign.py`:
+  - casos de 2 etapas (si `make_case` escribe `data.stage2`): si la etapa 1 está OK y existen `pickup.<n1>.data/.meta` y `pickup_orlanskiE.<n1>.*`, las entradas y los pickups se **copian** a `input_stage2` y la etapa 2 corre en `<run>/stage2`;
+  - cada etapa conserva su `run_status.json`; `run_status_final.json` está OK solo si ambas lo están y last_iter = nIter0 + nTimeSteps;
+  - `--set KEY=VALUE` para sobrescribir parámetros; `--skip-ok` usa el estado final.
+  - Probado con un mitgcmuv falso a través del `run_mitgcm.sh` real.
+- `make_case` (c): una corrida de viento que no pasa de la etapa 1 queda en una sola etapa con viento.
+- `analysis/c_runs.py` (etapas, sección, Q_ex y calor, C5', W/Rd), `fig3_exchange_partition.py` (i = 100, T_ref = −1.90 °C) y `animate_c.py` (T en el nivel de salida con flechas, sección a lo largo del fiordo con la sección i = 100 y la esponja, Q_ex con marcador; escalas fijas; `--check-scales`).
+  - Nueva lista de diagnóstico `animV` (VVEL nivel 19, medias de 3 h): ≈ 12 MB por caso.
+  - GIF ≈ 0.07 MB por cuadro a tamaño real (sintético).
+- W/Rd con los insumos reales de (c) = 0.667 (Rd = 8.39 km).
+- Comandos del Step 5 y Step 6 en `notes/pd1_c_fjord3d.md`. El build de (c) sigue al día (no cambió `code/`).
+- TDD: 19 pruebas nuevas, RED → GREEN; suite completa 200 PASS.

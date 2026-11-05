@@ -455,3 +455,11 @@ def test_c_case_json_records_melt_volume_from_ambient(tmp_path):
     out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
     assert 0.1 < meta["melt_volume_in_sinks_m3_s"] < 2.0
     assert "melt" in meta["sum_rule_note"]
+
+
+def test_c_wind_run_not_longer_than_stage1_is_single_stage(tmp_path):
+    """endTime <= wind_stage1_s (e.g. a short run): one stage with the wind file."""
+    out = make_case("c_fjord_wind", tmp_path / "w", overrides={"endTime": 43200.0})
+    d = (out / "data").read_text()
+    assert not (out / "data.stage2").exists()
+    assert "zonalWindFile='windx.bin'" in d and "nTimeSteps=720," in d

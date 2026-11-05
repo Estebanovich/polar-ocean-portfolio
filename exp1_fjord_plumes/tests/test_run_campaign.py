@@ -223,3 +223,146 @@ def test_skip_ok_refuses_ok_run_with_other_parameters(tmp_path):
 
 def test_cli_has_skip_ok():
     assert "--skip-ok" in Path(rc.__file__).read_text()
+
+
+# ---- two-stage cases of (c): stage 2 restarts from the stage-1 pickups --------
+# The real scripts/run_mitgcm.sh runs a stub mitgcmuv that reads nIter0 and
+# nTimeSteps from `data`, refuses a restart without pickup.<nIter0> and the
+# Orlanski pickup in its cwd, and writes the pickups of its last iteration.
+
+STUB = r'''#!/bin/bash
+get() { grep -v '^ *#' data | grep -iE "^ *$1 *=" | head -1 | sed -E 's/^[^=]*= *//; s/[ ,].*$//'; }
+N0=$(get nIter0); NT=$(get nTimeSteps)
+if [ "$N0" -gt 0 ]; then
+  P=$(printf %010d "$N0")
+  for f in pickup.$P.data pickup.$P.meta pickup_orlanskiE.$P.001.001.data; do
+    [ -f "$f" ] && [ ! -L "$f" ] || { echo "missing or linked $f"; exit 4; }
+  done
+fi
+END=$((N0 + NT)); E=$(printf %010d "$END")
+echo " time_tsnumber = $END"
+echo "pickup" > pickup.$E.data; echo "meta" > pickup.$E.meta
+[ -n "$STUB_NO_ORLANSKI" ] || echo "orl" > pickup_orlanskiE.$E.001.001.data
+[ -n "$STUB_FAIL_STAGE1" ] && [ "$N0" -eq 0 ] && exit 3
+echo "PROGRAM MAIN: Execution ended Normally"
+'''
+
+
+def _stub_build(build_dir: Path) -> None:
+    build_dir.mkdir(parents=True, exist_ok=True)
+    exe = build_dir / "mitgcmuv"
+    exe.write_text(STUB)
+    exe.chmod(0o755)
+
+
+class StubShell:
+    """Build commands are no-ops (stub mitgcmuv already in place); run commands
+    go through the REAL scripts/run_mitgcm.sh."""
+
+    def __init__(self, env=None):
+        self.calls, self.env = [], env or {}
+
+    def __call__(self, cmd):
+        import os
+        import subprocess
+        self.calls.append([str(c) for c in cmd])
+        if Path(cmd[0]).name == "build_mitgcm.sh":
+            return 0
+        return subprocess.run(["bash"] + [str(c) for c in cmd], capture_output=True,
+                              env={**os.environ, **self.env}).returncode
+
+
+SHORT2 = {"endTime": 7200.0, "wind_stage1_s": 3600.0}   # 60 + 60 steps of 60 s
+
+
+def _two_stage(tmp_path, env=None, case="c_fjord_wind"):
+    builds = tmp_path / "builds"
+    _stub_build(builds / "c_fjord3d")
+    sh = StubShell(env)
+    out = rc.run_campaign("c_fjord3d", case, 1, runs_root=tmp_path / "runs",
+                          build_root=builds, sh=sh, pgrep=lambda: "", overrides=SHORT2,
+                          run_suffix="_t")
+    return out, tmp_path / "runs" / f"{case}_t", sh
+
+
+def test_two_stage_case_restarts_from_copied_pickups(tmp_path):
+    out, run, sh = _two_stage(tmp_path)
+    assert out == {"c_fjord_wind": "OK"}
+    runs = [c for c in sh.calls if Path(c[0]).name == "run_mitgcm.sh"]
+    assert [c[3] for c in runs] == [str(run), str(run / "stage2")]
+    inp2 = run / "input_stage2"
+    assert "nIter0=60," in (inp2 / "data").read_text() and not (inp2 / "data.stage2").exists()
+    for f in ("pickup.0000000060.data", "pickup.0000000060.meta",
+              "pickup_orlanskiE.0000000060.001.001.data"):
+        for d in (inp2, run / "stage2"):
+            assert (d / f).is_file() and not (d / f).is_symlink()
+    s1 = json.loads((run / "run_status.json").read_text())
+    s2 = json.loads((run / "stage2" / "run_status.json").read_text())
+    fin = json.loads((run / "run_status_final.json").read_text())
+    assert s1["state"] == s2["state"] == fin["state"] == "OK"
+    assert s1["last_iter"] == 60 and s2["last_iter"] == 120
+    assert fin["last_iter"] == fin["expected_last_iter"] == 120
+    assert fin["stages"]["1"] == s1 and fin["stages"]["2"] == s2
+
+
+def test_stage2_not_run_when_stage1_failed(tmp_path):
+    out, run, sh = _two_stage(tmp_path, env={"STUB_FAIL_STAGE1": "1"})
+    assert out == {"c_fjord_wind": "FAILED"}
+    assert not (run / "stage2").exists()
+    fin = json.loads((run / "run_status_final.json").read_text())
+    assert fin["state"] == "FAILED" and "stage 1" in fin["reason"]
+
+
+def test_stage2_refused_without_orlanski_pickup(tmp_path):
+    """C3 lesson from (a): the restart is bit-exact only with the Orlanski pickup."""
+    out, run, sh = _two_stage(tmp_path, env={"STUB_NO_ORLANSKI": "1"})
+    assert out == {"c_fjord_wind": "FAILED"}
+    fin = json.loads((run / "run_status_final.json").read_text())
+    assert "orlanski" in fin["reason"].lower() and not (run / "stage2").exists()
+
+
+def test_final_state_needs_stage2_last_iter(tmp_path):
+    """Stage-2 run_status OK but last_iter != nIter0 + nTimeSteps -> FAILED."""
+    runs, builds = tmp_path / "runs", tmp_path / "builds"
+
+    class Rec(Recorder):
+        def __call__(self, cmd):
+            r = super().__call__(cmd)
+            if Path(cmd[0]).name == "run_mitgcm.sh":
+                d = Path(cmd[3])
+                for f in ("pickup.0000000060.data", "pickup.0000000060.meta",
+                          "pickup_orlanskiE.0000000060.001.001.data"):
+                    (d / f).write_text("x")
+                (d / "run_status.json").write_text(json.dumps(
+                    {"state": "OK", "last_iter": 60 if d.name != "stage2" else 100,
+                     "n_timesteps": 60, "wall_s": 1}))
+            return r
+
+    out = rc.run_campaign("c_fjord3d", "c_fjord_wind", 1, runs_root=runs, build_root=builds,
+                          sh=Rec(), pgrep=lambda: "", overrides=SHORT2)
+    assert out == {"c_fjord_wind": "FAILED"}
+    fin = json.loads((runs / "c_fjord_wind" / "run_status_final.json").read_text())
+    assert fin["expected_last_iter"] == 120 and fin["last_iter"] == 100
+
+
+def test_single_stage_c_case_has_no_stage2(tmp_path):
+    out, run, sh = _two_stage(tmp_path, case="c_fjord_plume")
+    assert out == {"c_fjord_plume": "OK"}
+    assert not (run / "stage2").exists() and not (run / "input_stage2").exists()
+    assert json.loads((run / "run_status_final.json").read_text())["state"] == "OK"
+
+
+def test_skip_ok_two_stage_uses_final_status(tmp_path):
+    out, run, sh = _two_stage(tmp_path)
+    assert rc.finished_ok(run)
+    fin = json.loads((run / "run_status_final.json").read_text())
+    fin["state"] = "FAILED"
+    (run / "run_status_final.json").write_text(json.dumps(fin))
+    assert not rc.finished_ok(run)          # stage 1 OK alone is not enough
+
+
+def test_cli_set_overrides():
+    assert rc.parse_sets(["wind_stage1_s=43200", "endTime=86400"]) == {
+        "wind_stage1_s": 43200.0, "endTime": 86400.0}
+    with pytest.raises(ValueError):
+        rc.parse_sets(["novalue"])
