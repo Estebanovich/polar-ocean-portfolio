@@ -50,7 +50,7 @@ def _make_run(root: Path, state: str = "OK") -> Path:
     # plume: w = 0.4 m/s in face column 0..1 below k=10 (z=-100 m), 0 above
     w = np.zeros((NZ, NX))
     w[10:, :2] = 0.4
-    w[10:, 2] = 0.05  # below the 10 % threshold (0.04)? no: above -> inside plume
+    w[10:, 2] = 0.05  # just above the 10 % threshold (0.04): inside the plume
     for it in (360, 720):
         _write_mds(run / "WVEL", it, w)
         _write_mds(run / "THETA", it, np.full((NZ, NX), 1.5))
@@ -86,8 +86,9 @@ def test_plume_profile_synthetic_run(tmp_path):
     assert prof["w_face"][k] == pytest.approx(0.4)
     assert prof["melt"][k] == pytest.approx(1.0905e-7, rel=1e-4)  # positive = melt
     assert prof["melt"][0] == 0.0
-    # plume = face + cell 1 + cell 2 (0.05 >= 0.1*0.4 = 0.04): width 15 m
-    assert prof["width"][k] == pytest.approx(15.0)
+    # R22: edge interpolated between centres of cell 2 (x = 12.5, w = 0.05) and
+    # cell 3 (x = 17.5, w = 0): 12.5 + 5 (0.05 - 0.04)/0.05 = 13.5 m
+    assert prof["width"][k] == pytest.approx(13.5)
     assert np.isnan(prof["width"][0])  # above the detachment depth
     assert prof["T"][k] == pytest.approx(1.5)
     assert prof["t_snapshots_h"] == [1.0, 2.0]
@@ -139,3 +140,55 @@ def test_fig1_C2p_verdict_uses_mitgcm_mode_R13(monkeypatch):
     assert out["modes"]["jenkins"]["u_ratio"] == pytest.approx(1.0)
     assert out["modes"]["mitgcm"]["u_ratio"] == pytest.approx(0.5)
     assert out["pass"]["C2p"] is False
+
+
+def test_plume_extent_interpolated_edge_R22():
+    from exp1_fjord_plumes.analysis.plume_diag import plume_extent
+
+    x = np.array([2.5, 7.5, 12.5, 17.5])
+    w = np.array([1.0, 1.0, 0.6, 0.0])
+    width, Q, M = plume_extent(w, x, frac=0.1)
+    edge = 12.5 + 5.0 * (0.6 - 0.1) / 0.6  # analytic crossing of 0.1 = 0.1 w_max
+    assert width == pytest.approx(edge)
+    # flat w = 1 on [0, 2.5], piecewise linear after; trapezoids (exact)
+    q = 2.5 + 5.0 + 0.5 * (1.0 + 0.6) * 5.0 + 0.5 * (0.6 + 0.1) * (edge - 12.5)
+    assert Q == pytest.approx(q)
+    m = 2.5 + 5.0 + (1.0 + 0.6 + 0.36) / 3 * 5.0 + (0.36 + 0.06 + 0.01) / 3 * (edge - 12.5)
+    assert M == pytest.approx(m)
+    # whole row above threshold: edge is the last cell face (x_c[-1] + half cell is not
+    # known to the helper, so it takes the domain edge passed in)
+    width2, _, _ = plume_extent(np.array([1.0, 0.9, 0.8]), x[:3], frac=0.1, x_end=15.0)
+    assert width2 == pytest.approx(15.0)
+
+
+def test_post_hoc_and_declarations(monkeypatch):
+    from types import SimpleNamespace
+
+    from exp1_fjord_plumes.analysis import fig1_plume_validation as f1
+
+    z = np.linspace(-500, 0, 501)
+    calls = []
+
+    def fake(params, mode, ambient=None):
+        calls.append(ambient is not None)
+        zd = -150.0 if ambient is not None else -100.0
+        return SimpleNamespace(z=z, b=np.full_like(z, 8.0), Q=np.full_like(z, 2.0),
+                               u=np.full_like(z, 0.3), melt=np.where(z < zd, 1e-5, np.nan),
+                               z_detach=zd, reached_top=False)
+
+    monkeypatch.setattr(f1, "theory_solution", fake)
+    zc = -(np.arange(50) + 0.5) * 10.0
+    prof = {"z": zc, "z_detach": -100.0, "w_mean": np.full(50, 0.3),
+            "melt": np.where(zc < -100, 1e-5, 0.0),
+            "w_face": np.full(50, 0.45), "w_max": np.full(50, 0.45), "width": np.full(50, 10.0),
+            "Q": np.full(50, 3.0), "M": np.full(50, 0.9),
+            "T_amb": np.full(50, 2.0), "S_amb": np.full(50, 34.0)}
+    out = f1.evaluate(prof, {"H": 500.0})
+    ph = out["post_hoc"]
+    assert ph["w_face_max_over_plume_ratio"] == pytest.approx(1.5)
+    assert ph["z_detach_theory_evolved"] == -150.0
+    assert ph["z_detach_gap_over_H_evolved"] == pytest.approx(0.1)
+    assert ph["melt_ratio_common_range"] == pytest.approx(1.0)
+    assert ph["melt_ratio_whole_face"] == pytest.approx(1.0)
+    assert "below its own z_detach" in f1.evaluate.__doc__
+    assert out["melt_average_range"]

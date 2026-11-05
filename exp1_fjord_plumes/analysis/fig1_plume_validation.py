@@ -37,21 +37,31 @@ DEFAULT_ROOT = Path("/Volumes/LaCie/portfolio_runs/exp1")
 FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
 STRATS = ("twolayer", "sermilik")
 QS = ("0.01", "0.03", "0.1")
-XMAX = 500.0  # m shown in the section
+XMAX = 300.0  # m shown in the section
+TMIN, TMAX = 3.5, 4.0  # degC colour range: shows the plume cooling in the warm layer
 
 KNOWN_DIFFERENCES = [
     {"class": "c", "item": "MITgcm drives gammaT with |wVEL| of the 5 m face cell, the theory with the top-hat u"},
     {"class": "c", "item": "SW_TEMP theta -> in-situ temperature conversion in MITgcm (not in the theory)"},
     {"class": "c", "item": "no-slip wall in MITgcm vs Cd u^2 drag in the theory"},
+    {"class": "c (comparison set-up)",
+     "item": "ambient evolves by 36-48 h; theory uses the initial (t = 0) profile (see post_hoc "
+             "z_detach_theory_evolved, ambient = window-mean T/S at x ~ 1 km)"},
     {"class": "b/c (small)",
      "item": "MITgcm adds melt as a virtual salt flux with no volume: the m_w term in dQ/dz is missing"},
 ]
 
 
-def theory_solution(params: dict, mode: str):
+def theory_solution(params: dict, mode: str, ambient=None):
+    """Line plume theory. ``ambient`` = (z_centres surface-first, T, S) replaces the
+    initial (t = 0) profiles; used only for the post-hoc evolved-ambient diagnostic."""
     H = params["H"]
     z_grid = np.linspace(-H, 0.0, int(H) + 1)
-    Ta, Sa = _profile(params["strat"], z_grid, params)
+    if ambient is None:
+        Ta, Sa = _profile(params["strat"], z_grid, params)
+    else:
+        zc, Tm, Sm = (np.asarray(a, dtype=float)[::-1] for a in ambient)  # increasing z
+        Ta, Sa = np.interp(z_grid, zc, Tm), np.interp(z_grid, zc, Sm)
     p = MeltParams(ice_depth=H)
     return line_plume(z_grid, Ta, Sa, params["q0"], params["T0_src"], params["S0_src"], p, mode)
 
@@ -61,8 +71,22 @@ def _mean(a: np.ndarray) -> float:
     return float(a.mean()) if a.size else float("nan")
 
 
+MELT_AVERAGE_RANGE = (
+    "C2'' verdict: model melt averaged over its levels below the MODEL z_detach, theory melt "
+    "averaged over its levels below the THEORY z_detach (each side below its own z_detach). "
+    "post_hoc gives the ratio over the common range below the theory z_detach and the "
+    "whole-face mean (theory melt = 0 above its detachment)."
+)
+
+
 def evaluate(prof: dict, params: dict) -> dict:
-    """C2, C2', C2'' for one case from `plume_profile` output and the theory."""
+    """C2, C2', C2'' for one case from `plume_profile` output and the theory.
+
+    Verdicts (R13) use the mitgcm-mode theory with the t = 0 ambient. C2'' averages
+    each side below its own z_detach (R23): the model melt over z < z_detach(model),
+    the theory melt over z < z_detach(theory). Everything under ``post_hoc`` is
+    defined after seeing the results and is not a verdict (R20).
+    """
     H = params["H"]
     z = prof["z"]
     out = {}
@@ -87,26 +111,53 @@ def evaluate(prof: dict, params: dict) -> dict:
         "C2p": bool(abs(m["u_ratio"] - 1.0) <= 0.25),
         "C2pp": bool(1 / 1.5 <= m["melt_ratio"] <= 1.5),
     }
-    # Post-hoc metrics (R20): NOT part of the pre-registered verdicts.
+    # ---- post-hoc diagnostics (R20, R23, R24): NOT part of the pre-registered verdicts
     th = theory_solution(params, "mitgcm")
-    zlow = (-H + th.z_detach) / 2.0
+    zd_t = th.z_detach
+    zlow = (-H + zd_t) / 2.0
     low = z <= zlow
     u_th = _mean(np.interp(z[low], th.z, th.u))
     core = _mean(prof["w_face"][low])
     wmax = _mean(prof["w_max"][low])
     q_low = prof["Q"][low]
     mq = _mean(prof["M"][low] / np.where(q_low > 0, q_low, np.nan))
+    # max over the plume of the face-cell w relative to the theory u at the same depth
+    inplume = np.isfinite(prof["width"])
+    ratio_z = np.where(inplume, prof["w_face"] / np.interp(z, th.z, th.u), np.nan)
+    kmax = int(np.nanargmax(ratio_z))
+    # melt: common range below the theory z_detach; whole-face mean with theory = 0 above
+    th_melt_z = np.interp(z, th.z, np.nan_to_num(th.melt, nan=0.0))
+    common = z < zd_t
+    ph_melt_common = _mean(prof["melt"][common]) / _mean(th_melt_z[common]) if common.any() else float("nan")
+    ph_melt_whole = float(np.mean(prof["melt"]) / np.mean(th_melt_z))
     post_hoc = {
         "label": "post-hoc, defined after seeing C2' fail; not a verdict",
         "u_theory_lower_half": u_th,
         "w_face_core_lower_half": core, "w_face_ratio": core / u_th,
         "w_max_lower_half": wmax, "w_max_ratio": wmax / u_th,
+        "w_face_max_over_plume": float(prof["w_face"][inplume].max()),
+        "w_face_max_over_plume_ratio": float(ratio_z[kmax]),
+        "w_face_max_ratio_depth": float(z[kmax]),
         "M_over_Q_lower_half": mq, "M_over_Q_ratio": mq / u_th,
         "width_10pct_lower_half": _mean(prof["width"][low]),
         "theory_b_lower_half": _mean(np.interp(z[low], th.z, th.b)),
         "Q_model_lower_half": _mean(q_low), "Q_theory_lower_half": _mean(np.interp(z[low], th.z, th.Q)),
+        "melt_ratio_common_range": ph_melt_common,
+        "melt_ratio_whole_face": ph_melt_whole,
     }
+    if "T_amb" in prof:
+        try:
+            ev = theory_solution(params, "mitgcm", ambient=(z, prof["T_amb"], prof["S_amb"]))
+            post_hoc["z_detach_theory_evolved"] = float(ev.z_detach)
+            post_hoc["z_detach_gap_over_H_evolved"] = float((prof["z_detach"] - ev.z_detach) / H)
+        except ValueError as e:  # e.g. source not buoyant in the evolved ambient
+            post_hoc["z_detach_theory_evolved"] = float("nan")
+            post_hoc["z_detach_gap_over_H_evolved"] = float("nan")
+            post_hoc["evolved_ambient_error"] = str(e)
+        post_hoc["evolved_ambient_x_m"] = prof.get("x_amb")
+        post_hoc["z_detach_gap_over_H_initial"] = m["z_detach_diff_over_H"]
     return {"modes": out, "pass": verdict, "post_hoc": post_hoc,
+            "melt_average_range": MELT_AVERAGE_RANGE,
             "melt_mean_whole_face_model": _mean(prof["melt"])}
 
 
@@ -121,20 +172,22 @@ def _final_section(run: Path):
     return T[0], W[0]
 
 
-def make_figure(cases, profs, params, section_q, stem: Path):
+def make_figure(cases, profs, params, section_q, stem: Path, window=(36.0, 48.0)):
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
 
     style.apply()
-    fig = plt.figure(figsize=(7.6, 6.0), constrained_layout=True)
-    gs = fig.add_gridspec(2, 3, width_ratios=[1.35, 1, 1])
+    fig = plt.figure(figsize=(7.6, 7.0))
+    gs = fig.add_gridspec(3, 3, width_ratios=[1.25, 1, 1], height_ratios=[1, 1, 0.5], left=0.08,
+                          right=0.99, top=0.955, bottom=0.02, wspace=0.42, hspace=0.42)
     axs = [fig.add_subplot(gs[r, 0]) for r in range(2)]
     axw = [fig.add_subplot(gs[r, 1]) for r in range(2)]
     axm = [fig.add_subplot(gs[r, 2]) for r in range(2)]
     H = params[next(iter(params))]["H"]
     tags = "abcdef"
+    tw = f"{window[0]:g}-{window[1]:g} h mean"
 
-    # left: x-z sections of T with w contours (one case per stratification)
+    # left: x-z sections of T (final state, t = 48 h) with w contours
     for r, strat in enumerate(STRATS):
         key = (strat, section_q if (strat, section_q) in cases else next(q for s_, q in cases if s_ == strat))
         prof = profs[key]
@@ -145,15 +198,13 @@ def make_figure(cases, profs, params, section_q, stem: Path):
         Wc = 0.5 * (W + np.vstack([W[1:], np.zeros((1, nx))]))
         ax = axs[r]
         pc = ax.pcolormesh(xf[: n + 1], zf, T[:, :n], cmap=style.CMAPS["temperature"],
-                           shading="flat", vmin=-1.6, vmax=4.1)
-        cs = ax.contour(prof["x"][:n], z, Wc[:, :n], levels=[0.1, 0.3, 0.5], colors="k", linewidths=0.7)
-        ax.clabel(cs, fmt="%.2f", fontsize=6, inline_spacing=1)
+                           shading="flat", vmin=TMIN, vmax=TMAX)
+        ax.contour(prof["x"][:n], z, Wc[:, :n], levels=[0.1, 0.3, 0.5], colors="k",
+                   linewidths=[0.5, 1.0, 1.6])
         ax.set_ylabel("z (m)")
-        ax.set_title(f"({tags[r]}) {strat}, q0 = {key[1]} m$^2$ s$^{{-1}}$\nT (colour), w = 0.1, 0.3, 0.5 m s$^{{-1}}$ (contours)",
-                     fontsize=8, loc="left")
-    axs[1].set_xlabel("distance from ice face (m)")
-    cb = fig.colorbar(pc, ax=axs, location="bottom", shrink=0.8, aspect=30, pad=0.02)
-    cb.set_label("potential temperature (°C)")
+        ax.set_ylim(-H, 0)
+        ax.set_title(f"({tags[r]}) {strat}, q0 = {key[1]} m$^2$ s$^{{-1}}$, t = 48 h", fontsize=8, loc="left")
+    axs[1].set_xlabel("distance from the ice face (m)")
 
     colors = dict(zip(QS, style.OKABE_ITO))
     for r, strat in enumerate(STRATS):
@@ -172,17 +223,33 @@ def make_figure(cases, profs, params, section_q, stem: Path):
         axm[r].set_ylim(-H, 0)
         axw[r].set_ylabel("z (m)")
         axm[r].set_yticklabels([])
-        axw[r].set_title(f"({tags[2 + r]}) {strat}: plume velocity", fontsize=8, loc="left")
-        axm[r].set_title(f"({tags[4 + r]}) {strat}: face melt", fontsize=8, loc="left")
+        axw[r].set_title(f"({tags[2 + r]}) {strat}: velocity\n{tw}", fontsize=7, loc="left")
+        axm[r].set_title(f"({tags[4 + r]}) {strat}: ice melt\n{tw}", fontsize=7, loc="left")
         axw[r].set_xlim(left=0)
         axm[r].set_xlim(left=0)
-    axw[1].set_xlabel("plume velocity (m s$^{-1}$)")
+    axw[1].set_xlabel("plume velocity (m s$^{-1}$)\nMITgcm width-mean w vs theory top-hat u", fontsize=7.5)
     axm[1].set_xlabel("ice melt rate (m day$^{-1}$)")
-    h = [Line2D([], [], color=colors[q], lw=1.6, label=f"q0 = {q} m$^2$ s$^{{-1}}$") for q in QS]
-    h += [Line2D([], [], color="k", lw=1.6, label="MITgcm (width-mean w)"),
-          Line2D([], [], color="k", ls=":", lw=1.0, label="MITgcm, face cell (post-hoc)"),
-          Line2D([], [], color="k", ls="--", lw=1.3, label="theory (mitgcm mode)")]
-    fig.legend(handles=h, loc="outside lower right", ncol=2, fontsize=7, frameon=False)
+
+    # bottom row: colourbar under the sections, one legend per column of profile panels
+    axc = fig.add_subplot(gs[2, 0])
+    axc.axis("off")
+    cax = axc.inset_axes([0.05, 0.62, 0.9, 0.16])
+    cb = fig.colorbar(pc, cax=cax, orientation="horizontal", extend="min")
+    cb.set_label(f"potential temperature (°C); dark = below {TMIN:g}", fontsize=7.5)
+    axc.text(0.05, 0.0, "black contours: w = 0.1, 0.3, 0.5 m s$^{-1}$\n(thin to thick)",
+             transform=axc.transAxes, fontsize=7, va="bottom")
+    hq = [Line2D([], [], color=colors[q], lw=1.6, label=f"q0 = {q} m$^2$ s$^{{-1}}$") for q in QS]
+    hv = hq + [Line2D([], [], color="k", lw=1.6, label="MITgcm, width-mean w"),
+               Line2D([], [], color="k", ls=":", lw=1.0, label="MITgcm, w in the 5 m cell next to the ice (post-hoc)"),
+               Line2D([], [], color="k", ls="--", lw=1.3, label="line-plume theory, top-hat u")]
+    hm = [Line2D([], [], color="k", lw=1.6, label="MITgcm, melt at the ice face"),
+          Line2D([], [], color="k", ls="--", lw=1.3, label="line-plume theory\n(MITgcm melt law)"),
+          Line2D([], [], color="0.5", lw=1.6, label="colour = q0, as in (c)")]
+    for col, hh, ttl in ((1, hv, "velocity panels (c, d)"), (2, hm, "melt panels (e, f)")):
+        axl = fig.add_subplot(gs[2, col])
+        axl.axis("off")
+        axl.legend(handles=hh, loc="upper left", fontsize=6.5, frameon=False, title=ttl,
+                   title_fontsize=7, borderaxespad=0)
     return style.save(fig, stem)
 
 
@@ -195,15 +262,17 @@ def main(runs_root: Path, window: tuple[float, float], out_dir: Path):
         profs[key] = plume_profile(run, window)  # RuntimeError if the run is not OK
         params[key] = json.loads((run / "case.json").read_text())["params"]
         metrics[run.name] = evaluate(profs[key], params[key])
-    make_figure(cases, profs, params, "0.03", out_dir / "fig1_plume_validation")
+    make_figure(cases, profs, params, "0.03", out_dir / "fig1_plume_validation", window)
     allpass = {c: all(m["pass"][c] for m in metrics.values()) for c in ("C2", "C2p", "C2pp")}
     (out_dir / "fig1_metrics.json").write_text(json.dumps({
         "window_h": list(window), "cases": metrics, "all_pass": allpass,
+        "width_method": next(iter(profs.values()))["width_method"],
+        "melt_average_range": MELT_AVERAGE_RANGE,
         "known_differences": KNOWN_DIFFERENCES,
         "pending_convergence_study": "exp1_fjord_plumes/notes/pd2_convergence.md",
         "note": "C2' is reported as FAILED under its pre-registered definition (width-mean "
                 "velocity, 10 % of w_max, lower half); post_hoc entries are not verdicts (R20).",
-    }, indent=2, default=float))
+    }, indent=2, default=float) + "\n")
     return metrics
 
 

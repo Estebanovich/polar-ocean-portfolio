@@ -32,6 +32,9 @@ from pfcommon.runctl import require_ok
 RHO_I = 917.0  # kg m-3, icefront_readparms.F:86
 WIDTH_FRAC = 0.10  # plume edge: w >= 10 % of the level's w_max
 DETACH_FRAC = 0.05  # detachment: face-column w falls below 5 % of its maximum
+AMBIENT_X = 1000.0  # m, column whose window-mean T/S is the "evolved ambient" (post-hoc)
+WIDTH_METHOD = ("10 % of w_max(z); outer edge by linear interpolation between cell centres "
+                "(R22); w piecewise linear, constant between the face and the first centre")
 AVG_PERIOD_S = 3600.0  # frequency of ICFfwFlx averages in data.diagnostics
 _DUMP = {"THETA": "T", "SALT": "S", "UVEL": "U", "WVEL": "W"}
 _EPS = 1e-6
@@ -62,6 +65,39 @@ def detach_depth(z: np.ndarray, w: np.ndarray, frac: float = DETACH_FRAC) -> flo
             f = (w[k + 1] - thr) / (w[k + 1] - w[k])  # 0 at k+1, 1 at k
             return float(z[k + 1] + f * (z[k] - z[k + 1]))
     return float(z[0])
+
+
+def plume_extent(w: np.ndarray, x: np.ndarray, frac: float = WIDTH_FRAC,
+                 x_end: float | None = None) -> tuple[float, float, float]:
+    """Plume width, volume flux and momentum flux of one level (R22).
+
+    ``w`` at cell centres ``x`` (x = 0 is the ice face). The plume is the
+    contiguous run of cells around argmax(w) with w >= frac * w_max; its outer
+    edge is located by LINEAR INTERPOLATION between the centres of the last cell
+    inside and the first cell outside (the same 10 % definition as before, but
+    not quantised to stretched-grid cell faces). w is piecewise linear between
+    centres and constant (= w[0]) between the face and the first centre.
+    Returns (width, Q = int_0^edge w dx, M = int_0^edge w^2 dx); each segment is
+    integrated exactly. If the run reaches the last cell, the edge is ``x_end``
+    (default x[-1]) with w constant there.
+    """
+    w = np.asarray(w, dtype=float)
+    x = np.asarray(x, dtype=float)
+    thr = frac * w.max()
+    i = int(np.argmax(w))
+    while i + 1 < w.size and w[i + 1] >= thr:
+        i += 1
+    xs = np.concatenate([[0.0], x[: i + 1]])
+    ws = np.concatenate([[w[0]], w[: i + 1]])
+    if i + 1 < w.size:
+        edge = x[i] + (w[i] - thr) / (w[i] - w[i + 1]) * (x[i + 1] - x[i])
+        xs, ws = np.append(xs, edge), np.append(ws, thr)
+    else:
+        edge = x[-1] if x_end is None else float(x_end)
+        xs, ws = np.append(xs, edge), np.append(ws, w[i])
+    d = np.diff(xs)
+    a, b = ws[:-1], ws[1:]
+    return float(edge), float(np.sum(0.5 * (a + b) * d)), float(np.sum((a * a + a * b + b * b) / 3.0 * d))
 
 
 def _iterations(run_dir: Path, name: str) -> list[int]:
@@ -96,7 +132,8 @@ def plume_profile(run_dir: Path, t_window_h: tuple[float, float]) -> dict:
       w_max    max over x of w at each level
       width    plume width [m]: from the ice face to the outer edge of the
                contiguous run of cells around argmax_x(w) with w >= 10 % of
-               w_max(z); NaN at/above z_detach
+               w_max(z), edge interpolated linearly between cell centres
+               (`plume_extent`, R22); NaN at/above z_detach
       w_mean   mean of w over [0, width] ; Q = w_mean * width [m2 s-1];
                M = int w^2 dx over the same width [m3 s-2] (M/Q = momentum-weighted
                mean velocity, post-hoc metric)
@@ -150,18 +187,16 @@ def plume_profile(run_dir: Path, t_window_h: tuple[float, float]) -> dict:
     for k in range(nz):
         if not (z[k] < z_detach) or w_max[k] <= 0:
             continue
-        thr = WIDTH_FRAC * w_max[k]
-        i = int(np.argmax(Wc[k]))
-        while i + 1 < nx and Wc[k, i + 1] >= thr:
-            i += 1
-        width[k] = xf[i + 1]
-        w_mean[k] = float(np.sum(Wc[k, : i + 1] * dx[: i + 1]) / width[k])
-        mom[k] = float(np.sum(Wc[k, : i + 1] ** 2 * dx[: i + 1]))
+        width[k], Q, mom[k] = plume_extent(Wc[k], x, WIDTH_FRAC, x_end=xf[-1])
+        w_mean[k] = Q / width[k]
 
+    ic = int(np.argmin(np.abs(x - AMBIENT_X)))  # ambient column used for the evolved-ambient diagnostic
     return {
         "z": z, "zf": zf, "x": x, "xf": xf,
         "w_face": w_face, "w_max": w_max, "width": width, "w_mean": w_mean,
         "Q": w_mean * width, "M": mom,
+        "x_amb": float(x[ic]), "T_amb": fields["THETA"][:, ic], "S_amb": fields["SALT"][:, ic],
+        "width_method": WIDTH_METHOD,
         "T": fields["THETA"][:, 0], "S": fields["SALT"][:, 0], "u_face": fields["UVEL"][:, 0],
         "melt": melt, "z_detach": z_detach,
         "t_snapshots_h": times["WVEL"], "t_means_h": t_means,

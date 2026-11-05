@@ -153,3 +153,7 @@
 - Seis casos (twolayer/sermilik × q0 0.01/0.03/0.1), 48 h, ventana 36–48 h, solo lectura; veredictos con la teoría en modo `mitgcm` y `ice_depth = H` (R13). Figura `figures/fig1_plume_validation.{png,pdf}` y `figures/fig1_metrics.json` (con `known_differences` por clase, `post_hoc` aparte y referencia a `notes/pd2_convergence.md`).
 - **C2**: 5/6 PASA; sermilik q0.1 FALLA (z_detach −110 m contra −181 m de la teoría, 0.141 H). **C2'**: FALLA en los 6 casos con la definición pre-registrada (razón 0.51–0.65); diagnóstico: w de la celda de la cara y w_max están a 0.86–1.05 de la teoría, M/Q a 0.65–0.82; la pluma del modelo es 2–3 veces más ancha que la teórica (b = 7.5 m = 1.5 celdas) con 1.5–1.8 veces el flujo. Métricas post hoc solo etiquetadas como tales (R20). **C2''**: PASA 6/6 (razón 1.00–1.23).
 - Pendiente: estudio de convergencia (`notes/pd2_convergence.md`), no evaluado aquí.
+
+## 2026-11-05 — Task 5, ronda de correcciones 1 (R22–R24)
+
+- Ancho de pluma con borde del 10 % interpolado entre centros de celda (R22; mismos veredictos, desaparece el zigzag); rango de promedio de C2'' declarado (R23) con razones post hoc sobre rango común y cara completa (sermilik q0.1: 1.50, en el límite); teoría reevaluada con el ambiente evolucionado a x = 1 km como diagnóstico post hoc (R24: brecha de despegue 0.141 H → 0.059 H en sermilik q0.1). Se añade w de la celda de la cara (máx. sobre la pluma). Figura rehecha y `figures/fig1_caption.md` (borrador de pie de figura).
