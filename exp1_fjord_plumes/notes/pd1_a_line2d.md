@@ -77,3 +77,9 @@ Todos < 0.5. Con dt = 4 s, q0 = 0.1 llegaba a 0.42. Por eso se bajó a 3 s, igua
 1. dt = 3 s y cg3d convergido (≈ 2.6 h los 6 casos). ¿Se acepta, o se prefiere cg3d a 40 iteraciones (≈ 1 h)?
 2. Viscosidad y difusividad de Sciascia 2013 (Laplaciana 0.25 / 1e-3). Xu 2012 (νv = 0.1, biarmónica) sería la alternativa de sensibilidad.
 3. Pared sin deslizamiento (Sciascia) frente al arrastre cuadrático Cd u² de la teoría. Es una diferencia de modelo conocida para C2' (clase c).
+
+## 6. Decisión PD1 y C3 (Step 5)
+
+Esteban aprobó la configuración: cg3d convergido (500 iteraciones, 1e-8), dt = 3 s, viscosidad y difusividad de Sciascia 2013, pared sin deslizamiento (reportada como clase (c) frente al Cd·u² de la teoría).
+
+**C3, reinicio bit a bit: cumplido.** `a_line2d_twolayer_q0.03`: 4 h seguidas (`c3_restart_4h`) frente a 2 h + pickup + 2 h (`c3_restart_2h_a`, `c3_restart_2h_b`). Los volcados finales `T` y `Eta` (iteración 4800) son idénticos con `np.array_equal`; también S, U y W.
