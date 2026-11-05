@@ -133,6 +133,7 @@ def test_cases_yaml_lists_all_cases():
     exp |= {f"b_3d_{s}_x0_{x}" for s in ("twolayer", "sermilik") for x in (0, 20, 40, 80, 160, 320)}
     exp |= {f"b_3d_{s}_single" for s in ("twolayer", "sermilik")}
     exp |= {f"c_fjord_{k}" for k in ("plume", "wind", "shelf", "all")}
+    exp |= {"conv_dx10", "conv_dx5", "conv_dx2p5", "sens_freeslip", "sens_xu2012"}  # R20
     assert names == exp
 
 

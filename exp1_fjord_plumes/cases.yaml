@@ -9,8 +9,24 @@
 #   oscillation amplitude [m] and period [days]. Time-dependent forcing files
 #   are NOT written by gendata (parameters go to case.json for Task 7).
 # deltaT/endTime are provisional; Tasks 4/6/7 tune them (and note it).
+# PD2 / ruling R20 (convergence + sensitivity of (a); notes/pd2_convergence.md).
+# Production values of the parameters that the shared study templates
+# (config/a_line2d_study) expose; strings so they render exactly as in
+# config/a_line2d/input_templates/data. Merged into the study configs below
+# BEFORE a_line2d, so endTime (24 h) and these keys win.
+study_defaults: &study
+  template_config: a_line2d_study
+  endTime: 86400.0
+  viscAh: "0.25"            # Sciascia et al. 2013, Table 1 (PD1)
+  viscAr: "1.E-3"
+  diffKh: "0.25"
+  diffKr: "2.E-5"
+  viscA4: "0."
+  diffK4: "0."
+  no_slip_sides: ".TRUE."
+  no_slip_bottom: ".TRUE."
 configs:
-  a_line2d:
+  a_line2d: &a_line2d
     L: 20000.0
     dx0: 5.0
     dxmax: 200.0
@@ -32,6 +48,14 @@ configs:
                              # closes the domain at the ice face (OB at Nx-1, data.obcs)
     deltaT: 3.0              # Task 4: set from the timed short run (bitacora / PD1)
     endTime: 172800.0        # Task 4: 48 h campaign
+  # PD2 convergence (R20): dx0 = dz refined together; same r, dxmax, L, H,
+  # physics; deltaT = 0.5 s/m * min(dx0, dz) (CFL, pd2_convergence.md).
+  conv_dx10: {<<: [*study, *a_line2d], dx0: 10.0, dz: 10.0, deltaT: 5.0}
+  conv_dx5: {<<: [*study, *a_line2d], dx0: 5.0, dz: 5.0, deltaT: 2.5}
+  conv_dx2p5: {<<: [*study, *a_line2d], dx0: 2.5, dz: 2.5, deltaT: 1.25}
+  # PD2 sensitivity at the production grid (dx0 5 m, dz 10 m, deltaT 3 s);
+  # own config name so `--config a_line2d` still selects only production.
+  sens_line2d: {<<: [*study, *a_line2d]}
   b_twoplume3d:
     nx: 100
     ny: 120
@@ -112,3 +136,16 @@ cases:
   c_fjord_wind: {config: c_fjord3d, discharge: point, wind_tau: 0.2, Q0: 0.0}
   c_fjord_shelf: {config: c_fjord3d, discharge: point, shelf_amp: 30.0, Q0: 0.0}
   c_fjord_all: {config: c_fjord3d, discharge: point, wind_tau: 0.2, shelf_amp: 30.0}
+  # PD2 / R20 (24 h, twolayer q0 = 0.03)
+  conv_dx10: {config: conv_dx10, strat: twolayer, discharge: line, q0: 0.03}
+  conv_dx5: {config: conv_dx5, strat: twolayer, discharge: line, q0: 0.03}
+  conv_dx2p5: {config: conv_dx2p5, strat: twolayer, discharge: line, q0: 0.03}
+  sens_freeslip: {config: sens_line2d, strat: twolayer, discharge: line, q0: 0.03,
+                  no_slip_sides: ".FALSE.", no_slip_bottom: ".FALSE."}
+  # Xu et al. 2012 (p. 3): nu_v = 0.1 m2/s, horizontal biharmonic 300 m4/s at 20 m,
+  # kappa = nu (Pr = 1). Biharmonic scaled to dx0 = 5 m at the same grid damping
+  # time dx^4/A4: 300 (5/20)^4 = 1.171875 m4/s (literal 300 > stability limit
+  # L^4/(32 dt) = 6.5 m4/s, pkg/mom_common/mom_calc_visc.F:48-49).
+  sens_xu2012: {config: sens_line2d, strat: twolayer, discharge: line, q0: 0.03,
+                viscAh: "0.", diffKh: "0.", viscAr: "0.1", diffKr: "0.1",
+                viscA4: "1.171875", diffK4: "1.171875"}

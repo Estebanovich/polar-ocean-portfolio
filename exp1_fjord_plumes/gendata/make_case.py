@@ -36,7 +36,11 @@ plus a second-stage namelist ``data.stage2`` (``_c_stages``).
 Optional case key ``land_columns: [[j, i], ...]`` makes columns land, and
 ``land_j_rows: [j, ...]`` / ``land_i_cols: [i, ...]`` make whole rows (all i)
 or whole columns (all j) land, e.g. the (b) side walls; hFacC for
-the discharge checks is derived from the generated topography.
+the discharge checks is derived from the generated topography. A case/config with
+``dx0`` uses the stretched grid of (a) (``dz`` from the case); ``discharge: line``
+uses the (a) line source; ``template_config`` (optional) names the config whose
+``input_templates`` are rendered (default: the case's config), so the PD2 runs
+(ruling R20) can have their own SIZE.h/build but share templates.
 """
 from __future__ import annotations
 
@@ -205,7 +209,7 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     # ---- grid
     dz = p["dz"]
     nz = int(round(p["H"] / dz))
-    if cfg == "a_line2d":
+    if "dx0" in p:  # stretched line-plume grid: (a) and its PD2 variants (R20)
         dxv = stretched_x(p["dx0"], p["dxmax"], p["r"], p["L"])
         nx, ny, dy = len(dxv), p["ny"], p["dy"]
     else:
@@ -235,7 +239,7 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     hFacC = ((np.arange(nz) * dz)[:, None, None] < depth[None]).astype(float)
     rho0, kb = p["rho0"], nz - 1
     info: dict = {}
-    if cfg == "a_line2d":
+    if p.get("discharge") == "line":  # (a) and its PD2 variants
         Q0 = p["q0"] * dy  # per cell: rho0 q0 dy (ny = 1)
         cells = [(kb, j, front_i) for j in range(ny)]
         add = discharge_addmass((nz, ny, nx), cells, Q0, rho0, hFacC=hFacC, front_i=front_i)
@@ -257,7 +261,8 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
 
     # ---- templates
     if template_dir is None:
-        template_dir = PKG / "config" / cfg / "input_templates"
+        # ``template_config`` lets several builds (SIZE.h) share one template set (R20)
+        template_dir = PKG / "config" / p.get("template_config", cfg) / "input_templates"
     template_dir = Path(template_dir)
     if not template_dir.is_dir():
         raise FileNotFoundError(f"template dir {template_dir} does not exist")
