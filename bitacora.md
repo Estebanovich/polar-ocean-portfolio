@@ -147,3 +147,9 @@
 - Costo revisado (t_paso = celdas/9650 × (7.04 + 0.060·N_it) ms, ajustado a las corridas medidas): 3.5 h con N_it = 350; 6.2 h con 700; 15.9 h con 1999. `conv_dx2p5` pasa de 8 h si N_it > 1434. Sonda de 1 h; si da > 8 h, se para y se reporta. Partir en tramos solo con aprobación de Esteban.
 - Menores: la prueba de free-slip ahora compara contra producción (solo cambian las dos líneas de pared, más el tope R21 y el monitor por paso); prueba R13 para C2' (pasa con el código actual; verificada por mutación: con C2p en modo jenkins falla); `case.json` registra `git_commit` y `git_dirty`.
 - Pruebas: RED 7 fallos → GREEN; `test_pd2_cases.py` + `test_plume_diag.py` 19 PASS; suite 110 PASS. Producción: 15 de 16 archivos de entrada idénticos; `case.json` solo añade los campos git. La campaña en curso no se ve afectada: su proceso ya había importado `make_case`.
+
+## 2026-11-05 — Task 5 Steps 3-5: Figura 1 y métricas C2/C2'/C2'' (campaña (a) completa)
+
+- Seis casos (twolayer/sermilik × q0 0.01/0.03/0.1), 48 h, ventana 36–48 h, solo lectura; veredictos con la teoría en modo `mitgcm` y `ice_depth = H` (R13). Figura `figures/fig1_plume_validation.{png,pdf}` y `figures/fig1_metrics.json` (con `known_differences` por clase, `post_hoc` aparte y referencia a `notes/pd2_convergence.md`).
+- **C2**: 5/6 PASA; sermilik q0.1 FALLA (z_detach −110 m contra −181 m de la teoría, 0.141 H). **C2'**: FALLA en los 6 casos con la definición pre-registrada (razón 0.51–0.65); diagnóstico: w de la celda de la cara y w_max están a 0.86–1.05 de la teoría, M/Q a 0.65–0.82; la pluma del modelo es 2–3 veces más ancha que la teórica (b = 7.5 m = 1.5 celdas) con 1.5–1.8 veces el flujo. Métricas post hoc solo etiquetadas como tales (R20). **C2''**: PASA 6/6 (razón 1.00–1.23).
+- Pendiente: estudio de convergencia (`notes/pd2_convergence.md`), no evaluado aquí.

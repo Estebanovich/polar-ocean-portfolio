@@ -103,12 +103,14 @@ def test_fig1_verdict_uses_mitgcm_mode_R13(monkeypatch):
 
     def fake(params, mode):  # jenkins would pass C2, mitgcm must fail it
         zd = -300.0 if mode == "jenkins" else -100.0
-        return SimpleNamespace(z=z, u=np.full_like(z, 0.3), melt=np.full_like(z, 1e-5),
+        return SimpleNamespace(z=z, b=np.full_like(z, 8.0), Q=np.full_like(z, 2.0), u=np.full_like(z, 0.3), melt=np.full_like(z, 1e-5),
                                z_detach=zd, reached_top=False)
 
     monkeypatch.setattr(f1, "theory_solution", fake)
     zc = -(np.arange(50) + 0.5) * 10.0
-    prof = {"z": zc, "z_detach": -300.0, "w_mean": np.full(50, 0.3), "melt": np.full(50, 1e-5)}
+    prof = {"z": zc, "z_detach": -300.0, "w_mean": np.full(50, 0.3), "melt": np.full(50, 1e-5),
+            "w_face": np.full(50, 0.3), "w_max": np.full(50, 0.3), "width": np.full(50, 10.0),
+            "Q": np.full(50, 3.0), "M": np.full(50, 0.9)}
     out = f1.evaluate(prof, {"H": 500.0})
     assert out["pass"]["C2"] is False
     assert out["modes"]["jenkins"]["z_detach_diff_over_H"] == pytest.approx(0.0)
@@ -125,12 +127,14 @@ def test_fig1_C2p_verdict_uses_mitgcm_mode_R13(monkeypatch):
 
     def fake(params, mode):
         u = 0.3 if mode == "jenkins" else 0.6
-        return SimpleNamespace(z=z, u=np.full_like(z, u), melt=np.full_like(z, 1e-5),
+        return SimpleNamespace(z=z, b=np.full_like(z, 8.0), Q=np.full_like(z, 2.0), u=np.full_like(z, u), melt=np.full_like(z, 1e-5),
                                z_detach=-300.0, reached_top=False)
 
     monkeypatch.setattr(f1, "theory_solution", fake)
     zc = -(np.arange(50) + 0.5) * 10.0
-    prof = {"z": zc, "z_detach": -300.0, "w_mean": np.full(50, 0.3), "melt": np.full(50, 1e-5)}
+    prof = {"z": zc, "z_detach": -300.0, "w_mean": np.full(50, 0.3), "melt": np.full(50, 1e-5),
+            "w_face": np.full(50, 0.3), "w_max": np.full(50, 0.3), "width": np.full(50, 10.0),
+            "Q": np.full(50, 3.0), "M": np.full(50, 0.9)}
     out = f1.evaluate(prof, {"H": 500.0})
     assert out["modes"]["jenkins"]["u_ratio"] == pytest.approx(1.0)
     assert out["modes"]["mitgcm"]["u_ratio"] == pytest.approx(0.5)

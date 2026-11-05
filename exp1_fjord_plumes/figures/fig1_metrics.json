@@ -1,0 +1,321 @@
+{
+  "window_h": [
+    36.0,
+    48.0
+  ],
+  "cases": {
+    "a_line2d_twolayer_q0.01": {
+      "modes": {
+        "jenkins": {
+          "z_detach_model": -180.90212729771463,
+          "z_detach_theory": -196.80221689636744,
+          "z_detach_diff_over_H": 0.03180017919730562,
+          "u_lower_model": 0.1556782397740574,
+          "u_lower_theory": 0.3044910109228494,
+          "u_ratio": 0.5112736803041534,
+          "melt_model": 6.4928800664268805e-06,
+          "melt_theory": 2.081694267273309e-05,
+          "melt_ratio": 0.31190363390544995,
+          "theory_reached_top": false
+        },
+        "mitgcm": {
+          "z_detach_model": -180.90212729771463,
+          "z_detach_theory": -197.95542026824674,
+          "z_detach_diff_over_H": 0.03410658594106422,
+          "u_lower_model": 0.1556782397740574,
+          "u_lower_theory": 0.2986055528352885,
+          "u_ratio": 0.5213507863329315,
+          "melt_model": 6.4928800664268805e-06,
+          "melt_theory": 6.425233031118129e-06,
+          "melt_ratio": 1.0105283395919074,
+          "theory_reached_top": false
+        }
+      },
+      "pass": {
+        "C2": true,
+        "C2p": false,
+        "C2pp": true
+      },
+      "post_hoc": {
+        "label": "post-hoc, defined after seeing C2' fail; not a verdict",
+        "u_theory_lower_half": 0.2986055528352885,
+        "w_face_core_lower_half": 0.2623563300828834,
+        "w_face_ratio": 0.8786049944208497,
+        "w_max_lower_half": 0.2623563300828834,
+        "w_max_ratio": 0.8786049944208497,
+        "M_over_Q_lower_half": 0.198818207543822,
+        "M_over_Q_ratio": 0.6658222047648611,
+        "width_10pct_lower_half": 23.687379283833334,
+        "theory_b_lower_half": 7.487438165535577,
+        "Q_model_lower_half": 3.919090797107666,
+        "Q_theory_lower_half": 2.2428318826067346
+      },
+      "melt_mean_whole_face_model": 4.222662871236369e-06
+    },
+    "a_line2d_twolayer_q0.03": {
+      "modes": {
+        "jenkins": {
+          "z_detach_model": -173.1611632704173,
+          "z_detach_theory": -190.606842195597,
+          "z_detach_diff_over_H": 0.03489135785035944,
+          "u_lower_model": 0.24113860290025063,
+          "u_lower_theory": 0.4325258190647144,
+          "u_ratio": 0.5575126206839726,
+          "melt_model": 9.66459311283135e-06,
+          "melt_theory": 2.893140587119725e-05,
+          "melt_ratio": 0.33405196953988897,
+          "theory_reached_top": false
+        },
+        "mitgcm": {
+          "z_detach_model": -173.1611632704173,
+          "z_detach_theory": -191.4932109466136,
+          "z_detach_diff_over_H": 0.03666409535239262,
+          "u_lower_model": 0.24113860290025063,
+          "u_lower_theory": 0.4285064436015645,
+          "u_ratio": 0.5627420695789281,
+          "melt_model": 9.66459311283135e-06,
+          "melt_theory": 9.057648445826812e-06,
+          "melt_ratio": 1.0670090775364744,
+          "theory_reached_top": false
+        }
+      },
+      "pass": {
+        "C2": true,
+        "C2p": false,
+        "C2pp": true
+      },
+      "post_hoc": {
+        "label": "post-hoc, defined after seeing C2' fail; not a verdict",
+        "u_theory_lower_half": 0.4285064436015645,
+        "w_face_core_lower_half": 0.40853047221365285,
+        "w_face_ratio": 0.9533823313833625,
+        "w_max_lower_half": 0.40853047221365285,
+        "w_max_ratio": 0.9533823313833625,
+        "M_over_Q_lower_half": 0.31130542641071685,
+        "M_over_Q_ratio": 0.7264894870523255,
+        "width_10pct_lower_half": 19.547629016666665,
+        "theory_b_lower_half": 7.548531200250831,
+        "Q_model_lower_half": 4.98543573178675,
+        "Q_theory_lower_half": 3.2394834557928287
+      },
+      "melt_mean_whole_face_model": 6.425547030199186e-06
+    },
+    "a_line2d_twolayer_q0.1": {
+      "modes": {
+        "jenkins": {
+          "z_detach_model": -138.11981898696646,
+          "z_detach_theory": -177.78362993646104,
+          "z_detach_diff_over_H": 0.07932762189898915,
+          "u_lower_model": 0.40756540165162003,
+          "u_lower_theory": 0.641286649439785,
+          "u_ratio": 0.6355432504444946,
+          "melt_model": 1.549085193074053e-05,
+          "melt_theory": 4.15386147808214e-05,
+          "melt_ratio": 0.3729265410625282,
+          "theory_reached_top": false
+        },
+        "mitgcm": {
+          "z_detach_model": -138.11981898696646,
+          "z_detach_theory": -178.66449164107925,
+          "z_detach_diff_over_H": 0.08108934530822558,
+          "u_lower_model": 0.40756540165162003,
+          "u_lower_theory": 0.638550321914421,
+          "u_ratio": 0.6382666920121642,
+          "melt_model": 1.549085193074053e-05,
+          "melt_theory": 1.3115361136568445e-05,
+          "melt_ratio": 1.1811227894860408,
+          "theory_reached_top": false
+        }
+      },
+      "pass": {
+        "C2": true,
+        "C2p": false,
+        "C2pp": true
+      },
+      "post_hoc": {
+        "label": "post-hoc, defined after seeing C2' fail; not a verdict",
+        "u_theory_lower_half": 0.638550321914421,
+        "w_face_core_lower_half": 0.6697818311966119,
+        "w_face_ratio": 1.0489100204171171,
+        "w_max_lower_half": 0.6697818311966119,
+        "w_max_ratio": 1.0489100204171171,
+        "M_over_Q_lower_half": 0.5198553320808663,
+        "M_over_Q_ratio": 0.8141180330507104,
+        "width_10pct_lower_half": 15.874965312500002,
+        "theory_b_lower_half": 8.146581352540903,
+        "Q_model_lower_half": 6.782665911525063,
+        "Q_theory_lower_half": 5.205671603559699
+      },
+      "melt_mean_whole_face_model": 1.1237417527063275e-05
+    },
+    "a_line2d_sermilik_q0.01": {
+      "modes": {
+        "jenkins": {
+          "z_detach_model": -215.56288359491427,
+          "z_detach_theory": -217.1159169709745,
+          "z_detach_diff_over_H": 0.003106066752120455,
+          "u_lower_model": 0.15272453378249812,
+          "u_lower_theory": 0.3039043581328785,
+          "u_ratio": 0.5025414400793856,
+          "melt_model": 6.32781916802245e-06,
+          "melt_theory": 2.0191521486717897e-05,
+          "melt_ratio": 0.31338991329528715,
+          "theory_reached_top": false
+        },
+        "mitgcm": {
+          "z_detach_model": -215.56288359491427,
+          "z_detach_theory": -220.17737537577116,
+          "z_detach_diff_over_H": 0.00922898356171379,
+          "u_lower_model": 0.15272453378249812,
+          "u_lower_theory": 0.29840714283188585,
+          "u_ratio": 0.5117991892993621,
+          "melt_model": 6.32781916802245e-06,
+          "melt_theory": 6.329171286689455e-06,
+          "melt_ratio": 0.9997863671868308,
+          "theory_reached_top": false
+        }
+      },
+      "pass": {
+        "C2": true,
+        "C2p": false,
+        "C2pp": true
+      },
+      "post_hoc": {
+        "label": "post-hoc, defined after seeing C2' fail; not a verdict",
+        "u_theory_lower_half": 0.29840714283188585,
+        "w_face_core_lower_half": 0.25770748061319365,
+        "w_face_ratio": 0.8636102948727965,
+        "w_max_lower_half": 0.25770748061319365,
+        "w_max_ratio": 0.8636102948727965,
+        "M_over_Q_lower_half": 0.19512642446364054,
+        "M_over_Q_ratio": 0.6538932768562087,
+        "width_10pct_lower_half": 23.069188559714288,
+        "theory_b_lower_half": 6.993717411171309,
+        "Q_model_lower_half": 3.7480678695532004,
+        "Q_theory_lower_half": 2.093070504989012
+      },
+      "melt_mean_whole_face_model": 3.8127377171967825e-06
+    },
+    "a_line2d_sermilik_q0.03": {
+      "modes": {
+        "jenkins": {
+          "z_detach_model": -190.56429113026275,
+          "z_detach_theory": -202.10721318636575,
+          "z_detach_diff_over_H": 0.02308584411220602,
+          "u_lower_model": 0.24116790519529255,
+          "u_lower_theory": 0.4325148798132846,
+          "u_ratio": 0.5575944700432133,
+          "melt_model": 9.477773670671332e-06,
+          "melt_theory": 2.8117513936455197e-05,
+          "melt_ratio": 0.3370772285235045,
+          "theory_reached_top": false
+        },
+        "mitgcm": {
+          "z_detach_model": -190.56429113026275,
+          "z_detach_theory": -204.01948557919306,
+          "z_detach_diff_over_H": 0.026910388897860626,
+          "u_lower_model": 0.24116790519529255,
+          "u_lower_theory": 0.4284952969773799,
+          "u_ratio": 0.5628250925891112,
+          "melt_model": 9.477773670671332e-06,
+          "melt_theory": 8.839100651450964e-06,
+          "melt_ratio": 1.072255430094636,
+          "theory_reached_top": false
+        }
+      },
+      "pass": {
+        "C2": true,
+        "C2p": false,
+        "C2pp": true
+      },
+      "post_hoc": {
+        "label": "post-hoc, defined after seeing C2' fail; not a verdict",
+        "u_theory_lower_half": 0.4284952969773799,
+        "w_face_core_lower_half": 0.408429805532679,
+        "w_face_ratio": 0.9531722014541499,
+        "w_max_lower_half": 0.408429805532679,
+        "w_max_ratio": 0.9531722014541499,
+        "M_over_Q_lower_half": 0.3111756888458643,
+        "M_over_Q_ratio": 0.7262056107521084,
+        "width_10pct_lower_half": 19.547629016666665,
+        "theory_b_lower_half": 7.548831617636409,
+        "Q_model_lower_half": 4.987667931746315,
+        "Q_theory_lower_half": 3.239464613472201
+      },
+      "melt_mean_whole_face_model": 5.984699612864222e-06
+    },
+    "a_line2d_sermilik_q0.1": {
+      "modes": {
+        "jenkins": {
+          "z_detach_model": -110.22195769555218,
+          "z_detach_theory": -179.43980502328552,
+          "z_detach_diff_over_H": 0.13843569465546668,
+          "u_lower_model": 0.41585608068036417,
+          "u_lower_theory": 0.6412742396695893,
+          "u_ratio": 0.6484839947642841,
+          "melt_model": 1.563405502680687e-05,
+          "melt_theory": 4.041716917099189e-05,
+          "melt_ratio": 0.38681717070941485,
+          "theory_reached_top": false
+        },
+        "mitgcm": {
+          "z_detach_model": -110.22195769555218,
+          "z_detach_theory": -180.78353198082746,
+          "z_detach_diff_over_H": 0.14112314857055058,
+          "u_lower_model": 0.41585608068036417,
+          "u_lower_theory": 0.6385378031430378,
+          "u_ratio": 0.6512630554266635,
+          "melt_model": 1.563405502680687e-05,
+          "melt_theory": 1.2754380107378124e-05,
+          "melt_ratio": 1.225779292696704,
+          "theory_reached_top": false
+        }
+      },
+      "pass": {
+        "C2": false,
+        "C2p": false,
+        "C2pp": true
+      },
+      "post_hoc": {
+        "label": "post-hoc, defined after seeing C2' fail; not a verdict",
+        "u_theory_lower_half": 0.6385378031430378,
+        "w_face_core_lower_half": 0.6694694612471559,
+        "w_face_ratio": 1.0484413889856874,
+        "w_max_lower_half": 0.6694694612471559,
+        "w_max_ratio": 1.0484413889856874,
+        "M_over_Q_lower_half": 0.5214207514908296,
+        "M_over_Q_ratio": 0.8165855630226907,
+        "width_10pct_lower_half": 15.543434062500001,
+        "theory_b_lower_half": 8.14682899323142,
+        "Q_model_lower_half": 6.76066335624424,
+        "Q_theory_lower_half": 5.2056501210722566
+      },
+      "melt_mean_whole_face_model": 1.2259102024266415e-05
+    }
+  },
+  "all_pass": {
+    "C2": false,
+    "C2p": false,
+    "C2pp": true
+  },
+  "known_differences": [
+    {
+      "class": "c",
+      "item": "MITgcm drives gammaT with |wVEL| of the 5 m face cell, the theory with the top-hat u"
+    },
+    {
+      "class": "c",
+      "item": "SW_TEMP theta -> in-situ temperature conversion in MITgcm (not in the theory)"
+    },
+    {
+      "class": "c",
+      "item": "no-slip wall in MITgcm vs Cd u^2 drag in the theory"
+    },
+    {
+      "class": "b/c (small)",
+      "item": "MITgcm adds melt as a virtual salt flux with no volume: the m_w term in dQ/dz is missing"
+    }
+  ],
+  "pending_convergence_study": "exp1_fjord_plumes/notes/pd2_convergence.md",
+  "note": "C2' is reported as FAILED under its pre-registered definition (width-mean velocity, 10 % of w_max, lower half); post_hoc entries are not verdicts (R20)."
+}

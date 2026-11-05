@@ -97,7 +97,9 @@ def plume_profile(run_dir: Path, t_window_h: tuple[float, float]) -> dict:
       width    plume width [m]: from the ice face to the outer edge of the
                contiguous run of cells around argmax_x(w) with w >= 10 % of
                w_max(z); NaN at/above z_detach
-      w_mean   mean of w over [0, width] ; Q = w_mean * width [m2 s-1]
+      w_mean   mean of w over [0, width] ; Q = w_mean * width [m2 s-1];
+               M = int w^2 dx over the same width [m3 s-2] (M/Q = momentum-weighted
+               mean velocity, post-hoc metric)
       T, S, u_face   face-column THETA, SALT, UVEL (UVEL is on the west face of
                cell i, i.e. u = 0 at a wall: ~0 in column 0 by construction)
       melt     face melt rate [m s-1 of ice], positive = melting
@@ -144,6 +146,7 @@ def plume_profile(run_dir: Path, t_window_h: tuple[float, float]) -> dict:
     w_max = Wc.max(axis=1)
     width = np.full(nz, np.nan)
     w_mean = np.full(nz, np.nan)
+    mom = np.full(nz, np.nan)
     for k in range(nz):
         if not (z[k] < z_detach) or w_max[k] <= 0:
             continue
@@ -153,11 +156,12 @@ def plume_profile(run_dir: Path, t_window_h: tuple[float, float]) -> dict:
             i += 1
         width[k] = xf[i + 1]
         w_mean[k] = float(np.sum(Wc[k, : i + 1] * dx[: i + 1]) / width[k])
+        mom[k] = float(np.sum(Wc[k, : i + 1] ** 2 * dx[: i + 1]))
 
     return {
         "z": z, "zf": zf, "x": x, "xf": xf,
         "w_face": w_face, "w_max": w_max, "width": width, "w_mean": w_mean,
-        "Q": w_mean * width,
+        "Q": w_mean * width, "M": mom,
         "T": fields["THETA"][:, 0], "S": fields["SALT"][:, 0], "u_face": fields["UVEL"][:, 0],
         "melt": melt, "z_detach": z_detach,
         "t_snapshots_h": times["WVEL"], "t_means_h": t_means,
