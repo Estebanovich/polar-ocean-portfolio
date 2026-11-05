@@ -1,0 +1,29 @@
+# Exp. 1 (a) a_line2d -- case ${case}
+# Eastern open boundary at x = L: Orlanski radiation + U/V sponge, as in
+# the thesis config (verification/BayIW_Rectan/run_expand/data.obcs).
+# OB_Ieast=-2 -> column Nx-1 (pkg/obcs/obcs_readparms.F:671-672); column Nx
+# is land (cases.yaml land_columns) so that the periodic x-wrap closes the
+# domain at the ice face (west face of column 1).
+# No useOBCSbalance: it balances only EmPmR, not addMass
+# (pkg/obcs/obcs_balance_flow.F:300-315), and would trap the discharge.
+ &OBCS_PARM01
+ OB_Ieast=${ny}*-2,
+ useOrlanskiEast=.TRUE.,
+ useOBCSsponge=.TRUE.,
+ OBCSsponge_Theta=.FALSE.,
+ OBCSsponge_Salt=.FALSE.,
+ OBCS_monitorFreq=3600.,
+ &
+
+ &OBCS_PARM02
+ cvelTimeScale=250.,
+ CMAX=0.45,
+ &
+
+ &OBCS_PARM03
+ spongeThickness=10,
+ Urelaxobcsinner=1200.,
+ Vrelaxobcsinner=1200.,
+ Urelaxobcsbound=60.,
+ Vrelaxobcsbound=60.,
+ &

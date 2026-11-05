@@ -1,0 +1,5 @@
+# Exp. 1 (a) a_line2d -- case ${case}; serial, one tile (SIZE.h)
+ &EEPARMS
+ nTx=1,
+ nTy=1,
+ &

@@ -28,8 +28,10 @@ configs:
     dz_int: 10.0        # tanh scale of the interface [m]
     T0_src: 0.0
     S0_src: 0.0
-    deltaT: 2.0
-    endTime: 21600.0
+    land_columns: [[0, -1]]  # Task 4: last column is land so the periodic x-wrap
+                             # closes the domain at the ice face (OB at Nx-1, data.obcs)
+    deltaT: 3.0              # Task 4: set from the timed short run (bitacora / PD1)
+    endTime: 172800.0        # Task 4: 48 h campaign
   b_twoplume3d:
     nx: 100
     ny: 120

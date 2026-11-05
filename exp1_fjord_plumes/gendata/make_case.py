@@ -71,14 +71,20 @@ def _profile(strat: str, zc, p):
 
 
 def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
-              cases_file: Path | None = None) -> Path:
-    """Write all inputs for case ``name`` into ``out_dir``; return ``out_dir``."""
+              cases_file: Path | None = None, overrides: dict | None = None) -> Path:
+    """Write all inputs for case ``name`` into ``out_dir``; return ``out_dir``.
+
+    ``overrides`` (optional) replaces merged case parameters after cases.yaml
+    is read, e.g. ``{"endTime": 7200.0}`` for a timed short run (Task 4); the
+    values used are recorded in case.json.
+    """
     spec = load_cases(cases_file)
     if name not in spec["cases"]:
         raise KeyError(f"unknown case {name!r}")
     case = spec["cases"][name]
     cfg = case["config"]
     p = {**spec["configs"][cfg], **{k: v for k, v in case.items() if k != "config"}}
+    p.update(overrides or {})
     p["case"], p["config"] = name, cfg
     out_dir = Path(out_dir)
 

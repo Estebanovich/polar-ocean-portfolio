@@ -1,0 +1,20 @@
+# Exp. 1 (a) a_line2d -- case ${case}
+# Ice-face fields from gendata (grids.icefront_fields): R_icefront = H in
+# the front column, icefrontlength = 1/dx there (icefront_description.tex:12-16).
+# Transfer law: pkg/icefront default (icefront_thermodynamics.F:89-97,
+# gammaT = max(1e-2 sqrt(1.5e-3) |wVEL|, 1e-4) m/s, gammaS = 5.05e-3 gammaT).
+# Ice temperature: linear from ICEFRONTthetaSurface at the surface to 0 degC
+# at the front base (icefront_thermodynamics.F:116-123).
+# The constants below are the pkg defaults without shelfice
+# (icefront_readparms.F:84-88), written out so they are on record.
+ &ICEFRONT_PARM01
+ ICEFRONTdepthFile='R_icefront.bin',
+ ICEFRONTlengthFile='icefrontlength.bin',
+ applyIcefrontTendT=.TRUE.,
+ applyIcefrontTendS=.TRUE.,
+ rhoIcefront=917.,
+ ICEFRONTlatentHeat=334.E3,
+ ICEFRONTHeatCapacity_Cp=2000.,
+ ICEFRONTthetaSurface=-20.,
+ ICEFRONTkappa=1.54E-6,
+ &
