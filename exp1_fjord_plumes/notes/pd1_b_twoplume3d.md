@@ -1,6 +1,6 @@
 # PD1 — Configuración (b) `b_twoplume3d`: dos plumas puntuales 3D contra la separación
 
-Task 6, Steps 1–2. Material para el Punto de decisión 1 de (b). **No se ha lanzado la campaña**: se espera el visto bueno de Esteban.
+Task 6, Steps 1–2. Material para el Punto de decisión 1 de (b). **PD1(b) aprobado por Esteban: dt = 2 s y los 14 casos, con animaciones GIF (fallo R29).** Preparación de la campaña en §6–§7; la campaña la lanza el controlador.
 
 ## 1. Tabla de parámetros
 
@@ -12,7 +12,7 @@ Todo lo que no aparece aquí es idéntico a (a) y está aprobado en PD1 (`pd1_a_
 | | paredes laterales | filas de tierra j = 0 y Ny−1 (`land_j_rows: [0, -1]`); ancho mojado 1180 m; sin deslizamiento | Es una caja de fjord. Las filas también cierran el periodo en y |
 | | última columna (i = 99) | tierra (`land_i_cols: [-1]`) | Igual que (a): cierra el periodo en x en la cara de hielo |
 | Descomposición | SIZE.h | sNx = 100, sNy = 24, nPy = 5 (5 procesos MPI en y, los 5 núcleos P) | 120/5 = 24 exacto. Las filas de tierra quedan en los rangos 0 y 4 |
-| Tiempo | `deltaT` | **1 s (provisional) → se propone 2 s** | §3 |
+| Tiempo | `deltaT` | **2 s (aprobado en PD1(b) por Esteban)**; 1 s en las corridas cortas | §2 |
 | | duración | 3 h por caso (`endTime` 10800 s) | plan, Step 2 |
 | Fuentes | Q0 | 10 m³ s⁻¹ por fuente, en la celda mojada del fondo de la columna i = 0 (R8) | `place_sources`. Se usa la separación real `x0_actual` |
 | | x0 = 0 | **una sola celda con 2·Q0** (las dos fuentes caen en la misma celda) | `make_case`. Prueba `test_b_x0_0_is_one_cell_of_2Q0` |
@@ -92,3 +92,44 @@ Disco: ~190 MB por directorio de 30 min en LaCie (exFAT, clústeres grandes); se
 2. Campaña completa de 14 casos (opción B), o una reducida (C/D) si (c) resulta cara.
 3. **Resolución de la pluma 3D (clase (c)).** El núcleo es de 1 celda y con x0 = 20 m (2 celdas) las plumas se funden a escala de malla. El extremo de x0 pequeño de M(x0) está limitado numéricamente. Refinar a 5 m costaría ~16× por caso (8× celdas, 2× pasos) y no cabe.
 4. **Para C4 (aviso, no se evalúa aún).** A los 30 min la pluma de Q0 = 10 m³ s⁻¹ atraviesa la interfaz de 100 m y llega a ~30–50 m de profundidad. La salida queda entre 50 y 150 m. La altura de despegue debe compararse con la teoría de pluma semicónica (`point_plume(geometry="half_cone")`) en la campaña; si la teoría predice despegue en la interfaz, la discrepancia aparecerá en el Step 5 (PD2).
+
+## 6. Control de validez: retención de volumen (η medio a las 3 h)
+
+Implementado en `analysis/b_checks.py::eta_retention(run_dir)` (pruebas en `tests/test_b_campaign.py`).
+- addMass mete el volumen de la descarga dentro de la caja. El deshielo entra como flujo virtual de sal, sin volumen. Con superficie libre lineal, A dη̄/dt = Q_total − Q_OB.
+- Si nada saliera por la OB, η̄ seguiría la recta η_atrapado(t) = Q_total t / A. Con A = 1.1682 km² (celdas mojadas), a las 3 h eso da **0.185 m** con dos fuentes y 0.092 m con `_single`.
+- Se reportan dos fracciones:
+  - `retained_cum` = η̄(3 h)/η_atrapado(3 h). Es informativa, porque incluye el arranque, cuando la salida todavía no llega a la OB.
+  - `retained_last_hour` = [η̄(3 h) − η̄(2 h)] / (Q_total · 1 h / A).
+
+**Umbral: se marca la corrida (flag) si `retained_last_hour` > X = 50 %**, es decir, si en la última hora la OB deja pasar menos de la mitad de la descarga. Justificación:
+1. Lo que mide es la salud de la OB, no la física de la pluma. Aun con retención total, η̄ = 0.19 m es el 0.06 % de H. La desviación espacial de η es de 0.25 mm (casi uniforme), así que su efecto sobre la pluma es nulo. La señal es muy sensible: una velocidad media en la OB de solo 6e-5 m/s (20 m³/s en 1180 m × 300 m) decide el balance.
+2. En (a) la retención acumulada fue 32 % a las 2 h y bajaba, con la OB funcionando.
+3. Un factor 2 (la OB evacua menos de la mitad cuando ya debería estar en régimen) es una falla clara de la OB que no depende de ningún caso en particular. Por eso no se ajusta a una sola corrida.
+
+Un caso marcado **no se descarta automáticamente**: se revisan su serie de η̄ (monitor cada 600 s, `dynstat_eta_mean`) y el transporte en la OB, y se compara su derretimiento con los casos vecinos. Cualquier diferencia se clasifica, probablemente como (c), elección numérica de la OB.
+
+**Aviso de las corridas cortas (30 min).** Con dt = 1 s, η̄ = 0.96, 1.70 y 2.14 cm a los 10, 20 y 30 min frente a 1.03, 2.05 y 3.08 cm atrapados: retención acumulada del 69 %, y la OB empieza a evacuar. Con **dt = 2 s**, η̄ = 0.99, 1.90 y **3.40 cm**: 110 % a los 30 min. Entre los 20 y 30 min la OB *metió* agua (≈ +0.5 cm más que la descarga). El derretimiento total no cambió (0.06 %), y la salida baroclínica aún no llega a la OB (~400 m a los 30 min). Es transitorio de la OB de Orlanski, probablemente por su dependencia de dt (la velocidad de fase se recorta a CMAX·dx/dt, `CMAX = 0.45`). No se ha investigado más (no se permiten corridas mientras corre conv_dx2p5). **Sugerencia para el controlador:** al terminar el primer caso de la campaña (~11 min), correr `eta_retention` sobre él antes de dejar seguir la serie, o vigilar `dynstat_eta_mean` en `STDOUT.0000`. Si `retained_last_hour` > 50 % de forma sistemática, avisar a Esteban: el arreglo sería de la OB (por ejemplo, prescribir el transporte barotrópico de salida), no de la física.
+
+## 7. Preparación de la campaña (R29)
+
+- `cases.yaml` (b): `deltaT: 2.0` → `nTimeSteps` = 5400 por caso de 3 h. Se volvió a generar `b_3d_sermilik_x0_160` para comprobarlo: `deltaT=2.0`, `nTimeSteps=5400`, SIZE.h OK.
+- **Diagnósticos de animación** (en `data.diagnostics`, listas 8 y 9; las listas 1–7 no cambian, lo verifica una prueba). Son solo salida, la física no cambia, y `code/` tampoco cambia, así que el binario es el mismo.
+  - `animW`: WVEL 3D cada 120 s. pkg/diagnostics solo permite elegir niveles verticales (`levels(:,n)`, `diagnostics_readparms.F:49,326-331`), no un corte horizontal, y la sección y–z de la cara necesita todos los niveles. Son 2.88 MB por instantánea.
+  - `animT`: THETA solo en los niveles 8 y 16 (z = −75 y −155 m), 0.19 MB por instantánea.
+- **Disco extra:** 90 instantáneas por caso. `animW` ocupa 259 MB y `animT` 17 MB, es decir, **≈ 0.28 GB por caso de tamaño aparente y ≈ 0.35 GB en LaCie** (exFAT con clústeres de 256 KB, más los .meta). **Total para 14 casos: ≈ 3.9 GB aparentes, ≈ 4.8 GB en disco.** Con la salida previa, un caso ocupa ~0.7–0.8 GB y la campaña ~11 GB, sobre 3.6 TB libres.
+- **`analysis/animate_b.py`** genera un GIF por caso en `figures/anim/<case>.gif`. Sigue las convenciones de `BayIW_Rectan/make_animation.py`: escalas fijas para todos los casos, cmocean (`pfcommon.style`), tierra gris y reloj.
+  - Paneles: (a) w en la cara (y–z, fuentes marcadas); (b) T − T_init a −75 m; (c) T − T_init a −155 m; (d) barra de tiempo.
+  - Se usa la anomalía porque a −155 m la pluma solo enfría ~0.2 °C, invisible en una escala de −1.6 a 4.1 °C.
+  - Escalas fijas: w ±1.2 m/s; ΔT ±4 °C en (b) y ±0.2 °C en (c).
+  - Probado con la corrida corta, que solo tiene 2 cuadros (0 y 30 min): ~25 KB por cuadro a 80 dpi, así que 90 cuadros dan ~2–3 MB, por debajo del límite de 8 MB. Si se pasa, el script duplica el paso entre cuadros. MP4 opcional con `--mp4` (ffmpeg).
+- **Comando de la campaña** (lo lanza el controlador cuando termine conv_dx2p5 y `pgrep` esté vacío):
+
+  ```
+  cd /Users/estebancruz/Phd_project/portfolio && OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 /opt/anaconda3/envs/pyocean/bin/python exp1_fjord_plumes/scripts/run_campaign.py --config b_twoplume3d --cases 'b_3d_*' --np 5 > /Volumes/LaCie/portfolio_runs/exp1/campaign_b.log 2>&1
+  ```
+
+  Esperado: 14 casos en serie, ~10.6 min cada uno (≈ 2.5 h), todos `OK`; sale con código 1 si alguno no lo está.
+- Después, por caso:
+  - `python -c "from exp1_fjord_plumes.analysis.b_checks import eta_retention; print(eta_retention('<run_dir>'))"`
+  - `python exp1_fjord_plumes/analysis/animate_b.py /Volumes/LaCie/portfolio_runs/exp1/<case>`

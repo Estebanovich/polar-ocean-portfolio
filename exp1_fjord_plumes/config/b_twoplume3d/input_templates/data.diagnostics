@@ -34,6 +34,22 @@
   fields(1:2,7) = 'ICFfwFlx','ICFhtFlx',
   fileName(7)  = 'icefrontDiag',
   frequency(7) = 900.,
+# --- R29 animation output (pkg/diagnostics; output only, the physics is
+#     unchanged). Snapshots every 120 s. pkg/diagnostics can restrict the
+#     vertical levels (levels(:,n), diagnostics_readparms.F:49,326-331) but
+#     not a horizontal slice, so WVEL is written full 3-D (the ice-face y-z
+#     section needs every level): 2.88 MB per snapshot. THETA only at levels
+#     8 and 16 (1-based; cell centres z = -75 m in the outflow layer and
+#     z = -155 m at mid-depth): 0.19 MB per snapshot.
+  fields(1,8)  = 'WVEL    ',
+  fileName(8)  = 'animW',
+  frequency(8) = -120.,
+  timePhase(8) = 0.,
+  fields(1,9)  = 'THETA   ',
+  fileName(9)  = 'animT',
+  frequency(9) = -120.,
+  timePhase(9) = 0.,
+  levels(1:2,9) = 8., 16.,
  &
 
  &DIAG_STATIS_PARMS

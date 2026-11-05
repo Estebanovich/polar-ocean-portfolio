@@ -165,3 +165,11 @@
   2. dt = 2 s: OK, **106 s**, CFL w 0.256, cg3d 215–237, sin NaN, `pgrep` vacío. Frente a dt = 1 s: derretimiento total en la cara −1344.8 vs −1344.0 kg/s (0.06 %), W rms de la diferencia 8e-4 m/s.
 - Figura `notes/pd1_b_quicklook.png`: plumas de núcleo de 1 celda, w ≈ 1.3 m/s, llegan a ~30–50 m (pasan la interfaz de 100 m), salida entre 50 y 150 m. Sin ruido de 2Δ (G ambiente ≤ 0.10; alternancia de signo 7e-5).
 - Costo de 14 casos × 3 h: 4.5 h con dt = 1 s; **2.5 h con dt = 2 s (propuesta)**. Opciones reducidas: 10 casos 1.8 h, solo dos capas 1.2 h, dz = 15 m ≈ 1.1 h, caja chica ≈ 1.0 h. Nota completa: `notes/pd1_b_twoplume3d.md`. **PD1 pendiente; campaña no lanzada.** `cases.yaml` sigue con dt = 1 s hasta la decisión.
+
+## 2026-11-05 — Task 6: preparación de la campaña (b) tras PD1(b) (fallo R29)
+
+- PD1(b) aprobado por Esteban: dt = 2 s, los 14 casos y animaciones GIF (R29). `cases.yaml` (b) `deltaT: 2.0` (5400 pasos por caso de 3 h); se volvió a generar `b_3d_sermilik_x0_160` para comprobarlo.
+- `data.diagnostics` (b): listas 8 `animW` (WVEL 3D cada 120 s; pkg/diagnostics solo filtra niveles, no cortes horizontales) y 9 `animT` (THETA en los niveles 8 y 16, z = −75 y −155 m). Las listas 1–7 no cambian. Extra: ≈ 0.28 GB por caso (≈ 0.35 GB en exFAT), ≈ 3.9 GB en total (≈ 4.8 GB en disco). Solo salida: `code/` no cambia, así que la física es idéntica.
+- `analysis/b_checks.py::eta_retention`: fracción retenida de la descarga (η̄ contra Q t / A). Se marca si en la última hora queda retenido más del 50 % (salud de la OB; justificación en `notes/pd1_b_twoplume3d.md` §6). **Aviso:** en las corridas cortas, a los 30 min la retención es del 69 % con dt = 1 s y del 110 % con dt = 2 s (la OB metió agua entre los 20 y 30 min). El derretimiento no cambia; es un transitorio de Orlanski. Revisar el primer caso de la campaña.
+- `analysis/animate_b.py`: GIF por caso (w en la cara, ΔT a −75 y −155 m, reloj; escalas fijas, cmocean). Probado con la corrida corta (2 cuadros); un cuadro revisado a ojo.
+- Pruebas: RED 4 fallos (dt en el render, listas de animación, `eta_retention` ×2) → GREEN; suite completa 166 PASS. Campaña **no lanzada** (corre conv_dx2p5).

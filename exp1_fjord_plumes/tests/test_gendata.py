@@ -109,7 +109,7 @@ def test_make_case_writes_case_json(tmp_path):
     for f in re.findall(r"'([^']+\.bin)'", "".join(p.read_text() for p in out.iterdir()
                                                    if p.name.startswith("data"))):
         assert (out / f).is_file()
-    assert "deltaT=1.0" in (out / "data").read_text()
+    assert "deltaT=2.0" in (out / "data").read_text()  # PD1(b): dt = 2 s
 
 
 def test_make_case_missing_file_raises(tmp_path):
