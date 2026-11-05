@@ -103,8 +103,14 @@ def test_eta_retention_flags_above_threshold(tmp_path):
     assert r["flag"] is True
 
 
+def test_eta_retention_flags_strong_draining(tmp_path):
+    r = eta_retention(_make_run(tmp_path, -(RETENTION_MAX + 0.1)))
+    assert r["retained_last_hour"] == pytest.approx(-0.6)
+    assert r["flag"] is True
+
+
 def test_eta_retention_refuses_failed_run(tmp_path):
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match="run state is FAILED, refusing"):
         eta_retention(_make_run(tmp_path, 0.3, state="FAILED"))
 
 
@@ -120,3 +126,35 @@ def test_animation_frames_prefer_R29_output(tmp_path):
         f.unlink()
     fr = frame_index(tmp_path)  # pre-R29 runs: state dumps / 3-D snapshots
     assert [i for i, _ in fr] == [0, 900] and fr[1][1]["W"] == ("W", 900)
+
+
+# ---- animate_b: GIF size budget and colour-scale saturation -------------------
+
+def test_gif_budget_doubles_stride_until_small_enough():
+    from exp1_fjord_plumes.analysis.animate_b import write_within_budget
+
+    sizes = {1: 20.0, 2: 10.0, 4: 5.0}
+    calls = []
+
+    def write(stride):
+        calls.append(stride)
+        return sizes[stride]
+
+    stride, mb, over = write_within_budget(write, n_frames=90, stride=1, max_mb=8.0)
+    assert calls == [1, 2, 4] and stride == 4 and mb == 5.0 and over is False
+
+
+def test_gif_budget_warns_when_still_too_big(capsys):
+    from exp1_fjord_plumes.analysis.animate_b import write_within_budget
+
+    stride, mb, over = write_within_budget(lambda s: 50.0, n_frames=3, stride=1, max_mb=8.0)
+    assert over is True and stride >= 3
+    assert "WARNING" in capsys.readouterr().err
+
+
+def test_saturation_fraction():
+    from exp1_fjord_plumes.analysis.animate_b import saturated_fraction
+
+    v = np.array([[0.0, 1.3], [-1.2, 0.5]])
+    mask = np.array([[True, True], [True, False]])  # last pixel is land
+    assert saturated_fraction(v, 1.2, mask) == pytest.approx(2 / 3)

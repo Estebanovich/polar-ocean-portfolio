@@ -29,7 +29,13 @@ step late, pkg/diagnostics/diagnostics_write.F:62-72, so the label can be one
 step early; irrelevant at 120 s).
 
 Size: the GIF is written with Pillow; if it exceeds ``--max-mb`` the stride is
-doubled and the GIF rewritten (the stride used is printed). Refuses runs that
+doubled and the GIF rewritten (the stride used is printed); a WARNING is
+printed if it still exceeds the budget at the largest stride.
+
+``--check-scales`` writes no GIF: it prints, per panel, the fraction of wet
+pixels at or beyond the fixed colour limit (max and mean over all frames). The
+limits were set from the 30-min short run; run this on the first 3 h case and
+widen W_LIM / DT_LIM (for all cases alike) if saturation is large. Refuses runs that
 did not finish OK (pfcommon.runctl.require_ok).
 """
 from __future__ import annotations
@@ -89,6 +95,51 @@ def _load(run_dir: Path, spec: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray
     tname, it, lev = spec["T"]
     t = read_mds(run_dir / tname, it)[0][0]                    # (nlev or nz, ny, nx)
     return w[:, :, 0], t[lev[0]], t[lev[1]]
+
+
+def write_within_budget(write, n_frames: int, stride: int, max_mb: float):
+    """Call ``write(stride) -> MB`` doubling the stride until the GIF fits ``max_mb``.
+
+    Returns (stride, mb, over_budget). If even one frame in ``n_frames`` is too
+    big, a WARNING goes to stderr and over_budget is True.
+    """
+    while True:
+        mb = write(stride)
+        if mb <= max_mb:
+            return stride, mb, False
+        if stride >= n_frames:
+            print(f"WARNING: GIF is {mb:.1f} MB > {max_mb} MB even at stride {stride}; "
+                  "lower --dpi", file=sys.stderr)
+            return stride, mb, True
+        stride *= 2
+
+
+def saturated_fraction(values: np.ndarray, lim: float, mask: np.ndarray) -> float:
+    """Fraction of the pixels where ``mask`` is True with |value| >= lim (colour saturated)."""
+    v = np.asarray(values)[np.asarray(mask, bool)]
+    return float(np.mean(np.abs(v) >= lim)) if v.size else 0.0
+
+
+def check_scales(run_dir: Path) -> dict:
+    """Saturated-pixel fraction per panel over ALL frames (max and mean over frames)."""
+    run_dir = Path(run_dir)
+    require_ok(run_dir)
+    p = json.loads((run_dir / "case.json").read_text())["params"]
+    nx, ny, nz, dx = p["nx"], p["ny"], p["nz"], p["dx"]
+    wet = read_bin(run_dir / "topog.bin", (ny, nx)) < 0
+    nxs = int(round(X_SHOW / dx))
+    T0 = read_bin(run_dir / "T.init.bin", (nz, ny, nx))
+    face = np.broadcast_to(wet[:, 0], (nz, ny))
+    fr: dict[str, list[float]] = {"a_w_face": [], "b_dT_upper": [], "c_dT_mid": []}
+    for _, spec in frame_index(run_dir):
+        w, t1, t2 = _load(run_dir, spec)
+        fr["a_w_face"].append(saturated_fraction(w, W_LIM, face))
+        for key, t, k, lim in (("b_dT_upper", t1, K_T[0], DT_LIM[0]),
+                               ("c_dT_mid", t2, K_T[1], DT_LIM[1])):
+            fr[key].append(saturated_fraction((t - T0[k])[:, :nxs], lim, wet[:, :nxs]))
+    res = {k: {"max": max(v), "mean": float(np.mean(v)), "frames": len(v)} for k, v in fr.items()}
+    res["limits"] = {"W_LIM": W_LIM, "DT_LIM": list(DT_LIM)}
+    return res
 
 
 def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80,
@@ -165,8 +216,10 @@ def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80,
 
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    while True:
-        sel = frames[::stride]
+    nsel = [0]
+
+    def write(st: int) -> float:
+        sel = frames[::st]
         if sel[-1][0] != frames[-1][0]:
             sel = sel + [frames[-1]]  # always end on the last state
         writer = PillowWriter(fps=8)
@@ -174,22 +227,23 @@ def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80,
             for f in sel:
                 draw(f)
                 writer.grab_frame()
-        mb = out.stat().st_size / 1e6
-        if mb <= max_mb or stride >= len(frames):
-            break
-        stride *= 2
+        nsel[0] = len(sel)
+        return out.stat().st_size / 1e6
+
+    stride, mb, over = write_within_budget(write, len(frames), stride, max_mb)
     if frame_png is not None:
         draw(frames[-1])
         fig.savefig(frame_png, dpi=dpi * 2)
     if mp4:
+        plt.rcParams["animation.ffmpeg_path"] = FFMPEG  # before the writer is built
         mw = FFMpegWriter(fps=12, codec="libx264", extra_args=["-pix_fmt", "yuv420p", "-crf", "23"])
-        plt.rcParams["animation.ffmpeg_path"] = FFMPEG
         with mw.saving(fig, str(out.with_suffix(".mp4")), dpi=120):
             for f in frames:
                 draw(f)
                 mw.grab_frame()
     plt.close(fig)
-    res = {"gif": str(out), "mb": mb, "frames": len(sel), "stride": stride, "dpi": dpi,
+    res = {"gif": str(out), "mb": mb, "over_budget": over, "frames": nsel[0], "stride": stride,
+           "dpi": dpi,
            "t_first_s": frames[0][0] * dt, "t_last_s": frames[-1][0] * dt}
     print(json.dumps(res))
     return res
@@ -204,7 +258,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-mb", type=float, default=8.0)
     ap.add_argument("--frame-png", type=Path, default=None)
     ap.add_argument("--mp4", action="store_true")
+    ap.add_argument("--check-scales", action="store_true",
+                    help="only report the saturated-pixel fraction per panel (all frames); no GIF")
     a = ap.parse_args(argv)
+    if a.check_scales:
+        print(json.dumps(check_scales(a.run_dir), indent=2))
+        return 0
     case = json.loads((a.run_dir / "case.json").read_text())["params"]["case"]
     out = a.out or DEFAULT_OUT / f"{case}.gif"
     make_gif(a.run_dir, out, a.stride, a.dpi, a.max_mb, a.frame_png, a.mp4)

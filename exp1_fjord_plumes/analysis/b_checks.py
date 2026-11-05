@@ -17,9 +17,9 @@ reported (definitions made here, not from a reference):
 
 ``retained_cum`` includes the spin-up, while the outflow has not yet reached
 the open boundary, so it is informative only. The run is flagged when
-``retained_last_hour > RETENTION_MAX``: in the last hour the open boundary
-passes less than half of the discharge (justification in
-notes/pd1_b_twoplume3d.md §6).
+``|retained_last_hour| > RETENTION_MAX``: in the last hour the open boundary
+passes less than half of the discharge (> +0.5), or drains more than 1.5 times
+the discharge (< -0.5); justification in notes/pd1_b_twoplume3d.md §6.
 """
 from __future__ import annotations
 
@@ -70,4 +70,5 @@ def eta_retention(run_dir: Path) -> dict:
     return {"t_end_h": t_end / 3600.0, "t_prev_h": t_prev / 3600.0, "wet_area_m2": A,
             "eta_mean_m": mean[t_end], "eta_trapped_m": trapped,
             "retained_cum": mean[t_end] / trapped, "retained_last_hour": last,
-            "threshold": RETENTION_MAX, "flag": bool(last > RETENTION_MAX)}
+            "threshold": RETENTION_MAX,
+            "flag": bool(not abs(last) <= RETENTION_MAX)}  # NaN (no last hour) flags too

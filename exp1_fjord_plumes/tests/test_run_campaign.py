@@ -150,3 +150,76 @@ def test_check_size_mismatch_raises(tmp_path):
     bad.write_text(real.replace("sNx = 193", "sNx = 100"))
     with pytest.raises(RuntimeError, match="Nx"):
         rc.check_size(d, bad)
+
+
+# ---- --skip-ok: resume a campaign after the first-case gate (R30) --------------
+
+def _fake_build(build_dir: Path, mpi: bool) -> None:
+    build_dir.mkdir(parents=True, exist_ok=True)
+    (build_dir / "Makefile").write_text("FC = mpif77\nDEFINES = -DALLOW_USE_MPI\n" if mpi
+                                        else "FC = gfortran\nDEFINES = \n")
+    exe = build_dir / "mitgcmuv"
+    exe.write_text("")
+    import os
+    import time
+    t = time.time() + 10  # newer than every file in config/<cfg>/code
+    os.utime(exe, (t, t))
+
+
+def test_skip_ok_skips_finished_case_and_up_to_date_build(tmp_path):
+    runs, builds = tmp_path / "runs", tmp_path / "builds"
+    sh = Recorder()
+    rc.run_campaign("a_line2d", "a_line2d_twolayer_q0.01", 1, runs_root=runs,
+                    build_root=builds, sh=sh, pgrep=lambda: "")
+    _fake_build(builds / "a_line2d", mpi=False)
+    sh2 = Recorder()
+    out = rc.run_campaign("a_line2d", "a_line2d_twolayer_*", 1, runs_root=runs,
+                          build_root=builds, sh=sh2, pgrep=lambda: "", skip_ok=True)
+    kinds = _kinds(sh2.calls)
+    assert kinds == ["run_mitgcm.sh"] * 2          # no rebuild, first case skipped
+    assert [c[3] for c in sh2.calls] == [str(runs / n) for n in A_TWOLAYER[1:]]
+    assert out == {n: "OK" for n in A_TWOLAYER}
+
+
+def test_skip_ok_reruns_failed_case(tmp_path):
+    runs, builds = tmp_path / "runs", tmp_path / "builds"
+    rc.run_campaign("a_line2d", "a_line2d_twolayer_q0.01", 1, runs_root=runs,
+                    build_root=builds, sh=Recorder(state="FAILED"), pgrep=lambda: "")
+    _fake_build(builds / "a_line2d", mpi=False)
+    sh2 = Recorder()
+    rc.run_campaign("a_line2d", "a_line2d_twolayer_q0.01", 1, runs_root=runs,
+                    build_root=builds, sh=sh2, pgrep=lambda: "", skip_ok=True)
+    assert _kinds(sh2.calls) == ["run_mitgcm.sh"]
+
+
+def test_skip_ok_rebuilds_when_binary_stale_or_wrong_mpi(tmp_path):
+    builds = tmp_path / "builds"
+    _fake_build(builds / "a_line2d", mpi=False)
+    sh = Recorder()
+    rc.run_campaign("a_line2d", "a_line2d_twolayer_q0.01", 2, runs_root=tmp_path / "runs",
+                    build_root=builds, sh=sh, pgrep=lambda: "", skip_ok=True)
+    assert _kinds(sh.calls)[0] == "build_mitgcm.sh"   # serial binary, np = 2 wants MPI
+    import os
+    exe = builds / "a_line2d" / "mitgcmuv"
+    _fake_build(builds / "a_line2d", mpi=True)
+    os.utime(exe, (0, 0))                              # older than the code/ files
+    sh2 = Recorder()
+    rc.run_campaign("a_line2d", "a_line2d_twolayer_q0.03", 2, runs_root=tmp_path / "runs",
+                    build_root=builds, sh=sh2, pgrep=lambda: "", skip_ok=True)
+    assert _kinds(sh2.calls)[0] == "build_mitgcm.sh"
+
+
+def test_skip_ok_refuses_ok_run_with_other_parameters(tmp_path):
+    runs, builds = tmp_path / "runs", tmp_path / "builds"
+    rc.run_campaign("a_line2d", "a_line2d_twolayer_q0.01", 1, runs_root=runs,
+                    build_root=builds, sh=Recorder(), pgrep=lambda: "",
+                    overrides={"endTime": 7200.0})
+    sh2 = Recorder()
+    with pytest.raises(RuntimeError, match="endTime"):
+        rc.run_campaign("a_line2d", "a_line2d_twolayer_q0.01", 1, runs_root=runs,
+                        build_root=builds, sh=sh2, pgrep=lambda: "", skip_ok=True)
+    assert sh2.calls == []
+
+
+def test_cli_has_skip_ok():
+    assert "--skip-ok" in Path(rc.__file__).read_text()

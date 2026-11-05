@@ -173,3 +173,12 @@
 - `analysis/b_checks.py::eta_retention`: fracción retenida de la descarga (η̄ contra Q t / A). Se marca si en la última hora queda retenido más del 50 % (salud de la OB; justificación en `notes/pd1_b_twoplume3d.md` §6). **Aviso:** en las corridas cortas, a los 30 min la retención es del 69 % con dt = 1 s y del 110 % con dt = 2 s (la OB metió agua entre los 20 y 30 min). El derretimiento no cambia; es un transitorio de Orlanski. Revisar el primer caso de la campaña.
 - `analysis/animate_b.py`: GIF por caso (w en la cara, ΔT a −75 y −155 m, reloj; escalas fijas, cmocean). Probado con la corrida corta (2 cuadros); un cuadro revisado a ojo.
 - Pruebas: RED 4 fallos (dt en el render, listas de animación, `eta_retention` ×2) → GREEN; suite completa 166 PASS. Campaña **no lanzada** (corre conv_dx2p5).
+
+## 2026-11-05 — Task 6: ronda de correcciones 1 de la preparación de (b) (R30)
+
+- La revisión encontró que R30 no estaba implementado: el comando `'b_3d_*'` corría los 14 casos sin gate. Arreglo:
+  - `run_campaign.py --skip-ok`: salta los casos que ya están OK (exige el mismo deltaT/endTime; si no coinciden, se niega a arrancar) y la compilación si `mitgcmuv` es más nuevo que `code/` y coincide en MPI.
+  - `scripts/b_gate.py <run_dir>`: (i) |retained_last_hour| ≤ 0.5; (ii) `icefrontDiag` y THETA/SALT/UVEL/VVEL/ETAN en la iteración 900 idénticos byte a byte a la corrida corta `_short30m_dt2`. Sale con 0 (PASS) o 1 (FAIL, con los motivos y la diferencia máxima).
+- Procedimiento en `notes/pd1_b_twoplume3d.md` §7: primer caso → gate (+ `--check-scales`) → solo con PASS, `'b_3d_*' --skip-ok`. La explicación de Orlanski para el 110 % a los 30 min queda como hipótesis hasta leer el gate.
+- Menores: `eta_retention` también marca una retención < −0.5. `animate_b`: aviso si el GIF sigue pasando de `--max-mb`, `write_within_budget` probado, `ffmpeg_path` se fija antes de crear el writer, `--check-scales` (fracción de píxeles saturados por panel; en la corrida corta < 0.7 %). La prueba de la corrida FAILED verifica el mensaje.
+- TDD: RED 5 fallos (`run_campaign`) y 10 fallos (gate, flag negativo, presupuesto del GIF, saturación) → GREEN; suite completa 181 PASS. No se corrió MITgcm.

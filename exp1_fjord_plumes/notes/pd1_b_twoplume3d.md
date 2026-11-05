@@ -102,14 +102,14 @@ Implementado en `analysis/b_checks.py::eta_retention(run_dir)` (pruebas en `test
   - `retained_cum` = η̄(3 h)/η_atrapado(3 h). Es informativa, porque incluye el arranque, cuando la salida todavía no llega a la OB.
   - `retained_last_hour` = [η̄(3 h) − η̄(2 h)] / (Q_total · 1 h / A).
 
-**Umbral: se marca la corrida (flag) si `retained_last_hour` > X = 50 %**, es decir, si en la última hora la OB deja pasar menos de la mitad de la descarga. Justificación:
+**Umbral: se marca la corrida (flag) si |`retained_last_hour`| > X = 50 %**, es decir, si en la última hora la OB deja pasar menos de la mitad de la descarga (> +0.5) o drena más de 1.5 veces la descarga (< −0.5; corrección de la revisión). Justificación:
 1. Lo que mide es la salud de la OB, no la física de la pluma. Aun con retención total, η̄ = 0.19 m es el 0.06 % de H. La desviación espacial de η es de 0.25 mm (casi uniforme), así que su efecto sobre la pluma es nulo. La señal es muy sensible: una velocidad media en la OB de solo 6e-5 m/s (20 m³/s en 1180 m × 300 m) decide el balance.
 2. En (a) la retención acumulada fue 32 % a las 2 h y bajaba, con la OB funcionando.
 3. Un factor 2 (la OB evacua menos de la mitad cuando ya debería estar en régimen) es una falla clara de la OB que no depende de ningún caso en particular. Por eso no se ajusta a una sola corrida.
 
 Un caso marcado **no se descarta automáticamente**: se revisan su serie de η̄ (monitor cada 600 s, `dynstat_eta_mean`) y el transporte en la OB, y se compara su derretimiento con los casos vecinos. Cualquier diferencia se clasifica, probablemente como (c), elección numérica de la OB.
 
-**Aviso de las corridas cortas (30 min).** Con dt = 1 s, η̄ = 0.96, 1.70 y 2.14 cm a los 10, 20 y 30 min frente a 1.03, 2.05 y 3.08 cm atrapados: retención acumulada del 69 %, y la OB empieza a evacuar. Con **dt = 2 s**, η̄ = 0.99, 1.90 y **3.40 cm**: 110 % a los 30 min. Entre los 20 y 30 min la OB *metió* agua (≈ +0.5 cm más que la descarga). El derretimiento total no cambió (0.06 %), y la salida baroclínica aún no llega a la OB (~400 m a los 30 min). Es transitorio de la OB de Orlanski, probablemente por su dependencia de dt (la velocidad de fase se recorta a CMAX·dx/dt, `CMAX = 0.45`). No se ha investigado más (no se permiten corridas mientras corre conv_dx2p5). **Sugerencia para el controlador:** al terminar el primer caso de la campaña (~11 min), correr `eta_retention` sobre él antes de dejar seguir la serie, o vigilar `dynstat_eta_mean` en `STDOUT.0000`. Si `retained_last_hour` > 50 % de forma sistemática, avisar a Esteban: el arreglo sería de la OB (por ejemplo, prescribir el transporte barotrópico de salida), no de la física.
+**Aviso de las corridas cortas (30 min).** Con dt = 1 s, η̄ = 0.96, 1.70 y 2.14 cm a los 10, 20 y 30 min frente a 1.03, 2.05 y 3.08 cm atrapados: retención acumulada del 69 %, y la OB empieza a evacuar. Con **dt = 2 s**, η̄ = 0.99, 1.90 y **3.40 cm**: 110 % a los 30 min. Entre los 20 y 30 min la OB *metió* agua (≈ +0.5 cm más que la descarga). El derretimiento total no cambió (0.06 %), y la salida baroclínica aún no llega a la OB (~400 m a los 30 min). **Hipótesis (sin verificar hasta leer el gate del primer caso):** es un transitorio de la OB de Orlanski que depende de dt (la velocidad de fase se recorta a CMAX·dx/dt, `CMAX = 0.45`). No se ha investigado más (no se permiten corridas mientras corre conv_dx2p5). Por eso la campaña lleva un gate después del primer caso (§7, fallo R30). Si el gate falla en (i), se avisa a Esteban: el arreglo sería de la OB (por ejemplo, prescribir el transporte barotrópico de salida), no de la física.
 
 ## 7. Preparación de la campaña (R29)
 
@@ -123,13 +123,33 @@ Un caso marcado **no se descarta automáticamente**: se revisan su serie de η̄
   - Se usa la anomalía porque a −155 m la pluma solo enfría ~0.2 °C, invisible en una escala de −1.6 a 4.1 °C.
   - Escalas fijas: w ±1.2 m/s; ΔT ±4 °C en (b) y ±0.2 °C en (c).
   - Probado con la corrida corta, que solo tiene 2 cuadros (0 y 30 min): ~25 KB por cuadro a 80 dpi, así que 90 cuadros dan ~2–3 MB, por debajo del límite de 8 MB. Si se pasa, el script duplica el paso entre cuadros. MP4 opcional con `--mp4` (ffmpeg).
-- **Comando de la campaña** (lo lanza el controlador cuando termine conv_dx2p5 y `pgrep` esté vacío):
+- **Procedimiento de la campaña en dos pasos (fallo R30).** Lo lanza el controlador cuando termine conv_dx2p5 y `pgrep -fl "mpirun|mitgcmuv"` esté vacío.
 
+  **Paso 1: solo el primer caso** (~11 min):
   ```
-  cd /Users/estebancruz/Phd_project/portfolio && OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 /opt/anaconda3/envs/pyocean/bin/python exp1_fjord_plumes/scripts/run_campaign.py --config b_twoplume3d --cases 'b_3d_*' --np 5 > /Volumes/LaCie/portfolio_runs/exp1/campaign_b.log 2>&1
+  cd /Users/estebancruz/Phd_project/portfolio && OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 /opt/anaconda3/envs/pyocean/bin/python exp1_fjord_plumes/scripts/run_campaign.py --config b_twoplume3d --cases b_3d_twolayer_x0_40 --np 5 > /Volumes/LaCie/portfolio_runs/exp1/campaign_b_first.log 2>&1
   ```
 
-  Esperado: 14 casos en serie, ~10.6 min cada uno (≈ 2.5 h), todos `OK`; sale con código 1 si alguno no lo está.
+  **Paso 2: gate** (sin MITgcm, segundos):
+  ```
+  /opt/anaconda3/envs/pyocean/bin/python exp1_fjord_plumes/scripts/b_gate.py /Volumes/LaCie/portfolio_runs/exp1/b_3d_twolayer_x0_40
+  /opt/anaconda3/envs/pyocean/bin/python exp1_fjord_plumes/analysis/animate_b.py /Volumes/LaCie/portfolio_runs/exp1/b_3d_twolayer_x0_40 --check-scales
+  ```
+
+  **Criterio de PASS** (`b_gate.py` sale con 0):
+  - (i) |`retained_last_hour`| ≤ 0.5 a las 3 h (§6);
+  - (ii) en la iteración 900 (30 min), `icefrontDiag` y las instantáneas THETA, SALT, UVEL, VVEL y ETAN del caso son **idénticas byte a byte** a `icefrontDiag` y a los volcados T, S, U, V y Eta de la corrida corta de referencia `b_3d_twolayer_x0_40_short30m_dt2` (mismas entradas y binario, hecha antes de R29). Eso prueba que los diagnósticos de animación no cambiaron la física.
+
+  Cualquier diferencia o archivo faltante es FAIL, con la diferencia máxima impresa. Si hay FAIL: **parar** y avisar a Esteban.
+
+  `--check-scales` no decide PASS/FAIL. Si un panel tiene más de ~1 % de píxeles saturados en promedio, conviene ampliar `W_LIM`/`DT_LIM` (igual para todos los casos) antes de hacer los GIF.
+
+  **Paso 3, solo si hay PASS: los 13 casos restantes** (el primero se salta porque ya está OK, igual que la compilación si está al día):
+  ```
+  cd /Users/estebancruz/Phd_project/portfolio && OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 /opt/anaconda3/envs/pyocean/bin/python exp1_fjord_plumes/scripts/run_campaign.py --config b_twoplume3d --cases 'b_3d_*' --np 5 --skip-ok > /Volumes/LaCie/portfolio_runs/exp1/campaign_b.log 2>&1
+  ```
+  Esperado: 13 casos × ~10.6 min ≈ 2.3 h, todos `OK`.
+
 - Después, por caso:
   - `python -c "from exp1_fjord_plumes.analysis.b_checks import eta_retention; print(eta_retention('<run_dir>'))"`
   - `python exp1_fjord_plumes/analysis/animate_b.py /Volumes/LaCie/portfolio_runs/exp1/<case>`

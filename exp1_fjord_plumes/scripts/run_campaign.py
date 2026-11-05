@@ -18,6 +18,14 @@ time, so the campaign refuses to start if ``pgrep -fl "mpirun|mitgcmuv"``
 finds anything, and stops if a run leaves a process behind. Before running a
 case, SIZE.h (Nx, Ny, Nr) is checked against the generated grid.
 
+``--skip-ok`` resumes a campaign (R30: run the first case, gate it with
+``b_gate.py``, then the rest): a case whose run directory already holds a
+run_status.json with state OK (and last_iter >= n_timesteps) is not run again,
+provided its recorded deltaT/endTime equal the ones requested (otherwise the
+campaign refuses to start), and the build is skipped when ``mitgcmuv`` is newer
+than every file in ``config/<cfg>/code`` and its Makefile matches the MPI
+choice (``-DALLOW_USE_MPI`` iff N > 1).
+
 ``--end-time`` overrides ``endTime`` (e.g. 7200 for the timed 2 h short run of
 Task 4; nTimeSteps is derived from it by make_case). A FAILED case is reported
 and the series continues; the exit code is 1 if any case is not OK.
@@ -98,6 +106,37 @@ def check_size(case_dir: Path, size_h: Path) -> None:
         raise RuntimeError(f"{size_h} does not match {case_dir}: " + "; ".join(bad))
 
 
+SKIP_KEYS = ("deltaT", "endTime")  # must match for --skip-ok to reuse an OK run
+
+
+def finished_ok(run_dir: Path) -> bool:
+    """True if run_dir/run_status.json says OK and the last time step was reached."""
+    f = Path(run_dir) / "run_status.json"
+    try:
+        st = json.loads(f.read_text())
+    except (OSError, json.JSONDecodeError):
+        return False
+    return st.get("state") == "OK" and st.get("last_iter", -1) >= st.get("n_timesteps", 1 << 62)
+
+
+def _requested(name: str, overrides: dict | None, cases_file: Path | None) -> dict:
+    spec = load_cases(cases_file)
+    case = spec["cases"][name]
+    p = {**spec["configs"][case["config"]], **case, **(overrides or {})}
+    return {k: p[k] for k in SKIP_KEYS}
+
+
+def build_up_to_date(cfg_dir: Path, build_dir: Path, mpi: bool) -> bool:
+    """mitgcmuv newer than every file in cfg_dir/code, and built with/without MPI as asked."""
+    exe, mk = Path(build_dir) / "mitgcmuv", Path(build_dir) / "Makefile"
+    if not (exe.exists() and mk.exists()):
+        return False
+    if ("-DALLOW_USE_MPI" in mk.read_text()) != mpi:
+        return False
+    newest = max(f.stat().st_mtime for f in (Path(cfg_dir) / "code").iterdir() if f.is_file())
+    return exe.stat().st_mtime > newest
+
+
 def _sh(cmd: list) -> int:
     env = {**os.environ, **THREAD_ENV}
     return subprocess.run([str(c) for c in cmd], env=env).returncode
@@ -107,7 +146,7 @@ def run_campaign(config: str, pattern: str, np_: int, *,
                  runs_root: Path = RUNS_ROOT, build_root: Path = BUILD_ROOT,
                  cases_file: Path | None = None, overrides: dict | None = None,
                  run_suffix: str = "", sh: Callable[[list], int] = _sh,
-                 pgrep: Callable[[], str] | None = None) -> dict[str, str]:
+                 pgrep: Callable[[], str] | None = None, skip_ok: bool = False) -> dict[str, str]:
     """Build ``config`` once, then generate and run each selected case in series.
 
     Returns {case: state} with state from run_status.json (OK / FAILED) or
@@ -123,12 +162,32 @@ def run_campaign(config: str, pattern: str, np_: int, *,
                            + " | ".join(busy))
     cfg_dir = PKG / "config" / config
     build_dir = Path(build_root) / config
-    cmd = [BUILD_SH, cfg_dir, build_dir] + (["--mpi"] if np_ > 1 else [])
-    if sh(cmd) != 0:
-        raise RuntimeError(f"build of {config} failed")
+    done: set[str] = set()
+    if skip_ok:
+        for name in names:
+            run_dir = Path(runs_root) / f"{name}{run_suffix}"
+            if not finished_ok(run_dir):
+                continue
+            want = _requested(name, overrides, cases_file)
+            have = json.loads((run_dir / "input" / "case.json").read_text())["params"]
+            bad = [f"{k}: run has {have.get(k)}, requested {want[k]}" for k in SKIP_KEYS
+                   if have.get(k) != want[k]]
+            if bad:
+                raise RuntimeError(f"--skip-ok: {run_dir} is OK but was run with other "
+                                   "parameters (" + "; ".join(bad) + "); move it away first")
+            done.add(name)
+    todo = [n for n in names if n not in done]
+    if todo and not (skip_ok and build_up_to_date(cfg_dir, build_dir, np_ > 1)):
+        cmd = [BUILD_SH, cfg_dir, build_dir] + (["--mpi"] if np_ > 1 else [])
+        if sh(cmd) != 0:
+            raise RuntimeError(f"build of {config} failed")
     results: dict[str, str] = {}
     for name in names:
         run_dir = Path(runs_root) / f"{name}{run_suffix}"
+        if name in done:
+            results[name] = "OK"
+            print(f"[run_campaign] {name}: already OK in {run_dir}, skipped (--skip-ok)", flush=True)
+            continue
         inp = make_case(name, run_dir / "input", cases_file=cases_file, overrides=overrides)
         check_size(inp, cfg_dir / "code" / "SIZE.h")
         print(f"[run_campaign] {name}: running in {run_dir}", flush=True)
@@ -153,13 +212,16 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--runs-root", type=Path, default=RUNS_ROOT)
     ap.add_argument("--build-root", type=Path, default=BUILD_ROOT)
     ap.add_argument("--dry-run", action="store_true", help="list the cases and exit")
+    ap.add_argument("--skip-ok", action="store_true",
+                    help="do not rerun cases already OK (same deltaT/endTime); skip an up-to-date build")
     a = ap.parse_args(argv)
     if a.dry_run:
         print("\n".join(select_cases(a.config, a.cases)))
         return 0
     ov = {"endTime": a.end_time} if a.end_time is not None else None
     res = run_campaign(a.config, a.cases, a.np_, runs_root=a.runs_root,
-                       build_root=a.build_root, overrides=ov, run_suffix=a.run_suffix)
+                       build_root=a.build_root, overrides=ov, run_suffix=a.run_suffix,
+                       skip_ok=a.skip_ok)
     print(json.dumps(res, indent=2))
     return 0 if all(s == "OK" for s in res.values()) else 1
 
