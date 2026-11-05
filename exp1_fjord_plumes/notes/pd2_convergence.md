@@ -170,3 +170,19 @@ $P $S --config sens_line2d --cases 'sens_*' --np 1
 $P $S --config conv_dx2p5 --cases conv_dx2p5 --np 1 --end-time 3600 --run-suffix _probe1h   # sonda; luego PARAR si > 8 h
 $P $S --config conv_dx2p5 --cases conv_dx2p5 --np 1                                         # solo si la sonda da <= 8 h
 ```
+
+## Aclaraciones previas a los resultados (2026-11-05, antes de evaluar)
+
+Al implementar el evaluador mecánico (`analysis/pd2_convergence_eval.py`, Task 5b) aparecieron 11 ambigüedades en los criterios de arriba. Se resuelven aquí (ruling R26) **antes de ver ningún resultado**: `conv_dx10` se usó solo como prueba de humo de los lectores (validez, CFL, dx medio en 0–25 m, estacionariedad); no se vio ni se calculó ninguna clasificación. Las demás corridas no se han evaluado. Los criterios de arriba no cambian; esto solo fija lo que el texto dejaba abierto. El código implementa exactamente lo que sigue.
+
+1. **Monitor de la referencia de producción.** El criterio 2 de validez pide nTimeSteps líneas `cg3d_iters (last)`, pero la producción monitorea cada 200 pasos (`monitorFreq = 600`, 288 líneas). Resolución: para la referencia (y solo para ella) se comprueban las líneas que existen contra **su propio tope** (`cg3dMaxIters` leído del `data` de cada corrida, 500 en producción; 2000 si no se encuentra), con la bandera "muestreado cada 200 pasos, no verificado paso a paso" (`per_step_verified = False`, no invalida). Un tope alcanzado entre líneas muestreadas no es detectable. El CFL se comprueba igual (≤ 0.5) sobre las líneas existentes.
+2. **Validez de `sens_*` y de la referencia.** Las mismas comprobaciones de validez y estacionariedad se aplican a **toda** corrida. Una `sens_*` inválida o una referencia inválida deja la sensibilidad correspondiente como "no disponible o inválida" (no entra en la tabla de convergencia).
+3. **Corrida `conv_*` ausente** (por ejemplo, `conv_dx2p5` detenida por la regla de 8 h): sin clase en la tabla; el evaluador devuelve `INCOMPLETE` e indica qué falta.
+4. **Ancho b.** La observación de que `width` está cuantizado en caras de celda es anterior a R22. Se usa el ancho de R22 (borde interpolado entre centros) con los mismos umbrales (piso 2.5 m).
+5. **P1, "R_ext − R_Q(dx5)".** R_Q(dx5) es el de `conv_dx5`, que también tiene dz = 5 (producción tiene dz = 10); la "parte numérica" mezcla refinamiento en x y en z. Se calcula tal como dice el texto (con `conv_dx5`) y se reporta con esa salvedad.
+6. **ε = 0 y la iteración de Richardson.** ε = 0 es cero exacto en coma flotante; un ε casi nulo da p muy grande o muy pequeño y cae en la regla p ∉ [0.5, 3]. Tolerancia del punto fijo 1e-10 sobre p, máximo 200 iteraciones; sin convergencia es inconcluso.
+7. **Prueba G.** Usa las razones crudas b_gruesa/b_fina (sin el umbral de detección) y los r_eff de la tabla del texto (1.912 para dx10→dx5; 1.881 para dx5→dx2p5), no los calculados de la malla de cada corrida (el dx medio en 0–25 m de cada corrida se guarda en el JSON solo como verificación).
+8. **Signo de "sube/baja/plano".** Diferencia = fina − gruesa en los pasos de convergencia, y sensibilidad − producción en las sensibilidades (dz: `conv_dx5` − producción). Desigualdad estricta en el umbral: |Δ| > umbral.
+9. **Estacionariedad.** Un solo criterio, sobre R_Q (como está escrito); b no se prueba.
+10. **Richardson "concluyente".** Es independiente de las etiquetas de los pasos (puede ser concluyente con un paso "plano"); solo importa dentro de S/P1/P2, que exigen "sube" en ambos pasos. R_ext = 0.75 y 1.25 pertenecen a S (intervalo cerrado).
+11. **σ y umbrales.** σ es la desviación estándar (ddof = 1) de las 12 muestras X(t−1, t); en la prueba de humo en `conv_dx10` σ_RQ ≈ 1e-4 y σ_b ≈ 0.016 m (flujo casi estacionario), de modo que en la práctica deciden los pisos (0.03 para R_Q; 2.5 m para b). Se mantiene tal como se prerregistró.

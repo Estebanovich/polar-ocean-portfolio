@@ -75,7 +75,9 @@ def check_monitor(mon: dict, n_timesteps: int, cap: int = CG3D_CAP, cfl_max: flo
         reasons.append("no CFL monitor lines")
     elif cmax > cfl_max:
         reasons.append(f"CFL {cmax:.3f} > {cfl_max}")
-    return {"valid": not reasons, "reasons": reasons, "per_step_verified": per_step,
+    note = None if per_step else (
+        f"sampled monitor lines ({n} of {n_timesteps} steps), not per-step verified")
+    return {"valid": not reasons, "reasons": reasons, "per_step_verified": per_step, "note": note,
             "n_cg3d_lines": n, "cg3d_max": max(mon["cg3d"], default=None),
             "cg3d_mean": float(np.mean(mon["cg3d"])) if mon["cg3d"] else None, "cfl_max": cmax}
 

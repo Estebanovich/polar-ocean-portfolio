@@ -154,7 +154,7 @@ def test_monitor_cfl_over_limit_is_invalid():
 
 def test_monitor_not_per_step_reference_is_flagged_not_invalid():
     r = ev.check_monitor(ev.parse_monitor(_log(10, skip=4)), 10, require_per_step=False)
-    assert r["valid"] and not r["per_step_verified"]
+    assert r["valid"] and not r["per_step_verified"] and "not per-step verified" in r["note"]
 
 
 # ------------------------------------------------------------------ assembly
