@@ -18,6 +18,10 @@ Values (verified against ``literatura/*.md``):
   at 160 m (Delta rho = 1.1 kg m^-3). The brief's 200 m / 75 m tanh centre and
   width are kept as defaults [verificar: not tabulated in any local paper]; they
   are keyword arguments so campaigns can change them.
+* R11: in config (b) (300 m domain, H2 = 200 m) make_case centres the
+  continuous profile at H - H2 = 100 m depth (same tanh shape, width and layer
+  values), so its lower layer is 200 m thick like the two-layer case. (a) and
+  (c) keep the 200 m centre.
 """
 from __future__ import annotations
 

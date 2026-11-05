@@ -27,10 +27,11 @@ Afterwards every quoted ``*.bin`` name found in a rendered file must exist in
 
 Conventions: front column i = front_i (0) holds the ice wall on its western
 face; x increases away from it. Flat bottom at -H. Discharge enters the bottom
-wet cell(s) of the front column (a, b); for (c) a source Q0 at the bottom
-and a sink of the same size at the plume neutral level (point_plume, half
-cone) are written to addmass.bin (net zero; the entrained flux is internal to
-the parameterisation, see report). Wind and shelf forcing are parameters only
+wet cell(s) of the front column (a, b, c). For (c) this is only a placeholder
+(``plume_representation`` = "bottom_source_placeholder" in case.json); Task 7
+replaces it by entrainment sinks and outflow sources whose net is Q0.
+Optional case key ``land_columns: [[j, i], ...]`` makes columns land; hFacC for
+the discharge checks is derived from the generated topography. Wind and shelf forcing are parameters only
 (case.json), not files.
 """
 from __future__ import annotations
@@ -58,27 +59,15 @@ def load_cases(path: Path | None = None) -> dict:
 
 
 def _profile(strat: str, zc, p):
+    """b_twoplume3d: Sermilik profile centred at H - H2 = 100 m (R11); else 200 m."""
     if strat == "twolayer":
         z_int = p["z_int"] if "z_int" in p else p["H"] - p["H2"]
         return profiles.two_layer(zc, z_int, profiles.T_PW, profiles.S_PW,
                                   profiles.T_AW, profiles.S_AW, p["dz_int"])
     if strat == "sermilik":
-        return profiles.continuous_sermilik(zc)
+        z_c = p["H"] - p["H2"] if "H2" in p else 200.0
+        return profiles.continuous_sermilik(zc, z_c=z_c)
     raise ValueError(f"unknown stratification {strat!r}")
-
-
-def _plume_levels(p, zc, T1d, S1d):
-    """Neutral/detachment level of the (c) point plume (half cone)."""
-    from ..theory.melt import MeltParams
-    from ..theory.plume import LinearEOS, point_plume
-    eos = LinearEOS(rho0=p["rho0"], tAlpha=p["tAlpha"], sBeta=p["sBeta"])
-    zg = np.concatenate([[-p["H"]], zc[::-1]])  # base first, increasing
-    Tg = np.interp(zg, zc[::-1], T1d[::-1])
-    Sg = np.interp(zg, zc[::-1], S1d[::-1])
-    sol = point_plume(zg, Tg, Sg, p["Q0"], p["T0_src"], p["S0_src"], MeltParams(),
-                      "mitgcm", alpha=p["alpha"], eos=eos)
-    z = sol.z_neutral if np.isfinite(sol.z_neutral) else sol.z_detach
-    return float(z), float(sol.z_detach), float(sol.z_neutral)
 
 
 def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
@@ -92,7 +81,6 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     p = {**spec["configs"][cfg], **{k: v for k, v in case.items() if k != "config"}}
     p["case"], p["config"] = name, cfg
     out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
 
     # ---- grid
     dz = p["dz"]
@@ -109,19 +97,18 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     front_i = p["front_i"]
     p.update(nx=nx, ny=ny, nz=nz, nTimeSteps=int(round(p["endTime"] / p["deltaT"])))
 
-    write_bin(out_dir / "delX.bin", dxv)
-    write_bin(out_dir / "delY.bin", dyv)
-    write_bin(out_dir / "delZ.bin", dzv)
-    write_bin(out_dir / "topog.bin", np.full((ny, nx), -p["H"]))
+    depth = np.full((ny, nx), p["H"])
+    for (jl, il) in p.get("land_columns", []):  # optional land columns [j, i]
+        depth[jl, il] = 0.0
+    bins = {"delX.bin": dxv, "delY.bin": dyv, "delZ.bin": dzv, "topog.bin": -depth}
     T1d, S1d = _profile(p["strat"], zc, p)
-    write_bin(out_dir / "T.init.bin", np.broadcast_to(T1d[:, None, None], (nz, ny, nx)))
-    write_bin(out_dir / "S.init.bin", np.broadcast_to(S1d[:, None, None], (nz, ny, nx)))
+    bins["T.init.bin"] = np.broadcast_to(T1d[:, None, None], (nz, ny, nx))
+    bins["S.init.bin"] = np.broadcast_to(S1d[:, None, None], (nz, ny, nx))
     R, length = icefront_fields(nx, ny, nz, dxv, dy, front_i, p["H"])
-    write_bin(out_dir / "R_icefront.bin", R)
-    write_bin(out_dir / "icefrontlength.bin", length)
+    bins["R_icefront.bin"], bins["icefrontlength.bin"] = R, length
 
-    # ---- discharge
-    hFacC = np.ones((nz, ny, nx))
+    # ---- discharge; hFacC (0/1, flat full cells) from the generated bathymetry
+    hFacC = ((np.arange(nz) * dz)[:, None, None] < depth[None]).astype(float)
     rho0, kb = p["rho0"], nz - 1
     info: dict = {}
     if cfg == "a_line2d":
@@ -141,21 +128,13 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
         add = discharge_addmass((nz, ny, nx), cells, Q0, rho0, hFacC=hFacC, front_i=front_i)
         info.update(Q0_total=Q0, source_cells=cells)
     else:
-        add = np.zeros((nz, ny, nx))
-        info.update(Q0_total=p["Q0"], source_cells=[], sink_cells=[])
-        if p["Q0"] > 0:
-            j = ny // 2
-            src = [(kb, j, front_i)]
-            z_sink, z_det, z_neu = _plume_levels(p, zc, T1d, S1d)
-            ksink = int(np.argmin(np.abs(zc - z_sink)))
-            snk = [(ksink, j, front_i)]
-            add = (discharge_addmass((nz, ny, nx), src, p["Q0"], rho0, hFacC=hFacC,
-                                     front_i=front_i)
-                   + discharge_addmass((nz, ny, nx), snk, -p["Q0"], rho0, hFacC=hFacC,
-                                       front_i=front_i, require_bottom=False))
-            info.update(source_cells=src, sink_cells=snk, z_sink=z_sink,
-                        z_detach=z_det, z_neutral=z_neu)
-    write_bin(out_dir / "addmass.bin", add)
+        # R10: placeholder; Task 7 replaces it by entrainment sinks / outflow sources
+        cells = [(kb, ny // 2, front_i)] if p["Q0"] > 0 else []
+        add = (discharge_addmass((nz, ny, nx), cells, p["Q0"], rho0, hFacC=hFacC,
+                                 front_i=front_i) if cells else np.zeros((nz, ny, nx)))
+        info.update(Q0_total=p["Q0"], source_cells=cells,
+                    plume_representation="bottom_source_placeholder")
+    bins["addmass.bin"] = add
 
     # ---- templates
     if template_dir is None:
@@ -163,24 +142,29 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     template_dir = Path(template_dir)
     if not template_dir.is_dir():
         raise FileNotFoundError(f"template dir {template_dir} does not exist")
-    for f in sorted(template_dir.iterdir()):
-        if f.is_file() and not f.name.startswith("."):
-            (out_dir / f.name).write_text(Template(f.read_text()).substitute(p))
+    rendered = {f.name: Template(f.read_text()).substitute(p)
+                for f in sorted(template_dir.iterdir())
+                if f.is_file() and not f.name.startswith(".")}
     missing = []
-    for f in sorted(template_dir.iterdir()):
-        if f.is_file() and not f.name.startswith("."):
-            for line in (out_dir / f.name).read_text().splitlines():
-                if line.lstrip().startswith(("#", "!")):
-                    continue
-                for ref in re.findall(r"'([^']+\.bin)'", line):
-                    if not (out_dir / ref).is_file():
-                        missing.append(f"{f.name}: {ref}")
-    if missing:
+    for fname, text in rendered.items():
+        for line in text.splitlines():
+            if line.lstrip().startswith(("#", "!")):
+                continue
+            for ref in re.findall(r"'([^']+\.bin)'", line):
+                if ref not in bins:
+                    missing.append(f"{fname}: {ref}")
+    if missing:  # nothing has been written yet
         raise RuntimeError("namelists name files that were not written: "
                            + "; ".join(missing))
 
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for fname, arr in bins.items():
+        write_bin(out_dir / fname, arr)
+    for fname, text in rendered.items():
+        (out_dir / fname).write_text(text)
+
     meta = {"params": p, "dx_min": float(dxv.min()), "dx_max": float(dxv.max()),
-            "sum_addmass_kg_s": float(add.sum()), "sum_abs_addmass_kg_s": float(np.abs(add).sum()),
+            "sum_addmass_kg_s": float(add.sum()),
             **info}
     (out_dir / "case.json").write_text(json.dumps(meta, indent=2, default=float))
     return out_dir

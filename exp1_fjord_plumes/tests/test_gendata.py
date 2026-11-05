@@ -7,6 +7,8 @@ import re
 import numpy as np
 import pytest
 
+from pfcommon.mitgcm_io import read_bin
+
 from exp1_fjord_plumes.gendata.grids import icefront_fields, stretched_x
 from exp1_fjord_plumes.gendata.make_case import load_cases, make_case
 from exp1_fjord_plumes.gendata.profiles import continuous_sermilik, two_layer
@@ -130,16 +132,59 @@ def test_cases_yaml_lists_all_cases():
     assert names == exp
 
 
-@pytest.mark.parametrize("name", ["a_line2d_sermilik_q0.03", "c_fjord_all", "c_fjord_wind",
-                                  "b_3d_twolayer_x0_0"])
-def test_make_case_all_configs(tmp_path, name):
+@pytest.mark.parametrize("name", ["a_line2d_sermilik_q0.03", "b_3d_twolayer_x0_0"])
+def test_make_case_other_configs(tmp_path, name):
     tdir = tmp_path / "tmpl"
     _templates(tdir)
     out = make_case(name, tmp_path / "run", template_dir=tdir)
     meta = json.loads((out / "case.json").read_text())
-    if name == "c_fjord_all":
-        # C5: source and sink each equal rho0 Q0 (+-1 %), net zero
-        assert abs(meta["sum_abs_addmass_kg_s"] - 2 * 1027.0 * 100.0) < 0.01 * 2 * 1027.0 * 100.0
-        assert abs(meta["sum_addmass_kg_s"]) < 1e-6
-    if name == "c_fjord_wind":
-        assert meta["sum_abs_addmass_kg_s"] == 0.0
+    assert meta["sum_addmass_kg_s"] > 0
+
+
+def test_c_addmass_is_bottom_source_of_rho0_Q0(tmp_path):
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    out = make_case("c_fjord_plume", tmp_path / "run", template_dir=tdir)
+    meta = json.loads((out / "case.json").read_text())
+    p = meta["params"]
+    shape = (p["nz"], p["ny"], p["nx"])
+    add = read_bin(out / "addmass.bin", shape)
+    assert abs(add.sum() - 1027.0 * 100.0) < 1e-6
+    k, j, i = np.nonzero(add)
+    assert np.all(k == p["nz"] - 1) and np.all(i == p["front_i"])
+    assert meta["plume_representation"] == "bottom_source_placeholder"
+    assert "sink_cells" not in meta
+
+
+def test_make_case_rejects_source_on_land(tmp_path):
+    import yaml
+    spec = load_cases()
+    spec["cases"]["b_land"] = {**spec["cases"]["b_3d_twolayer_single"],
+                               "land_columns": [[60, 0]]}  # (j, i) of the source
+    cf = tmp_path / "cases.yaml"
+    cf.write_text(yaml.safe_dump(spec))
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    with pytest.raises(ValueError, match="land"):
+        make_case("b_land", tmp_path / "run", template_dir=tdir, cases_file=cf)
+
+
+def test_b_sermilik_pycnocline_at_lower_layer_top(tmp_path):
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    out = make_case("b_3d_sermilik_single", tmp_path / "run", template_dir=tdir)
+    p = json.loads((out / "case.json").read_text())["params"]
+    T = read_bin(out / "T.init.bin", (p["nz"], p["ny"], p["nx"]))[:, 0, 0]
+    S = read_bin(out / "S.init.bin", (p["nz"], p["ny"], p["nx"]))[:, 0, 0]
+    zc = -(np.arange(p["nz"]) + 0.5) * p["dz"]
+    n2 = _n2(T, S, zc)
+    assert abs(-zc[np.argmax(n2)] - 100.0) <= p["dz"]
+
+
+def test_make_case_writes_nothing_when_file_missing(tmp_path):
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    (tdir / "data.extra").write_text(" foo='nothere.bin',\n")
+    with pytest.raises(RuntimeError):
+        make_case("b_3d_twolayer_single", tmp_path / "run", template_dir=tdir)
+    assert not (tmp_path / "run").exists() or not any((tmp_path / "run").iterdir())
