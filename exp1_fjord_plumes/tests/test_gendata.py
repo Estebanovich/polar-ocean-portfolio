@@ -188,3 +188,63 @@ def test_make_case_writes_nothing_when_file_missing(tmp_path):
     with pytest.raises(RuntimeError):
         make_case("b_3d_twolayer_single", tmp_path / "run", template_dir=tdir)
     assert not (tmp_path / "run").exists() or not any((tmp_path / "run").iterdir())
+
+
+# ---- Task 6: config (b) walls, x0 = 0 and _single definitions -------------
+
+def _b_case(tmp_path, name):
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    out = make_case(name, tmp_path / "run", template_dir=tdir)
+    meta = json.loads((out / "case.json").read_text())
+    p = meta["params"]
+    return out, meta, p, (p["nz"], p["ny"], p["nx"])
+
+
+def test_b_cross_fjord_walls_and_closed_x_wrap(tmp_path):
+    """Land rows j = 0 and j = Ny-1 (side walls) and land column i = Nx-1."""
+    out, meta, p, shape = _b_case(tmp_path, "b_3d_twolayer_x0_40")
+    depth = -read_bin(out / "topog.bin", (p["ny"], p["nx"]))
+    assert np.all(depth[0, :] == 0) and np.all(depth[-1, :] == 0)
+    assert np.all(depth[:, -1] == 0)
+    assert np.all(depth[1:-1, :-1] == p["H"])
+
+
+def test_b_land_rows_cols_reject_source_on_wall(tmp_path):
+    import yaml
+    spec = load_cases()
+    spec["cases"]["b_wall"] = {**spec["cases"]["b_3d_twolayer_single"],
+                               "land_j_rows": [60]}  # wall through the source
+    cf = tmp_path / "cases.yaml"
+    cf.write_text(yaml.safe_dump(spec))
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    with pytest.raises(ValueError, match="land"):
+        make_case("b_wall", tmp_path / "run", template_dir=tdir, cases_file=cf)
+
+
+def test_b_x0_0_is_one_cell_of_2Q0(tmp_path):
+    out, meta, p, shape = _b_case(tmp_path, "b_3d_twolayer_x0_0")
+    add = read_bin(out / "addmass.bin", shape)
+    assert np.count_nonzero(add) == 1
+    assert abs(add.max() - 1027.0 * 2 * p["Q0"]) < 1e-9
+    assert meta["x0_actual"] == 0.0 and meta["Q0_total"] == 2 * p["Q0"]
+
+
+def test_b_single_is_one_source_of_Q0(tmp_path):
+    out, meta, p, shape = _b_case(tmp_path, "b_3d_twolayer_single")
+    add = read_bin(out / "addmass.bin", shape)
+    assert np.count_nonzero(add) == 1
+    assert abs(add.sum() - 1027.0 * p["Q0"]) < 1e-9
+    assert meta["Q0_total"] == p["Q0"] and meta["x0_actual"] is None
+
+
+def test_b_widest_separation_far_from_side_walls(tmp_path):
+    """x0 = 320 m: both sources >= 100 m from the wet-side faces of the walls."""
+    out, meta, p, shape = _b_case(tmp_path, "b_3d_twolayer_x0_320")
+    assert meta["x0_actual"] == 320.0
+    dy = p["dy"]
+    y_wall_s, y_wall_n = 1 * dy, (p["ny"] - 1) * dy   # faces of rows 0 and Ny-1
+    for (_, j, _) in meta["source_cells"]:
+        yc = (j + 0.5) * dy
+        assert yc - y_wall_s >= 100.0 and y_wall_n - yc >= 100.0

@@ -1,0 +1,6 @@
+# Exp. 1 (b) b_twoplume3d -- case ${case}
+ &PACKAGES
+ useOBCS=.TRUE.,
+ useICEFRONT=.TRUE.,
+ useDiagnostics=.TRUE.,
+ &

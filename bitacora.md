@@ -64,3 +64,12 @@
 
 - `exp1_fjord_plumes/analysis/plume_diag.py`: `melt_rate_m_per_s` (−ICFfwFlx/ρ_i, positivo = derretimiento; 1.0905e-7 m/s = 3.44 m/año), `detach_depth`, `plume_profile` (se niega con `require_ok`; usa snapshots de diagnóstico más los volcados T/S/U/W finales porque no hay snapshot en endTime). Ancho de pluma = de la cara al borde exterior de la racha contigua con w ≥ 10 % de w_max(z); `z_detach` = primer nivel sobre el máximo de w de la columna de la cara donde w < 5 % de su máximo (interpolado, niveles nativos de WVEL).
 - `fig1_plume_validation.py` escrito (C2/C2'/C2'', `known_differences` en `fig1_metrics.json`); probado solo con la corrida corta de 2 h (ventana 1-2 h, salida en scratch): z_detach −186.6 m (teoría −190.6), derretimiento medio bajo el despegue 0.84 m/d (razón 1.07 frente a la teoría en modo mitgcm). Corrida de 2 h no representativa del estado casi estacionario; Steps 3-5 esperan la campaña.
+
+## 2026-11-05 — Task 6 Step 1: configuración (b) `b_twoplume3d` (sin correr)
+
+- `config/b_twoplume3d/{code,input_templates}` a partir de (a): misma física aprobada en PD1 (EOS lineal, icefront por defecto, addMass con selectAddFluid=1, cg3d 500/1e-8, Sciascia 2013, sin deslizamiento, MDS float64 big-endian, useSingleCpuIO, pickups). Cambios: malla 100 × 120 × 30 (10 m isotrópico), VVEL en los diagnósticos, snapshots cada 30 min, icefrontDiag promediado cada 15 min, pChkptFreq 5400 s.
+- Fronteras: paredes laterales = filas de tierra j = 0 y Ny-1 (cierran también el período en y; ancho mojado 1180 m); última columna de tierra y OB_Ieast = -2 (Orlanski + esponja), como en (a). Nuevas claves `land_j_rows` / `land_i_cols` en `make_case` (5 pruebas nuevas; RED 2 fallos → GREEN; suite completa 75 PASS).
+- `cases.yaml` (b): `endTime` 6 h → 3 h (plan, Step 2); dt = 1 s provisional.
+- x0 = 0: las dos fuentes caen en la misma celda (una fuente de 2·Q0); `_single`: una fuente de Q0 en j = 60. Con x0 = 320 m las fuentes quedan a ≥ 425 m de las paredes.
+- SIZE.h: sNx 100, sNy 24, nPy 5 (5 procesos en y). Compilación MPI OK en `/Volumes/ESTEBAN_MIT/portfolio_builds/exp1/b_twoplume3d/` (74 s). No se corrió MITgcm (campaña (a) en curso).
+- Costo a priori (escalado de (a), 2.8e-6 s por celda·paso): 3.9e9 celda·pasos por caso ≈ 3.0 h serial, ≈ 0.6–0.9 h con 5 procesos → 14 casos ≈ 8.5–12 h (incertidumbre ×2 por cg3d en 3D). La corrida corta de Step 2 (30 min) debería tardar ≈ 6–9 min.

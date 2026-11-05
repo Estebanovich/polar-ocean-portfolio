@@ -30,7 +30,9 @@ face; x increases away from it. Flat bottom at -H. Discharge enters the bottom
 wet cell(s) of the front column (a, b, c). For (c) this is only a placeholder
 (``plume_representation`` = "bottom_source_placeholder" in case.json); Task 7
 replaces it by entrainment sinks and outflow sources whose net is Q0.
-Optional case key ``land_columns: [[j, i], ...]`` makes columns land; hFacC for
+Optional case key ``land_columns: [[j, i], ...]`` makes columns land, and
+``land_j_rows: [j, ...]`` / ``land_i_cols: [i, ...]`` make whole rows (all i)
+or whole columns (all j) land, e.g. the (b) side walls; hFacC for
 the discharge checks is derived from the generated topography. Wind and shelf forcing are parameters only
 (case.json), not files.
 """
@@ -106,6 +108,10 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     depth = np.full((ny, nx), p["H"])
     for (jl, il) in p.get("land_columns", []):  # optional land columns [j, i]
         depth[jl, il] = 0.0
+    for jl in p.get("land_j_rows", []):  # whole rows y = j are land (side walls)
+        depth[jl, :] = 0.0
+    for il in p.get("land_i_cols", []):  # whole columns x = i are land
+        depth[:, il] = 0.0
     bins = {"delX.bin": dxv, "delY.bin": dyv, "delZ.bin": dzv, "topog.bin": -depth}
     T1d, S1d = _profile(p["strat"], zc, p)
     bins["T.init.bin"] = np.broadcast_to(T1d[:, None, None], (nz, ny, nx))

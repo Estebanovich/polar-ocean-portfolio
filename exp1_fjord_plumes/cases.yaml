@@ -51,8 +51,12 @@ configs:
     Q0: 10.0
     T0_src: 0.0
     S0_src: 0.0
-    deltaT: 1.0
-    endTime: 21600.0
+    land_j_rows: [0, -1]  # Task 6: cross-fjord side walls (rows j = 0, Ny-1 are land);
+                          # they also close the periodic y-wrap. Wet width 118 dy = 1180 m.
+    land_i_cols: [-1]     # Task 6: as (a), last column is land so the periodic x-wrap
+                          # closes at the ice face (OB at Nx-1, data.obcs OB_Ieast=-2)
+    deltaT: 1.0           # provisional; Task 6 Step 2 (timed short run) sets it
+    endTime: 10800.0      # Task 6: 3 h of model time per case (plan Step 2; was 6 h)
   c_fjord3d:
     nx: 200
     ny: 30
