@@ -1,0 +1,101 @@
+# Exp. 1 case registry, read by gendata/make_case.py.
+# configs: base geometry/physics per MITgcm configuration (key = template dir
+#   name under config/<cfg>/input_templates/). Units: m, s, degC, psu, kg m^-3.
+# cases: one entry per run; keys override the config values.
+#   strat: twolayer | sermilik (profiles.py)      discharge: line (a) | points (b) | point (c)
+#   q0 [m^2 s^-1] line source; Q0 [m^3 s^-1] per source; x0 [m] nominal separation
+#   (b only; null = single plume). nsrc: number of sources.
+#   forcing (c only): plume Q0; wind tau [N m^-2] for hours; shelf pycnocline
+#   oscillation amplitude [m] and period [days]. Time-dependent forcing files
+#   are NOT written by gendata (parameters go to case.json for Task 7).
+# deltaT/endTime are provisional; Tasks 4/6/7 tune them (and note it).
+configs:
+  a_line2d:
+    L: 20000.0
+    dx0: 5.0
+    dxmax: 200.0
+    r: 1.03
+    H: 500.0
+    dz: 10.0
+    ny: 1
+    dy: 10.0
+    f0: 0.0
+    front_i: 0
+    rho0: 1027.0
+    tAlpha: 3.87e-5
+    sBeta: 7.86e-4
+    z_int: 200.0        # twolayer interface depth [m]
+    dz_int: 10.0        # tanh scale of the interface [m]
+    T0_src: 0.0
+    S0_src: 0.0
+    deltaT: 2.0
+    endTime: 21600.0
+  b_twoplume3d:
+    nx: 100
+    ny: 120
+    dx: 10.0
+    dy: 10.0
+    dz: 10.0
+    H: 300.0
+    f0: 0.0
+    front_i: 0
+    rho0: 1027.0
+    tAlpha: 3.87e-5
+    sBeta: 7.86e-4
+    H2: 200.0           # lower-layer thickness; z_int = H - H2 = 100 m
+    dz_int: 10.0
+    alpha: 0.1
+    x0c: 57.14          # H2 alpha / 0.35 [m]
+    Q0: 10.0
+    T0_src: 0.0
+    S0_src: 0.0
+    deltaT: 1.0
+    endTime: 21600.0
+  c_fjord3d:
+    nx: 200
+    ny: 30
+    dx: 200.0
+    dy: 200.0
+    dz: 10.0
+    H: 500.0
+    f0: 1.37e-4
+    front_i: 0
+    rho0: 1027.0
+    tAlpha: 3.87e-5
+    sBeta: 7.86e-4
+    strat: sermilik
+    Q0: 100.0
+    T0_src: 0.0
+    S0_src: 0.0
+    alpha: 0.1
+    wind_tau: 0.0
+    wind_hours: 12.0
+    shelf_amp: 0.0
+    shelf_period_days: 6.0
+    deltaT: 60.0
+    endTime: 1728000.0
+cases:
+  a_line2d_twolayer_q0.01: {config: a_line2d, strat: twolayer, discharge: line, q0: 0.01}
+  a_line2d_twolayer_q0.03: {config: a_line2d, strat: twolayer, discharge: line, q0: 0.03}
+  a_line2d_twolayer_q0.1: {config: a_line2d, strat: twolayer, discharge: line, q0: 0.1}
+  a_line2d_sermilik_q0.01: {config: a_line2d, strat: sermilik, discharge: line, q0: 0.01}
+  a_line2d_sermilik_q0.03: {config: a_line2d, strat: sermilik, discharge: line, q0: 0.03}
+  a_line2d_sermilik_q0.1: {config: a_line2d, strat: sermilik, discharge: line, q0: 0.1}
+  b_3d_twolayer_x0_0: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 2, x0: 0.0}
+  b_3d_twolayer_x0_20: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 2, x0: 20.0}
+  b_3d_twolayer_x0_40: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 2, x0: 40.0}
+  b_3d_twolayer_x0_80: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 2, x0: 80.0}
+  b_3d_twolayer_x0_160: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 2, x0: 160.0}
+  b_3d_twolayer_x0_320: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 2, x0: 320.0}
+  b_3d_twolayer_single: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 1, x0: null}
+  b_3d_sermilik_x0_0: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 2, x0: 0.0}
+  b_3d_sermilik_x0_20: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 2, x0: 20.0}
+  b_3d_sermilik_x0_40: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 2, x0: 40.0}
+  b_3d_sermilik_x0_80: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 2, x0: 80.0}
+  b_3d_sermilik_x0_160: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 2, x0: 160.0}
+  b_3d_sermilik_x0_320: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 2, x0: 320.0}
+  b_3d_sermilik_single: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 1, x0: null}
+  c_fjord_plume: {config: c_fjord3d, discharge: point}
+  c_fjord_wind: {config: c_fjord3d, discharge: point, wind_tau: 0.2, Q0: 0.0}
+  c_fjord_shelf: {config: c_fjord3d, discharge: point, shelf_amp: 30.0, Q0: 0.0}
+  c_fjord_all: {config: c_fjord3d, discharge: point, wind_tau: 0.2, shelf_amp: 30.0}

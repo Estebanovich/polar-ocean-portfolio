@@ -1,0 +1,145 @@
+"""Tests for the Exp. 1 input generators (Task 3)."""
+from __future__ import annotations
+
+import json
+import re
+
+import numpy as np
+import pytest
+
+from exp1_fjord_plumes.gendata.grids import icefront_fields, stretched_x
+from exp1_fjord_plumes.gendata.make_case import load_cases, make_case
+from exp1_fjord_plumes.gendata.profiles import continuous_sermilik, two_layer
+from exp1_fjord_plumes.gendata.sources import discharge_addmass, place_sources
+from exp1_fjord_plumes.theory.plume import LinearEOS
+
+Z = -(np.arange(60) + 0.5) * 10.0  # 600 m, dz = 10
+
+
+def _n2(T, S, z):
+    eos = LinearEOS()
+    rho = eos.rho(T, S)
+    return -eos.g / eos.rho0 * np.gradient(rho, z)
+
+
+def test_profiles_statically_stable():
+    for T, S in (two_layer(Z, 200.0, -1.5, 32.9, 4.0, 34.6, 10.0),
+                 continuous_sermilik(Z)):
+        assert np.all(_n2(T, S, Z) >= 0.0)
+
+
+def test_two_layer_interface_depth():
+    z_int, dz = 200.0, 10.0
+    T, S = two_layer(Z, z_int, -1.5, 32.9, 4.0, 34.6, 5.0)
+    n2 = _n2(T, S, Z)
+    assert abs(-Z[np.argmax(n2)] - z_int) <= dz
+
+
+def test_addmass_sums_to_discharge():
+    shape = (5, 4, 6)
+    hf = np.ones(shape)
+    cells = [(4, 1, 0), (4, 2, 0)]
+    a = discharge_addmass(shape, cells, 10.0, 1027.0, hFacC=hf, front_i=0)
+    assert abs(a.sum() - 1027.0 * 10.0) < 1e-9
+    assert a[4, 1, 0] == a[4, 2, 0]
+
+
+def test_addmass_rejects_land_and_nonadjacent():
+    shape = (5, 4, 6)
+    hf = np.ones(shape)
+    hf[4, 0, 0] = 0.0
+    kw = dict(hFacC=hf, front_i=0)
+    with pytest.raises(ValueError, match=re.escape("(4, 0, 0)")):
+        discharge_addmass(shape, [(4, 0, 0)], 1.0, 1027.0, **kw)
+    with pytest.raises(ValueError, match=re.escape("(4, 1, 3)")):
+        discharge_addmass(shape, [(4, 1, 3)], 1.0, 1027.0, **kw)
+    with pytest.raises(ValueError, match=re.escape("(2, 1, 0)")):  # above bottom
+        discharge_addmass(shape, [(2, 1, 0)], 1.0, 1027.0, **kw)
+
+
+def test_place_sources_reports_actual_separation():
+    yc = (np.arange(120) + 0.5) * 10.0
+    js, x0 = place_sources(yc, 25.0, 10.0)
+    assert x0 in (20.0, 30.0)
+    assert yc[js[1]] - yc[js[0]] == x0
+    assert place_sources(yc, 40.0, 10.0)[1] == 40.0
+    assert place_sources(yc, 0.0, 10.0)[0][0] == place_sources(yc, 0.0, 10.0)[0][1]
+
+
+def test_stretched_x_geometric_then_capped():
+    dx = stretched_x(5.0, 200.0, 1.03, 20000.0)
+    assert dx[0] == 5.0 and dx.max() == 200.0
+    assert np.allclose(dx[1] / dx[0], 1.03) and dx.sum() >= 20000.0
+
+
+def test_icefront_length_definition():
+    dx = stretched_x(5.0, 200.0, 1.03, 2000.0)
+    R, length = icefront_fields(len(dx), 3, 50, dx, 10.0, 0, 500.0)
+    assert length[0, 0] == 1.0 / dx[0]
+    assert np.all(R[:, 0] == 500.0) and np.all(R[:, 1:] == 0.0)
+    assert np.all(length[:, 1:] == 0.0)
+
+
+def _templates(d):
+    d.mkdir()
+    (d / "data").write_text(
+        "&PARM01\n tAlpha=${tAlpha}, deltaT=${deltaT},\n nTimeSteps=${nTimeSteps},\n"
+        " hydrogThetaFile='T.init.bin',\n hydrogSaltFile='S.init.bin',\n&\n"
+        "&PARM05\n delXfile='delX.bin', delYfile='delY.bin', delRfile='delZ.bin',\n"
+        " bathyFile='topog.bin',\n&\n")
+    (d / "data.icefront").write_text(
+        "&ICEFRONT_PARM01\n ICEFRONTdepthFile='R_icefront.bin',\n"
+        " ICEFRONTlengthFile='icefrontlength.bin',\n&\n")
+    (d / "data.addmass").write_text(" addMassFile='addmass.bin',\n")
+
+
+def test_make_case_writes_case_json(tmp_path):
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    out = make_case("b_3d_twolayer_x0_40", tmp_path / "run", template_dir=tdir)
+    meta = json.loads((out / "case.json").read_text())
+    assert meta["x0_actual"] == 40.0
+    assert abs(meta["sum_addmass_kg_s"] - 1027.0 * 20.0) < 1e-6
+    for f in re.findall(r"'([^']+\.bin)'", "".join(p.read_text() for p in out.iterdir()
+                                                   if p.name.startswith("data"))):
+        assert (out / f).is_file()
+    assert "deltaT=1.0" in (out / "data").read_text()
+
+
+def test_make_case_missing_file_raises(tmp_path):
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    (tdir / "data.extra").write_text(" foo='nothere.bin',\n")
+    with pytest.raises(RuntimeError, match="nothere.bin"):
+        make_case("b_3d_twolayer_single", tmp_path / "run", template_dir=tdir)
+
+
+def test_make_case_x0_aligned_to_grid(tmp_path):
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    out = make_case("b_3d_sermilik_x0_80", tmp_path / "run", template_dir=tdir)
+    assert json.loads((out / "case.json").read_text())["x0_actual"] == 80.0
+
+
+def test_cases_yaml_lists_all_cases():
+    names = set(load_cases()["cases"])
+    exp = {f"a_line2d_{s}_q{q}" for s in ("twolayer", "sermilik") for q in ("0.01", "0.03", "0.1")}
+    exp |= {f"b_3d_{s}_x0_{x}" for s in ("twolayer", "sermilik") for x in (0, 20, 40, 80, 160, 320)}
+    exp |= {f"b_3d_{s}_single" for s in ("twolayer", "sermilik")}
+    exp |= {f"c_fjord_{k}" for k in ("plume", "wind", "shelf", "all")}
+    assert names == exp
+
+
+@pytest.mark.parametrize("name", ["a_line2d_sermilik_q0.03", "c_fjord_all", "c_fjord_wind",
+                                  "b_3d_twolayer_x0_0"])
+def test_make_case_all_configs(tmp_path, name):
+    tdir = tmp_path / "tmpl"
+    _templates(tdir)
+    out = make_case(name, tmp_path / "run", template_dir=tdir)
+    meta = json.loads((out / "case.json").read_text())
+    if name == "c_fjord_all":
+        # C5: source and sink each equal rho0 Q0 (+-1 %), net zero
+        assert abs(meta["sum_abs_addmass_kg_s"] - 2 * 1027.0 * 100.0) < 0.01 * 2 * 1027.0 * 100.0
+        assert abs(meta["sum_addmass_kg_s"]) < 1e-6
+    if name == "c_fjord_wind":
+        assert meta["sum_abs_addmass_kg_s"] == 0.0
