@@ -92,3 +92,23 @@ def test_plume_profile_synthetic_run(tmp_path):
     assert prof["T"][k] == pytest.approx(1.5)
     assert prof["t_snapshots_h"] == [1.0, 2.0]
     assert prof["t_means_h"] == [1.0, 2.0]
+
+
+def test_fig1_verdict_uses_mitgcm_mode_R13(monkeypatch):
+    from types import SimpleNamespace
+
+    from exp1_fjord_plumes.analysis import fig1_plume_validation as f1
+
+    z = np.linspace(-500, 0, 501)
+
+    def fake(params, mode):  # jenkins would pass C2, mitgcm must fail it
+        zd = -300.0 if mode == "jenkins" else -100.0
+        return SimpleNamespace(z=z, u=np.full_like(z, 0.3), melt=np.full_like(z, 1e-5),
+                               z_detach=zd, reached_top=False)
+
+    monkeypatch.setattr(f1, "theory_solution", fake)
+    zc = -(np.arange(50) + 0.5) * 10.0
+    prof = {"z": zc, "z_detach": -300.0, "w_mean": np.full(50, 0.3), "melt": np.full(50, 1e-5)}
+    out = f1.evaluate(prof, {"H": 500.0})
+    assert out["pass"]["C2"] is False
+    assert out["modes"]["jenkins"]["z_detach_diff_over_H"] == pytest.approx(0.0)

@@ -14,9 +14,8 @@ Criteria (global-constraints.md):
        (MITgcm: width-averaged w; theory: top-hat u)
   C2'' mean face melt within a factor 1.5, theory with mode="mitgcm" and
        MeltParams(ice_depth=H) (MITgcm's own transfer law and linear ice T).
-C2 and C2' are reported against the Jenkins-2011 theory ("jenkins" mode, the
-reference plume) and, as a supplement, against the "mitgcm" mode; the verdict
-uses "jenkins".
+Ruling R13: all verdicts (C2, C2', C2'') use the theory in mode "mitgcm" with
+MeltParams(ice_depth=H); the "jenkins"-mode numbers are context only.
 """
 from __future__ import annotations
 
@@ -83,10 +82,10 @@ def evaluate(prof: dict, params: dict) -> dict:
             "melt_model": m_mo, "melt_theory": m_th, "melt_ratio": m_mo / m_th,
             "theory_reached_top": bool(th.reached_top),
         }
-    j, m = out["jenkins"], out["mitgcm"]
+    m = out["mitgcm"]  # R13: verdicts use the mitgcm-mode theory
     verdict = {
-        "C2": bool(abs(j["z_detach_diff_over_H"]) <= 0.10),
-        "C2p": bool(abs(j["u_ratio"] - 1.0) <= 0.25),
+        "C2": bool(abs(m["z_detach_diff_over_H"]) <= 0.10),
+        "C2p": bool(abs(m["u_ratio"] - 1.0) <= 0.25),
         "C2pp": bool(1 / 1.5 <= m["melt_ratio"] <= 1.5),
     }
     return {"modes": out, "pass": verdict, "melt_mean_whole_face_model": _mean(prof["melt"])}
