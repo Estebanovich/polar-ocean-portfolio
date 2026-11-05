@@ -25,6 +25,7 @@ study_defaults: &study
   diffK4: "0."
   no_slip_sides: ".TRUE."
   no_slip_bottom: ".TRUE."
+  cg3dMaxIters: "2000"      # ruling R21 (production a_line2d: 500)
 configs:
   a_line2d: &a_line2d
     L: 20000.0
@@ -48,14 +49,16 @@ configs:
                              # closes the domain at the ice face (OB at Nx-1, data.obcs)
     deltaT: 3.0              # Task 4: set from the timed short run (bitacora / PD1)
     endTime: 172800.0        # Task 4: 48 h campaign
-  # PD2 convergence (R20): dx0 = dz refined together; same r, dxmax, L, H,
-  # physics; deltaT = 0.5 s/m * min(dx0, dz) (CFL, pd2_convergence.md).
-  conv_dx10: {<<: [*study, *a_line2d], dx0: 10.0, dz: 10.0, deltaT: 5.0}
-  conv_dx5: {<<: [*study, *a_line2d], dx0: 5.0, dz: 5.0, deltaT: 2.5}
-  conv_dx2p5: {<<: [*study, *a_line2d], dx0: 2.5, dz: 2.5, deltaT: 1.25}
+  # PD2 convergence (R20): dx0 = dz refined together near the face; far field
+  # held fixed (r 1.03, dxmax 200 m), so the plume-region refinement ratio is
+  # r_eff ~ 1.9, not 2 (pd2_convergence.md); L differs by < 0.4 %.
+  # deltaT = 0.5 s/m * min(dx0, dz) (CFL); monitorFreq = deltaT (per-step check).
+  conv_dx10: {<<: [*study, *a_line2d], dx0: 10.0, dz: 10.0, deltaT: 5.0, monitorFreq: "5.0"}
+  conv_dx5: {<<: [*study, *a_line2d], dx0: 5.0, dz: 5.0, deltaT: 2.5, monitorFreq: "2.5"}
+  conv_dx2p5: {<<: [*study, *a_line2d], dx0: 2.5, dz: 2.5, deltaT: 1.25, monitorFreq: "1.25"}
   # PD2 sensitivity at the production grid (dx0 5 m, dz 10 m, deltaT 3 s);
   # own config name so `--config a_line2d` still selects only production.
-  sens_line2d: {<<: [*study, *a_line2d]}
+  sens_line2d: {<<: [*study, *a_line2d], monitorFreq: "3.0"}  # monitor every step (deltaT 3)
   b_twoplume3d:
     nx: 100
     ny: 120
@@ -142,8 +145,10 @@ cases:
   conv_dx2p5: {config: conv_dx2p5, strat: twolayer, discharge: line, q0: 0.03}
   sens_freeslip: {config: sens_line2d, strat: twolayer, discharge: line, q0: 0.03,
                   no_slip_sides: ".FALSE.", no_slip_bottom: ".FALSE."}
-  # Xu et al. 2012 (p. 3): nu_v = 0.1 m2/s, horizontal biharmonic 300 m4/s at 20 m,
-  # kappa = nu (Pr = 1). Biharmonic scaled to dx0 = 5 m at the same grid damping
+  # "Xu-style closure (A4 grid-rescaled)". Xu et al. 2012, Ann. Glaciol. 53(60), p. 231:
+  # nu_v = 0.1 m2/s, horizontal biharmonic 300 m4/s at 20 m, kappa = nu (Pr = 1). With
+  # viscAh = 0 the no-slip face drag on w almost vanishes, so this case overlaps
+  # sens_freeslip (pd2_convergence.md). Biharmonic scaled to dx0 = 5 m at the same grid damping
   # time dx^4/A4: 300 (5/20)^4 = 1.171875 m4/s (literal 300 > stability limit
   # L^4/(32 dt) = 6.5 m4/s, pkg/mom_common/mom_calc_visc.F:48-49).
   sens_xu2012: {config: sens_line2d, strat: twolayer, discharge: line, q0: 0.03,

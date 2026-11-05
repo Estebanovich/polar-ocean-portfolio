@@ -188,6 +188,19 @@ def _c_stages(p) -> list[dict]:
                  stage_label="stage 2 of 2 (wind off, restart from pickup)")]
 
 
+def _git_state() -> dict:
+    """Commit of the repository that generated the case (provenance in case.json)."""
+    import subprocess
+    try:
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=PKG, capture_output=True,
+                              text=True, check=True).stdout.strip()
+        dirty = bool(subprocess.run(["git", "status", "--porcelain"], cwd=PKG,
+                                    capture_output=True, text=True, check=True).stdout.strip())
+    except (OSError, subprocess.CalledProcessError):
+        return {"git_commit": "unknown", "git_dirty": None}
+    return {"git_commit": head, "git_dirty": dirty}
+
+
 def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
               cases_file: Path | None = None, overrides: dict | None = None) -> Path:
     """Write all inputs for case ``name`` into ``out_dir``; return ``out_dir``.
@@ -294,7 +307,8 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     for fname, text in rendered.items():
         (out_dir / fname).write_text(text)
 
-    meta = {"params": p, "dx_min": float(dxv.min()), "dx_max": float(dxv.max()),
+    meta = {"params": p, **_git_state(),
+            "dx_min": float(dxv.min()), "dx_max": float(dxv.max()),
             "sum_addmass_kg_s": float(add.sum()),
             **info}
     (out_dir / "case.json").write_text(json.dumps(meta, indent=2, default=float))

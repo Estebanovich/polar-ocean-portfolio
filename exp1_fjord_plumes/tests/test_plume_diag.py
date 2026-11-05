@@ -112,3 +112,26 @@ def test_fig1_verdict_uses_mitgcm_mode_R13(monkeypatch):
     out = f1.evaluate(prof, {"H": 500.0})
     assert out["pass"]["C2"] is False
     assert out["modes"]["jenkins"]["z_detach_diff_over_H"] == pytest.approx(0.0)
+
+
+def test_fig1_C2p_verdict_uses_mitgcm_mode_R13(monkeypatch):
+    """R13 for C2': same detachment in both modes; jenkins u would pass C2',
+    the mitgcm-mode u (2x the model) must fail it."""
+    from types import SimpleNamespace
+
+    from exp1_fjord_plumes.analysis import fig1_plume_validation as f1
+
+    z = np.linspace(-500, 0, 501)
+
+    def fake(params, mode):
+        u = 0.3 if mode == "jenkins" else 0.6
+        return SimpleNamespace(z=z, u=np.full_like(z, u), melt=np.full_like(z, 1e-5),
+                               z_detach=-300.0, reached_top=False)
+
+    monkeypatch.setattr(f1, "theory_solution", fake)
+    zc = -(np.arange(50) + 0.5) * 10.0
+    prof = {"z": zc, "z_detach": -300.0, "w_mean": np.full(50, 0.3), "melt": np.full(50, 1e-5)}
+    out = f1.evaluate(prof, {"H": 500.0})
+    assert out["modes"]["jenkins"]["u_ratio"] == pytest.approx(1.0)
+    assert out["modes"]["mitgcm"]["u_ratio"] == pytest.approx(0.5)
+    assert out["pass"]["C2p"] is False

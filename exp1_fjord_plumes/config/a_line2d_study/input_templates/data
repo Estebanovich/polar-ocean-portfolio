@@ -30,7 +30,7 @@
  diffKrT=${diffKr},
  diffKhS=${diffKh},
  diffKrS=${diffKr},
-# horizontal biharmonic (0 in production; Xu et al. 2012 in sens_xu2012)
+# horizontal biharmonic (0 in production; "Xu-style closure (A4 grid-rescaled)" in sens_xu2012)
  viscA4=${viscA4},
  diffK4T=${diffK4},
  diffK4S=${diffK4},
@@ -69,9 +69,9 @@
  &PARM02
  cg2dMaxIters=500,
  cg2dTargetResidual=1.E-13,
-# cg3d needs 280-390 iterations to reach 1e-8 on this stretched grid (40 never
-# converged; bitacora Task 4, attempts 1-6)
- cg3dMaxIters=500,
+# cg3d cap: ruling R21 sets 2000 for all PD2 study runs (target unchanged);
+# a run in which any step reaches the cap is invalid (pd2_convergence.md)
+ cg3dMaxIters=${cg3dMaxIters},
  cg3dTargetResidual=1.E-8,
  &
 
@@ -90,7 +90,10 @@
 # (pkg/diagnostics/diagnostics_write.F:62-72), so the t = endTime state
 # exists only here and in the pickup.
  dumpInitAndLast=.TRUE.,
- monitorFreq=600.,
+# PD2 study runs monitor EVERY step (monitorFreq = deltaT) so that the cg3d
+# iteration count and CFL of each step are in the log (cg3d_iters is printed
+# only at monitor times, model/src/solve_for_pressure.F:435-447); output only.
+ monitorFreq=${monitorFreq},
  monitorSelect=2,
  &
 

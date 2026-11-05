@@ -130,3 +130,20 @@
 - Pruebas: `tests/test_pd2_cases.py` (12). RED: 11 fallos + 1 pasa (la guardia de producción). GREEN: 12. Suite: 108 PASS.
 - Builds: `/Volumes/ESTEBAN_MIT/portfolio_builds/exp1/{conv_dx10, conv_dx5, conv_dx2p5, sens_line2d}`, 64–66 s cada uno; `SIZE.h` verificado en cada build.
 - Costo estimado (c = 2.81e-6 s/celda·paso): 7, 31 y 140 min, y 13 + 13 min; base 3.4 h. Con crecimiento de cg3d, 3.4–10.9 h. `conv_dx2p5` podría pasar de 8 h: cronometrar 1 h de modelo primero y, si hace falta, partir con pickup (C3 verificado).
+
+## 2026-11-05 — PD2 ronda de correcciones 1 (fallos R20, R21): criterios mecánicos (nada corrido)
+
+- `notes/pd2_convergence.md` reescrito con criterios mecánicos:
+  - ventana de 12–24 h para todos los estudios y para la referencia de producción;
+  - estacionariedad: |ΔR_Q(12–18 vs 18–24)|/R_Q < 0.02;
+  - σ = desviación estándar de las 12 muestras horarias (t−1, t);
+  - umbrales max(2σ_AB, 0.03) para R_Q y max(2σ_AB, 2.5 m) para b;
+  - Richardson con r_eff variable (r21 = 1.881, r32 = 1.912; Celik et al. 2008 `[verificar]`), inconclusa si no es monótona o si p ∉ [0.5, 3];
+  - tabla completa de clases de resultado (validez, ancho fijado por la malla, apoyada, parcial, solo tendencia, no apoyada, refutada por descenso o por plano, no monótona);
+  - resultados aparte: sensibilidad a dz (producción frente a `conv_dx5`), pared (`sens_freeslip`) y cierre.
+- **R21:** `cg3dMaxIters = 2000` en todos los estudios. Una corrida con algún paso en el tope es inválida. Como `cg3d_iters` solo se imprime en tiempos de monitor (`solve_for_pressure.F:435-447`, sin otro aviso por paso en `cg3d.F`), los estudios usan `monitorFreq = deltaT`: se pueden revisar cada paso y su CFL. Solo afecta a la salida; `output.txt` crece a ~0.1–0.4 GB por corrida (estimado).
+- Refinamiento no uniforme: el campo lejano queda fijo; r_eff en 0–25 m es 1.91 y 1.88 (1.89/1.78 a 20 m; 1.63/1.45 a 100 m); L difiere < 0.4 %.
+- `sens_xu2012` pasa a llamarse "cierre al estilo Xu (A4 reescalada a la malla)" (Xu et al. 2012, Ann. Glaciol. 53(60), p. 231). Con viscAh = 0 el arrastre sin deslizamiento sobre w casi desaparece (`calc_gw.F:456-465`, `mom_w_sidedrag.F:73-80`) y viscAr sube 100×. Por eso ΔR_Q no se atribuye al cierre; se solapa con `sens_freeslip`.
+- Costo revisado (t_paso = celdas/9650 × (7.04 + 0.060·N_it) ms, ajustado a las corridas medidas): 3.5 h con N_it = 350; 6.2 h con 700; 15.9 h con 1999. `conv_dx2p5` pasa de 8 h si N_it > 1434. Sonda de 1 h; si da > 8 h, se para y se reporta. Partir en tramos solo con aprobación de Esteban.
+- Menores: la prueba de free-slip ahora compara contra producción (solo cambian las dos líneas de pared, más el tope R21 y el monitor por paso); prueba R13 para C2' (pasa con el código actual; verificada por mutación: con C2p en modo jenkins falla); `case.json` registra `git_commit` y `git_dirty`.
+- Pruebas: RED 7 fallos → GREEN; `test_pd2_cases.py` + `test_plume_diag.py` 19 PASS; suite 110 PASS. Producción: 15 de 16 archivos de entrada idénticos; `case.json` solo añade los campos git. La campaña en curso no se ve afectada: su proceso ya había importado `make_case`.

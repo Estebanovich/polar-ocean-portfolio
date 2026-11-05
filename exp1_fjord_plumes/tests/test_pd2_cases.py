@@ -1,7 +1,7 @@
 """PD2 / ruling R20: convergence and sensitivity cases for config (a).
 
 Grid refinement (dx0 = dz = 10, 5, 2.5 m) and sensitivity at the production
-grid (free slip; Xu et al. 2012 mixing). Checks that make_case takes dz/dx0
+grid (free slip; "Xu-style closure (A4 grid-rescaled)", key sens_xu2012). Checks that make_case takes dz/dx0
 from the case, scales the ice-face fields and the source, picks the shared
 study templates, and that those templates reproduce production exactly when
 given the production values.
@@ -66,8 +66,12 @@ def test_study_cases_selectable_and_physics_unchanged(tmp_path, name):
     data = "\n".join(_data_lines(make_case(name, tmp_path / name) / "data"))
     for line in ("eosType='LINEAR',", "tAlpha=3.87e-05,", "rhoConst=1027.0,",
                  "HeatCapacity_Cp=3974.,", "nonHydrostatic=.TRUE.,", "selectAddFluid=1,",
-                 "cg3dMaxIters=500,", "cg3dTargetResidual=1.E-8,"):
+                 "cg3dMaxIters=2000,", "cg3dTargetResidual=1.E-8,"):  # R21: cap 2000
         assert line in data
+    # per-step cg3d/CFL validity check (pd2_convergence.md): monitor every step
+    p = json.loads((tmp_path / name / "case.json").read_text())["params"]
+    assert f"monitorFreq={p['monitorFreq']}," in data
+    assert float(p["monitorFreq"]) == p["deltaT"]
 
 
 def test_production_cases_not_selected_with_study_cases():
@@ -80,7 +84,8 @@ def test_study_templates_reproduce_production(tmp_path):
     prod = _data_lines(make_case("a_line2d_twolayer_q0.03", tmp_path / "prod") / "data")
     ov = {"template_config": "a_line2d_study", "viscAh": "0.25", "viscAr": "1.E-3",
           "diffKh": "0.25", "diffKr": "2.E-5", "viscA4": "0.", "diffK4": "0.",
-          "no_slip_sides": ".TRUE.", "no_slip_bottom": ".TRUE."}
+          "no_slip_sides": ".TRUE.", "no_slip_bottom": ".TRUE.",
+          "cg3dMaxIters": "500", "monitorFreq": "600."}
     study = _data_lines(make_case("a_line2d_twolayer_q0.03", tmp_path / "study", overrides=ov) / "data")
     extra = [ln for ln in study if ln not in prod]
     assert extra == ["viscA4=0.,", "diffK4T=0.,", "diffK4S=0.,"]
@@ -90,18 +95,26 @@ def test_study_templates_reproduce_production(tmp_path):
 
 
 def test_sens_freeslip_only_changes_wall_conditions(tmp_path):
-    base = _data_lines(make_case("conv_dx5", tmp_path / "b") / "data")  # any study case
-    d = _data_lines(make_case("sens_freeslip", tmp_path / "s") / "data")
-    assert "no_slip_sides=.FALSE.," in d and "no_slip_bottom=.FALSE.," in d
-    assert "viscAh=0.25," in d and "viscAr=1.E-3," in d
+    """Against production rendered for 24 h: only the two wall lines change, apart
+    from the study-wide R21 cap / per-step monitor and the explicit zero biharmonic."""
+    prod = _data_lines(make_case("a_line2d_twolayer_q0.03", tmp_path / "p",
+                                 overrides={"endTime": 86400.0}) / "data")
+    fs = _data_lines(make_case("sens_freeslip", tmp_path / "s") / "data")
+    only_prod = [ln for ln in prod if ln not in fs]
+    only_fs = [ln for ln in fs if ln not in prod]
+    assert sorted(only_prod) == sorted(["no_slip_sides=.TRUE.,", "no_slip_bottom=.TRUE.,",
+                                        "cg3dMaxIters=500,", "monitorFreq=600.,"])
+    assert sorted(only_fs) == sorted(["no_slip_sides=.FALSE.,", "no_slip_bottom=.FALSE.,",
+                                      "cg3dMaxIters=2000,", "monitorFreq=3.0,",
+                                      "viscA4=0.,", "diffK4T=0.,", "diffK4S=0.,"])
     p = json.loads((tmp_path / "s" / "case.json").read_text())["params"]
     assert (p["dx0"], p["dz"], p["deltaT"], p["endTime"]) == (5.0, 10.0, 3.0, 86400.0)
-    assert base  # sanity
 
 
 def test_sens_xu2012_mixing(tmp_path):
     d = _data_lines(make_case("sens_xu2012", tmp_path / "x") / "data")
-    # Xu et al. 2012: nu_v = 0.1 m2/s, kappa = nu (Pr = 1); horizontal biharmonic
+    # "Xu-style closure (A4 grid-rescaled)". Xu et al. 2012, Ann. Glaciol. 53(60), p. 231:
+    # nu_v = 0.1 m2/s, kappa = nu (Pr = 1); horizontal biharmonic
     # 300 m4/s at 20 m, scaled to dx0 = 5 m with the same grid damping time:
     # 300 (5/20)^4 = 1.171875 m4/s (literal 300 exceeds the stability limit
     # L^4/(32 dt) = 6.5 m4/s at dx = 5 m, dt = 3 s; mom_calc_visc.F:48-49).
@@ -110,3 +123,9 @@ def test_sens_xu2012_mixing(tmp_path):
                  "no_slip_sides=.TRUE.,", "no_slip_bottom=.TRUE.,"):
         assert line in d
     assert 1.171875 < 5.0 ** 4 / (32 * 3.0)
+
+
+def test_case_json_records_git_commit(tmp_path):
+    meta = json.loads((make_case("conv_dx10", tmp_path / "g") / "case.json").read_text())
+    assert len(meta["git_commit"]) == 40 and int(meta["git_commit"], 16) >= 0
+    assert isinstance(meta["git_dirty"], bool)

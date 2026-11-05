@@ -1,6 +1,6 @@
-# PD2 (fallo R20): convergencia y sensibilidad de (a), plan previo a correr
+# PD2 (fallos R20, R21): convergencia y sensibilidad de (a), plan prerregistrado
 
-**Estado: preparado (casos, configuraciones, builds); NADA corrido.** La campaña de (a) sigue en curso.
+**Estado: preparado (casos, configuraciones, builds); NADA corrido.** La campaña de (a) sigue en curso. Revisión 1 (ronda de correcciones): criterios mecánicos, tope de cg3d de 2000 (R21), r_eff y presupuesto condicionado.
 
 ## Motivo
 
@@ -8,77 +8,156 @@ En la evaluación provisional (twolayer q0 = 0.01 y 0.03), C2 y C2'' pasan, pero
 
 - la velocidad media de la pluma en su ancho, Q/b, es 0.52–0.56 de la teoría;
 - la velocidad del núcleo w es 0.88–0.95 de la teoría;
-- el ancho de la pluma es de 20–24 m contra 7.5 m de la teoría, unas 1.5 celdas de dx0 = 5 m.
+- el ancho es de 20–24 m contra 7.5 m de la teoría, unas 1.5 celdas de dx0 = 5 m.
 
 Atribución propuesta: resolución en la cara más la pared sin deslizamiento (clase c), posiblemente con entrainment efectivo extra (clase b). Se **prueba** esta atribución; la métrica no se redefine.
 
 ## Casos (todos `twolayer`, q0 = 0.03 m² s⁻¹, 24 h de modelo, np = 1)
 
-| caso | config / build | dx0 (m) | dz (m) | nx × nz | deltaT (s) | cambia respecto a producción |
-|---|---|---|---|---|---|---|
-| `conv_dx10` | `conv_dx10` | 10 | 10 | 170 × 50 | 5.0 | malla más gruesa |
-| `conv_dx5` | `conv_dx5` | 5 | 5 | 193 × 100 | 2.5 | solo dz (producción tiene dz = 10) |
-| `conv_dx2p5` | `conv_dx2p5` | 2.5 | 2.5 | 216 × 200 | 1.25 | malla más fina |
-| `sens_freeslip` | `sens_line2d` (malla de producción) | 5 | 10 | 193 × 50 | 3.0 | `no_slip_sides = no_slip_bottom = .FALSE.` |
-| `sens_xu2012` | `sens_line2d` | 5 | 10 | 193 × 50 | 3.0 | mezcla de Xu et al. 2012 (abajo) |
-| (referencia) `a_line2d_twolayer_q0.03` | `a_line2d` | 5 | 10 | 193 × 50 | 3.0 | producción, 48 h (se compara en la misma ventana de tiempo) |
+| caso | config / build | dx0 (m) | dz (m) | nx × nz | deltaT (s) | L (m) | cambia respecto a producción |
+|---|---|---|---|---|---|---|---|
+| `conv_dx10` | `conv_dx10` | 10 | 10 | 170 × 50 | 5.0 | 20 063 | malla más gruesa |
+| `conv_dx5` | `conv_dx5` | 5 | 5 | 193 × 100 | 2.5 | 20 140 | solo dz (producción tiene dz = 10) |
+| `conv_dx2p5` | `conv_dx2p5` | 2.5 | 2.5 | 216 × 200 | 1.25 | 20 133 | malla más fina |
+| `sens_freeslip` | `sens_line2d` | 5 | 10 | 193 × 50 | 3.0 | 20 140 | `no_slip_sides = no_slip_bottom = .FALSE.` |
+| `sens_xu2012`: "cierre al estilo Xu (A4 reescalada a la malla)" | `sens_line2d` | 5 | 10 | 193 × 50 | 3.0 | 20 140 | cierre de mezcla (abajo) |
+| referencia: `a_line2d_twolayer_q0.03` | `a_line2d` | 5 | 10 | 193 × 50 | 3.0 | 20 140 | producción (48 h; se reevalúa en la misma ventana de 12–24 h) |
 
-Lo que se mantiene igual en todos: estiramiento r = 1.03, dx_max = 200 m, L = 20 km, H = 500 m, la columna de tierra al final, perfiles, fuente, EOS, icefront, OBCS, cg3d (500 iteraciones, 1e-8) y salidas. Los builds van en `/Volumes/ESTEBAN_MIT/portfolio_builds/exp1/<config>/`.
+- **Lo que se mantiene igual:** perfiles, fuente, EOS, icefront, OBCS, cg3dTargetResidual = 1e-8 y salidas.
+- **Diferencias comunes a todos los estudios:**
+  - `cg3dMaxIters = 2000` (fallo R21; producción tenía 500);
+  - `monitorFreq = deltaT`, es decir, monitor en cada paso. Solo afecta a la salida, para poder hacer la verificación por paso descrita abajo.
+- **El campo lejano queda fijo** (r = 1.03, dx_max = 200 m). Por eso el refinamiento no es uniforme: dz se refina exactamente ×2 en cada paso, pero en x el factor depende de la distancia a la cara. Las longitudes L difieren menos de 0.4 % (la suma de dx alcanza L con un exceso menor que la última celda). Se considera despreciable a 20 km de la pluma.
 
-- **dt por CFL:** deltaT = 0.5 s m⁻¹ × min(dx0, dz). La producción dio CFL_w = 0.198 con w_max = 0.66 m/s y dt/dz = 0.3 s/m. Con dt/min(Δ) = 0.5 s/m, CFL ≈ 0.33 si w no cambia, y ≤ 0.45 si el núcleo llega a ~0.9 m/s. Guardia: si el monitor da CFL > 0.5 en la primera hora, se para y se reporta.
+| razón entre mallas | dx medio en 0–25 m de la cara (centros) | dx local a 20 m | dx local a 100 m |
+|---|---|---|---|
+| dx10 → dx5 | 10.150 / 5.309 = **1.912** | 1.885 | 1.626 |
+| dx5 → dx2p5 | 5.309 / 2.822 = **1.881** | 1.777 | 1.445 |
+
+r_eff se define como la razón del dx medio sobre la región de la pluma (centros de celda entre 0 y 25 m de la cara). Se usa en Richardson (r21 = 1.881, r32 = 1.912; ver abajo).
+
+- **dt por CFL:** deltaT = 0.5 s m⁻¹ × min(dx0, dz). La producción dio CFL_w = 0.198 con w_max = 0.66 m/s y dt/dz = 0.3 s/m. Con dt/min(Δ) = 0.5 s/m, CFL ≈ 0.33 si w no cambia, y ≤ 0.45 si el núcleo llega a ~0.9 m/s.
 - **Escalado comprobado por prueba** (`tests/test_pd2_cases.py`):
-  - `icefrontlength` = 1/dx0 (0.1, 0.2 y 0.4 m⁻¹) solo en la columna 0;
-  - `R_icefront` = H solo en la columna 0, así que `K_icefront` = Nr y el factor parcial del fondo vale 1 (`icefront_thermodynamics.F:158-174`);
-  - fuente ρ0·q0·dy = 308.1 kg s⁻¹ en la celda del fondo (k = nz − 1, i = 0);
-  - `SIZE.h` coincide con la malla.
-- **`sens_xu2012`:** Xu et al. (2012, p. 3, Ann. Glaciol. 53(60)) usan νv = 0.1 m² s⁻¹, biarmónica horizontal 300 m⁴ s⁻¹ (con dx = 20 m) y κ = ν (Pr = 1). Se pone `viscAr = diffKrT = diffKrS = 0.1` y `viscAh = diffKh = 0`. La biarmónica literal es inestable aquí: el límite es L⁴/(32 dt) = 5⁴/96 = 6.5 m⁴ s⁻¹ (`pkg/mom_common/mom_calc_visc.F:48-49`). Por eso se escala a dx0 = 5 m con el mismo tiempo de amortiguamiento de malla dx⁴/A4: A4 = 300·(5/20)⁴ = **1.171875 m⁴ s⁻¹** en `viscA4`, `diffK4T` y `diffK4S`. Para la biarmónica, `SIZE.h` necesita OLx, OLy ≥ 3 (`config_check.F:566-575`); se cumple (3). Pared sin deslizamiento como en producción.
+  - `icefrontlength` = 1/dx0 (0.1, 0.2 y 0.4 m⁻¹) y `R_icefront` = H, solo en la columna 0; por tanto `K_icefront` = Nr y el factor parcial vale 1 (`icefront_thermodynamics.F:158-174`);
+  - fuente ρ0·q0·dy = 308.1 kg s⁻¹ en la celda del fondo junto a la cara;
+  - `SIZE.h` coincide con la malla;
+  - `case.json` registra `git_commit` y `git_dirty`.
 
-## Costo estimado
+### Cierre al estilo Xu (A4 reescalada a la malla), caso `sens_xu2012`
 
-Base: 65 s por 2400 pasos en 9 650 celdas → c = 2.81e-6 s por celda·paso. Costo = c × celdas × pasos. Las iteraciones de cg3d (350–390 en producción) deberían crecer al refinar, más o menos con el número de puntos en la dirección refinada. Por eso se da un rango.
+Xu et al. (2012), *Ann. Glaciol.* 53(60), 229–234, **p. 231**: νv = 0.1 m² s⁻¹, biarmónica horizontal 300 m⁴ s⁻¹ (con dx = 20 m) y κ = ν (Pr = 1).
 
-| caso | celdas | pasos (24 h) | base | con crecimiento de cg3d |
-|---|---|---|---|---|
-| `conv_dx10` | 8 500 | 17 280 | 7 min | 3–7 min (×0.5–1) |
-| `conv_dx5` | 19 300 | 34 560 | 31 min | 31–62 min (×1–2) |
-| `conv_dx2p5` | 43 200 | 69 120 | 2.3 h | 2.3–9.3 h (×1–4) |
-| `sens_freeslip` | 9 650 | 28 800 | 13 min | ≈ 13 min |
-| `sens_xu2012` | 9 650 | 28 800 | 13 min | ≈ 13 min |
-| **total** | | | **3.4 h** | **3.4–10.9 h** |
+- Se pone `viscAr = diffKrT = diffKrS = 0.1` y `viscAh = diffKh = 0`.
+- La biarmónica literal es inestable aquí: el límite es L⁴/(32 dt) = 5⁴/96 = 6.5 m⁴ s⁻¹ (`pkg/mom_common/mom_calc_visc.F:48-49`). Se reescala con el mismo tiempo de amortiguamiento de malla dx⁴/A4: A4 = 300·(5/20)⁴ = **1.171875 m⁴ s⁻¹** en `viscA4`, `diffK4T` y `diffK4S`. Para la biarmónica hacen falta OLx, OLy ≥ 3 (`config_check.F:566-575`); se cumple.
+- **No es un cambio "solo de cierre".**
+  - Con `viscAh = 0`, el arrastre sin deslizamiento sobre w en la cara casi desaparece. El arrastre lateral de w, en `MOM_W_SIDEDRAG` (llamado desde `calc_gw.F:456-465`), es −sideDragFactor·(viscAh·w − viscA4·∇²w)·… (`mom_w_sidedrag.F:73-80`), y con viscAh = 0 solo queda el término biarmónico, pequeño.
+  - Además, viscAr sube 100× (1e-3 → 0.1), lo que aumenta mucho el arrastre del fondo sin deslizamiento y la mezcla vertical.
+  - Por eso un cambio de R_Q en este caso **no se atribuye al cierre**: se solapa con `sens_freeslip`. Se reporta solo como sensibilidad conjunta "cierre + arrastre de pared".
 
-`conv_dx2p5` podría pasar el límite de 8 h por corrida. Recomendación: cronometrar antes 1 h de modelo de `conv_dx2p5` (6–23 min). Si la extrapolación pasa de 8 h, se corre en dos tramos de 12 h con pickup; esto es legítimo porque C3 (reinicio bit a bit) está verificado.
+## Costo (modelo revisado, R21)
 
-## Criterios, fijados antes de correr
+Modelo por paso, ajustado a las corridas cortas medidas: con 40 iteraciones de cg3d, 9.44 ms/paso; con ~290, 24.4 ms/paso. Queda
 
-Métricas: el mismo código y la misma ventana de promedio que la evaluación provisional de PD2. Para cada caso, en la misma ventana de tiempo:
+  t_paso = (celdas / 9650) × (7.04 ms + 0.060 ms × N_it)
 
-- R_Q = (Q/b)_modelo / (Q/b)_teoría;
-- R_w = w_núcleo / w_teoría;
-- b en metros y en celdas (b/dx0).
+Comprobación: N_it ≈ 340 da 27.4 ms contra 27.1 ms medidos (dt = 3 s). N_it = número medio de iteraciones de cg3d por paso. En producción es 320–390; con el tope de 2000, una corrida válida tiene N_it ≤ 1999. No se midió el costo extra de monitorear cada paso; se espera < 5 %.
 
-Ruido: la desviación estándar σ de las medias horarias dentro de la ventana. Una diferencia cuenta si es > 2σ.
+| caso | celdas | pasos (24 h) | N_it = 350 | N_it = 700 | N_it = 1999 (máximo válido) |
+|---|---|---|---|---|---|
+| `conv_dx10` | 8 500 | 17 280 | 0.12 h | 0.21 h | 0.54 h |
+| `conv_dx5` | 19 300 | 34 560 | 0.54 h | 0.94 h | 2.44 h |
+| `conv_dx2p5` | 43 200 | 69 120 | 2.41 h | 4.22 h | **10.92 h** |
+| `sens_freeslip` | 9 650 | 28 800 | 0.22 h | 0.39 h | 1.02 h |
+| `sens_xu2012` | 9 650 | 28 800 | 0.22 h | 0.39 h | 1.02 h |
+| **total** | | | **3.5 h** | **6.2 h** | **15.9 h** |
 
-**La atribución a la resolución (clase c) se apoya si se cumplen las tres:**
+`conv_dx2p5` pasa de 8 h si N_it medio > 1434.
 
-1. R_Q crece de forma monótona en dx10 → dx5 → dx2p5, con cada paso > 2σ;
-2. b (en m) disminuye de forma monótona al refinar, es decir, b sigue a la malla (b/dx0 casi constante): el ancho es numérico;
-3. la extrapolación de Richardson de R_Q (con los tres niveles) queda en [0.75, 1.25], la banda de C2'.
+## Presupuesto: sonda y punto de parada
 
-**La contribución de la pared sin deslizamiento (clase c) se apoya** si `sens_freeslip` sube R_Q en más de 2σ respecto a producción en la misma ventana.
+1. Primero, una **sonda de 1 h** de `conv_dx2p5` (2880 pasos; 6–27 min). De ahí salen N_it medio, CFL y la extrapolación a 24 h con el modelo de arriba.
+2. Si la extrapolación es ≤ 8 h, se corre completo. **Si es > 8 h, el plan se detiene y se reporta a Esteban** (como en PD1). Partir la corrida en tramos con pickup (C3 verificado) solo se hace **si Esteban lo aprueba** tras ver la sonda.
 
-**La atribución se refuta si:**
+## Criterios prerregistrados (mecánicos)
 
-- R_Q no cambia (dentro de 2σ) entre dx10, dx5 y dx2p5;
-- o R_Q no es monótona;
-- o b no disminuye al refinar.
+### Definiciones
 
-En ese caso el déficit no es de resolución. Se evalúa entonces entrainment extra o física 2D (clase b), o una discrepancia de la definición de Q/b frente al sombrero de copa de la teoría. Esta última se clasificaría (d), pero solo con evidencia independiente; la métrica no se cambia.
+Todas las métricas se calculan con el código de C2' sin cambios: `plume_profile` + `evaluate`, teoría en modo `mitgcm` (fallo R13), en `analysis/fig1_plume_validation.py`.
 
-**Apoyo parcial:** R_Q crece de forma monótona, pero el límite extrapolado es < 0.75. Se reporta la parte numérica cuantificada y el resto queda sin explicar (candidato clase b).
+- **R_Q** = `u_ratio` = media de `w_mean` (= Q/b) en la mitad inferior de la pluma teórica, dividida entre la u de sombrero de copa de la teoría.
+- **R_w** = media de `w_max` en la misma máscara, dividida entre la u de la teoría (solo informativa).
+- **b** = media de `width` (m) en la misma máscara. Ojo: `width` está cuantizado en caras de celda.
 
-**`sens_xu2012`:** si R_Q cambia más de 2σ, el resultado depende del cierre de mezcla (elección numérica, clase c). Se reporta como incertidumbre de modelo. No se adopta la mezcla que "mejor acierta" (regla: no ajustar parámetros para que coincida un caso).
+### Ventana
 
-Además, en todos los casos, C2 (despegue ±0.10 H) y C2'' (derretimiento, factor 1.5) deben seguir dentro de tolerancia. Si un refinamiento los rompe, eso también se reporta.
+**12–24 h para todas las corridas de estudio y para la referencia de producción** (reevaluada en 12–24 h, no en su ventana de 48 h). El valor de cada caso, X(12–24), sale de `plume_profile(run, (12, 24))`. Las instantáneas horarias usadas son 12, 13, …, 24 h; la de 24 h viene del volcado de estado, porque la instantánea de diagnóstico en endTime no existe.
+
+### Estacionariedad
+
+|R_Q(18–24) − R_Q(12–18)| / R_Q(12–24) < 0.02, con ventanas (12, 18) y (18, 24) (comparten la instantánea de 18 h). Si no se cumple, la corrida es **no estacionaria** y no entra en la clasificación.
+
+### σ por caso
+
+σ_X = desviación estándar (ddof = 1) de las 12 muestras X(t−1, t), t = 13, …, 24 h. Cada muestra es `plume_profile(run, (t−1, t))`: promedia las instantáneas t−1 y t. Las muestras se solapan, así que σ es una medida de variabilidad, no un error estándar. Es conservadora.
+
+### Umbral de diferencia entre dos casos A y B
+
+σ_AB = √(σ_A² + σ_B²). Una diferencia cuenta solo si:
+
+- para R_Q: |R_A − R_B| > **max(2 σ_AB, 0.03)**;
+- para b: |b_A − b_B| > **max(2 σ_AB, 2.5 m)** (el dx0 de la malla más fina).
+
+Cada paso de refinamiento (dx10 → dx5, dx5 → dx2p5) se etiqueta **sube**, **baja** o **plano** según ese umbral.
+
+### Validez de cada corrida (se comprueba antes de clasificar)
+
+1. `run_status.json` OK (`require_ok`).
+2. **cg3d (R21):** en `output.txt` hay exactamente nTimeSteps líneas `cg3d_iters (last)` (monitor en cada paso), y **todas son < 2000**. Si algún paso llega al tope, la corrida es **inválida**.
+3. CFL (`advcfl_uvel_max`, `advcfl_wvel_max`) ≤ 0.5 en todos los pasos.
+4. Estacionaria (arriba).
+
+Si alguna corrida `conv_*` es inválida o no estacionaria, la convergencia es **inconclusa** y se dice cuál falló.
+
+### Extrapolación de Richardson
+
+Notación: φ1 = R(dx2p5) (fina), φ2 = R(dx5), φ3 = R(dx10); r21 = 1.881, r32 = 1.912 (r_eff de la tabla); ε21 = φ2 − φ1, ε32 = φ3 − φ2.
+
+- Como r21 ≠ r32, se usa la forma de razón variable (Celik et al. 2008, Procedimiento GCI, Ec. 3–4) `[verificar]`:
+  - s = signo(ε32/ε21);
+  - p = |ln|ε32/ε21| + q(p)| / ln r21, con q(p) = ln[(r21^p − s)/(r32^p − s)], resuelto por iteración de punto fijo desde q = 0.
+  - Si r21 = r32 = r, se reduce a la fórmula del revisor: p = ln[(R10 − R5)/(R5 − R2.5)] / ln r.
+- R_ext = (r21^p φ1 − φ2)/(r21^p − 1).
+- **La extrapolación es inconclusa, y no se da como número,** si ocurre cualquiera de:
+  - s < 0 (secuencia no monótona);
+  - ε21 = 0 o ε32 = 0;
+  - la iteración no converge;
+  - p < 0.5 o p > 3.
+- Solo como diagnóstico, no decide nada: p calculado con r = 2 (el refinamiento de dz).
+
+### Clases de resultado para la convergencia (conv_dx10, conv_dx5, conv_dx2p5)
+
+Se evalúan en este orden y vale la primera que aplica.
+
+| # | condición | resultado |
+|---|---|---|
+| V | alguna corrida inválida o no estacionaria | **Inconclusa (validez)** |
+| G | b/dx0 constante: en ambos pasos, \|(b_gruesa/b_fina)/r_eff − 1\| < 0.2 | **Ancho fijado por la malla.** La pluma no está resuelta; la evidencia es **inconclusa para R_Q** sea cual sea su tendencia |
+| S | R_Q sube en ambos pasos, b baja (más que el umbral) en ambos pasos, Richardson concluyente y R_ext ∈ [0.75, 1.25] | **Atribución clase (c) a la resolución: APOYADA** |
+| P1 | R_Q sube en ambos pasos, b baja en ambos, Richardson concluyente y R_ext < 0.75 | **Apoyo parcial:** se cuantifica la parte numérica (R_ext − R_Q(dx5)); el resto queda sin explicar (candidato clase b) |
+| P2 | R_Q sube en ambos pasos, b baja en ambos, Richardson inconcluso o R_ext > 1.25 | **Tendencia a favor sin número:** se reporta la tendencia; no hay valor extrapolado |
+| W | R_Q sube en ambos pasos pero b no baja en ambos | **No apoyada:** R_Q cambia sin que la pluma se estreche; se evalúa entrainment o física 2D (clase b) |
+| D | R_Q baja en ambos pasos | **Refuta clase (c);** apunta a un error nuestro (a) o a física faltante (b) |
+| F | R_Q plano en ambos pasos | **Refuta clase (c):** el déficit no depende de la resolución; evaluar (b) |
+| M | cualquier otra combinación (no monótona, o un paso plano y otro con tendencia) | **Inconclusa (no monótona):** sin atribución |
+
+En ningún caso se cambia la métrica. La clase (d) (definición de Q/b frente al sombrero de copa de la teoría) solo se plantea con evidencia independiente.
+
+### Resultados separados, que no entran en la tabla
+
+- **Sensibilidad a dz:** producción (dx0 = 5, dz = 10) contra `conv_dx5` (dx0 = 5, dz = 5), ambas en 12–24 h. ΔR_Q y Δb con el mismo umbral; se reporta sube, baja o plano.
+- **Pared:** `sens_freeslip` contra producción. Si R_Q sube más que el umbral, el arrastre sin deslizamiento contribuye (clase c), cuantificado como ΔR_Q. Si no, no hay contribución detectable.
+- **Cierre al estilo Xu:** `sens_xu2012` contra producción. ΔR_Q se reporta como sensibilidad conjunta "cierre + arrastre de pared", sin atribuirlo al cierre. No se adopta la mezcla que "mejor acierta" (regla: no ajustar parámetros para que coincida un caso).
+- En cada corrida se reporta además si C2 (despegue ±0.10 H) y C2'' (derretimiento, factor 1.5) siguen dentro de tolerancia.
 
 ## Cómo lanzar (después de la campaña de (a), uno a la vez)
 
@@ -88,6 +167,6 @@ P=/opt/anaconda3/envs/pyocean/bin/python; S=exp1_fjord_plumes/scripts/run_campai
 $P $S --config conv_dx10 --cases conv_dx10 --np 1
 $P $S --config conv_dx5 --cases conv_dx5 --np 1
 $P $S --config sens_line2d --cases 'sens_*' --np 1
-$P $S --config conv_dx2p5 --cases conv_dx2p5 --np 1 --end-time 3600 --run-suffix _probe1h   # cronometrar primero
-$P $S --config conv_dx2p5 --cases conv_dx2p5 --np 1
+$P $S --config conv_dx2p5 --cases conv_dx2p5 --np 1 --end-time 3600 --run-suffix _probe1h   # sonda; luego PARAR si > 8 h
+$P $S --config conv_dx2p5 --cases conv_dx2p5 --np 1                                         # solo si la sonda da <= 8 h
 ```
