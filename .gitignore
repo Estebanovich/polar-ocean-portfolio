@@ -3,3 +3,4 @@ __pycache__/
 *.data
 *.meta
 runs/
+.pytest_cache/
