@@ -248,3 +248,53 @@ def test_b_widest_separation_far_from_side_walls(tmp_path):
     for (_, j, _) in meta["source_cells"]:
         yc = (j + 0.5) * dy
         assert yc - y_wall_s >= 100.0 and y_wall_n - yc >= 100.0
+
+
+# ---------------------------------------------------------------- Task 7 (c)
+# Plume as entrainment sinks + outflow sources (Cowton et al. 2015, Sec. 2.1.3)
+from exp1_fjord_plumes.gendata.plume_source_sink import plume_source_sink  # noqa: E402
+
+ZC = -(np.arange(50) + 0.5) * 10.0   # config (c): H = 500 m, dz = 10 m
+
+
+def _c_plume(Q0=100.0, uniform=False):
+    if uniform:
+        Ta, Sa = np.full(ZC.shape, 4.0), np.full(ZC.shape, 34.6)
+    else:
+        Ta, Sa = continuous_sermilik(ZC)
+    return plume_source_sink(ZC, Ta, Sa, Q0, 10.0, return_solution=True)
+
+
+def test_source_sink_sums_to_Q0():
+    """C5: sum of the per-level volume fluxes = Q0 within 1 %."""
+    for Q0 in (10.0, 100.0, 1000.0):
+        q, T_out, S_out, _ = _c_plume(Q0)
+        assert abs(q.sum() - Q0) <= 0.01 * Q0
+
+
+def test_source_sink_signs_and_outflow_levels():
+    """Cowton et al. (2015, Sec. 2.1.3), whole cells: sinks (< 0) in every
+    cell below the one holding z_neutral, the whole outflow (> 0) in that
+    cell, nothing above. Outflow T/S = plume T/S at its bottom face."""
+    q, T_out, S_out, sol = _c_plume(100.0)
+    assert np.isfinite(sol.z_neutral)
+    top, bot = ZC + 5.0, ZC - 5.0
+    k_n = int(np.flatnonzero((bot < sol.z_neutral) & (sol.z_neutral <= top))[0])
+    assert q[k_n] > 0 and np.all(q[k_n + 1:] < 0) and np.all(q[:k_n] == 0)
+    z_e = bot[k_n]
+    assert np.isclose(T_out[k_n], np.interp(z_e, sol.z, sol.T), atol=1e-6)
+    assert np.isclose(S_out[k_n], np.interp(z_e, sol.z, sol.S), atol=1e-6)
+    others = np.arange(ZC.size) != k_n
+    assert np.all(np.isnan(T_out[others])) and np.all(np.isnan(S_out[others]))
+    # outflow is a mixture of discharge and ambient: inside their T, S range
+    Ta, Sa = continuous_sermilik(ZC)
+    assert 0.0 < S_out[k_n] < Sa.max() and min(0.0, Ta.min()) < T_out[k_n] < Ta.max()
+
+
+def test_source_sink_plume_reaching_surface():
+    """Uniform ambient: the plume reaches the surface and all outflow goes to
+    the top cell; the sum is still Q0."""
+    q, T_out, S_out, sol = _c_plume(100.0, uniform=True)
+    assert sol.reached_top
+    assert q[0] > 0 and np.all(q[1:] <= 0)
+    assert abs(q.sum() - 100.0) <= 1.0
