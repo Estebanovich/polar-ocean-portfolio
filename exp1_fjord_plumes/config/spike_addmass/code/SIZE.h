@@ -5,12 +5,10 @@ C    include SIZE.h
 C    !DESCRIPTION: \bv
 C     *==========================================================*
 C     | SIZE.h Declare size of underlying computational grid.
-C     | Exp1 a_line2d: 2-D x-z slice, serial (ny = 1, np = 1).
-C     | Nx = 193 = len(stretched_x(dx0=5, dxmax=200, r=1.03,
-C     |   L=20000)) from exp1_fjord_plumes/cases.yaml (a_line2d);
-C     | Nr = H/dz = 500/10 = 50. If those parameters change, Nx/Nr
-C     | here MUST change too: run_campaign.py checks case.json
-C     | (nx, ny, nz) against this file before running.
+C     | Exp1 PD3 spike (spike_addmass): 10 x 10 x 10 hydrostatic
+C     | test box for addMass sinks/sources, serial (np = 1).
+C     | Grid set in input/data.tail (delX/delY = 200 m, delR = 10 m),
+C     | not by make_case.
 C     *==========================================================*
 C     \ev
 CEOP

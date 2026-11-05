@@ -53,6 +53,7 @@ from pfcommon.mitgcm_io import write_bin
 from . import profiles
 from .grids import icefront_fields, stretched_x
 from .plume_source_sink import plume_source_sink
+from ..theory.melt import MeltParams
 from .sources import discharge_addmass, place_sources
 
 PKG = Path(__file__).resolve().parents[1]
@@ -75,12 +76,17 @@ def _profile(strat: str, zc, p):
     raise ValueError(f"unknown stratification {strat!r}")
 
 
-def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> np.ndarray:
-    """Config (c) forcing files (Task 7 Step 4); returns addMass [kg s^-1].
+def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> tuple[np.ndarray, float]:
+    """Config (c) forcing files (Task 7 Step 4); returns (addMass [kg s^-1],
+    externForcingCycle [s] = shelf period).
 
     Plume (Q0 > 0): ``plume_source_sink`` (Cowton et al. 2015 sinks/outflow,
-    ``n_out_levels`` outflow cells) in the front column i = front_i, shared
-    equally by ``n_plume_cols`` cross-fjord cells centred on j = ny//2.
+    ``n_out_levels`` outflow cells, 1 in (c), ruling R18) in the front column
+    i = front_i, shared equally by ``n_plume_cols`` (6) cross-fjord cells
+    centred on j = ny//2 (lateral spreading of the outflow, R18).
+    Known class-(b) differences (notes/pd1_c_fjord3d.md): the plume forcing
+    is fixed from the initial profile (Cowton recompute it every step), and
+    sum(q) = Q0 includes the plume melt volume, removed with the sinks.
     PD3 option (iii): addMass with local-water sinks/sources plus RBCS in
     the outflow cells, mask = q tau/V and targets T_out, S_out, so the RBCS
     tendency equals q (T_out - T)/V (notes/pd3_addmass_sink.md).
@@ -118,7 +124,12 @@ def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> np.ndarray:
                     Q_outflow=float(q[out].sum()), Q_entrained=float(-q[q < 0].sum()),
                     net_addmass_kg_s=float(add.sum()),
                     net_addmass_over_rho0_Q0=float(add.sum() / (rho0 * p["Q0"])),
-                    outflow_turnover_s=float(V / (q[out[0]] / n)))
+                    outflow_turnover_s=float(V / (q[out[0]] / n)),
+                    melt_volume_in_sinks_m3_s=_melt_volume(sol, float(zc[out[-1]] - dz / 2)),
+                    sum_rule_note=("sum(addMass)/rho0 = Q0 exactly; the sinks remove "
+                                   "entrainment + plume melt volume (melt_volume_in_sinks_m3_s) "
+                                   "from the ambient (class (b), pd1_c_fjord3d.md); plume forcing "
+                                   "fixed from the initial profile"))
     else:
         info.update(plume_representation="none", net_addmass_kg_s=0.0)
     info["Q0_total"] = p["Q0"]
@@ -129,7 +140,6 @@ def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> np.ndarray:
     nrec = int(round(cyc / per))
     if abs(nrec * per - cyc) > 1e-6:
         raise ValueError("shelf period must be a multiple of externForcingPeriod")
-    p["externForcingCycle"] = cyc
     t = (np.arange(nrec) + 0.5) * per
     eta = p["shelf_amp"] * np.sin(2.0 * np.pi * t / cyc)   # pycnocline uplift [m]
     obT = np.empty((nrec, nz, ny))
@@ -143,7 +153,16 @@ def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> np.ndarray:
         w = np.zeros((nrec, ny, nx))
         w[:n_on] = p["wind_tau"]          # down-fjord (+x, away from the ice)
         bins["windx.bin"] = w
-    return add
+    return add, cyc
+
+
+def _melt_volume(sol, z_top: float) -> float:
+    """Meltwater volume flux of the half cone below z_top [m^3 s^-1]:
+    int 2 b m rho_i/rho0 dz (wall contact width 2b, theory/plume.py)."""
+    ok = np.isfinite(sol.Q) & (sol.z <= z_top)
+    mp = MeltParams()
+    mw = 2.0 * sol.b[ok] * sol.melt[ok] * mp.rho_i / mp.rho0
+    return float(np.trapezoid(mw, sol.z[ok]))
 
 
 def _c_stages(p) -> list[dict]:
@@ -233,7 +252,7 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
         add = discharge_addmass((nz, ny, nx), cells, Q0, rho0, hFacC=hFacC, front_i=front_i)
         info.update(Q0_total=Q0, source_cells=cells)
     else:
-        add = _c_forcing(p, bins, zc, T1d, S1d, hFacC, info)
+        add, p["externForcingCycle"] = _c_forcing(p, bins, zc, T1d, S1d, hFacC, info)
     bins["addmass.bin"] = add
 
     # ---- templates

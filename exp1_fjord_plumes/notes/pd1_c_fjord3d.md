@@ -39,14 +39,15 @@ MITgcm** (la campaña de (a) sigue en curso). El Step 5 (corrida cronometrada de
   - arrastre total 3625 m³/s en las celdas k ≥ 19 (todas las celdas bajo la salida);
   - salida Q(z_lo) = 3725 m³/s a 3.42 °C y 33.53 psu.
 - `addMass` (kg/s) va en la columna de la cara (i = 0).
-- **Reparto:** j = 14, 15 y 16 (3 celdas a lo ancho, 600 m), con un tercio cada
-  una. La salida va en 2 niveles: k = 18 (celda de z_neutral) y k = 17 (encima,
-  hacia el sobrepaso). `n_plume_cols = 3`, `n_out_levels = 2` en `cases.yaml`.
+- **Reparto (regla R18):** j = 12–17 (6 celdas a lo ancho, 1200 m), con un
+  sexto cada una. La salida va en **un solo nivel**, k = 18 (la celda de
+  z_neutral, como en Cowton et al. 2015). `n_plume_cols = 6`,
+  `n_out_levels = 1` en `cases.yaml`.
 - **Neto:** Σ addMass = ρ0·Q0 exacto (C5). Queda en `case.json`
   (`net_addmass_over_rho0_Q0 = 1.0`).
 - **Agua local en sumideros y fuentes:** `temp_addMass` y `salt_addMass` sin
   definir, y `salt_EvPrRn = 1.234567E+05` (UNSET_RL; si no, S de `addMass` = 0).
-- **T/S de la salida:** RBCS solo en las 6 celdas de salida.
+- **T/S de la salida:** RBCS solo en las 6 celdas de salida (k = 18, j = 12–17).
   - `tauRelaxT = tauRelaxS = 600` s y máscara = q·τ/V = 0.93 (≤ 1).
   - Objetivos `rbcs_T` y `rbcs_S` = 3.42 °C / 33.53 psu ahí; perfil inicial
     fuera (sin efecto, máscara 0).
@@ -61,18 +62,40 @@ MITgcm** (la campaña de (a) sigue en curso). El Step 5 (corrida cronometrada de
     de AB2 para un término de relajación explícito (λ·dt < 1);
   - salida de ~1.9 m/s por una sola cara de 2000 m² (CFL 0.56).
   - Habría que bajar a dt ≈ 20–30 s, lo que duplica o triplica el costo.
-- **Elegido: 3 × 2 celdas.**
+- **Elegido (R18): 6 celdas a lo ancho × 1 nivel.**
   - Por celda: q = 621 m³/s, recambio 644 s, λ·dt = 0.093.
   - Salida por las 6 caras en x (12 000 m²): ≈ 0.31 m/s (CFL 0.09).
-  - Justificación física: el radio del semicono en z_neutral es b ≈ 45 m
-    (teoría), menor que una celda, pero la intrusión de salida se esparce
-    lateralmente por gravedad y ocupa el sobrepaso (z_neutral → z_detach ≈ −2 m).
-    Repartir en 600 m × 20 m es una elección numérica (clase (c)), no una
-    resolución física de la intrusión.
-  - Los sumideros se reparten en las mismas 3 columnas. Así el transporte
-    vertical de la pluma ocurre en una sola columna de 600 m de ancho y no se
+  - La primera versión (Step 4) usaba 3 × 2 celdas, con los mismos números.
+    La revisión encontró que la mitad puesta en k = 17 es **0.068 kg/m³ más
+    densa** que el ambiente ahí: una inversión. En k = 18 es 0.049 kg/m³ más
+    ligera. Cowton et al. 2015 terminan la pluma en la flotabilidad neutra
+    justamente para evitarlo. Ahora solo se reparte lateralmente; la prueba
+    `test_c_outflow_one_level_six_columns_not_denser_than_ambient` lo vigila.
+  - Justificación: el radio del semicono en z_neutral es b ≈ 45 m (teoría),
+    menor que una celda, pero la intrusión se esparce lateralmente por gravedad.
+    Repartir en 1200 m a lo ancho (21 % del ancho mojado) es una elección
+    numérica (clase (c)), no una resolución física de la intrusión.
+  - Los sumideros se reparten en las mismas 6 columnas. Así el transporte
+    vertical de la pluma ocurre en una sola columna de 1200 m de ancho y no se
     crea una recirculación horizontal artificial entre columnas de sumidero y de
     salida.
+
+### Diferencias conocidas, clase (b) (física faltante; regla R19)
+
+1. **Forzamiento de la pluma fijo.** z_neutral, T_out, S_out y los sumideros se
+   calculan una vez, con el perfil inicial. Cowton et al. 2015 los recalculan
+   en cada paso con el perfil del modelo. Consecuencias:
+   - En `shelf` y `all`, la salida **no responde** a la oscilación de la
+     picnoclina: no cambia su profundidad ni sus propiedades.
+   - **Calor y sal no se conservan estrictamente.** Los sumideros retiran agua a
+     la T/S local, que evoluciona, y la fuente la añade a la T_p fija. El
+     desbalance es ∝ Q_arrastre·(T_local(t) − T_local(0)). Es cero mientras la
+     columna de la cara conserve su perfil inicial.
+2. **ΣQ = Q0 incluye el derretimiento.** La teoría añade el agua de deshielo de
+   la pared del semicono (≈ 0.39 m³/s bajo la salida) al flujo de la pluma. Para
+   que Σ addMass = ρ0·Q0 sea exacto, los sumideros retiran del ambiente
+   arrastre + deshielo, y el deshielo no es agua del ambiente. Es 1e-4 del
+   arrastre. Queda en `case.json` (`melt_volume_in_sinks_m3_s`, `sum_rule_note`).
 
 ## Forzamientos
 
@@ -125,6 +148,17 @@ MITgcm** (la campaña de (a) sigue en curso). El Step 5 (corrida cronometrada de
 - En `wind` y `shelf` (Q0 = 0) sería la única fuente de flotabilidad y
   ensuciaría la partición del intercambio (Fig. 3).
 - Se escriben `R_icefront.bin` e `icefrontlength.bin`, pero ningún namelist los usa.
+
+## Sección para Q_ex (Fig. 3)
+
+La esponja de U/V y T/S de OBCS cubre las 10 columnas antes de la OB: OB en
+i = 198 (Python, `OB_Ieast = -2` → columna Nx−1 de Fortran), esponja en
+**i = 188–197**. Ahí u y v se relajan a los valores de Orlanski y T/S a las de
+la OB, así que el intercambio está amortiguado artificialmente. **La sección de
+Q_ex y del calor hacia el frente debe estar a media distancia del fiordo**
+(p. ej. i = 100, x = 20 km), fuera de la esponja y lejos de la columna de la
+pluma (i = 0). También conviene evitar la zona de recirculación de la salida
+cerca de la cara.
 
 ## Números adimensionales (para la Fig. 3)
 

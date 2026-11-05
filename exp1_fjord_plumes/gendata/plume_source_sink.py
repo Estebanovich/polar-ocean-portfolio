@@ -45,10 +45,11 @@ Choices:
   so that ``sum(q) = Q0`` holds exactly.
 * **Outflow levels (``n_out_levels``, default 1 = Cowton).** Optionally the
   outflow is split equally between the z_neutral cell and the
-  ``n_out_levels - 1`` cells above it, i.e. into the overshoot, where the
-  intruding plume water lies (z_neutral < z < z_detach). Config (c) uses
-  2 for numerical reasons (outflow-cell turnover time, see
-  ``notes/pd1_c_fjord3d.md``); the sinks and the sum are unchanged.
+  ``n_out_levels - 1`` cells above it (ValueError if that reaches above the
+  surface). Not used by config (c) (ruling R18): the plume water put above
+  z_neutral is denser than the ambient there (0.07 kg m^-3 in k = 17 for
+  the (c) profile), the inversion Cowton et al. avoid by terminating at
+  neutral buoyancy; (c) spreads the outflow laterally instead.
 * **Integration top.** ``point_plume`` ends the half cone with melt at
   u = u_stop (ruling R15, ``theory/plume.py``), so one integration from the
   base to the surface suffices.
@@ -117,7 +118,10 @@ def plume_source_sink(z, Ta, Sa, Q0, dz, *, T0=0.0, S0=0.0, alpha=0.1,
     q = np.zeros(z.size)
     for k in range(k_n + 1, z.size):          # entrainment sinks, whole cells
         q[k] = -(at(sol.Q, top[k]) - at(sol.Q, bot[k]))
-    ks = np.arange(max(k_n - n_out_levels + 1, 0), k_n + 1)   # outflow cells
+    if k_n - n_out_levels + 1 < 0:
+        raise ValueError(f"n_out_levels={n_out_levels} reaches above the surface "
+                         f"(outflow cell k={k_n})")
+    ks = np.arange(k_n - n_out_levels + 1, k_n + 1)   # outflow cells
     q[ks] = at(sol.Q, z_lo) / ks.size         # outflow at the neutral level
     T_out = np.full(z.size, np.nan)
     S_out = np.full(z.size, np.nan)

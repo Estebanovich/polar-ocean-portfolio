@@ -112,3 +112,10 @@
 - W/Rd = 0.67 (Rd = 8.4 km; con ny = 37 sería 0.83, no se cambió).
 - Costo a priori (2.8e-6 s por celda·paso, de (a), no hidrostático): 10.1 h serial por caso, 2–3 h con 5 procesos, 8–12 h los 4 casos. Es una cota superior porque no hay cg3d. La corrida corta de 1 día debería tardar ≈ 4–6 min. Nota: `notes/pd1_c_fjord3d.md`.
 - TDD: 9 pruebas nuevas, RED → GREEN; suite completa 92 PASS. No se corrió MITgcm.
+
+## 2026-11-05 — Task 7: correcciones previas a la corrida (R18, R19)
+
+- R18: la salida de la pluma ahora se reparte solo a lo ancho: 6 columnas (j = 12–17), 1 nivel (k = 18). La mitad que antes iba en k = 17 era 0.068 kg/m³ más densa que el ambiente (inversión); en k = 18 es 0.049 más ligera. El recambio sigue en 644 s, u de salida ≈ 0.31 m/s y la máscara RBCS en 0.93.
+- R19: `notes/pd1_c_fjord3d.md` documenta dos diferencias de clase (b): el forzamiento de la pluma es fijo (no responde a la picnoclina y no conserva estrictamente calor y sal), y ΣQ = Q0 incluye 0.39 m³/s de deshielo retirado del ambiente (también en `case.json`). `plume_source_sink` levanta `ValueError` si `n_out_levels` pasaría de la superficie. Se corrigieron los encabezados de `OBCS_OPTIONS.h` (c) y `SIZE.h` (spike).
+- Fig. 3: la esponja cubre i = 188–197, así que la sección de Q_ex debe ir a media distancia del fiordo.
+- Menores: el import de las pruebas pasa arriba y `_c_forcing` devuelve `externForcingCycle`. TDD: 3 pruebas nuevas, RED → GREEN; suite completa 95 PASS. Se recompiló (c) con MPI (cambió `code/`, solo comentarios). No se corrió MITgcm.

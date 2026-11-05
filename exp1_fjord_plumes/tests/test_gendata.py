@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -11,11 +12,10 @@ from pfcommon.mitgcm_io import read_bin
 
 from exp1_fjord_plumes.gendata.grids import icefront_fields, stretched_x
 from exp1_fjord_plumes.gendata.make_case import load_cases, make_case
+from exp1_fjord_plumes.gendata.plume_source_sink import plume_source_sink
 from exp1_fjord_plumes.gendata.profiles import continuous_sermilik, two_layer
 from exp1_fjord_plumes.gendata.sources import discharge_addmass, place_sources
 from exp1_fjord_plumes.theory.plume import LinearEOS
-
-from pathlib import Path
 
 PKG_DIR = Path(__file__).resolve().parents[1]
 
@@ -241,7 +241,6 @@ def test_b_widest_separation_far_from_side_walls(tmp_path):
 
 # ---------------------------------------------------------------- Task 7 (c)
 # Plume as entrainment sinks + outflow sources (Cowton et al. 2015, Sec. 2.1.3)
-from exp1_fjord_plumes.gendata.plume_source_sink import plume_source_sink  # noqa: E402
 
 ZC = -(np.arange(50) + 0.5) * 10.0   # config (c): H = 500 m, dz = 10 m
 
@@ -423,3 +422,35 @@ def test_c_grid_matches_size_h_and_5_ranks(tmp_path):
     assert np.all(depth[0] == 0) and np.all(depth[-1] == 0) and np.all(depth[:, -1] == 0)
     obcs = _active((out / "data.obcs").read_text())
     assert "OB_Ieast=%d*-2," % p["ny"] in obcs and "useOBCSbalance" not in obcs
+
+
+def test_source_sink_rejects_outflow_levels_above_surface():
+    """R19: n_out_levels that would reach above the surface raises instead of
+    being clipped silently (plume reaching the surface -> outflow cell k = 0)."""
+    Ta, Sa = np.full(ZC.shape, 4.0), np.full(ZC.shape, 34.6)
+    with pytest.raises(ValueError, match="n_out_levels"):
+        plume_source_sink(ZC, Ta, Sa, 100.0, 10.0, n_out_levels=2)
+
+
+def test_c_outflow_one_level_six_columns_not_denser_than_ambient(tmp_path):
+    """R18: lateral spreading only (n_plume_cols = 6, n_out_levels = 1); the
+    outflow is not denser than the ambient water of its cell (no inversion,
+    Cowton et al. 2015 terminate at neutral buoyancy)."""
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
+    assert p["n_plume_cols"] == 6 and p["n_out_levels"] == 1
+    assert len(meta["plume_j"]) == 6 and len(meta["outflow_k"]) == 1
+    k = meta["outflow_k"][0]
+    eos = LinearEOS()
+    zc = -(np.arange(p["nz"]) + 0.5) * p["dz"]
+    Ta, Sa = continuous_sermilik(zc)
+    assert eos.rho(meta["T_out"], meta["S_out"]) <= eos.rho(Ta[k], Sa[k])
+    V = p["dx"] * p["dy"] * p["dz"]
+    assert abs(meta["outflow_turnover_s"] - V / (meta["Q_outflow"] / 6)) < 1e-6
+
+
+def test_c_case_json_records_melt_volume_from_ambient(tmp_path):
+    """R19 (ii): sum(q) = Q0 is reached with the plume melt volume taken from
+    the ambient sinks; case.json states it."""
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
+    assert 0.1 < meta["melt_volume_in_sinks_m3_s"] < 2.0
+    assert "melt" in meta["sum_rule_note"]

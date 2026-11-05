@@ -80,8 +80,8 @@ configs:
     shelf_period_days: 6.0
     land_j_rows: [0, -1]  # Task 7 Step 4: side walls (wet width 28 dy = 5.6 km)
     land_i_cols: [-1]     # as (a), (b): closes the periodic x-wrap; OB at Nx-1
-    n_plume_cols: 3       # cross-fjord cells sharing the plume sinks/outflow (pd1_c_fjord3d.md)
-    n_out_levels: 2       # outflow cells: z_neutral cell + 1 above (plume_source_sink)
+    n_plume_cols: 6       # R18: cross-fjord cells sharing the plume sinks/outflow (pd1_c_fjord3d.md)
+    n_out_levels: 1       # R18: outflow only in the z_neutral cell (no density inversion)
     rbcs_tau: 600.0       # RBCS tau [s]; outflow mask = q tau/V <= 1
     externForcingPeriod: 3600.0   # wind / OB record spacing [s]; cycle = shelf period
     wind_stage1_s: 86400.0        # wind cases: stage 1 (wind file on) length [s]

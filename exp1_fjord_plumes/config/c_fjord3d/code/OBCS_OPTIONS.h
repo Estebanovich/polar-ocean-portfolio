@@ -1,8 +1,10 @@
 C CPP options file for OBCS package
 C Use this file for selecting options within the OBCS package
-C Exp1 b_twoplume3d (same as a_line2d): only the eastern OB (Orlanski + U/V sponge, as in the
-C thesis config verification/BayIW_Rectan/code/OBCS_OPTIONS.h); no prescribe
-C files; no OBCS balance (it ignores addMass, pkg/obcs/obcs_balance_flow.F:300-315).
+C Exp1 c_fjord3d: only the eastern OB (fjord mouth). u/v by Orlanski
+C radiation (as a_line2d, b_twoplume3d); T/S PRESCRIBED from OBEt/OBEs
+C files (shelf pycnocline oscillation, ALLOW_OBCS_PRESCRIBE); sponge for
+C U/V and T/S; no OBCS balance (it ignores addMass,
+C pkg/obcs/obcs_balance_flow.F:300-315).
 
 #ifndef OBCS_OPTIONS_H
 #define OBCS_OPTIONS_H
