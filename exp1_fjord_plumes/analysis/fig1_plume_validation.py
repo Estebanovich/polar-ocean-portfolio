@@ -121,10 +121,10 @@ def evaluate(prof: dict, params: dict) -> dict:
     wmax = _mean(prof["w_max"][low])
     q_low = prof["Q"][low]
     mq = _mean(prof["M"][low] / np.where(q_low > 0, q_low, np.nan))
-    # max over the plume of the face-cell w relative to the theory u at the same depth
+    # R25: peak of the face-cell w over the plume relative to the peak theory u (a ratio of
+    # depth-wise maxima; the depth-wise ratio is singular where the theory u -> 0 at detachment)
     inplume = np.isfinite(prof["width"])
-    ratio_z = np.where(inplume, prof["w_face"] / np.interp(z, th.z, th.u), np.nan)
-    kmax = int(np.nanargmax(ratio_z))
+    wface_peak = float(prof["w_face"][inplume].max())
     # melt: common range below the theory z_detach; whole-face mean with theory = 0 above
     th_melt_z = np.interp(z, th.z, np.nan_to_num(th.melt, nan=0.0))
     common = z < zd_t
@@ -135,9 +135,9 @@ def evaluate(prof: dict, params: dict) -> dict:
         "u_theory_lower_half": u_th,
         "w_face_core_lower_half": core, "w_face_ratio": core / u_th,
         "w_max_lower_half": wmax, "w_max_ratio": wmax / u_th,
-        "w_face_max_over_plume": float(prof["w_face"][inplume].max()),
-        "w_face_max_over_plume_ratio": float(ratio_z[kmax]),
-        "w_face_max_ratio_depth": float(z[kmax]),
+        "w_face_peak": wface_peak,
+        "u_theory_peak": float(np.nanmax(th.u)),
+        "w_face_peak_ratio": wface_peak / float(np.nanmax(th.u)),
         "M_over_Q_lower_half": mq, "M_over_Q_ratio": mq / u_th,
         "width_10pct_lower_half": _mean(prof["width"][low]),
         "theory_b_lower_half": _mean(np.interp(z[low], th.z, th.b)),

@@ -185,7 +185,7 @@ def test_post_hoc_and_declarations(monkeypatch):
             "T_amb": np.full(50, 2.0), "S_amb": np.full(50, 34.0)}
     out = f1.evaluate(prof, {"H": 500.0})
     ph = out["post_hoc"]
-    assert ph["w_face_max_over_plume_ratio"] == pytest.approx(1.5)
+    assert ph["w_face_peak_ratio"] == pytest.approx(1.5)
     assert ph["z_detach_theory_evolved"] == -150.0
     assert ph["z_detach_gap_over_H_evolved"] == pytest.approx(0.1)
     assert ph["melt_ratio_common_range"] == pytest.approx(1.0)
