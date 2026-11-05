@@ -35,6 +35,26 @@ u -> 0, so the top of the plume (u = 0) is a regular zero crossing of M^2,
 located with a terminal ``solve_ivp`` event. ``scipy.integrate.solve_ivp``,
 RK45, rtol = 1e-8.
 
+End of validity of the half cone with melt (ruling R15): the ice-contact
+width 2b = 2Q/sqrt(k M) diverges as u -> 0 (b ~ M^(-1/2)), while with a
+floored or constant transfer velocity ("mitgcm": gammaT >= 1e-4 m/s,
+icefront_thermodynamics.F:94-95; "constant") the melt flux m_w does not
+vanish. The volume, heat and salt sources 2b m_w then blow up at the plume
+top, and RK trial stages beyond M^2 = 0 overflow. In "jenkins" mode
+m_w is proportional to u, so 2b m_w ~ sqrt(M) -> 0 and no singularity
+exists. Physically the top-hat half cone stops describing the flow long
+before b becomes infinite: once the plume speed is below about 1 mm/s it is
+far below ambient fjord velocities (O(cm/s)), and a plume radius larger
+than the water depth is meaningless. So for the half cone with melt on the
+integration ends at u = ``u_stop`` (default 1e-3 m/s; terminal event),
+and ``z_detach`` is that level. Near the top u^2 is linear in z with slope
+about 2 g', so this lowers z_detach by about u_stop^2/(2|g'|), i.e. mm
+for |g'| of order 1e-3 m s^-2. Beyond u_stop only (u < u_stop, reached
+only by trial stages), the contact width is held at its u = u_stop value so
+the right-hand side stays finite. Results with u > u_stop are unchanged.
+The line plume (contact width 1 per unit width) and the full cone (no
+wall) have no such singularity and are not affected.
+
 Top-hat vs Gaussian: in flux form the top-hat system equals the Gaussian
 system of Morton et al. (1956) when alpha_tophat = sqrt(2) alpha_gauss.
 Morton et al.'s alpha = 0.093 is a Gaussian value.
@@ -95,7 +115,8 @@ class PlumeSolution:
     u [m s^-1], T [degC], S [psu], rho [kg m^-3], melt [m s^-1 of ice,
     positive = melting; zero for the full cone], Q [m^2 s^-1 line, m^3 s^-1
     cones], gprime [m s^-2]. ``z_detach``: elevation where u -> 0 (the
-    surface z_grid[-1] if the plume gets there, ``reached_top`` = True);
+    surface z_grid[-1] if the plume gets there, ``reached_top`` = True; for
+    the half cone with melt, where u = u_stop, see module docstring);
     ``z_neutral``: first level of zero buoyancy (NaN if none).
     """
 
@@ -137,7 +158,7 @@ def _as_callable(f: Ambient, z_grid: np.ndarray) -> Callable[[float], float]:
 
 
 def _solve(z_grid, Ta, Sa, Q0, T0, S0, p: MeltParams, mode: Mode, alpha,
-           geometry, eos: LinearEOS, u0) -> PlumeSolution:
+           geometry, eos: LinearEOS, u0, u_stop: float = 1e-3) -> PlumeSolution:
     z_grid = np.asarray(z_grid, dtype=float)
     if z_grid.ndim != 1 or z_grid.size < 2 or np.any(np.diff(z_grid) <= 0):
         raise ValueError("z_grid must be 1-D and strictly increasing (base first)")
@@ -173,6 +194,10 @@ def _solve(z_grid, Ta, Sa, Q0, T0, S0, p: MeltParams, mode: Mode, alpha,
     use_melt = has_wall and not p.melt_off
     drag = 0.0 if geometry == "full_cone" else p.Cd
     ratio_w = p.rho_i / p.rho0  # ice-thickness rate -> meltwater volume flux
+    # R15: end-of-validity stop for the half cone with melt (module docstring)
+    stop_active = geometry == "half_cone" and use_melt
+    if stop_active and not (0.0 < u_stop < u0):
+        raise ValueError(f"u_stop must be in (0, u0 = {u0:.3g}) m/s")
 
     def kinematics(Q, M):
         u = M / Q
@@ -185,7 +210,11 @@ def _solve(z_grid, Ta, Sa, Q0, T0, S0, p: MeltParams, mode: Mode, alpha,
             Ms = max(M, 1e-300)
             b = Q / math.sqrt(k * Ms)
             entr = alpha * perim * math.sqrt(M / k)  # perim*alpha*b*u
-            width = wall * b
+            if stop_active:
+                # contact width held at its u = u_stop value for u < u_stop
+                width = wall * Q / math.sqrt(k * max(M, Q * u_stop))
+            else:
+                width = wall * b
             dragM = 2.0 * drag * b * u * u * M if geometry == "half_cone" else 0.0
         return u, b, entr, width, dragM
 
@@ -223,13 +252,26 @@ def _solve(z_grid, Ta, Sa, Q0, T0, S0, p: MeltParams, mode: Mode, alpha,
     ev_neutral.terminal = False
     ev_neutral.direction = -1
 
+    def ev_ustop(z, y):
+        # (u - u_stop) * Q, with u = M/Q
+        M = math.sqrt(y[1]) if y[1] > 0 else 0.0
+        return M - y[0] * u_stop
+
+    ev_ustop.terminal = True
+    ev_ustop.direction = -1
+
+    events = [ev_detach, ev_neutral] + ([ev_ustop] if stop_active else [])
     sol = solve_ivp(rhs, (zb, zt), y0, method="RK45", rtol=_RTOL, atol=atol,
-                    t_eval=z_grid, events=[ev_detach, ev_neutral])
+                    t_eval=z_grid, events=events)
     if sol.status == -1:
         raise RuntimeError(f"plume integration failed: {sol.message}")
 
     reached_top = sol.status == 0
-    z_detach = float(zt) if reached_top else float(sol.t_events[0][0])
+    if reached_top:
+        z_detach = float(zt)
+    else:
+        z_detach = min(float(sol.t_events[i][0]) for i in (0, 2)
+                       if i < len(sol.t_events) and sol.t_events[i].size)
     z_neutral = float(sol.t_events[1][0]) if sol.t_events[1].size else math.nan
 
     N = z_grid.size
@@ -267,14 +309,17 @@ def line_plume(z_grid, Ta: Ambient, Sa: Ambient, q0: float, T0: float,
 def point_plume(z_grid, Ta: Ambient, Sa: Ambient, Q0: float, T0: float,
                 S0: float, p: MeltParams, mode: Mode, alpha: float = 0.1,
                 geometry: Literal["half_cone", "full_cone"] = "half_cone", *,
-                eos: LinearEOS = LinearEOS(), u0: float | None = None
-                ) -> PlumeSolution:
+                eos: LinearEOS = LinearEOS(), u0: float | None = None,
+                u_stop: float = 1e-3) -> PlumeSolution:
     """Point-source plume: half cone against the ice (Slater et al. 2016
     Eqs. 1a-1d) or free full cone (Morton et al. 1956, no wall terms).
 
     Q0 : source volume flux [m^3 s^-1]. Default source radius/velocity:
-    pure plume G0 = 1 (Slater et al. 2016 Eq. 5).
+    pure plume G0 = 1 (Slater et al. 2016 Eq. 5). u_stop [m s^-1]: end of
+    validity of the half cone with melt on (ruling R15, module docstring);
+    ignored for the full cone or with melt off.
     """
     if geometry not in ("half_cone", "full_cone"):
         raise ValueError(f"unknown point-plume geometry {geometry!r}")
-    return _solve(z_grid, Ta, Sa, Q0, T0, S0, p, mode, alpha, geometry, eos, u0)
+    return _solve(z_grid, Ta, Sa, Q0, T0, S0, p, mode, alpha, geometry, eos, u0,
+                  u_stop)

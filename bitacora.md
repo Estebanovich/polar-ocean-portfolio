@@ -81,3 +81,9 @@
 - Hallazgo en la teoría (Task 2): con transferencia `mitgcm`/`constant` el semicono falla justo bajo z_detach, porque el derretimiento no se anula cuando u → 0 y b → ∞. `plume_source_sink` reintenta bajando el techo de integración; solo necesita z ≤ z_neutral.
 - `analysis/exchange.py`: `exchange_flux` = ½∫|u|dA. Jackson et al. 2018 no la escriben así en §2; usan Q_in = −Q_out (§3c(3), Ec. 26). Con transporte neto nulo son iguales. `heat_toward_front` = ρ0 c_p ∫(−u)(T − T_ref)dA, con T_ref explícita.
 - TDD: RED (módulos inexistentes) → GREEN; suite completa 82 PASS.
+
+## 2026-11-05 — Task 2, seguimiento R15: término de la semicónica con derretimiento
+
+- Falla: `point_plume(half_cone)` con derretimiento en modo `mitgcm`/`constant` se rompía justo bajo z_detach. El ancho de contacto 2b ∝ M^(−1/2) diverge cuando u → 0 y el flujo de derretimiento no se anula (piso γT = 1e-4 m/s), así que las fuentes 2b·m_w explotan.
+- Solución (elección física y numérica): un evento terminal en u = u_stop = 1e-3 m/s, solo para la semicónica con derretimiento. Por debajo de ~1 mm/s la pluma ya no se distingue de las corrientes del fiordo y un radio mayor que la profundidad no tiene sentido. z_detach baja ~u_stop²/(2|g′|) ≈ mm; con u_stop = 1e-4 cambia 0.3 mm.
+- El resto de los resultados queda bit a bit igual. El reintento de `plume_source_sink` ya no hace falta (se deja, es de Task 7); su q cambia ≤ 1.6e-6 relativo solo por la malla fina distinta.

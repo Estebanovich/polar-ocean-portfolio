@@ -185,3 +185,29 @@ def test_volume_budget_with_melt():
     assert melt_part[-1] / lhs[-1] > 1e-4
     rel = np.abs(lhs[1:] - budget[1:]) / np.abs(lhs[1:])
     assert rel.max() < 1e-6
+
+
+# ---------------------------------------------------------------------------
+# Follow-up R15: half cone with melt must terminate cleanly near u -> 0
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("mode", ["mitgcm", "constant"])
+def test_half_cone_with_melt_terminates_in_sermilik(mode):
+    import warnings
+
+    from exp1_fjord_plumes.gendata.profiles import continuous_sermilik
+
+    H = 500.0
+    z = np.linspace(-H, 0.0, 2001)
+    Ta, Sa = continuous_sermilik(z)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)  # no overflow allowed
+        sol = point_plume(z, Ta, Sa, 100.0, 0.0, 0.0, MeltParams(ice_depth=H),
+                          mode, geometry="half_cone")
+    assert np.isfinite(sol.z_detach)
+    assert np.isfinite(sol.z_neutral)
+    assert sol.z_neutral < sol.z_detach <= 0.0
+    ok = np.isfinite(sol.Q)
+    assert ok.sum() > 10 and np.all(sol.z[ok] <= sol.z_detach)
+    assert np.all(np.diff(sol.Q[ok]) > 0.0)
+    assert np.all(np.isfinite(sol.melt[ok])) and np.all(sol.melt[ok] > 0.0)
