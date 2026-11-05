@@ -157,3 +157,11 @@
 ## 2026-11-05 — Task 5, ronda de correcciones 1 (R22–R24)
 
 - Ancho de pluma con borde del 10 % interpolado entre centros de celda (R22; mismos veredictos, desaparece el zigzag); rango de promedio de C2'' declarado (R23) con razones post hoc sobre rango común y cara completa (sermilik q0.1: 1.50, en el límite); teoría reevaluada con el ambiente evolucionado a x = 1 km como diagnóstico post hoc (R24: brecha de despegue 0.141 H → 0.059 H en sermilik q0.1). Se añade w de la celda de la cara (máx. sobre la pluma). Figura rehecha y `figures/fig1_caption.md` (borrador de pie de figura).
+
+## 2026-11-05 — Task 6 Step 2: corrida corta cronometrada de (b) (PD1)
+
+- `b_3d_twolayer_x0_40`, 30 min de modelo, np = 5, en `/Volumes/LaCie/portfolio_runs/exp1/b_3d_twolayer_x0_40_short30m{,_dt2}/`. `OBCS_CHECK: set-up OK` y "Inside Mask and OB locations: OK" con las filas de tierra (pregunta del Step 1 resuelta).
+  1. dt = 1 s: OK, **192 s**, CFL máx. u/v/w 0.044/0.042/**0.128** (≤ 0.15 → se probó dt mayor), cg3d 190–203 iteraciones (tope 500), sin NaN, `pgrep` vacío.
+  2. dt = 2 s: OK, **106 s**, CFL w 0.256, cg3d 215–237, sin NaN, `pgrep` vacío. Frente a dt = 1 s: derretimiento total en la cara −1344.8 vs −1344.0 kg/s (0.06 %), W rms de la diferencia 8e-4 m/s.
+- Figura `notes/pd1_b_quicklook.png`: plumas de núcleo de 1 celda, w ≈ 1.3 m/s, llegan a ~30–50 m (pasan la interfaz de 100 m), salida entre 50 y 150 m. Sin ruido de 2Δ (G ambiente ≤ 0.10; alternancia de signo 7e-5).
+- Costo de 14 casos × 3 h: 4.5 h con dt = 1 s; **2.5 h con dt = 2 s (propuesta)**. Opciones reducidas: 10 casos 1.8 h, solo dos capas 1.2 h, dz = 15 m ≈ 1.1 h, caja chica ≈ 1.0 h. Nota completa: `notes/pd1_b_twoplume3d.md`. **PD1 pendiente; campaña no lanzada.** `cases.yaml` sigue con dt = 1 s hasta la decisión.
