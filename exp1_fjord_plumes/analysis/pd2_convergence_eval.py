@@ -126,10 +126,14 @@ def richardson(phi1: float, phi2: float, phi3: float, r21: float = R21, r32: flo
     if s < 0:
         out["reason"] = "non-monotone (s < 0)"
         return out
+    if abs(ratio) <= 1.0:  # R27: increments do not shrink under refinement
+        out["reason"] = "monotone divergence (|eps32/eps21| <= 1)"
+        return out
     q, p = 0.0, None
     for _ in range(max_iter):
         p_new = abs(math.log(abs(ratio)) + q) / math.log(r21)
         if p_new <= 0:
+            p = None
             break
         try:
             a, b = r21**p_new - s, r32**p_new - s
@@ -202,7 +206,12 @@ CLASS_TEXT = {
 
 
 def width_fixed_flag(b10: float, b5: float, b25: float) -> tuple[bool, tuple[float, float]]:
-    """G test: |(b_coarse/b_fine)/r_eff - 1| < 0.2 in both steps."""
+    """G test: |(b_coarse/b_fine)/r_eff - 1| < 0.2 in both steps.
+
+    A zero, negative or non-finite width gives (False, (nan, nan)); `assemble`
+    treats that as an invalid run (class V), never as a width ratio."""
+    if not all(math.isfinite(b) and b > 0 for b in (b10, b5, b25)):
+        return False, (float("nan"), float("nan"))
     v = ((b10 / b5) / R32, (b5 / b25) / R21)
     return bool(all(abs(x - 1.0) < G_TOL for x in v)), v
 
@@ -279,18 +288,33 @@ def assemble(metrics: dict[str, dict]) -> dict:
         res["convergence"] = {"class": "INCOMPLETE", "reason": f"missing runs: {missing}"}
     else:
         bad = {k: v["reasons"] for k, v in conv.items() if not v["valid"]}
+        if bad:  # class V: no steps, Richardson or G (invalid runs may carry no metrics)
+            res["convergence"] = {"class": "V", "meaning": CLASS_TEXT["V"], "invalid_runs": bad}
+            return _finish(res, metrics)
         c10, c5, c25 = (conv[k] for k in CONV)
+        fixed, gv = width_fixed_flag(c10["b"], c5["b"], c25["b"])
+        if not all(math.isfinite(v) for v in gv):
+            bad = {k: ["zero or non-finite plume width"] for k in CONV}
+            res["convergence"] = {"class": "V", "meaning": CLASS_TEXT["V"], "invalid_runs": bad}
+            return _finish(res, metrics)
         steps = [_diff(c10, c5), _diff(c5, c25)]
         rich = richardson(c25["R_Q"], c5["R_Q"], c10["R_Q"])
-        fixed, gv = width_fixed_flag(c10["b"], c5["b"], c25["b"])
-        cls = classify(not bad, tuple(s["R_Q_trend"] for s in steps),
+        cls = classify(True, tuple(s["R_Q_trend"] for s in steps),
                        tuple(s["b_trend"] for s in steps), fixed, rich)
         conv_res = {"class": cls, "meaning": CLASS_TEXT[cls], "invalid_runs": bad,
                     "steps": {"dx10_to_dx5": steps[0], "dx5_to_dx2p5": steps[1]},
                     "richardson": rich, "width_fixed_ratios": list(gv), "r_eff": {"r21": R21, "r32": R32}}
         if cls == "P1":
             conv_res["numerical_part_R_ext_minus_RQ_dx5"] = rich["R_ext"] - c5["R_Q"]
+            conv_res["numerical_part_caveat"] = (
+                "R_Q(dx5) is conv_dx5, which also has dz = 5 m (production 10 m): the numerical part "
+                "mixes dx and dz refinement")
         res["convergence"] = conv_res
+    return _finish(res, metrics)
+
+
+def _finish(res: dict, metrics: dict) -> dict:
+    """Sensitivities and per-run tolerance flags (shared tail of `assemble`)."""
     ref = metrics.get(REF)
     sens = {}
     if ref is not None and ref["valid"]:

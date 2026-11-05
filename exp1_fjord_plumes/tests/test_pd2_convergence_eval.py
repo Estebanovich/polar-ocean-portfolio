@@ -185,3 +185,88 @@ def test_assemble_invalid_run_gives_V_and_missing_gives_incomplete():
     assert res["convergence"]["class"] == "V" and "conv_dx5" in res["convergence"]["invalid_runs"]
     res2 = ev.assemble({"conv_dx10": _m(0.4, 38.0)})
     assert res2["convergence"]["class"] == "INCOMPLETE"
+
+
+# ------------------------------------------------------------ fix round 1 (R27)
+def test_richardson_monotone_divergence_is_inconclusive_R27():
+    # R_Q 0.40 -> 0.50 -> 0.70 under refinement: increments GROW (|eps32/eps21| = 0.5 < 1)
+    r = ev.richardson(0.70, 0.50, 0.40)
+    assert not r["conclusive"] and r["R_ext"] is None
+    assert "monotone divergence" in r["reason"]
+    assert ev.classify(True, (U, U), (D, D), False, r) == "P2"
+
+
+def test_richardson_ratio_exactly_one_is_divergence_R27():
+    r = ev.richardson(0.75, 0.5, 0.25)  # eps21 = eps32 = -0.25 exactly
+    assert not r["conclusive"] and "monotone divergence" in r["reason"]
+
+
+def test_richardson_nonconvergence_branch():
+    r = ev.richardson(*_phi(1.5), max_iter=1)
+    assert not r["conclusive"] and r["p"] is None and "did not converge" in r["reason"]
+
+
+def test_stationarity_near_two_percent():
+    assert not ev.is_stationary(0.50, 0.5105, 0.5)   # 0.021
+    assert ev.is_stationary(0.50, 0.5095, 0.5)       # 0.019
+
+
+def test_width_fixed_guard_zero_width():
+    fixed, v = ev.width_fixed_flag(10.0, 0.0, 5.0)
+    assert fixed is False and not all(map(math.isfinite, v))
+    fixed, v = ev.width_fixed_flag(float("nan"), 5.0, 2.0)
+    assert fixed is False and not all(map(math.isfinite, v))
+
+
+def test_assemble_zero_width_is_V():
+    res = ev.assemble({"conv_dx10": _m(0.4, 38.0), "conv_dx5": _m(0.5, 0.0), "conv_dx2p5": _m(0.6, 14.0)})
+    assert res["convergence"]["class"] == "V"
+    assert any("width" in x for r in res["convergence"]["invalid_runs"].values() for x in r)
+
+
+def test_assemble_failed_run_without_metrics_gives_V_and_json(tmp_path):
+    bad = {"run": "conv_dx5", "valid": False, "reasons": ["run state is FAILED"]}
+    res = ev.assemble({"conv_dx10": _m(0.4, 38.0), "conv_dx5": bad, "conv_dx2p5": _m(0.6, 14.0)})
+    assert res["convergence"]["class"] == "V"
+    assert res["convergence"]["invalid_runs"]["conv_dx5"] == ["run state is FAILED"]
+    # end to end: three FAILED run dirs -> V and a written JSON
+    import json
+
+    dirs = {}
+    for k in ev.CONV:
+        d = tmp_path / k
+        d.mkdir()
+        (d / "run_status.json").write_text(json.dumps(
+            {"state": "FAILED", "last_iter": 1, "n_timesteps": 10, "wall_s": 1}))
+        dirs[k] = d
+    out = tmp_path / "out"
+    r = ev.evaluate_study(dirs, out)
+    assert r["convergence"]["class"] == "V"
+    assert json.loads((out / "pd2_convergence.json").read_text())["convergence"]["class"] == "V"
+
+
+def test_assemble_exact_class_and_floor_pin():
+    metrics = {"conv_dx10": _m(0.40, 38.0), "conv_dx5": _m(0.55, 25.0), "conv_dx2p5": _m(0.68, 14.0)}
+    assert ev.assemble(metrics)["convergence"]["class"] == "P2"  # Richardson inconclusive (p < 0.5)
+    # b threshold: 2 sigma_AB = 0.85 m < 2.5 m floor -> the floor decides
+    a, b = _m(0.5, 24.0), _m(0.5, 26.4)
+    assert ev._diff(a, b)["b_trend"] == "plano"
+    assert ev._diff(a, _m(0.5, 26.6))["b_trend"] == "sube"
+    assert ev._diff(a, b)["thr_b"] == 2.5
+
+
+def test_p1_carries_dx_dz_caveat():
+    metrics = {"conv_dx10": _m(0.30, 38.0), "conv_dx5": _m(0.40, 25.0), "conv_dx2p5": _m(0.45, 12.0)}
+    c = ev.assemble(metrics)["convergence"]
+    assert c["class"] == "P1"
+    assert c["numerical_part_R_ext_minus_RQ_dx5"] == pytest.approx(c["richardson"]["R_ext"] - 0.40)
+    assert "mixes dx and dz refinement" in c["numerical_part_caveat"]
+
+
+def test_make_figure_smoke(tmp_path):
+    metrics = {"conv_dx10": _m(0.30, 38.0), "conv_dx5": _m(0.40, 25.0), "conv_dx2p5": _m(0.45, 12.0),
+               ev.REF: _m(0.41, 24.0), "sens_freeslip": _m(0.5, 22.0)}
+    for m in metrics.values():
+        m["theory_b_lower_half"] = 7.5
+    out = ev.make_figure(ev.assemble(metrics), tmp_path / "pd2_convergence")
+    assert all(p.exists() and p.stat().st_size > 0 for p in out)
