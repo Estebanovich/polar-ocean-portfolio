@@ -1,2 +1,5 @@
 literatura/
 __pycache__/
+*.data
+*.meta
+runs/
