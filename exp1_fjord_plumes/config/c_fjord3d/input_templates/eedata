@@ -1,0 +1,6 @@
+# Exp. 1 (c) c_fjord3d -- case ${case}; MPI, 5 ranks in x (SIZE.h
+# nPx = 5), one tile and one thread per rank
+ &EEPARMS
+ nTx=1,
+ nTy=1,
+ &

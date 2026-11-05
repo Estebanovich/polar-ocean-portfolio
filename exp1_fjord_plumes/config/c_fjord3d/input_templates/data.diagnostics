@@ -1,0 +1,18 @@
+# Exp. 1 (c) c_fjord3d -- case ${case}
+# MDS output. 3-h means of UVEL, THETA for Q_ex and heat toward the front
+# (analysis/exchange.py, Fig. 3); daily 3-D snapshots; hourly mean ETAN.
+ &DIAGNOSTICS_LIST
+  fields(1:2,1) = 'UVEL    ','THETA   ',
+  fileName(1)  = 'mean3h',
+  frequency(1) = 10800.,
+  fields(1:5,2) = 'UVEL    ','VVEL    ','WVEL    ','THETA   ','SALT    ',
+  fileName(2)  = 'snap1d',
+  frequency(2) = -86400.,
+  timePhase(2) = 0.,
+  fields(1,3)  = 'ETAN    ',
+  fileName(3)  = 'ETAN',
+  frequency(3) = 3600.,
+ &
+
+ &DIAG_STATIS_PARMS
+ &

@@ -1,0 +1,7 @@
+# Exp. 1 (c) c_fjord3d -- case ${case}. No pkg/icefront in (c): see
+# notes/pd1_c_fjord3d.md (melt << plume transport; its melt is in the BPT).
+ &PACKAGES
+ useOBCS=.TRUE.,
+ useRBCS=.TRUE.,
+ useDiagnostics=.TRUE.,
+ &

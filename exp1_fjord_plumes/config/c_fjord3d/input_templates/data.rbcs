@@ -1,0 +1,20 @@
+# Exp. 1 (c) c_fjord3d -- case ${case}
+# PD3 option (iii): RBCS imposes the plume-outflow T/S in the outflow cells
+# only. rbcs_mask = q tau/V there (0 elsewhere), so the RBCS tendency
+# -(mask/tau)(theta - T_out) (pkg/rbcs/rbcs_add_tendency.F:88-111) equals
+# q (T_out - theta)/V, the source-at-T_out term addMass would add
+# (apply_forcing.F:509-513); verified in the PD3 spike to 7e-5 degC.
+# Fields are constant (rbcsForcingPeriod = 0). Cases without plume have a
+# zero mask (no effect).
+ &RBCS_PARM01
+ useRBCtemp=.TRUE.,
+ useRBCsalt=.TRUE.,
+ tauRelaxT=${rbcs_tau},
+ tauRelaxS=${rbcs_tau},
+ relaxMaskFile(1)='rbcs_mask.bin',
+ relaxMaskFile(2)='rbcs_mask.bin',
+ relaxTFile='rbcs_T.bin',
+ relaxSFile='rbcs_S.bin',
+ &
+ &RBCS_PARM02
+ &

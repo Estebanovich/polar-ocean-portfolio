@@ -1,0 +1,42 @@
+# Exp. 1 (c) c_fjord3d -- case ${case}
+# Eastern open boundary (fjord mouth) at column Nx-1 (OB_Ieast=-2,
+# pkg/obcs/obcs_readparms.F:671-672); column Nx is land and closes the
+# periodic x-wrap, as in (a), (b). Given for all Ny rows incl. land rows.
+# u, v: Orlanski radiation (as (a), (b)) so the plume/wind baroclinic
+# exchange and the net Q0 can leave. T, S: PRESCRIBED time series
+# (OBEt/OBEs.bin, records every externForcingPeriod, cycle = shelf period):
+# OBCS_PRESCRIBE_READ runs after ORLANSKI_EAST (obcs_calc.F:99, 413)
+# and only overwrites fields whose file is set (obcs_fields_load.F:159-174,
+# 518-524), so u, v stay radiated. Shelf cases: Sermilik profile with the
+# pycnocline heaved by A sin(2 pi t/P), A = 30 m, P = 6 d (Jackson et al.
+# 2018); other cases: the initial profile (constant records).
+# T/S sponge (10 cells = 2 km) relaxes toward the OB values: the
+# relaxation zone of Cowton et al. 2015 (Sec. 3.2), here time dependent.
+# No useOBCSbalance: it ignores addMass (obcs_balance_flow.F:300-315).
+ &OBCS_PARM01
+ OB_Ieast=${ny}*-2,
+ useOrlanskiEast=.TRUE.,
+ useOBCSprescribe=.TRUE.,
+ OBEtFile='OBEt.bin',
+ OBEsFile='OBEs.bin',
+ useOBCSsponge=.TRUE.,
+ OBCSsponge_Theta=.TRUE.,
+ OBCSsponge_Salt=.TRUE.,
+ OBCS_monitorFreq=3600.,
+ &
+
+ &OBCS_PARM02
+# phase-speed averaging ~60 steps (as (a): 250 s ~ 80 steps of 3 s)
+ cvelTimeScale=3600.,
+ CMAX=0.45,
+ &
+
+ &OBCS_PARM03
+# relaxation time 600 s at the OB, 6 h at the inner edge (both << 6 d);
+# the T/S sponge uses the U timescales (obcs_sponge.F:553-559)
+ spongeThickness=10,
+ Urelaxobcsinner=21600.,
+ Vrelaxobcsinner=21600.,
+ Urelaxobcsbound=600.,
+ Vrelaxobcsbound=600.,
+ &

@@ -26,15 +26,17 @@ Afterwards every quoted ``*.bin`` name found in a rendered file must exist in
 ``out_dir``; otherwise RuntimeError.
 
 Conventions: front column i = front_i (0) holds the ice wall on its western
-face; x increases away from it. Flat bottom at -H. Discharge enters the bottom
-wet cell(s) of the front column (a, b, c). For (c) this is only a placeholder
-(``plume_representation`` = "bottom_source_placeholder" in case.json); Task 7
-replaces it by entrainment sinks and outflow sources whose net is Q0.
+face; x increases away from it. Flat bottom at -H. In (a), (b) the discharge
+enters the bottom wet cell(s) of the front column. In (c) the plume is
+buoyant-plume theory as addMass entrainment sinks and outflow sources whose
+net is rho0 Q0, plus RBCS for the outflow T/S (``plume_representation`` =
+"bpt_sink_source_rbcs"; ``_c_forcing``), and (c) also writes
+rbcs_mask/rbcs_T/rbcs_S.bin, OBEt/OBEs.bin and, for wind cases, windx.bin
+plus a second-stage namelist ``data.stage2`` (``_c_stages``).
 Optional case key ``land_columns: [[j, i], ...]`` makes columns land, and
 ``land_j_rows: [j, ...]`` / ``land_i_cols: [i, ...]`` make whole rows (all i)
 or whole columns (all j) land, e.g. the (b) side walls; hFacC for
-the discharge checks is derived from the generated topography. Wind and shelf forcing are parameters only
-(case.json), not files.
+the discharge checks is derived from the generated topography.
 """
 from __future__ import annotations
 
@@ -50,6 +52,7 @@ from pfcommon.mitgcm_io import write_bin
 
 from . import profiles
 from .grids import icefront_fields, stretched_x
+from .plume_source_sink import plume_source_sink
 from .sources import discharge_addmass, place_sources
 
 PKG = Path(__file__).resolve().parents[1]
@@ -70,6 +73,96 @@ def _profile(strat: str, zc, p):
         z_c = p["H"] - p["H2"] if "H2" in p else 200.0
         return profiles.continuous_sermilik(zc, z_c=z_c)
     raise ValueError(f"unknown stratification {strat!r}")
+
+
+def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> np.ndarray:
+    """Config (c) forcing files (Task 7 Step 4); returns addMass [kg s^-1].
+
+    Plume (Q0 > 0): ``plume_source_sink`` (Cowton et al. 2015 sinks/outflow,
+    ``n_out_levels`` outflow cells) in the front column i = front_i, shared
+    equally by ``n_plume_cols`` cross-fjord cells centred on j = ny//2.
+    PD3 option (iii): addMass with local-water sinks/sources plus RBCS in
+    the outflow cells, mask = q tau/V and targets T_out, S_out, so the RBCS
+    tendency equals q (T_out - T)/V (notes/pd3_addmass_sink.md).
+    OB T/S (all cases): ``OBEt/OBEs.bin`` records at t_n = (n + 1/2) dt_rec
+    (centred records, eesupp/src/get_periodic_interval.F) over one shelf
+    period; pycnocline centre at 200 m - A sin(2 pi t/P) (A = shelf_amp).
+    Wind (wind_tau > 0): ``windx.bin``, tau for the first wind_hours, then 0.
+    """
+    nz, ny, nx = hFacC.shape
+    rho0, fi, dz = p["rho0"], p["front_i"], p["dz"]
+    V = p["dx"] * p["dy"] * dz
+    add = np.zeros((nz, ny, nx))
+    mask = np.zeros((nz, ny, nx))
+    Tr = np.array(bins["T.init.bin"], dtype=float)
+    Sr = np.array(bins["S.init.bin"], dtype=float)
+    if p["Q0"] > 0:
+        q, T_out, S_out, sol = plume_source_sink(
+            zc, T1d, S1d, p["Q0"], dz, T0=p["T0_src"], S0=p["S0_src"],
+            alpha=p["alpha"], n_out_levels=p["n_out_levels"], return_solution=True)
+        n = p["n_plume_cols"]
+        js = list(range(ny // 2 - n // 2, ny // 2 - n // 2 + n))
+        for j in js:
+            if hFacC[-1, j, fi] == 0:
+                raise ValueError(f"plume column (j={j}, i={fi}) is land")
+        out = np.flatnonzero(q > 0)
+        for j in js:
+            add[:, j, fi] = rho0 * q / n
+            mask[out, j, fi] = (q[out] / n) * p["rbcs_tau"] / V
+            Tr[out, j, fi], Sr[out, j, fi] = T_out[out], S_out[out]
+        if mask.max() > 1.0:
+            raise ValueError(f"RBCS mask {mask.max():.3g} > 1: lower rbcs_tau")
+        info.update(plume_representation="bpt_sink_source_rbcs", plume_j=js,
+                    outflow_k=[int(k) for k in out], T_out=float(T_out[out[0]]),
+                    S_out=float(S_out[out[0]]), z_neutral=float(sol.z_neutral),
+                    Q_outflow=float(q[out].sum()), Q_entrained=float(-q[q < 0].sum()),
+                    net_addmass_kg_s=float(add.sum()),
+                    net_addmass_over_rho0_Q0=float(add.sum() / (rho0 * p["Q0"])),
+                    outflow_turnover_s=float(V / (q[out[0]] / n)))
+    else:
+        info.update(plume_representation="none", net_addmass_kg_s=0.0)
+    info["Q0_total"] = p["Q0"]
+    bins["rbcs_mask.bin"], bins["rbcs_T.bin"], bins["rbcs_S.bin"] = mask, Tr, Sr
+
+    per = p["externForcingPeriod"]
+    cyc = p["shelf_period_days"] * 86400.0
+    nrec = int(round(cyc / per))
+    if abs(nrec * per - cyc) > 1e-6:
+        raise ValueError("shelf period must be a multiple of externForcingPeriod")
+    p["externForcingCycle"] = cyc
+    t = (np.arange(nrec) + 0.5) * per
+    eta = p["shelf_amp"] * np.sin(2.0 * np.pi * t / cyc)   # pycnocline uplift [m]
+    obT = np.empty((nrec, nz, ny))
+    obS = np.empty((nrec, nz, ny))
+    for r in range(nrec):
+        Tz, Sz = profiles.continuous_sermilik(zc, z_c=200.0 - eta[r])
+        obT[r], obS[r] = Tz[:, None], Sz[:, None]
+    bins["OBEt.bin"], bins["OBEs.bin"] = obT, obS
+    if p["wind_tau"] > 0:
+        n_on = int(round(p["wind_hours"] * 3600.0 / per))
+        w = np.zeros((nrec, ny, nx))
+        w[:n_on] = p["wind_tau"]          # down-fjord (+x, away from the ice)
+        bins["windx.bin"] = w
+    return add
+
+
+def _c_stages(p) -> list[dict]:
+    """Template variables per run stage of (c). Wind cases follow the thesis
+    two-stage protocol (verification/BayIW_Rectan/README.md, "Two-stage run
+    strategy"): stage 1 with the wind file, pickup at its end; stage 2
+    restarts from it without the wind file (otherwise the cyclic forcing
+    would repeat the pulse every cycle)."""
+    dt, n_tot = p["deltaT"], int(round(p["endTime"] / p["deltaT"]))
+    off = {"windLine": "# zonalWindFile: none (no wind in this case/stage)"}
+    if p["wind_tau"] <= 0:
+        return [dict(off, nIter0=0, nTimeSteps=n_tot, pChkptFreq=432000.0,
+                     stage_label="single stage")]
+    n1 = int(round(p["wind_stage1_s"] / dt))
+    return [dict(nIter0=0, nTimeSteps=n1, pChkptFreq=p["wind_stage1_s"],
+                 windLine=" zonalWindFile='windx.bin',",
+                 stage_label="stage 1 of 2 (wind on)"),
+            dict(off, nIter0=n1, nTimeSteps=n_tot - n1, pChkptFreq=432000.0,
+                 stage_label="stage 2 of 2 (wind off, restart from pickup)")]
 
 
 def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
@@ -140,12 +233,7 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
         add = discharge_addmass((nz, ny, nx), cells, Q0, rho0, hFacC=hFacC, front_i=front_i)
         info.update(Q0_total=Q0, source_cells=cells)
     else:
-        # R10: placeholder; Task 7 replaces it by entrainment sinks / outflow sources
-        cells = [(kb, ny // 2, front_i)] if p["Q0"] > 0 else []
-        add = (discharge_addmass((nz, ny, nx), cells, p["Q0"], rho0, hFacC=hFacC,
-                                 front_i=front_i) if cells else np.zeros((nz, ny, nx)))
-        info.update(Q0_total=p["Q0"], source_cells=cells,
-                    plume_representation="bottom_source_placeholder")
+        add = _c_forcing(p, bins, zc, T1d, S1d, hFacC, info)
     bins["addmass.bin"] = add
 
     # ---- templates
@@ -154,9 +242,16 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     template_dir = Path(template_dir)
     if not template_dir.is_dir():
         raise FileNotFoundError(f"template dir {template_dir} does not exist")
-    rendered = {f.name: Template(f.read_text()).substitute(p)
-                for f in sorted(template_dir.iterdir())
-                if f.is_file() and not f.name.startswith(".")}
+    tfiles = [f for f in sorted(template_dir.iterdir())
+              if f.is_file() and not f.name.startswith(".")]
+    stages = _c_stages(p) if cfg == "c_fjord3d" else [{}]
+    p.update(stages[0])
+    rendered = {f.name: Template(f.read_text()).substitute(p) for f in tfiles}
+    if len(stages) > 1:  # wind cases: stage 2 restarts from the stage-1 pickup
+        p2 = {**p, **stages[1]}
+        rendered.update({f"{f.name}.stage2": Template(f.read_text()).substitute(p2)
+                         for f in tfiles if f.name == "data"})
+        info["stages"] = stages
     missing = []
     for fname, text in rendered.items():
         for line in text.splitlines():

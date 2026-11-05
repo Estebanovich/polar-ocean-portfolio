@@ -43,19 +43,20 @@ Choices:
   the sinks remove ``entrainment + melt`` from the ambient. The melt volume
   is a small fraction of the entrained volume (Task 7 report); it is kept
   so that ``sum(q) = Q0`` holds exactly.
-* **Integration top.** With the ``mitgcm``/``constant`` transfer laws the
-  half-cone melt does not vanish as u -> 0 while the radius b = Q/sqrt(k M)
-  diverges, so ``point_plume`` can fail just below z_detach (seen at
-  z = -3 m for the Sermilik profile). Only z <= z_neutral is needed here, so
-  on failure the integration is retried with its top lowered one cell face
-  at a time until it passes z_neutral.
+* **Outflow levels (``n_out_levels``, default 1 = Cowton).** Optionally the
+  outflow is split equally between the z_neutral cell and the
+  ``n_out_levels - 1`` cells above it, i.e. into the overshoot, where the
+  intruding plume water lies (z_neutral < z < z_detach). Config (c) uses
+  2 for numerical reasons (outflow-cell turnover time, see
+  ``notes/pd1_c_fjord3d.md``); the sinks and the sum are unchanged.
+* **Integration top.** ``point_plume`` ends the half cone with melt at
+  u = u_stop (ruling R15, ``theory/plume.py``), so one integration from the
+  base to the surface suffices.
 
 Outflow T, S: the plume's flux-weighted values at z_lo (top-hat profiles,
-T = QT/Q, S = QS/Q), returned in the outflow cell and NaN elsewhere.
+T = QT/Q, S = QS/Q), returned in the outflow cells and NaN elsewhere.
 """
 from __future__ import annotations
-
-import warnings
 
 import numpy as np
 
@@ -65,7 +66,7 @@ from exp1_fjord_plumes.theory.plume import point_plume
 
 def plume_source_sink(z, Ta, Sa, Q0, dz, *, T0=0.0, S0=0.0, alpha=0.1,
                       geometry="half_cone", mode="mitgcm",
-                      p: MeltParams | None = None, n_fine=2001,
+                      p: MeltParams | None = None, n_out_levels=1, n_fine=2001,
                       return_solution=False):
     """Per-level plume sinks/sources for ``addMass`` (see module docstring).
 
@@ -74,10 +75,11 @@ def plume_source_sink(z, Ta, Sa, Q0, dz, *, T0=0.0, S0=0.0, alpha=0.1,
     entering at the base of the deepest cell, with T0 [degC], S0 [psu].
     dz : cell thickness [m], scalar or per level. p : melt constants,
     default ``MeltParams(ice_depth=H)`` with H the water depth (as (a)/(b)).
+    n_out_levels : number of outflow cells (z_neutral cell and those above).
 
     Returns ``(q, T_out, S_out)``: q [m^3 s^-1] per level (< 0 entrainment,
     > 0 outflow, sum = Q0); T_out [degC], S_out [psu] of the outflow in the
-    outflow cell, NaN elsewhere. With ``return_solution`` the
+    outflow cells, NaN elsewhere. With ``return_solution`` the
     ``PlumeSolution`` on the fine grid is appended.
     """
     z = np.asarray(z, dtype=float)
@@ -93,43 +95,33 @@ def plume_source_sink(z, Ta, Sa, Q0, dz, *, T0=0.0, S0=0.0, alpha=0.1,
         raise ValueError("z and dz are inconsistent (cells must be contiguous)")
     if Q0 <= 0:
         raise ValueError("Q0 must be positive")
+    if int(n_out_levels) != n_out_levels or n_out_levels < 1:
+        raise ValueError("n_out_levels must be a positive integer")
     z_base, z_surf = float(bot[-1]), float(top[0])
     if p is None:
         p = MeltParams(ice_depth=-z_base)
 
     zi, Tai, Sai = z[::-1], Ta[::-1], Sa[::-1]           # increasing for interp
-    sol = None
-    for z_top in top:                       # surface first, then lower faces
-        zg = np.unique(np.concatenate([np.linspace(z_base, z_top, n_fine),
-                                       top[top <= z_top], bot[bot <= z_top]]))
-        try:
-            with warnings.catch_warnings():   # overflow just before a failure
-                warnings.simplefilter("ignore", RuntimeWarning)
-                s = point_plume(zg, np.interp(zg, zi, Tai), np.interp(zg, zi, Sai),
-                                Q0, T0, S0, p, mode, alpha=alpha, geometry=geometry)
-        except RuntimeError:
-            continue
-        if np.isfinite(s.z_neutral) or (s.reached_top and z_top == z_surf):
-            sol = s
-            break
-    if sol is None:
-        raise RuntimeError("plume integration failed below z_neutral")
+    zg = np.unique(np.concatenate([np.linspace(z_base, z_surf, n_fine), top, bot]))
+    sol = point_plume(zg, np.interp(zg, zi, Tai), np.interp(zg, zi, Sai), Q0, T0,
+                      S0, p, mode, alpha=alpha, geometry=geometry)
     ok = np.isfinite(sol.Q)
 
     def at(field, zz):
         return float(np.interp(zz, sol.z[ok], field[ok]))
 
-    z_e = float(sol.z_neutral) if np.isfinite(sol.z_neutral) else z_surf
+    z_e = float(sol.z_neutral) if np.isfinite(sol.z_neutral) else min(float(sol.z_detach), z_surf)
     k_n = int(np.flatnonzero((bot < z_e) & (z_e <= top))[0])
     z_lo = float(bot[k_n])
 
     q = np.zeros(z.size)
     for k in range(k_n + 1, z.size):          # entrainment sinks, whole cells
         q[k] = -(at(sol.Q, top[k]) - at(sol.Q, bot[k]))
-    q[k_n] = at(sol.Q, z_lo)                  # outflow at the neutral level
+    ks = np.arange(max(k_n - n_out_levels + 1, 0), k_n + 1)   # outflow cells
+    q[ks] = at(sol.Q, z_lo) / ks.size         # outflow at the neutral level
     T_out = np.full(z.size, np.nan)
     S_out = np.full(z.size, np.nan)
-    T_out[k_n], S_out[k_n] = at(sol.T, z_lo), at(sol.S, z_lo)
+    T_out[ks], S_out[ks] = at(sol.T, z_lo), at(sol.S, z_lo)
     if return_solution:
         return q, T_out, S_out, sol
     return q, T_out, S_out

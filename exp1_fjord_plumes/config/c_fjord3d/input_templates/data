@@ -1,0 +1,107 @@
+# ====================================================================
+# Exp. 1 (c) c_fjord3d -- case ${case} -- ${stage_label}
+# 3-D hydrostatic fjord (40 km x 6 km x 500 m; 200 m x 200 m x 10 m,
+# f = 1.37e-4), plume from buoyant-plume theory as addMass entrainment
+# sinks + outflow sources (PD3 option iii: local-water sinks, outflow T/S
+# by RBCS), down-fjord wind pulse, shelf pycnocline oscillation at the
+# mouth (OBCS). Choices and sources: exp1_fjord_plumes/notes/pd1_c_fjord3d.md.
+# Rendered by gendata/make_case.py from cases.yaml.
+# Side walls = land rows j = 0, Ny-1; land column Nx-1 closes the
+# periodic x-wrap (cases.yaml land_j_rows / land_i_cols).
+# ====================================================================
+ &PARM01
+# --- linear EOS, identical to (a), (b) and theory/plume.py LinearEOS
+ eosType='LINEAR',
+ tAlpha=${tAlpha},
+ sBeta=${sBeta},
+ rhoNil=${rho0},
+ rhoConst=${rho0},
+ HeatCapacity_Cp=3974.,
+ gravity=9.81,
+ tRef=${nz}*0.,
+ sRef=${nz}*34.,
+# --- viscosity / diffusivity: Cowton et al. 2015 Table 1 (MITgcm with a
+#     plume parameterisation on the same 200 m x 10 m grid): lateral 30,
+#     vertical 1e-5 m2/s for both. Laplacian, Pr = 1.
+ viscAh=30.,
+ viscAr=1.E-5,
+ diffKhT=30.,
+ diffKrT=1.E-5,
+ diffKhS=30.,
+ diffKrS=1.E-5,
+ implicitViscosity=.TRUE.,
+ implicitDiffusion=.TRUE.,
+# hydrostatic: static instability removed by implicit vertical diffusion
+# (ivdc_kappa, model/src/calc_3d_diffusivity.F:96-110; needs implicitDiffusion)
+ ivdc_kappa=10.,
+# free-slip side walls (200 m cells cannot resolve wall boundary layers);
+# quadratic bottom drag with the plume-theory Cd = 2.5e-3 (MeltParams.Cd)
+ no_slip_sides=.FALSE.,
+ no_slip_bottom=.FALSE.,
+ bottomDragQuadratic=2.5E-3,
+ tempAdvScheme=33,
+ saltAdvScheme=33,
+ staggerTimeStep=.TRUE.,
+ f0=${f0},
+ beta=0.,
+# --- dynamics (hydrostatic, linear implicit free surface)
+ nonHydrostatic=.FALSE.,
+ rigidLid=.FALSE.,
+ implicitFreeSurface=.TRUE.,
+ exactConserv=.TRUE.,
+ hFacMin=0.1,
+# --- plume as interior mass sinks/sources (kg/s per cell, addmass.bin).
+#     PD3 (notes/pd3_addmass_sink.md, option iii approved): with
+#     temp_addMass / salt_addMass UNSET the addMass T/S term is skipped
+#     (apply_forcing.F:504-530, :873-898), so added and removed water has
+#     the LOCAL T, S. salt_addMass would default to salt_EvPrRn = 0
+#     (set_defaults.F:265; ini_parms.F:1579-1580), hence salt_EvPrRn =
+#     UNSET_RL (eesupp/inc/EEPARAMS.h:81). The outflow T/S is imposed by
+#     RBCS in the outflow cells (data.rbcs).
+# temp_addMass and salt_addMass are deliberately not set here.
+ selectAddFluid=1,
+ salt_EvPrRn=1.234567E+05,
+# --- I/O (global constraints: big-endian float64, single-CPU I/O)
+ readBinaryPrec=64,
+ writeBinaryPrec=64,
+ useSingleCpuIO=.TRUE.,
+ &
+
+ &PARM02
+ cg2dMaxIters=500,
+ cg2dTargetResidual=1.E-13,
+ &
+
+ &PARM03
+ nIter0=${nIter0},
+ nTimeSteps=${nTimeSteps},
+ deltaT=${deltaT},
+ abEps=0.01,
+ pChkptFreq=${pChkptFreq},
+ chkptFreq=0.,
+ dumpFreq=0.,
+ dumpInitAndLast=.TRUE.,
+ monitorFreq=3600.,
+ monitorSelect=2,
+# periodic forcing records (centred, eesupp/src/get_periodic_interval.F):
+# OB T/S (data.obcs) and, in stage 1 of wind cases, the wind stress.
+# Cycle = shelf period (6 d), records hourly.
+ periodicExternalForcing=.TRUE.,
+ externForcingPeriod=${externForcingPeriod},
+ externForcingCycle=${externForcingCycle},
+ &
+
+ &PARM04
+ usingCartesianGrid=.TRUE.,
+ delXfile='delX.bin',
+ delYfile='delY.bin',
+ delRfile='delZ.bin',
+ &
+
+ &PARM05
+ bathyFile='topog.bin',
+ hydrogThetaFile='T.init.bin',
+ hydrogSaltFile='S.init.bin',
+ addMassFile='addmass.bin',
+${windLine}
+ &

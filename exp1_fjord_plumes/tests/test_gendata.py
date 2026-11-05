@@ -15,6 +15,10 @@ from exp1_fjord_plumes.gendata.profiles import continuous_sermilik, two_layer
 from exp1_fjord_plumes.gendata.sources import discharge_addmass, place_sources
 from exp1_fjord_plumes.theory.plume import LinearEOS
 
+from pathlib import Path
+
+PKG_DIR = Path(__file__).resolve().parents[1]
+
 Z = -(np.arange(60) + 0.5) * 10.0  # 600 m, dz = 10
 
 
@@ -139,21 +143,6 @@ def test_make_case_other_configs(tmp_path, name):
     out = make_case(name, tmp_path / "run", template_dir=tdir)
     meta = json.loads((out / "case.json").read_text())
     assert meta["sum_addmass_kg_s"] > 0
-
-
-def test_c_addmass_is_bottom_source_of_rho0_Q0(tmp_path):
-    tdir = tmp_path / "tmpl"
-    _templates(tdir)
-    out = make_case("c_fjord_plume", tmp_path / "run", template_dir=tdir)
-    meta = json.loads((out / "case.json").read_text())
-    p = meta["params"]
-    shape = (p["nz"], p["ny"], p["nx"])
-    add = read_bin(out / "addmass.bin", shape)
-    assert abs(add.sum() - 1027.0 * 100.0) < 1e-6
-    k, j, i = np.nonzero(add)
-    assert np.all(k == p["nz"] - 1) and np.all(i == p["front_i"])
-    assert meta["plume_representation"] == "bottom_source_placeholder"
-    assert "sink_cells" not in meta
 
 
 def test_make_case_rejects_source_on_land(tmp_path):
@@ -298,3 +287,139 @@ def test_source_sink_plume_reaching_surface():
     assert sol.reached_top
     assert q[0] > 0 and np.all(q[1:] <= 0)
     assert abs(q.sum() - 100.0) <= 1.0
+
+
+def test_source_sink_outflow_over_n_levels():
+    """n_out_levels = 2: the outflow Q(z_lo) is split equally between the
+    z_neutral cell and the cell above it (into the overshoot); sinks and the
+    sum are unchanged."""
+    Ta, Sa = continuous_sermilik(ZC)
+    q1, T1, S1 = plume_source_sink(ZC, Ta, Sa, 100.0, 10.0)
+    q2, T2, S2 = plume_source_sink(ZC, Ta, Sa, 100.0, 10.0, n_out_levels=2)
+    k_n = int(np.flatnonzero(q1 > 0)[0])
+    assert np.allclose(q2[k_n - 1:k_n + 1], q1[k_n] / 2)
+    assert np.allclose(q2[k_n + 1:], q1[k_n + 1:]) and np.all(q2[:k_n - 1] == 0)
+    assert abs(q2.sum() - 100.0) < 1e-9
+    assert np.allclose(T2[k_n - 1:k_n + 1], T1[k_n]) and np.isnan(T2[k_n - 2])
+
+
+# ------------------------------------------------- Task 7 Step 4: config (c)
+def _active(text):
+    """Namelist text without comment lines."""
+    return "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
+
+
+def _c_case(tmp_path, name):
+    out = make_case(name, tmp_path / name)   # real c_fjord3d templates
+    meta = json.loads((out / "case.json").read_text())
+    p = meta["params"]
+    return out, meta, p, (p["nz"], p["ny"], p["nx"])
+
+
+def test_c_plume_net_addmass_is_rho0_Q0(tmp_path):
+    """C5: net addMass = rho0 Q0 within 1 %, recorded in case.json."""
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
+    add = read_bin(out / "addmass.bin", shape)
+    assert abs(add.sum() - p["rho0"] * p["Q0"]) <= 0.01 * p["rho0"] * p["Q0"]
+    assert meta["plume_representation"] == "bpt_sink_source_rbcs"
+    assert abs(meta["net_addmass_kg_s"] - add.sum()) < 1e-6
+    assert abs(meta["net_addmass_over_rho0_Q0"] - 1.0) <= 0.01
+
+
+def test_c_sinks_only_below_outflow_in_front_column(tmp_path):
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
+    add = read_bin(out / "addmass.bin", shape)
+    k, j, i = np.nonzero(add)
+    assert np.all(i == p["front_i"])
+    assert set(j) == set(meta["plume_j"]) and len(meta["plume_j"]) == p["n_plume_cols"]
+    kpos = np.nonzero(add > 0)[0]
+    kneg = np.nonzero(add < 0)[0]
+    assert kneg.min() > kpos.max()                      # sinks only below outflow
+    assert sorted(set(kpos)) == meta["outflow_k"]
+    assert len(meta["outflow_k"]) == p["n_out_levels"]
+
+
+def test_c_rbcs_mask_only_in_outflow_cells(tmp_path):
+    """mask = q tau / V in the outflow cells (RBCS tendency = q (T_out - T)/V,
+    PD3 option iii), 0 elsewhere, <= 1."""
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
+    add = read_bin(out / "addmass.bin", shape)
+    mask = read_bin(out / "rbcs_mask.bin", shape)
+    assert np.array_equal(mask > 0, add > 0)
+    V = p["dx"] * p["dy"] * p["dz"]
+    q = add / p["rho0"]
+    assert np.allclose(mask[add > 0], q[add > 0] * p["rbcs_tau"] / V)
+    assert mask.max() <= 1.0
+
+
+def test_c_rbcs_targets_are_plume_outflow(tmp_path):
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
+    mask = read_bin(out / "rbcs_mask.bin", shape)
+    Tr = read_bin(out / "rbcs_T.bin", shape)
+    Sr = read_bin(out / "rbcs_S.bin", shape)
+    zc = -(np.arange(p["nz"]) + 0.5) * p["dz"]
+    Ta, Sa = continuous_sermilik(zc)
+    _, T_out, S_out = plume_source_sink(zc, Ta, Sa, p["Q0"], p["dz"],
+                                        T0=p["T0_src"], S0=p["S0_src"],
+                                        alpha=p["alpha"], n_out_levels=p["n_out_levels"])
+    kk = np.nonzero(mask > 0)[0]
+    assert np.allclose(Tr[mask > 0], T_out[kk]) and np.allclose(Sr[mask > 0], S_out[kk])
+    assert np.isclose(meta["T_out"], np.nanmax(T_out)) and np.isclose(meta["S_out"], np.nanmax(S_out))
+    data = _active((out / "data").read_text())
+    assert "temp_addMass" not in data and "salt_addMass" not in data
+    assert "salt_EvPrRn=1.234567E+05" in data
+
+
+def test_c_wind_case_has_no_plume_and_two_stages(tmp_path):
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_wind")
+    assert not np.any(read_bin(out / "addmass.bin", shape))
+    assert not np.any(read_bin(out / "rbcs_mask.bin", shape))
+    nrec = int(round(p["externForcingCycle"] / p["externForcingPeriod"]))
+    w = read_bin(out / "windx.bin", (nrec, p["ny"], p["nx"]))
+    n_on = int(round(p["wind_hours"] * 3600 / p["externForcingPeriod"]))
+    assert np.all(w[:n_on] == p["wind_tau"]) and np.all(w[n_on:] == 0)
+    s1, s2 = (out / "data").read_text(), (out / "data.stage2").read_text()
+    n1 = int(round(p["wind_stage1_s"] / p["deltaT"]))
+    assert "zonalWindFile='windx.bin'" in s1 and "nTimeSteps=%d," % n1 in s1
+    assert "zonalWindFile" not in _active(s2)
+    assert "nIter0=%d," % n1 in s2
+    assert "nTimeSteps=%d," % (int(round(p["endTime"] / p["deltaT"])) - n1) in s2
+
+
+def test_c_plume_case_single_stage(tmp_path):
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
+    assert not (out / "data.stage2").exists() and not (out / "windx.bin").exists()
+    assert "nTimeSteps=%d," % int(round(p["endTime"] / p["deltaT"])) in (out / "data").read_text()
+
+
+def test_c_shelf_ob_series_heaves_pycnocline(tmp_path):
+    """OB T/S records: Sermilik profile with the pycnocline displaced by
+    A sin(2 pi t/P) at the record times (n - 1/2) dt_rec (records centred,
+    eesupp/src/get_periodic_interval.F)."""
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_shelf")
+    nrec = int(round(p["externForcingCycle"] / p["externForcingPeriod"]))
+    assert p["externForcingCycle"] == p["shelf_period_days"] * 86400
+    T = read_bin(out / "OBEt.bin", (nrec, p["nz"], p["ny"]))
+    zc = -(np.arange(p["nz"]) + 0.5) * p["dz"]
+    for n in (0, nrec // 4, nrec // 2):
+        t = (n + 0.5) * p["externForcingPeriod"]
+        eta = p["shelf_amp"] * np.sin(2 * np.pi * t / p["externForcingCycle"])
+        Te, _ = continuous_sermilik(zc, z_c=200.0 - eta)
+        assert np.allclose(T[n, :, 5], Te)
+    # plume-only case: constant (initial) OB profile
+    out2, _, p2, _ = _c_case(tmp_path, "c_fjord_plume")
+    T2 = read_bin(out2 / "OBEt.bin", (nrec, p2["nz"], p2["ny"]))
+    assert np.allclose(T2, T2[0])
+
+
+def test_c_grid_matches_size_h_and_5_ranks(tmp_path):
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_all")
+    txt = (PKG_DIR / "config" / "c_fjord3d" / "code" / "SIZE.h").read_text()
+    v = {k: int(x) for k, x in re.findall(r"(sNx|sNy|nSx|nSy|nPx|nPy|Nr) *= *(\d+)", txt)}
+    assert v["sNx"] * v["nSx"] * v["nPx"] == p["nx"]
+    assert v["sNy"] * v["nSy"] * v["nPy"] == p["ny"]
+    assert v["Nr"] == p["nz"] and v["nPx"] * v["nPy"] == 5
+    depth = -read_bin(out / "topog.bin", (p["ny"], p["nx"]))
+    assert np.all(depth[0] == 0) and np.all(depth[-1] == 0) and np.all(depth[:, -1] == 0)
+    obcs = _active((out / "data.obcs").read_text())
+    assert "OB_Ieast=%d*-2," % p["ny"] in obcs and "useOBCSbalance" not in obcs

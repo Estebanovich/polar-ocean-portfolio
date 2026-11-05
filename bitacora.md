@@ -87,3 +87,28 @@
 - Falla: `point_plume(half_cone)` con derretimiento en modo `mitgcm`/`constant` se rompía justo bajo z_detach. El ancho de contacto 2b ∝ M^(−1/2) diverge cuando u → 0 y el flujo de derretimiento no se anula (piso γT = 1e-4 m/s), así que las fuentes 2b·m_w explotan.
 - Solución (elección física y numérica): un evento terminal en u = u_stop = 1e-3 m/s, solo para la semicónica con derretimiento. Por debajo de ~1 mm/s la pluma ya no se distingue de las corrientes del fiordo y un radio mayor que la profundidad no tiene sentido. z_detach baja ~u_stop²/(2|g′|) ≈ mm; con u_stop = 1e-4 cambia 0.3 mm.
 - El resto de los resultados queda bit a bit igual. El reintento de `plume_source_sink` ya no hace falta (se deja, es de Task 7); su q cambia ≤ 1.6e-6 relativo solo por la malla fina distinta.
+
+## 2026-11-05 — Task 7 Step 4: configuración (c) `c_fjord3d` (compilada, sin correr)
+
+- PD3 aprobado por Esteban, opción (iii). Con la corrección R15 de la teoría (1ae1414) se quitó el reintento de `plume_source_sink`. Nuevo `n_out_levels`: la salida se reparte entre la celda de z_neutral y las de encima.
+- `make_case` (c) ya no usa el marcador R10, ahora es `plume_representation = "bpt_sink_source_rbcs"`:
+  - addMass en la columna de la cara, repartido en 3 celdas a lo ancho (j = 14–16). Salida en k = 17–18 (z_neutral = −181 m, 3725 m³/s, 3.42 °C / 33.53 psu); arrastre de 3625 m³/s en k ≥ 19.
+  - Neto = ρ0·Q0 exacto (C5).
+  - RBCS con máscara q·τ/V = 0.93 (τ = 600 s) solo en las 6 celdas de salida.
+  - `temp_addMass`/`salt_addMass` sin definir y `salt_EvPrRn = UNSET_RL`.
+- Repartir la salida evita el recambio de 107 s de una sola celda. Con el reparto queda en 644 s, λ·dt = 0.09 con dt = 60 s.
+- Física:
+  - hidrostático; f = 1.37e-4;
+  - viscosidad y difusividad de Cowton 2015, Tabla 1 (30 / 1e-5 m²/s, misma malla de 200 m × 10 m);
+  - `ivdc_kappa = 10`;
+  - free-slip con arrastre de fondo 2.5e-3;
+  - EOS lineal como (a)/(b), MDS float64 big-endian.
+  - Sin icefront: ≈ 10–15 m³/s de derretimiento, ≈ 0.3 % de la salida de la pluma, y ensuciaría los casos sin pluma.
+- Forzamientos:
+  - viento down-fjord de 0.2 N/m² durante 12 h, con el protocolo de 2 etapas de la tesis (`data` 0–24 h con `windx.bin`; `data.stage2` desde la iteración 1440 sin viento);
+  - plataforma: OB con T/S prescritas (picnoclina ±30 m, 6 d, registros horarios) y u/v por Orlanski (`OBCS_PRESCRIBE_READ` va después de `ORLANSKI_EAST`), más la esponja de T/S de 2 km;
+  - paredes de tierra en j = 0 y Ny−1, columna Nx−1 de tierra, `OB_Ieast = -2`, sin `useOBCSbalance`.
+- Malla 200 × 30 × 50 = `SIZE.h` (nPx = 5, sNx = 40). Build MPI OK en `/Volumes/ESTEBAN_MIT/portfolio_builds/exp1/c_fjord3d/`.
+- W/Rd = 0.67 (Rd = 8.4 km; con ny = 37 sería 0.83, no se cambió).
+- Costo a priori (2.8e-6 s por celda·paso, de (a), no hidrostático): 10.1 h serial por caso, 2–3 h con 5 procesos, 8–12 h los 4 casos. Es una cota superior porque no hay cg3d. La corrida corta de 1 día debería tardar ≈ 4–6 min. Nota: `notes/pd1_c_fjord3d.md`.
+- TDD: 9 pruebas nuevas, RED → GREEN; suite completa 92 PASS. No se corrió MITgcm.
