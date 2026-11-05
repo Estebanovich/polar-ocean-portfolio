@@ -1,0 +1,78 @@
+# Lista de lectura — Portafolio de experimentos
+
+Descarga los PDF a `~/Phd_project/portfolio/literatura/` con el nombre `Autor_Año - Título.pdf` (igual que en tu carpeta de la tesis).
+
+- ★ = imprescindible: lo necesito antes de empezar el experimento.
+- ✔ = DOI verificado en Consensus.
+- (m) = DOI escrito de memoria: si el link falla, búscalo por título.
+- ✅ = descargado en `literatura/` y convertido a `.md` (6 nov). Para buscar: `python ~/pyOCEAN/scripts/litsearch.py --lib ~/Phd_project/portfolio/literatura "término"`.
+
+**Exp. 1–2:** completos (6 nov).
+
+## Exp. 1 — Plumas subglaciales en un fiordo (Cenedese, Straneo)
+
+| | Artículo | Link |
+|---|---|---|
+| ✅ ★✔ | Cenedese & Gatto (2016). Impact of two plumes' interaction on submarine melting of tidewater glaciers: a laboratory study. *JPO* | https://doi.org/10.1175/JPO-D-15-0171.1 |
+| ✅ ★✔ | Cenedese & Gatto (2016). Impact of a localized source of subglacial discharge on the heat flux and submarine melting of a tidewater glacier. *JPO* | https://doi.org/10.1175/JPO-D-16-0123.1 |
+| ✅ ★✔ | Cowton et al. (2015). Modeling the impact of glacial runoff on fjord circulation and submarine melt rate using a new subgrid-scale parameterization for glacial plumes. *JGR Oceans* (MITgcm `icefront`) | https://doi.org/10.1002/2014JC010324 |
+| ✅ ★✔ | Slater et al. (2016). Scalings for submarine melting at tidewater glaciers from buoyant plume theory. *JPO* | https://doi.org/10.1175/JPO-D-15-0132.1 |
+| ✅ ★ ✔ | Jenkins (2011). Convection-driven melting near the grounding lines of ice shelves and tidewater glaciers. *JPO* | https://doi.org/10.1175/JPO-D-11-03.1 |
+| ✅ ★✔ | Jackson et al. (2018). The dynamics of shelf forcing in Greenlandic fjords. *JPO* (grupo de Straneo) | https://doi.org/10.1175/JPO-D-18-0057.1 |
+| ✅ ✔ | Jackson et al. (2014). Externally forced fluctuations in ocean temperature at Greenland glaciers in non-summer months. *Nature Geoscience* | https://doi.org/10.1038/ngeo2186 |
+| ✅ (m) | Straneo & Cenedese (2015). The dynamics of Greenland's glacial fjords and their role in climate. *Annu. Rev. Mar. Sci.* | https://doi.org/10.1146/annurev-marine-010213-135133 |
+| ✅ ✔ | Bao et al. (2024). Impact of shallow sills on circulation regimes and submarine melting in glacial fjords. *The Cryosphere* (abierto) | https://doi.org/10.5194/tc-18-187-2024 |
+| ✅ (m) | Morton, Taylor & Turner (1956). Turbulent gravitational convection from maintained and instantaneous sources. *Proc. R. Soc. A* | https://doi.org/10.1098/rspa.1956.0011 |
+
+| ✅ ★ ✔ | Xu et al. (2012). Numerical experiments on subaqueous melting of Greenland tidewater glaciers in response to ocean warming and enhanced subglacial discharge. *Annals of Glaciology* (la referencia de `pkg/icefront`; ver también http://ecco2.org/manuscripts/2012/Xu2012.pdf) | https://doi.org/10.3189/2012AoG60A139 |
+| ✅ ★ ✔ | Sciascia et al. (2013). Seasonal variability of submarine melt rate and circulation in an East Greenland fjord. *JGR Oceans* (MITgcm no hidrostático en Sermilik) | https://doi.org/10.1002/jgrc.20142 |
+
+Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y Turner (1986).
+
+## Exp. 2 — Cavidad ISOMIP+ con agua cálida (Nakayama, Sheehan, BAS)
+
+| | Artículo | Link |
+|---|---|---|
+| ✅ ★ ✔ | Asay-Davis et al. (2016). Experimental design for three interrelated marine ice sheet and ocean model intercomparison projects: MISMIP v.3, ISOMIP v.2 and MISOMIP v.1. *GMD* (abierto). Es la versión final; la Discussion de 2015 está verificada ✔: 10.5194/gmdd-8-9859-2015 | https://doi.org/10.5194/gmd-9-2471-2016 |
+| ✅ ★ ✔ | Losch (2008). Modeling ice shelf cavities in a z coordinate ocean general circulation model. *JGR* (el `shelfice` de MITgcm) | https://doi.org/10.1029/2007JC004368 |
+| ✅ ★ ✔ | Holland, Jenkins & Holland (2008). The response of ice shelf basal melting to variations in ocean temperature. *J. Climate* (ley cuadrática) | https://doi.org/10.1175/2007JCLI1909.1 |
+| ✅ ★✔ | Nakayama et al. (2023). Helicopter-based ocean observations capture broad ocean heat intrusions toward the Totten Ice Shelf. *GRL* | https://doi.org/10.1029/2022GL097864 |
+| ✅ ✔ | Rintoul et al. (2016). Ocean heat drives rapid basal melt of the Totten Ice Shelf. *Science Advances* (abierto) | https://doi.org/10.1126/sciadv.1601610 |
+| ✅ ★ | Plaza ARIES de Sheehan: descripción del proyecto (guárdala como PDF) | https://aries-dtp.ac.uk/studentships/sheehan/ |
+| | Un artículo reciente de modelado MITgcm de Nakayama: elige uno en su página | https://sites.google.com/view/umi-nakayama |
+
+## Exp. 3 — Emulador de ML del derretimiento (Purkey, Jourdain/Burgard)
+
+| | Artículo | Link |
+|---|---|---|
+| ★✔ | Lanham et al. (2026). Poleward migration of warm Circumpolar Deep Water towards Antarctica. *Commun. Earth Environ.* (Purkey; usa *random forest*, no redes) | https://doi.org/10.1038/s43247-026-03426-x |
+| ★✔ | Burgard et al. (2023). Emulating present and future simulations of melt rates at the base of Antarctic ice shelves with neural networks. *JAMES* | https://doi.org/10.1029/2023MS003829 |
+| ★✔ | Rosier et al. (2023). Predicting ocean-induced ice-shelf melt rates using deep learning (MELTNET). *The Cryosphere* | https://doi.org/10.5194/tc-17-499-2023 |
+| ✔ | Ockenden et al. (2026). DeepMelt-GL v1: a neural network emulator of sub-shelf melt rates. *GMD* (muy reciente: hay que distinguirse de esto) | https://doi.org/10.5194/gmd-19-7979-2026 |
+| (m) | Burgard et al. (2022). An assessment of basal melt parameterisations for Antarctic ice shelves. *The Cryosphere* | https://doi.org/10.5194/tc-16-4931-2022 |
+| ✔ | Lanham et al. (2025). Seasonal regimes of warm Circumpolar Deep Water intrusion toward Antarctic ice shelves. *Commun. Earth Environ.* | https://doi.org/10.1038/s43247-025-02091-w |
+
+## Exp. 4 — BayIW ártico (MacKinnon, Maksym)
+
+| | Artículo | Link |
+|---|---|---|
+| ★✔ | MacKinnon et al. (2021). A warm jet in a cold ocean. *Nature Communications* (abierto) | https://doi.org/10.1038/s41467-021-22505-5 |
+| ★✔ | Rainville et al. (2009). Observations of internal wave generation in the seasonally ice-free Arctic. *GRL* | https://doi.org/10.1029/2009GL041291 |
+| ★✔ | Dosser et al. (2016). Dynamics of the changing near-inertial internal wave field in the Arctic Ocean. *JPO* | https://doi.org/10.1175/JPO-D-15-0056.1 |
+| ✔ | Kawaguchi et al. (2019). Year-round observations of sea-ice drift and near-inertial internal waves in the Northwind Abyssal Plain. *Polar Science* | https://doi.org/10.1016/j.polar.2019.01.004 |
+| ✔ | Fang et al. (2026). Upper-ocean variability in the Amundsen Basin during early winter: insights from MOSAiC. *Elementa* (abierto; hielo amortiguando el viento) | https://doi.org/10.1525/elementa.2023.00095 |
+
+## Exp. 5 (opcional) — Adjunto (Mazloff)
+
+| | Artículo | Link |
+|---|---|---|
+| ★ (m) | Mazloff, Heimbach & Wunsch (2010). An eddy-permitting Southern Ocean State Estimate. *JPO* | https://doi.org/10.1175/2009JPO4236.1 |
+| ✔ | Morrison et al. (2020). Warm Circumpolar Deep Water transport toward Antarctica driven by local dense water export in canyons. *Science Advances* (abierto) | https://doi.org/10.1126/sciadv.aav2516 |
+
+Ya tienes Heimbach et al. (2005), el adjunto de MITgcm, en tu carpeta de la tesis.
+
+## Notas de la búsqueda que afectan el diseño
+
+- **Cenedese & Gatto ya usaron un fluido de dos capas.** Lo nuevo del Exp. 1 no es "agregar estratificación", sino estratificación continua, el forzamiento por viento o plataforma y el modelo numérico 3D.
+- **Jackson et al. (2018)** muestran que en fiordos con ancho/radio de deformación > 0.5 la respuesta al forzamiento de la plataforma es 3D: un modelo 2D no basta. La parte de viento del Exp. 1 tiene que ser 3D.
+- **El emulador ya tiene competencia reciente** (Burgard 2023, Rosier 2023, Ockenden 2026). El Exp. 3 debe plantearse como algo concreto (por ejemplo, la incertidumbre del ensamble de redes o el contraste con la ley cuadrática en una geometría controlada), no como "el primero en hacerlo".
