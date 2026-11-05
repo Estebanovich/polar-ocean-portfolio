@@ -1,0 +1,5 @@
+# PD3 spike; serial, one tile
+ &EEPARMS
+ nTx=1,
+ nTy=1,
+ &

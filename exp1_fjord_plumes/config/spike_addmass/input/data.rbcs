@@ -1,0 +1,16 @@
+# PD3 spike, variant "local": outflow T/S imposed by RBCS in the source
+# cell with mask = m tau/(rho0 V) (here 1 with tau = rho0 V/m = 2e5 s), so
+# the RBCS tendency -(mask/tau)(theta - T_out) (rbcs_add_tendency.F:88-111)
+# equals the addMass formula m (T_out - theta)/(rho0 V) (apply_forcing.F:509-513).
+ &RBCS_PARM01
+ useRBCtemp=.TRUE.,
+ useRBCsalt=.TRUE.,
+ tauRelaxT=2.E5,
+ tauRelaxS=2.E5,
+ relaxMaskFile(1)='rbcs_mask.bin',
+ relaxMaskFile(2)='rbcs_mask.bin',
+ relaxTFile='rbcs_T.bin',
+ relaxSFile='rbcs_S.bin',
+ &
+ &RBCS_PARM02
+ &

@@ -1,0 +1,31 @@
+ &
+
+ &PARM02
+ cg2dMaxIters=500,
+ cg2dTargetResidual=1.E-13,
+ &
+
+ &PARM03
+ nIter0=0,
+ nTimeSteps=300,
+ deltaT=60.,
+ abEps=0.01,
+ pChkptFreq=0.,
+ chkptFreq=0.,
+ dumpFreq=1800.,
+ monitorFreq=1800.,
+ &
+
+ &PARM04
+ usingCartesianGrid=.TRUE.,
+ delX=10*200.,
+ delY=10*200.,
+ delR=10*10.,
+ &
+
+ &PARM05
+ bathyFile='topog.bin',
+ hydrogThetaFile='T.init.bin',
+ hydrogSaltFile='S.init.bin',
+ addMassFile='addmass.bin',
+ &
