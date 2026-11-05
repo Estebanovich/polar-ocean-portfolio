@@ -13,7 +13,8 @@ FIXED colour/axis scales shared by ALL four cases, land light grey, clock):
       of z_neutral = -181 m), with (u, v) arrows (fixed reference speed);
   (b) along-fjord section of T at the plume row j = ny//2, with the Q_ex
       section (i = 100) marked and the OBCS sponge (i >= 188) shaded;
-  (c) Q_ex(t) at i = 100 (``c_runs.exchange_series``) with a moving marker.
+  (c) hourly Q_ex(t) at i = 100 (``c_runs.exchange_series``, R31) with a
+      moving marker at the frame time.
 
 Frames: the 3-h means ``mean3h`` (UVEL, THETA, full 3-D) and ``animV``
 (VVEL at level 19, 1-based; data.diagnostics list 4, added for this script).
@@ -23,7 +24,7 @@ Two-stage cases are read from both stage directories (``c_runs.case_parts``,
 which also refuses runs not OK). Frame time = centre of the 3-h window.
 
 GIF size: Pillow; the stride doubles until the GIF fits ``--max-mb``
-(``animate_b.write_within_budget``). ``--check-scales`` writes no GIF; it
+(``animate_b.write_within_budget``); exit code 1 if it is still over budget. ``--check-scales`` writes no GIF; it
 prints the fraction of wet pixels outside the fixed T scale in (a) and (b)
 (max and mean over frames), max Q_ex / QEX_LIM and the max speed in (a).
 Run it on the first finished case and widen the limits for all cases alike.
@@ -91,7 +92,7 @@ def check_scales(run_dir: Path, i_section: int = I_SECTION, k_plan: int = K_PLAN
         uu = u[k_plan][wet2]
         vv = v[wet2] if v is not None else 0.0
         spd.append(float(np.max(np.hypot(uu, vv))) if uu.size else 0.0)
-    q = c_runs.exchange_series(run_dir, i_section, T_REF)["Q_ex"]
+    q = c_runs.exchange_series(run_dir, i_section, T_REF)["Q_ex"]   # hourly
     return {"a_T_plan": {"max": max(a), "mean": float(np.mean(a)), "frames": len(a)},
             "b_T_section": {"max": max(b), "mean": float(np.mean(b)), "frames": len(b)},
             "c_Q_ex": {"max_m3_s": float(q.max()), "max_over_lim": float(q.max() / QEX_LIM)},
@@ -145,13 +146,12 @@ def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80, max_mb: f
             title=f"(b) T along the fjord at y = {yc[j0]:.1f} km (plume row); "
                   "dashed: Q_ex section, grey: OBCS sponge")
     fig.colorbar(mA, cax=cax, extend="both", label="T (°C)")
-    axC.plot(qs["t_s"] / 86400, qs["Q_ex"] / 1e3, color=style.OKABE_ITO[0], lw=1.2)
+    axC.plot(qs["t_hourly_s"] / 86400, qs["Q_ex"] / 1e3, color=style.OKABE_ITO[0], lw=1.0)
     mk, = axC.plot([], [], "o", color=style.OKABE_ITO[1], ms=6)
     axC.set(xlim=(0, t_end / 86400), ylim=(0, QEX_LIM / 1e3), xlabel="time (days)",
             ylabel=r"$Q_{ex}$ (10$^3$ m$^3$/s)", title=f"(c) exchange flux at x = {xs:.0f} km")
     fig.suptitle(f"{p['case']}", x=0.06, ha="left", fontsize=11)
     clock = fig.text(0.97, 0.965, "", ha="right", va="top", family="monospace", fontsize=11)
-    tq = dict(zip(np.round(qs["t_s"], 3), qs["Q_ex"]))
 
     def draw(fr):
         it, d = fr
@@ -163,7 +163,7 @@ def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80, max_mb: f
         msk = land[::sy, ::sx]
         Q.set_UVC(np.where(msk, 0, uc), np.where(msk, 0, vc))
         ts = it * dt - c_runs.MEAN_S / 2
-        mk.set_data([ts / 86400], [tq.get(round(ts, 3), np.nan) / 1e3])
+        mk.set_data([ts / 86400], [np.interp(ts, qs["t_hourly_s"], qs["Q_ex"]) / 1e3])
         clock.set_text(f"t = {ts / 86400:5.2f} d (3-h mean)")
 
     out = Path(out)
@@ -209,9 +209,9 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(check_scales(a.run_dir), indent=2))
         return 0
     case = c_runs.params(a.run_dir)["params"]["case"]
-    make_gif(a.run_dir, a.out or DEFAULT_OUT / f"{case}.gif", a.stride, a.dpi, a.max_mb,
-             a.frame_png)
-    return 0
+    res = make_gif(a.run_dir, a.out or DEFAULT_OUT / f"{case}.gif", a.stride, a.dpi,
+                   a.max_mb, a.frame_png)
+    return 1 if res.get("over_budget") else 0
 
 
 if __name__ == "__main__":

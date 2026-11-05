@@ -272,7 +272,7 @@ class StubShell:
                               env={**os.environ, **self.env}).returncode
 
 
-SHORT2 = {"endTime": 7200.0, "wind_stage1_s": 3600.0}   # 60 + 60 steps of 60 s
+SHORT2 = {"endTime": 21600.0, "wind_stage1_s": 10800.0}   # 180 + 180 steps of 60 s
 
 
 def _two_stage(tmp_path, env=None, case="c_fjord_wind"):
@@ -291,17 +291,17 @@ def test_two_stage_case_restarts_from_copied_pickups(tmp_path):
     runs = [c for c in sh.calls if Path(c[0]).name == "run_mitgcm.sh"]
     assert [c[3] for c in runs] == [str(run), str(run / "stage2")]
     inp2 = run / "input_stage2"
-    assert "nIter0=60," in (inp2 / "data").read_text() and not (inp2 / "data.stage2").exists()
-    for f in ("pickup.0000000060.data", "pickup.0000000060.meta",
-              "pickup_orlanskiE.0000000060.001.001.data"):
+    assert "nIter0=180," in (inp2 / "data").read_text() and not (inp2 / "data.stage2").exists()
+    for f in ("pickup.0000000180.data", "pickup.0000000180.meta",
+              "pickup_orlanskiE.0000000180.001.001.data"):
         for d in (inp2, run / "stage2"):
             assert (d / f).is_file() and not (d / f).is_symlink()
     s1 = json.loads((run / "run_status.json").read_text())
     s2 = json.loads((run / "stage2" / "run_status.json").read_text())
     fin = json.loads((run / "run_status_final.json").read_text())
     assert s1["state"] == s2["state"] == fin["state"] == "OK"
-    assert s1["last_iter"] == 60 and s2["last_iter"] == 120
-    assert fin["last_iter"] == fin["expected_last_iter"] == 120
+    assert s1["last_iter"] == 180 and s2["last_iter"] == 360
+    assert fin["last_iter"] == fin["expected_last_iter"] == 360
     assert fin["stages"]["1"] == s1 and fin["stages"]["2"] == s2
 
 
@@ -330,19 +330,19 @@ def test_final_state_needs_stage2_last_iter(tmp_path):
             r = super().__call__(cmd)
             if Path(cmd[0]).name == "run_mitgcm.sh":
                 d = Path(cmd[3])
-                for f in ("pickup.0000000060.data", "pickup.0000000060.meta",
-                          "pickup_orlanskiE.0000000060.001.001.data"):
+                for f in ("pickup.0000000180.data", "pickup.0000000180.meta",
+                          "pickup_orlanskiE.0000000180.001.001.data"):
                     (d / f).write_text("x")
                 (d / "run_status.json").write_text(json.dumps(
-                    {"state": "OK", "last_iter": 60 if d.name != "stage2" else 100,
-                     "n_timesteps": 60, "wall_s": 1}))
+                    {"state": "OK", "last_iter": 180 if d.name != "stage2" else 300,
+                     "n_timesteps": 180, "wall_s": 1}))
             return r
 
     out = rc.run_campaign("c_fjord3d", "c_fjord_wind", 1, runs_root=runs, build_root=builds,
                           sh=Rec(), pgrep=lambda: "", overrides=SHORT2)
     assert out == {"c_fjord_wind": "FAILED"}
     fin = json.loads((runs / "c_fjord_wind" / "run_status_final.json").read_text())
-    assert fin["expected_last_iter"] == 120 and fin["last_iter"] == 100
+    assert fin["expected_last_iter"] == 360 and fin["last_iter"] == 300
 
 
 def test_single_stage_c_case_has_no_stage2(tmp_path):
@@ -362,7 +362,22 @@ def test_skip_ok_two_stage_uses_final_status(tmp_path):
 
 
 def test_cli_set_overrides():
-    assert rc.parse_sets(["wind_stage1_s=43200", "endTime=86400"]) == {
-        "wind_stage1_s": 43200.0, "endTime": 86400.0}
+    assert rc.parse_sets(["wind_stage1_s=43200", "endTime=86400.5"]) == {
+        "wind_stage1_s": 43200, "endTime": 86400.5}
     with pytest.raises(ValueError):
         rc.parse_sets(["novalue"])
+
+
+def test_set_rejects_unknown_key_and_keeps_int_types(tmp_path):
+    names = ["c_fjord_all"]
+    with pytest.raises(ValueError, match="not a parameter"):
+        rc.check_overrides(names, {"wind_stage_1": 43200})
+    ov = rc.check_overrides(names, rc.parse_sets(["n_plume_cols=6", "wind_stage1_s=43200",
+                                                  "endTime=86400"]))
+    assert ov == {"n_plume_cols": 6, "wind_stage1_s": 43200.0, "endTime": 86400.0}
+    assert isinstance(ov["n_plume_cols"], int) and isinstance(ov["wind_stage1_s"], float)
+    with pytest.raises(ValueError, match="integer"):
+        rc.check_overrides(names, {"n_plume_cols": 6.5})
+    with pytest.raises(ValueError, match="not a parameter"):
+        rc.run_campaign("c_fjord3d", "c_fjord_all", 1, runs_root=tmp_path, build_root=tmp_path,
+                        sh=Recorder(), pgrep=lambda: "", overrides={"bogus": 1})

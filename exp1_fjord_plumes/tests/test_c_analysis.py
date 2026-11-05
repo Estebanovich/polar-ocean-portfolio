@@ -39,10 +39,15 @@ def _params(case, **kw):
 
 
 def _make_run(root: Path, case: str, iters, *, two_stage=False, shelf=False,
-              t_mon=(-1.5, 4.0), s_mon=(32.9, 34.6), state="OK", u_scale=1.0) -> Path:
-    """Run dir with mean3h (UVEL, THETA), animV (VVEL at 1 level), case.json,
-    topog (land rows j = 0, NY-1 and column NX-1), T/S init, monitor log.
-    u = +U0 in the upper half, -U0 in the lower half (two-layer exchange)."""
+              t_mon=(-1.5, 4.0), s_mon=(32.9, 34.6), state="OK", u_scale=1.0,
+              hourly_sign=(1, 1, 1), covar=0.0) -> Path:
+    """Run dir with mean3h (UVEL, THETA, ADVx_TH), snap1h (UVEL, THETA hourly),
+    animV (VVEL at 1 level), case.json, topog (land rows j = 0, NY-1 and
+    column NX-1), T/S init, monitor log, run status (MAIN LOOP timer).
+    Hourly u = s_n * u2 with u2 = +U0 upper half / -U0 lower half and s_n
+    cycling through ``hourly_sign`` within each 3-h window; the 3-h mean u is
+    their mean. ADVx_TH = (mean u * T + covar) * dA on the U faces: covar = 0
+    is the case of u, T constant in the window (no u'T')."""
     run = root / case
     run.mkdir(parents=True)
     depth = np.full((NY, NX), NZ * DZ)
@@ -62,23 +67,34 @@ def _make_run(root: Path, case: str, iters, *, two_stage=False, shelf=False,
     meta = {"params": _params(case, externForcingCycle=3 * 3600.0, externForcingPeriod=3600.0),
             "T_out": 3.0, "S_out": 33.5}
     (run / "case.json").write_text(json.dumps(meta))
-    u = np.where(np.arange(NZ)[:, None, None] < NZ // 2, U0, -U0) * u_scale
-    u = np.broadcast_to(u, (NZ, NY, NX)).copy()
+    u2 = np.where(np.arange(NZ)[:, None, None] < NZ // 2, U0, -U0) * u_scale
+    u2 = np.broadcast_to(u2, (NZ, NY, NX)).copy()
     T = np.broadcast_to(T1[:, None, None], (NZ, NY, NX)).copy()
+    wetU = np.broadcast_to((depth > 0)[None], (NZ, NY, NX)).copy()
+    wetU[:, :, 1:] &= wetU[:, :, :-1].copy()
+    umean = u2 * float(np.mean(hourly_sign))
+    advx = np.where(wetU, (umean * T + covar) * D * DZ, 0.0)
     parts = [run] if not two_stage else [run, run / "stage2"]
     if two_stage:
         (run / "stage2").mkdir()
         (run / "data.stage2").write_text("&PARM03\n nIter0=%d,\n&\n" % iters[len(iters) // 2 - 1])
     for n, it in enumerate(iters):
         d = parts[0] if (not two_stage or n < len(iters) // 2) else parts[1]
-        _write_mds(d, "mean3h", it, np.stack([u, T]))
+        _write_mds(d, "mean3h", it, np.stack([umean, T, advx]))
         _write_mds(d, "animV", it, np.zeros((1, 1, NY, NX)))
+        for h in range(3):                       # hourly snapshots in the window
+            ith = it - 120 + 60 * h
+            _write_mds(d, "snap1h", ith, np.stack([u2 * hourly_sign[h], T]))
     for d in parts:
         (d / "output.txt").write_text(
             f"(PID.TID 0000.0001) %MON dynstat_theta_max = {t_mon[1]:.13E}\n"
             f"(PID.TID 0000.0001) %MON dynstat_theta_min = {t_mon[0]:.13E}\n"
             f"(PID.TID 0000.0001) %MON dynstat_salt_max = {s_mon[1]:.13E}\n"
-            f"(PID.TID 0000.0001) %MON dynstat_salt_min = {s_mon[0]:.13E}\n")
+            f"(PID.TID 0000.0001) %MON dynstat_salt_min = {s_mon[0]:.13E}\n"
+            + '(PID.TID 0000.0001)   Seconds in section "MAIN LOOP           [THE_MAIN_LOOP]":\n'
+            "(PID.TID 0000.0001)         User time:   1.0\n"
+            "(PID.TID 0000.0001)       System time:   0.0\n"
+            "(PID.TID 0000.0001)     Wall clock time:   36.0\n")
         (d / "run_status.json").write_text(json.dumps(
             {"state": state, "last_iter": iters[-1], "n_timesteps": iters[-1], "wall_s": 1}))
     if two_stage:
@@ -120,16 +136,60 @@ def test_section_inside_sponge_refused(tmp_path):
     assert dA.shape == (NZ, NY) and np.all(dA[:, 0] == 0) and dA.sum() == _A_wet()
 
 
-def test_exchange_series_two_layer_and_two_stages(tmp_path):
+T1 = np.linspace(-1.5, 4.0, NZ)
+UL = np.where(np.arange(NZ) < NZ // 2, U0, -U0)
+
+
+def _heat(u_layer, T_ref, extra=0.0):
+    return 1027.0 * 3974.0 * (NY - 2) * D * DZ * np.sum(-(u_layer * (T1 - T_ref) + extra))
+
+
+def test_exchange_series_two_stages_and_exact_heat(tmp_path):
+    """u, T constant in the window: ADVx_TH heat == rho0 cp sum(-u)(T - Tref) dA,
+    hourly Q_ex == 3-h-mean Q_ex; times: snapshots at it*dt, means at the centre."""
     run = _make_run(tmp_path, "c_fjord_all", ITERS, two_stage=True)
     ts = c_runs.exchange_series(run, I_SEC, T_ref=-1.5)
-    assert np.allclose(ts["t_s"], np.array(ITERS) * DT - 5400.0)
+    assert np.allclose(ts["t_3h_s"], np.array(ITERS) * DT - 5400.0)
+    assert np.allclose(ts["t_hourly_s"], np.arange(1, 13) * 3600.0)
     assert np.allclose(ts["Q_ex"], 0.5 * U0 * _A_wet())
-    # heat toward the front: rho0 cp sum(-u)(T - Tref) dA (upper layer warm? no: T rises with depth)
-    T1 = np.linspace(-1.5, 4.0, NZ)
-    u = np.where(np.arange(NZ) < NZ // 2, U0, -U0)
-    H = 1027.0 * 3974.0 * np.sum(-u * (T1 + 1.5)) * (NY - 2) * D * DZ
-    assert np.allclose(ts["heat_W"], H)
+    assert np.allclose(ts["Q_ex_3h"], 0.5 * U0 * _A_wet())
+    assert np.allclose(ts["heat_W"], _heat(UL, -1.5), rtol=1e-12)
+    assert np.allclose(ts["heat_W"], ts["heat_W_3h_product"], rtol=1e-12)
+
+
+def test_heat_from_advx_includes_covariance(tmp_path):
+    """u'T' != 0 in the window: the ADVx_TH heat differs from the product of means
+    by rho0 cp sum(-u'T') dA."""
+    run = _make_run(tmp_path, "c_fjord_plume", ITERS, covar=0.01)
+    ts = c_runs.exchange_series(run, I_SEC, T_ref=-1.5)
+    assert np.allclose(ts["heat_W"], _heat(UL, -1.5, extra=0.01), rtol=1e-12)
+    assert np.allclose(ts["heat_W_3h_product"], _heat(UL, -1.5), rtol=1e-12)
+    assert not np.allclose(ts["heat_W"], ts["heat_W_3h_product"])
+
+
+def test_hourly_q_ex_not_biased_by_3h_mean(tmp_path):
+    """Sign of u flips within the 3-h window: |u| of the mean underestimates."""
+    run = _make_run(tmp_path, "c_fjord_plume", ITERS, hourly_sign=(1, 1, -1))
+    ts = c_runs.exchange_series(run, I_SEC, T_ref=-1.5)
+    assert np.allclose(ts["Q_ex"], 0.5 * U0 * _A_wet())
+    assert np.allclose(ts["Q_ex_3h"], 0.5 * U0 / 3 * _A_wet())
+
+
+def test_mean3h_without_advx_refused(tmp_path):
+    run = _make_run(tmp_path, "c_fjord_plume", ITERS)
+    for it in ITERS:   # rewrite mean3h with only UVEL, THETA (pre-R31 runs)
+        a = __import__("pfcommon.mitgcm_io", fromlist=["read_mds"]).read_mds(run / "mean3h", it)[0]
+        _write_mds(run, "mean3h", it, a[:2])
+    with pytest.raises(ValueError, match="ADVx_TH"):
+        c_runs.exchange_series(run, I_SEC, T_ref=-1.5)
+
+
+def test_step_rate_excludes_startup(tmp_path):
+    run = _make_run(tmp_path, "c_fjord_all", ITERS, two_stage=True)
+    r = c_runs.step_rate(run)
+    # MAIN LOOP 36 s per stage over 720 steps in total (iters[-1])
+    assert r["main_loop_wall_s"] == 72.0 and r["steps"] == 720
+    assert r["s_per_step"] == pytest.approx(0.1)
 
 
 def test_c5p_range_includes_outflow_and_ob_series(tmp_path):
@@ -171,6 +231,11 @@ def test_fig3_writes_metrics_and_figure(tmp_path):
     for case, sc in (("c_fjord_plume", 1), ("c_fjord_wind", 2), ("c_fjord_shelf", 3), ("c_fjord_all", 4)):
         assert met["cases"][case]["Q_ex_mean_m3_s"] == pytest.approx(0.5 * sc * U0 * _A_wet())
         assert met["cases"][case]["C5p"]["pass"]
+        cc = met["cases"][case]["cross_check"]
+        assert cc["Q_ex_mean_from_3h_means_m3_s"] == pytest.approx(0.5 * sc * U0 * _A_wet())
+        assert cc["Q_ex_rel_diff"] == pytest.approx(0.0, abs=1e-12)
+        assert "heat_from_mean_products_W" in cc and "heat_rel_diff" in cc
+    assert met["heat_source"].startswith("ADVx_TH")
     assert met["i_section"] == I_SEC and "W_over_Rd" in met and met == m
 
 
@@ -204,7 +269,19 @@ def test_animate_c_check_scales(tmp_path):
     assert r["c_Q_ex"]["max_over_lim"] < 1.0
 
 
-def test_c_diagnostics_template_has_anim_v():
+def test_c_diagnostics_template_has_anim_v_advx_and_hourly():
     t = (Path(__file__).resolve().parents[1] / "config" / "c_fjord3d" / "input_templates"
          / "data.diagnostics").read_text()
     assert "'animV'" in t and "levels(1,4) = 19." in t
+    assert "fields(1:3,1) = 'UVEL    ','THETA   ','ADVx_TH '," in t
+    assert "fields(1:2,5) = 'UVEL    ','THETA   '," in t and "fileName(5)  = 'snap1h'," in t
+    assert "frequency(5) = -3600.," in t
+
+
+def test_animate_c_exits_1_over_budget(tmp_path, monkeypatch):
+    from exp1_fjord_plumes.analysis import animate_c as ac
+    run = _make_run(tmp_path, "c_fjord_plume", ITERS)
+    monkeypatch.setattr(ac, "make_gif", lambda *a, **k: {"over_budget": True})
+    assert ac.main([str(run), "--out", str(tmp_path / "x.gif")]) == 1
+    monkeypatch.setattr(ac, "make_gif", lambda *a, **k: {"over_budget": False})
+    assert ac.main([str(run), "--out", str(tmp_path / "x.gif")]) == 0

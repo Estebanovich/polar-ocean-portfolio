@@ -27,7 +27,7 @@ MITgcm** (la campaña de (a) sigue en curso). El Step 5 (corrida cronometrada de
 | Advección | `tempAdvScheme = saltAdvScheme = 33`, `staggerTimeStep` | como (a)/(b) |
 | dt | 60 s (provisional; lo confirma el Step 5) | ver estabilidad |
 | Duración | 30 d = 43 200 pasos | plan |
-| Salida | MDS float64 big-endian; medias de 3 h de UVEL y THETA (Q_ex, calor); instantáneas diarias de U, V, W, T, S; ETAN horario | Fig. 3 |
+| Salida | MDS float64 big-endian. Medias de 3 h de UVEL, THETA y **ADVx_TH** (calor); instantáneas **horarias** de UVEL y THETA 3D (Q_ex); instantáneas diarias de U, V, W, T, S; ETAN horario; VVEL en el nivel 19 (GIF) | Fig. 3, regla R31 |
 | Pickups | cada 5 d (y al final de la etapa 1 de los casos con viento) | — |
 | icefront | **no** | ver abajo |
 
@@ -192,7 +192,20 @@ cerca de la cara.
 | Serial | 36 300 s ≈ **10.1 h por caso** |
 | 5 rangos (factor 3.3–5, el de (b)) | **2.0–3.1 h por caso**; **8–12 h los 4 casos** |
 | Corrida corta del Step 5 (1 d = 1440 pasos) | 1210 s serial ≈ 4–6 min con 5 rangos |
-| Disco | ≈ 1.7 GB por caso, ≈ 7 GB en total en LaCie |
+| Disco (regla R31) | ≈ 5.8 GB por caso, ≈ 23 GB en total en LaCie (3.6 TB libres) |
+
+- **Extrapolación del Step 5 (regla de la revisión):** se usa la tasa por paso
+  **sin los arranques**. El temporizador `MAIN LOOP [THE_MAIN_LOOP]` de MITgcm
+  en cada etapa excluye la inicialización y la lectura de entradas;
+  `c_runs.step_rate(run)` lo suma sobre las etapas y lo divide entre los pasos.
+  - Costo de un caso de 30 d = s/paso × 43 200 + arranques (≈ 1–2 por caso).
+  - No se usa `wall_s` de `run_status.json`, que incluye el arranque y, en la
+    corrida de 1 d, dos arranques.
+  ```bash
+  $PY -c "from exp1_fjord_plumes.analysis.c_runs import step_rate; \
+  r = step_rate('/Volumes/LaCie/portfolio_runs/exp1/c_fjord_all_short1d'); \
+  print(r, 'h por caso de 30 d:', r['s_per_step'] * 43200 / 3600)"
+  ```
 
 - **Cota superior:** el 2.8e-6 de (a) es no hidrostático, dominado por cg3d
   (300–500 iteraciones). En (c) no hay cg3d, así que se espera 3–10 veces menos.
@@ -217,16 +230,39 @@ $PY exp1_fjord_plumes/scripts/run_campaign.py --config c_fjord3d --cases 'c_fjor
     --np 5 --skip-ok > /Volumes/LaCie/portfolio_runs/exp1/campaign_c.log 2>&1
 # Step 7: Fig. 3 (+ C5') y GIF
 $PY exp1_fjord_plumes/analysis/fig3_exchange_partition.py
-$PY exp1_fjord_plumes/analysis/animate_c.py /Volumes/LaCie/portfolio_runs/exp1/c_fjord_all --check-scales
+# escalas: --check-scales en LOS CUATRO casos antes de fijarlas (iguales para todos)
+for c in plume wind shelf all; do
+  $PY exp1_fjord_plumes/analysis/animate_c.py /Volumes/LaCie/portfolio_runs/exp1/c_fjord_$c --check-scales
+done
 for c in plume wind shelf all; do
   $PY exp1_fjord_plumes/analysis/animate_c.py /Volumes/LaCie/portfolio_runs/exp1/c_fjord_$c
 done
 ```
 
-- Disco adicional por la animación: la lista `animV` (VVEL en el nivel 19,
-  medias de 3 h) suma 240 × 48 kB ≈ 12 MB por caso, ≈ 46 MB en total. Los
-  cuadros reutilizan `mean3h` (medias de 3 h de U y T 3D), que ya existía para
-  la Fig. 3.
+- **Diagnósticos (regla R31).**
+  - **Calor hacia el frente:** media de 3 h de `ADVx_TH`, el flujo advectivo
+    zonal de θ en la cara U, en degC·m³/s (`gad_advection.F:841`;
+    available_diagnostics.log). Positivo hacia +x, lejos del hielo. Se
+    convierte a W con H = ρ0 c_p Σ[−ADVx_TH + T_ref·ū·dA], con
+    T_ref = −1.90 °C. Es la media exacta de ρ0 c_p Σ(−u)(T − T_ref)dA con la T
+    de cara del propio esquema, incluido u'T' de escala menor a 3 h.
+  - **Q_ex:** instantáneas horarias de UVEL (|u| no es lineal; las medias de
+    3 h lo sesgan hacia abajo).
+  - **Comprobaciones cruzadas:** los productos de medias de 3 h de u y T quedan
+    en `cross_check` de `fig3_metrics.json`, con su diferencia relativa.
+- **Disco, por caso de 30 d:**
+
+  | Lista | Cálculo | Tamaño |
+  |---|---|---|
+  | `snap1h` (UVEL + THETA horarios) | 720 × 2 × 2.4 MB | 3.5 GB |
+  | `mean3h` (UVEL, THETA, ADVx_TH) | 240 × 3 × 2.4 MB | 1.7 GB |
+  | `snap1d` | — | 0.36 GB |
+  | `animV` (VVEL en el nivel 19, 3 h) | 240 × 48 kB | 12 MB |
+  | `ETAN` y pickups | — | ≈ 0.2 GB |
+  | **Total** | | **≈ 5.8 GB por caso, ≈ 23 GB en total** |
+
+  El buffer de diagnósticos usa 502 niveles de los 1000 de `numDiags`
+  (`DIAGNOSTICS_SIZE.h`).
 - GIF: ≈ 0.07 MB por cuadro con datos sintéticos ruidosos a tamaño real. Con
   240 cuadros la zancada sube sola a 2–4 para quedar ≤ 8 MB.
 

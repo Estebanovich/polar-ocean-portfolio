@@ -197,3 +197,20 @@
 - W/Rd con los insumos reales de (c) = 0.667 (Rd = 8.39 km).
 - Comandos del Step 5 y Step 6 en `notes/pd1_c_fjord3d.md`. El build de (c) sigue al día (no cambió `code/`).
 - TDD: 19 pruebas nuevas, RED → GREEN; suite completa 200 PASS.
+
+## 2026-11-05 — Task 7: ronda 1 de correcciones a la preparación de (c) (R31)
+
+- R31, por rigor, antes del Step 6 (los diagnósticos no se recuperan después):
+  - el calor hacia el frente sale de la media de 3 h de `ADVx_TH` (degC·m³/s, `gad_advection.F:841`), con H = ρ0 c_p Σ[−ADVx_TH + T_ref·ū·dA]: exacto e incluye u'T';
+  - Q_ex sale de instantáneas horarias de UVEL (lista `snap1h` con UVEL y THETA 3D);
+  - los productos de medias de 3 h quedan como `cross_check` en `fig3_metrics.json`.
+  - Pruebas sintéticas: el calor es igual al producto con u y T constantes y difiere si covarían; Q_ex horario no sesgado frente a la media de 3 h con u que cambia de signo; se rechaza `mean3h` sin `ADVx_TH`.
+- Disco: ≈ 5.8 GB por caso, ≈ 23 GB en total (LaCie tiene 3.6 TB libres).
+- Menores:
+  - `--set` rechaza claves desconocidas y conserva enteros;
+  - `wind_stage1_s` debe ser múltiplo de dt, 3 h y 1 h;
+  - `animate_c` sale con 1 si se pasa del presupuesto;
+  - `c_runs.step_rate` (temporizador `MAIN LOOP`, sin arranques) para extrapolar el Step 5;
+  - un solo helper `is_two_stage`;
+  - `--check-scales` en los cuatro casos en la nota.
+- TDD; suite completa 207 PASS. No cambió `code/` (el build sigue al día). No se corrió MITgcm.

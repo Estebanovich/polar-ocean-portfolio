@@ -64,6 +64,17 @@ PKG = Path(__file__).resolve().parents[1]
 CFG_DIRS = {"a_": "a_line2d", "b_": "b_twoplume3d", "c_": "c_fjord3d"}
 
 
+STAGE2_NAME = "data.stage2"
+# (c) data.diagnostics averaging / snapshot periods [s]: mean3h, snap1h
+C_DIAG_PERIODS = (10800.0, 3600.0)
+
+
+def is_two_stage(d: Path) -> bool:
+    """True if directory ``d`` (case input or run dir) holds a second-stage
+    namelist: the single test shared by run_campaign.py and analysis/c_runs.py."""
+    return (Path(d) / STAGE2_NAME).exists()
+
+
 def load_cases(path: Path | None = None) -> dict:
     return yaml.safe_load(Path(path or PKG / "cases.yaml").read_text())
 
@@ -180,6 +191,11 @@ def _c_stages(p) -> list[dict]:
     if p["wind_tau"] <= 0:
         return [dict(off, nIter0=0, nTimeSteps=n_tot, pChkptFreq=432000.0,
                      stage_label="single stage")]
+    for per, what in ((dt, "deltaT"), *((x, "diagnostics period") for x in C_DIAG_PERIODS)):
+        r = p["wind_stage1_s"] / per
+        if abs(r - round(r)) > 1e-9:
+            raise ValueError(f"wind_stage1_s={p['wind_stage1_s']} is not a multiple of the "
+                             f"{what} {per} s (stage boundary must align)")
     n1 = int(round(p["wind_stage1_s"] / dt))
     if n_tot <= n1:   # short run inside stage 1: one stage, wind file on
         return [dict(nIter0=0, nTimeSteps=n_tot, pChkptFreq=432000.0,
@@ -290,7 +306,7 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     rendered = {f.name: Template(f.read_text()).substitute(p) for f in tfiles}
     if len(stages) > 1:  # wind cases: stage 2 restarts from the stage-1 pickup
         p2 = {**p, **stages[1]}
-        rendered.update({f"{f.name}.stage2": Template(f.read_text()).substitute(p2)
+        rendered.update({STAGE2_NAME if f.name == "data" else f"{f.name}.stage2": Template(f.read_text()).substitute(p2)
                          for f in tfiles if f.name == "data"})
         info["stages"] = stages
     missing = []

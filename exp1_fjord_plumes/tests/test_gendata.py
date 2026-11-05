@@ -463,3 +463,15 @@ def test_c_wind_run_not_longer_than_stage1_is_single_stage(tmp_path):
     d = (out / "data").read_text()
     assert not (out / "data.stage2").exists()
     assert "zonalWindFile='windx.bin'" in d and "nTimeSteps=720," in d
+
+
+def test_c_wind_stage1_must_align_with_dt_and_diagnostics(tmp_path):
+    """Stage boundary on a multiple of deltaT, the 3-h mean and the hourly snapshot."""
+    for bad in (5400.0, 1830.0):          # not a multiple of 10800 / of 3600 and 60
+        with pytest.raises(ValueError, match="multiple"):
+            make_case("c_fjord_wind", tmp_path / f"w{bad}",
+                      overrides={"endTime": 86400.0, "wind_stage1_s": bad})
+    from exp1_fjord_plumes.gendata.make_case import C_DIAG_PERIODS
+    t = (PKG_DIR / "config" / "c_fjord3d" / "input_templates" / "data.diagnostics").read_text()
+    assert f"frequency(1) = {C_DIAG_PERIODS[0]:.0f}.," in t
+    assert f"frequency(5) = -{C_DIAG_PERIODS[1]:.0f}.," in t

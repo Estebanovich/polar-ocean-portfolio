@@ -1,10 +1,16 @@
 # Exp. 1 (c) c_fjord3d -- case ${case}
-# MDS output. 3-h means of UVEL, THETA for Q_ex and heat toward the front
-# (analysis/exchange.py, Fig. 3; also the frames of analysis/animate_c.py);
-# daily 3-D snapshots; hourly mean ETAN; 3-h mean VVEL at the plume outflow
-# level 19 (z = -185 m) for the animation arrows (list 4, ~12 MB per case).
+# MDS output (analysis/c_runs.py, fig3_exchange_partition.py, animate_c.py).
+# Ruling R31: heat toward the front from the 3-h mean of ADVx_TH (zonal
+# advective theta flux incl. sub-3-h u'T', degC m^3/s); Q_ex from HOURLY
+# snapshots of UVEL (|u| is nonlinear). Lists:
+#  1 mean3h: 3-h means UVEL, THETA, ADVx_TH (Fig. 3 heat; GIF frames)
+#  2 snap1d: daily 3-D snapshots
+#  3 ETAN:   hourly mean
+#  4 animV:  3-h mean VVEL at level 19 (z = -185 m, plume outflow), GIF arrows
+#  5 snap1h: hourly 3-D snapshots UVEL, THETA (Q_ex; hourly cross-checks)
+# The periods 10800 / 3600 s must match make_case.C_DIAG_PERIODS.
  &DIAGNOSTICS_LIST
-  fields(1:2,1) = 'UVEL    ','THETA   ',
+  fields(1:3,1) = 'UVEL    ','THETA   ','ADVx_TH ',
   fileName(1)  = 'mean3h',
   frequency(1) = 10800.,
   fields(1:5,2) = 'UVEL    ','VVEL    ','WVEL    ','THETA   ','SALT    ',
@@ -18,6 +24,10 @@
   fileName(4)  = 'animV',
   frequency(4) = 10800.,
   levels(1,4) = 19.,
+  fields(1:2,5) = 'UVEL    ','THETA   ',
+  fileName(5)  = 'snap1h',
+  frequency(5) = -3600.,
+  timePhase(5) = 0.,
  &
 
  &DIAG_STATIS_PARMS

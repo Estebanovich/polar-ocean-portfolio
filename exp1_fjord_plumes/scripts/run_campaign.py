@@ -60,7 +60,8 @@ REPO = PKG.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from exp1_fjord_plumes.gendata.make_case import load_cases, make_case  # noqa: E402
+from exp1_fjord_plumes.gendata.make_case import (  # noqa: E402
+    STAGE2_NAME, is_two_stage, load_cases, make_case)
 
 RUNS_ROOT = Path("/Volumes/LaCie/portfolio_runs/exp1")
 BUILD_ROOT = Path("/Volumes/ESTEBAN_MIT/portfolio_builds/exp1")
@@ -127,7 +128,7 @@ def finished_ok(run_dir: Path) -> bool:
     two-stage case (input/data.stage2) only run_status_final.json counts."""
     run_dir = Path(run_dir)
     f = run_dir / "run_status.json"
-    if (run_dir / "input" / "data.stage2").exists():
+    if is_two_stage(run_dir / "input"):
         f = run_dir / "run_status_final.json"
     try:
         st = json.loads(f.read_text())
@@ -139,13 +140,43 @@ def finished_ok(run_dir: Path) -> bool:
 
 
 def parse_sets(items: list[str] | None) -> dict:
-    """['KEY=VALUE', ...] -> {KEY: float(VALUE)} (``--set``)."""
+    """['KEY=VALUE', ...] -> {KEY: int or float} (``--set``); integer literals
+    stay int (types are reconciled per case by ``check_overrides``)."""
     out = {}
     for it in items or []:
         if "=" not in it:
             raise ValueError(f"--set expects KEY=VALUE, got {it!r}")
-        k, v = it.split("=", 1)
-        out[k.strip()] = float(v)
+        k, v = (x.strip() for x in it.split("=", 1))
+        try:
+            out[k] = int(v)
+        except ValueError:
+            out[k] = float(v)
+    return out
+
+
+def check_overrides(names: list[str], overrides: dict | None,
+                    cases_file: Path | None = None) -> dict:
+    """Reject keys absent from the merged parameters of any selected case and
+    give each value the type of the parameter it replaces (int stays int;
+    a non-integral value for an int parameter is an error)."""
+    if not overrides:
+        return overrides or {}
+    spec = load_cases(cases_file)
+    out = dict(overrides)
+    for name in names:
+        case = spec["cases"][name]
+        merged = {**spec["configs"][case["config"]], **case}
+        for k, v in overrides.items():
+            if k not in merged:
+                raise ValueError(f"--set {k}: not a parameter of case {name}")
+            if isinstance(merged[k], bool) or not isinstance(merged[k], (int, float)):
+                raise ValueError(f"--set {k}: parameter is not numeric")
+            if isinstance(merged[k], int):
+                if float(v) != int(float(v)):
+                    raise ValueError(f"--set {k}={v}: integer parameter")
+                out[k] = int(v)
+            else:
+                out[k] = float(v)
     return out
 
 
@@ -184,7 +215,7 @@ def run_stage2(run_dir: Path, inp: Path, build_dir: Path, np_: int,
     import shutil
     run_dir, inp = Path(run_dir), Path(inp)
     st1 = _status(run_dir)
-    s2_text = (inp / "data.stage2").read_text()
+    s2_text = (inp / STAGE2_NAME).read_text()
     n1, n2 = _nml_int(s2_text, "nIter0"), _nml_int(s2_text, "nTimeSteps")
     stages = {"1": st1, "2": None}
     if not (st1 and st1.get("state") == "OK" and st1.get("last_iter") == n1):
@@ -204,7 +235,7 @@ def run_stage2(run_dir: Path, inp: Path, build_dir: Path, np_: int,
         shutil.rmtree(inp2)
     shutil.copytree(inp, inp2, symlinks=False)          # copies, never links
     (inp2 / "data").write_text(s2_text)
-    (inp2 / "data.stage2").unlink()
+    (inp2 / STAGE2_NAME).unlink()
     for f in pick:
         shutil.copyfile(f, inp2 / f.name)                # content copy (follows links)
     sh([RUN_SH, build_dir, inp2, run_dir / "stage2", np_])
@@ -252,6 +283,7 @@ def run_campaign(config: str, pattern: str, np_: int, *,
     if not 1 <= np_ <= MAX_NP:
         raise ValueError(f"np={np_} outside 1..{MAX_NP} (global constraint: <= 5 MPI procs)")
     names = select_cases(config, pattern, cases_file)
+    overrides = check_overrides(names, overrides, cases_file)
     busy = other_mitgcm_processes(pgrep)
     if busy:
         raise RuntimeError("another mpirun/mitgcmuv is running, refusing to start: "
@@ -293,7 +325,7 @@ def run_campaign(config: str, pattern: str, np_: int, *,
         left = other_mitgcm_processes(pgrep)
         if left:
             raise RuntimeError(f"processes left after {name}: " + " | ".join(left))
-        if (inp / "data.stage2").exists():
+        if is_two_stage(inp):
             print(f"[run_campaign] {name}: stage 1 {results[name]}; stage 2 in "
                   f"{run_dir / 'stage2'}", flush=True)
             results[name] = run_stage2(run_dir, inp, build_dir, np_, sh)
