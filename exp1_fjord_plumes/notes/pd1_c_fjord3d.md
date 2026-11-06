@@ -346,3 +346,10 @@ done
 - **Clase (c), elección numérica:** la intensidad de la zona heredada de los parámetros `sponge_*` de cases.yaml.
 - **Consecuencia para el análisis:** el forzamiento de plataforma efectivo dentro del fiordo no es ±30 m. Cualquier resultado de (c) debe reportarse frente a la amplitud de picnoclina **realizada** en el fiordo, medida en la corrida, y no frente a la nominal. Esto vale igual que con los parámetros reales de case.json.
 - Cambiar la intensidad de la zona después de ver este resultado sería ajustar el diseño a un criterio informativo. Solo se haría con una nueva prerregistración y con aprobación de Esteban (PD1(c)).
+
+## Campaña de 4 × 30 d (opción A, 2026-11-05): dos casos divergen
+
+`run_campaign` reporta OK en los 4 casos, pero **`c_fjord_shelf` da NaN desde el día 12.8 y `c_fjord_all` desde el día 20.3** (etapa 2). Los casos `c_fjord_plume` y `c_fjord_wind` terminan finitos.
+- Antes del NaN, max|u| oscila entre 0.4 y 1 m/s; en `plume` es ~0.3 m/s.
+- Es la misma firma que en (b): velocidades espurias junto a la OB de Stevens (ver pd1_b_twoplume3d.md, "Hallazgo crítico"). Aquí se dispara con el forzamiento de plataforma.
+- **Las corridas de (c) no se usan** hasta corregir la frontera. `require_ok` debe rechazar campos no finitos.
