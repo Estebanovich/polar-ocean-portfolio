@@ -33,6 +33,11 @@ C  Exp1 c_fjord3d: prescribed OB u (Stevens depth-mean) and T/S time series (she
 
 C Enable OB conditions following Stevens (1990)
 #define ALLOW_OBCS_STEVENS
+C R37 (2026-11-06, notes/pd1_b_twoplume3d.md V3): the Stevens baroclinic OB velocity
+C is copied from the interior column (pkg/obcs/obcs_calc_stevens.F:39-42, 193-207);
+C the default (the OB's own previous-step u, OBEuStevens) grew a spurious
+C overturning cell at the OB in (b) and diverged in the shelf-forced (c) runs.
+#define OBCS_STEVENS_USE_INTERIOR_VELOCITY
 
 C Allow sponge layer treatment of open boundary conditions
 #define ALLOW_OBCS_SPONGE

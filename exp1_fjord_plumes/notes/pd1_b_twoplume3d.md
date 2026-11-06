@@ -280,3 +280,17 @@ El análisis de la Task 6 (commit 2d86679) encontró que **4 corridas sermilik d
     2. Igual que el criterio 2 anterior (razón ≤ 1.5).
     3. |`obc_E_uVel_Int`| ≤ 0.2 m³/s (1 % de Q0) en todas las salidas, y |η̄(t) − Q0·t/A| ≤ 0.02 m en todas las salidas, con Q0 = 20 m³/s y A = área mojada de hFacC en superficie.
   - **Adoptar V6 cambia la física:** el agua de la pluma no sale en neto. En (b) es despreciable (η sube 0.19 m en 3 h sobre 300 m). En (c) serían ~1.2 m en 30 d y un sesgo de 100 m³/s en el intercambio. Adoptarlo en (c) requiere la aprobación de Esteban.
+
+### Resultados de V3 y V6 (2026-11-06)
+
+| variante | C1 | C2 (razón máxima) | C3 |
+|---|---|---|---|
+| V3: Stevens + u baroclínica interior | PASA | **0.50**, PASA | \|η̄\| 1.7e-16 m; error de transporte 1e-12. PASA |
+| V6: Orlanski + balance (BayIW) | PASA | **0.46**, PASA | \|η̄ − Q0·t/A\| máx 1.9e-3 m (A = 1.1682 km²); \|transporte\| máx 1.8e-12. PASA |
+
+(El evaluador genérico marcó C3 de V6 como FALLA porque supone η = 0. El criterio pre-registrado de V6 es η = Q0·t/A, y ese pasa.)
+
+- **Diagnóstico:** la celda espuria venía de la persistencia baroclínica de Stevens (`OBEuStevens`). Copiar la u interior (V3) o radiar con Orlanski (V6) la eliminan.
+- **Elección (regla R37): V3.** Conserva la física: el agua de la pluma sale exactamente a Q0. Además, se queda dentro de la decisión ya aprobada de usar Stevens. V6 hace que se acumule agua.
+  - El encabezado de MITgcm advierte que V3 "can give unexpected results" (`obcs_calc_stevens.F:39-42`). Por eso, antes de adoptarlo en las campañas, se verifica en (c) con `c_fjord_shelf` a 30 d, con los criterios pre-registrados.
+- V3 sigue escribiendo `pickup_stevensE`, así que el reinicio de dos etapas de (c) no cambia.
