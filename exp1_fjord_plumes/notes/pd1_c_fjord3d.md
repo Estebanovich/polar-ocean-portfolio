@@ -311,3 +311,38 @@ done
 5. **Informativo:** se reporta el desplazamiento de la picnoclina en la zona RBCS a las 24 h frente a la serie de plataforma (debe seguir el forzamiento de ±30 m).
 
 **Si falla cualquiera de 1–4,** no se lanza la campaña de (c) y se analiza el fallo.
+
+## Resultado de la prueba de 1 día con Stevens + zona RBCS (2026-11-05, 22:35)
+
+**Corrida:** `/Volumes/LaCie/portfolio_runs/exp1/c_fjord_all_stevens_short1d`. El tiempo de pared fue 13 s + 14 s con np = 5.
+
+| # | Criterio | Resultado | Veredicto |
+|---|---|---|---|
+| 1 | Las 2 etapas terminan OK; la etapa 2 arranca desde `pickup_stevensE` | `run_status_final` OK (720 + 720 pasos). STDOUT de la etapa 2: `MDS_READ_SEC_YZ: opening file: pickup_stevensE.0000000720.*` | PASA |
+| 2 | `obc_E_uVel_Int` = +100 m³/s, con error relativo < 1e-6 | Error relativo máximo de 6.9e-13 (26 salidas del monitor) | PASA |
+| 3 | \|η medio\| < 0.01 m | \|η medio\| máximo de 3.6e-16 m | PASA |
+| 4 | T y S dentro del rango físico ± el margen, sin NaN | T ∈ [−1.49983, 4.00000] °C y S ∈ [32.90005, 34.60000] psu. Las entradas tienen T ∈ [−1.49997, 4.0] y S ∈ [32.9000, 34.6]. No hay NaN | PASA |
+| 5 | Informativo: la picnoclina de la zona RBCS frente a la de la plataforma | Ver la tabla siguiente | **No sigue el forzamiento** |
+
+**Criterio 5.** La picnoclina se mide como la profundidad del valor medio de T de cada columna, interpolada linealmente. Se promedia en y sobre las columnas mojadas.
+
+| | 0 h | 12 h | 24 h |
+|---|---|---|---|
+| Objetivo de plataforma (OBEt = rbcs_T), analítico 200 − 30 sin(2πt/6 d) | 200.0 | 185.0 | 174.0 |
+| Zona, isl 1–3 | 200.0 | 198.5 | 192.9 |
+| Zona, isl 4–10 | 200.0 | 198.8 | 193.3 |
+| Al oeste de la zona, isl 11–20 | 200.0 | 198.8 | 193.2 |
+| Centro del fiordo, x = nx/2 | 200.0 | 197.7 | 194.2 |
+
+**Lectura.**
+- La zona sube solo ~1.5 m a las 12 h y ~7 m a las 24 h, mientras que el objetivo sube 15 m y 26 m. La zona queda prácticamente igual que el interior. Incluso isl = 1, con una tasa de 0.2/600 s⁻¹ (e-folding ≈ 50 min), queda en 192.5 m.
+- El código RBCS es el estándar: `rbcs_add_tendency.F:88-97`, con la máscara × maskC de `rbcs_init_fixed.F:240`.
+  - Los registros temporales se cargan bien: a las 12 h se leen los registros 12 y 13 con pesos 0.5/0.5, según el log `RBCS_FIELDS_LOAD`.
+  - rbcs_T coincide con OBEt.
+- **Hipótesis (sin verificar):** el levantamiento que impone la zona se exporta como onda interna, hacia el fiordo y hacia afuera por la frontera radiante de Stevens, más rápido de lo que la relajación lo repone.
+  - La zona mide 2 km. La relajación es fuerte solo en las 2–3 columnas exteriores: e-folding ≥ 2.7 h desde isl = 3.
+  - El interior sí se levanta (~6–7 m a las 24 h, en todo el fiordo), así que la señal entra, pero atenuada a ~25 % del forzamiento nominal.
+- Un día no basta para separar la amplitud del desfase, porque el periodo es de 6 d. Las 4 corridas de 30 d (5 ciclos) lo miden directamente.
+- **Clase (c), elección numérica:** la intensidad de la zona heredada de los parámetros `sponge_*` de cases.yaml.
+- **Consecuencia para el análisis:** el forzamiento de plataforma efectivo dentro del fiordo no es ±30 m. Cualquier resultado de (c) debe reportarse frente a la amplitud de picnoclina **realizada** en el fiordo, medida en la corrida, y no frente a la nominal. Esto vale igual que con los parámetros reales de case.json.
+- Cambiar la intensidad de la zona después de ver este resultado sería ajustar el diseño a un criterio informativo. Solo se haría con una nueva prerregistración y con aprobación de Esteban (PD1(c)).
