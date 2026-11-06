@@ -404,3 +404,35 @@ C4′ **PASA bajo su definición pre-registrada** (0.520 y 0.525), y eso no se c
 - la dinámica de la capa límite de pared en la cara (calor y sal de pkg/icefront) mantiene agua de la cara ascendiendo hasta la superficie.
 
 D2 (resolución) y los casos sin descarga (¿existe el ascenso de toda la cara sin pluma?) son los siguientes discriminantes. C4 sigue en FALLA.
+
+### Resultado: exceso de la pluma con fondo limpio y ascenso sin pluma (2026-11-06)
+
+Script: `analysis/excess_clean_bg.py` → `figures/fig2_excess_clean.json`. Ventana 2–3 h, `face_total_melt`. x0c = 57.14 m (nominal en sermilik).
+
+**Ruido y resolubilidad (pre-registrado):**
+
+| | M_fondo (m³/s) | ε | E_single | 10·ε | ¿Resoluble? | M_fondo/M_single |
+|---|---|---|---|---|---|---|
+| twolayer | 1.2801 | 1.8e-4 | 0.1036 | 1.8e-3 | sí | 0.925 |
+| sermilik | 1.2445 | 7.2e-4 | 0.1182 | 7.2e-3 | sí | 0.913 |
+
+**R_E(x0) = E(x0)/(2·E_single), informativa, sin umbral:**
+
+| x0 (m) | 0 | 20 | 40 | 80 | 160 | 320 |
+|---|---|---|---|---|---|---|
+| x0/x0c | 0 | 0.35 | 0.70 | 1.40 | 2.80 | 5.60 |
+| twolayer | 0.762 | 0.953 | 0.918 | 0.927 | 0.952 | 0.983 |
+| sermilik | 0.783 | 0.910 | 0.890 | 0.908 | 0.955 | 0.994 |
+
+**Lectura (cualitativa, como se pre-registró):**
+- Para x0 ≥ 20 m (x0/x0c ≥ 0.35), R_E ≈ 0.89–0.99: en el modelo, dos plumas separadas derriten casi como dos plumas independientes. No aparece la caída hacia ≈ 0.5 que muestra el laboratorio para x0 < x0c.
+- Solo la fusión total (x0 = 0, una fuente de 2Q0) baja a 0.76–0.78.
+- Con el fondo limpio desaparece la caída en x0 = 320 m del estimador anterior (0.85 → 0.98): confirma que era un artefacto del estimador de mediana.
+- Sigue en pie el supuesto declarado de fondo aditivo.
+- Cuidado al comparar con el laboratorio: con dx = 10 m, x0 = 20 m son solo dos celdas entre fuentes. Si la interacción depende de la resolución, esto no se puede saber sin D2 o equivalente.
+
+**Ascenso en toda la cara sin pluma (verificación de la hipótesis de D1, post-hoc):** mediana a lo largo de la cara de w medio (2–3 h) en i = 0, en las corridas sin descarga:
+- twolayer: ≈ 0 sobre −90 m; +0.8 cm/s a −120 m; +2.2 a +3.0 cm/s entre −150 y −240 m; +1.9 cm/s a −270 m.
+- sermilik: ≈ 0 sobre −150 m; +1.1 a +2.3 cm/s entre −180 y −270 m.
+
+Confirmado: el ascenso a lo largo de toda la cara existe sin pluma. Es la capa límite convectiva del derretimiento ambiente bajo la interfaz (agua más cálida). Explica el Q_m/Q_t ≈ 9–12 de D1, que medía sobre toda la cara. Esto no explica todavía el fallo de C4, que sigue abierto hasta D2.
