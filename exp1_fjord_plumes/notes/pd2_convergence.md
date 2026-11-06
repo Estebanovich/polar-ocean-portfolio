@@ -220,3 +220,16 @@ La corrida de 24 h salió inválida por no ser estacionaria (2.6 % entre 12–18
 - **Comparación:** contra `a_line2d_twolayer_q0.03` en su ventana original de 12–24 h (estacionaria). Esto supone que la producción ya está en estado estacionario a partir de las 12 h, lo que su estacionariedad respalda.
 - **Si sigue sin ser estacionaria a las 36 h:** se reporta como inválida y no se extiende otra vez. Una deriva lenta del cierre de Xu en 2D sería en sí misma un resultado.
 - **Si es válida:** sigue siendo una sensibilidad *conjunta* de cierre y arrastre de pared, como ya se explicó arriba. No se atribuye solo al cierre.
+
+### Resultado de sens_xu2012_36h (2026-11-05)
+
+**Válida.** Es estacionaria: R_Q pasa de 0.715 (24–30 h) a 0.723 (30–36 h), un 1.2 % < 2 %. Está OK en 36 h (1138 s de pared).
+
+| | producción (12–24 h) | sens_xu2012_36h (24–36 h) | Δ | umbral | tendencia |
+|---|---|---|---|---|---|
+| R_Q | 0.547 | 0.720 (σ 0.009) | +0.173 | 0.03 | sube |
+| b (m) | 20.0 | 9.8 | −10.2 | 2.5 | baja |
+
+- **C2 y C2'' pasan.** melt_ratio = 1.11. R_w = 1.13.
+- **Lectura pre-registrada:** sensibilidad *conjunta* de cierre + arrastre de pared. R_Q sube 0.17 y la pluma se estrecha a la mitad. C2' sigue sin pasar (0.72 < 0.75).
+- **Lectura adicional (hipótesis, no atribución formal):** `sens_freeslip` solo no tuvo efecto detectable (ΔR_Q = +0.019). Es consistente con que la mayor parte del cambio venga de la mezcla de cierre: viscAh = 0 con una biarmónica pequeña frente a viscAh constante. Es decir, la viscosidad/difusión horizontal de malla del cierre de producción ensancha la pluma. Esto respalda la clase (b)/(c) por cierre, **no** por resolución. No se separa formalmente porque el diseño no lo permite.
