@@ -228,3 +228,18 @@ El análisis de la Task 6 (commit 2d86679) encontró que **4 corridas sermilik d
 **Consecuencia.**
 - La ventana pre-registrada de 2–3 h cae en corridas contaminadas. **Los veredictos C4 (FAIL) y C4′ (PASS) de 2d86679 quedan SUSPENDIDOS**: no se reportan como resultado. Tampoco se cambia la ventana post-hoc para salvarlos.
 - Hay que arreglar la frontera y volver a correr. Esto es una elección numérica nuestra (clase (a)/(c)) y no física.
+
+## Diagnóstico de la OB: variantes y criterios, fijados antes de correr (2026-11-06; plan aprobado por Esteban)
+
+**Caso de prueba:** `b_3d_twolayer_x0_40`, el peor caso: 2.11 m/s junto a la OB a 1.5 h. Se corre 3 h con np = 5, igual que en la campaña. Las variantes se prueban en orden y se paran en la primera que pasa:
+- **V1:** `useStevensPhaseVel=.FALSE.` (`--set stevens_phasevel=0`). Stevens queda solo con advección (obcs_calc_stevens.F:141). Sufijo `_stv_nophase`.
+- **V2:** zona RBCS de T/S en (b), como en (c). Solo se prueba si V1 falla.
+
+**Criterios (todos deben pasar):**
+1. `require_ok` pasa. Desde c5561f8 rechaza NaN o Infinity en el log.
+2. En cada volcado de UVEL (cada 0.5 h): max|u| en las columnas i = 96–98 ≤ 1.5 × max|u| en el interior, i = 10–89.
+3. |η medio| < 1e-3 m y `obc_E_uVel_Int` = 20 m³/s, con error relativo < 1e-6, en todas las salidas del monitor.
+
+**Si pasa:**
+- Se aplica a (c) y se verifica con `c_fjord_shelf` a 30 d. Los criterios son 1 y 3 con Q0 = 0 (transporte 0), y el criterio 2 en las columnas 196–198 frente a 10–189, en cada volcado de U.
+- Después se vuelven a correr los 14 casos de (b) y los 4 de (c).

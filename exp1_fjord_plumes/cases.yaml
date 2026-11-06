@@ -84,6 +84,7 @@ configs:
                           # closes at the ice face (OB at Nx-1, data.obcs OB_Ieast=-2)
     deltaT: 2.0           # PD1(b) (Esteban): CFL_w 0.26, melt within 0.06 % of dt = 1 s
     endTime: 10800.0      # Task 6: 3 h of model time per case (plan Step 2; was 6 h)
+    stevens_phasevel: 1   # 1 = useStevensPhaseVel .TRUE. (MITgcm default); 0 = advection-only OB
   c_fjord3d:
     nx: 200
     ny: 30
@@ -117,6 +118,7 @@ configs:
     wind_stage1_s: 86400.0        # wind cases: stage 1 (wind file on) length [s]
     deltaT: 60.0          # provisional; Step 5 timed run confirms
     endTime: 2592000.0    # 30 days
+    stevens_phasevel: 1   # 1 = useStevensPhaseVel .TRUE. (MITgcm default); 0 = advection-only OB
 cases:
   a_line2d_twolayer_q0.01: {config: a_line2d, strat: twolayer, discharge: line, q0: 0.01}
   a_line2d_twolayer_q0.03: {config: a_line2d, strat: twolayer, discharge: line, q0: 0.03}

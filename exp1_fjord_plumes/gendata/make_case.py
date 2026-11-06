@@ -451,6 +451,11 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
         raise FileNotFoundError(f"template dir {template_dir} does not exist")
     tfiles = [f for f in sorted(template_dir.iterdir())
               if f.is_file() and not f.name.startswith(".")]
+    # Stevens phase-velocity term (pkg/obcs/obcs_readparms.F:265 default .TRUE.;
+    # obcs_calc_stevens.F:141 pFac = 0 when off -> advection-only OB). Numeric
+    # case parameter so run_campaign --set can switch it (OB-instability tests, 2026-11-06).
+    if "stevens_phasevel" in p:
+        p["stevens_phasevel_flag"] = ".TRUE." if p["stevens_phasevel"] else ".FALSE."
     stages = _c_stages(p) if cfg == "c_fjord3d" else [{}]
     p.update(stages[0])
     rendered = {f.name: Template(f.read_text()).substitute(p) for f in tfiles}

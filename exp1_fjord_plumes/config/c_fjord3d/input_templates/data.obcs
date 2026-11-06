@@ -71,4 +71,5 @@
  &OBCS_PARM04
  TrelaxStevens=86400.,
  SrelaxStevens=86400.,
+ useStevensPhaseVel=${stevens_phasevel_flag},
  &
