@@ -380,3 +380,21 @@ done
 **Interpretación pre-registrada.**
 - Si pyOCEAN pasa 1–3, la falla de (c) se atribuye a la OB de MITgcm, como clase (c), elección numérica.
 - Si falla, se atribuye al diseño del forzamiento o de la zona, y se reconsidera el diseño de (c).
+
+## Verificación de V3 (Stevens + u baroclínica interior) en `c_fjord_shelf` a 30 d (2026-11-06)
+
+**Corrida:** `/Volumes/LaCie/portfolio_runs/exp1/c_fjord_shelf_stv_iv`. Antes, con Stevens por defecto, este caso divergió en el día 12.8.
+
+**Criterios pre-registrados (pd1_b_twoplume3d.md, "Diagnóstico de la OB"): todos PASAN.**
+1. `require_ok` pasa: 30 d, campos finitos.
+2. En el volcado de U (solo existe el del día 30), la razón OB/interior es 1.20.
+3. |η̄| máx 4.3e-16 m; transporte de la OB, error máximo 3e-10 m³/s.
+
+**Chequeo adicional, no pre-registrado; se reporta tal cual.** Se aplicó el mismo criterio 2 a los 720 snapshots horarios de UVEL (`snap1h`):
+- 1 de 720 supera 1.5. Es el de la hora 1, con razón 1.54, cuando |u| ≈ 1e-3 m/s durante el arranque.
+- Después del día 1, el máximo es 1.44 y la mediana 1.11.
+- El máximo de |u| junto a la OB es 0.23 m/s, frente a 1–2 m/s y la divergencia que había antes.
+
+La frontera sigue con velocidades 10–40 % mayores que el interior, pero sin crecimiento. Esto queda como limitación conocida (clase (c)).
+
+**Decisión (R38):** se adopta V3 en las configuraciones de producción (b) y (c) y se vuelven a correr los 14 + 4 casos, como en el plan aprobado. Las corridas anteriores se conservan renombradas con el sufijo `_stv0`, como evidencia de la falla.

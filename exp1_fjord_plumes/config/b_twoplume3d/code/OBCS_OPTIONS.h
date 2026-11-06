@@ -29,6 +29,11 @@ C from a file
 
 C Enable OB conditions following Stevens (1990)
 #define ALLOW_OBCS_STEVENS
+C R37/R38 (2026-11-06, notes/pd1_b_twoplume3d.md V3): the Stevens baroclinic OB velocity
+C is copied from the interior column (pkg/obcs/obcs_calc_stevens.F:39-42, 193-207);
+C the default (the OB's own previous-step u, OBEuStevens) grew a spurious
+C overturning cell of 1-2 m/s at the OB (4 sermilik runs diverged).
+#define OBCS_STEVENS_USE_INTERIOR_VELOCITY
 
 C Allow sponge layer treatment of open boundary conditions
 #define ALLOW_OBCS_SPONGE
