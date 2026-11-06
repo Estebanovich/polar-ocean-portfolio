@@ -189,3 +189,24 @@ Al implementar el evaluador mecánico (`analysis/pd2_convergence_eval.py`, Task 
 12. **Divergencia monótona (añadida tras la revisión del código del evaluador, R27; sigue siendo antes de ver ningún dato de las corridas de estudio).** La fórmula del orden p usa valor absoluto y aceptaría como concluyente una secuencia monótona **divergente** (por ejemplo R_Q = 0.40, 0.50, 0.70 con incrementos crecientes al refinar daba p = 1.154 y la clase S). Siguiendo el estándar de Celik/Stern, si |ε32/ε21| ≤ 1 (los incrementos no se reducen al refinar) la extrapolación es **inconclusa** con la razón "divergencia monótona", y en `classify` cae en P2 si R_Q sube y b baja en ambos pasos. Esto se suma a las condiciones de inconclusión del texto original (s < 0, ε = 0, sin convergencia, p ∉ [0.5, 3]); el caso |ε32/ε21| = 1 exacto también es divergencia.
 13. **Corridas `conv_*` inválidas y anchos nulos (añadida en la misma revisión).** Si alguna corrida `conv_*` es inválida (incluida una que falla `require_ok` y por tanto no tiene métricas), la clase es V sin calcular pasos, Richardson ni la prueba G. Un ancho b cero, negativo o no finito en alguna `conv_*` también da V (razón "zero or non-finite plume width"). El resultado de P1 lleva la salvedad escrita "mezcla refinamiento en x y en z" (ítem 5).
 
+
+## Resultado (evaluador congelado, 2026-11-05)
+
+**Clase F: refuta la clase (c).** El déficit de R_Q no depende de la resolución, así que lo que sigue es evaluar (b).
+
+| corrida | dx0 cara (m) | R_Q (12–24 h) | b (m) | estacionaria |
+|---|---|---|---|---|
+| conv_dx10 | 10.15 | 0.538 | 21.0 | sí |
+| conv_dx5 | 5.31 | 0.563 | 20.2 | sí |
+| conv_dx2p5 | 2.82 | 0.573 | 20.1 | sí |
+
+- **Incrementos de R_Q:** +0.025 y +0.010. Los dos están por debajo del umbral de 0.03, así que cuentan como "plano". b también es plano.
+- **Richardson:** concluyente, con p = 1.43 y R_ext = 0.579. Muy por fuera de la tolerancia de C2' (0.75–1.25).
+- **G (ancho fijado por la malla):** no aplica. Las razones (b_c/b_f)/r_eff son 0.54 y 0.54, y b ≈ 20 m está resuelto con 7 a 14 celdas.
+- **Sensibilidades:**
+  - dz 10 → 5 m: ΔR_Q = +0.016, plano;
+  - free slip: ΔR_Q = +0.019, plano, sin contribución detectable del arrastre de pared;
+  - `sens_xu2012`: inválida (no estacionaria, 2.6 % entre 12–18 h y 18–24 h). Se reporta solo como dato: R_Q ≈ 0.72, b ≈ 9.7 m.
+- **C2 y C2'':** pasan en todas las corridas válidas. El flujo de volumen y la altura de desprendimiento están convergidos y concuerdan con la teoría. C2' (velocidad media) **sigue FALLIDO** y no se redefine.
+
+Lectura (hipótesis, todavía sin probar): la pluma de MITgcm es ~2.6× más ancha y ~0.57× más lenta que el sombrero de copa teórico, con un flujo de volumen comparable. Con la mezcla de malla, la pluma 2D resuelta se ensancha más que lo que fija α = 0.1 en la teoría. Candidata a clase (b): mezcla turbulenta no representada, porque el cierre (viscAh/viscAr constantes) no es un LES. La pista que apunta en esa dirección es que `sens_xu2012`, con otro cierre, estrecha la pluma (b ≈ 9.7 m) y acerca R_Q. La clase (d) solo entra con evidencia independiente.
