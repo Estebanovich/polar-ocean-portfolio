@@ -87,8 +87,13 @@ def select_cases(config: str, pattern: str, cases_file: Path | None = None) -> l
     return mine
 
 
+# Match the process *name* only (no -f): with -f, any shell whose command line
+# merely mentions the binary (an editor, a log grep) was taken for a model run.
+PROC_PATTERN = "^(mpirun|mpiexec|orterun|prterun|mitgcmuv)$"
+
+
 def _pgrep() -> str:
-    r = subprocess.run(["pgrep", "-fl", "mpirun|mitgcmuv"], capture_output=True, text=True)
+    r = subprocess.run(["pgrep", "-l", PROC_PATTERN], capture_output=True, text=True)
     return r.stdout
 
 
