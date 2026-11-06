@@ -175,3 +175,22 @@ Un caso marcado **no se descarta automáticamente**: se revisan su serie de η̄
 - **(ii) Identidad bit a bit frente a la referencia de 30 min: "FAIL", pero por construcción, no por un defecto.** La referencia (`b_3d_twolayer_x0_40_short30m_dt2`) se corrió con Orlanski. Al cambiar el esquema de frontera, los campos no pueden ser idénticos.
 - **Por qué igual se da por cumplido el fin de (ii):** (ii) verifica que la salida extra de animación (R29) no altera la física. Eso ya se demostró con el mismo código en el primer intento de la puerta (Orlanski, `b_3d_twolayer_x0_40_orlanski`): pasó (ii) y solo falló (i). La salida de diagnósticos no depende del esquema de frontera.
 - **Ruling R32:** la puerta se da por PASADA. Se lanzan los 13 casos restantes.
+
+## Definiciones operativas de C4 y C4′, fijadas antes de analizar (2026-11-05, 22:50)
+
+Las 14 corridas (b) terminaron OK a las 22:33. Ninguna métrica de derretimiento ni de despegue se ha calculado todavía. Estas definiciones se fijan antes de calcular y no se cambian después de ver los resultados.
+
+- **Ventana:** de 2 a 3 h, la última hora de cada corrida de 3 h. Como dato informativo, también se reporta la ventana de 1 a 2 h y el cambio relativo entre las dos, como indicador de estacionariedad. Ese indicador no entra en el veredicto.
+- **`face_total_melt(run_dir, t_window_h)`:** es la suma, sobre las celdas de la cara (i = 0), de m_hielo · dy · dz · hFacC. Se promedia en la ventana con los promedios horarios de ICFfwFlx, con la convención de `plume_diag`. La unidad es m³ s⁻¹ de hielo.
+- **Normalización:** M(x0) / (2 · M_single), con M_single tomado del caso `_single` de la misma estratificación. Se grafica contra x0_actual / x0c, con x0c = 57.14 m tomado de case.json.
+  - En `sermilik`, x0c es nominal: no hay una interfaz de dos capas y se usa el mismo H2.
+  - x0 = 0 es una sola celda con 2 · Q0, es decir, el límite de fuentes fusionadas.
+- **C4 (±0.15 H = 45 m):** se usa la pluma única (`_single`).
+  - Despegue del modelo: el mismo `detach_depth` (con la misma DETACH_FRAC que en (a)) aplicado al perfil de w de la columna de la cara. Ese perfil es el máximo en y del promedio de w en la ventana.
+  - Despegue teórico: `point_plume(geometry="half_cone")` con Q0 = 10 m³ s⁻¹ y el ambiente con la misma convención que C2 en (a), es decir, T/S medios de la ventana lejos de la cara.
+  - El despegue teórico con el perfil inicial se reporta como post-hoc.
+  - Se evalúa en las dos estratificaciones. **C4 pasa solo si pasan ambas.**
+- **C4′ ([0.4, 0.8]):** M(x0 = 0) / (2 · M_single) para cada estratificación. **Pasa solo si ambas están en el rango.**
+- **Referencia de laboratorio:** los puntos de Cenedese & Gatto (2016a, Fig. 2) se digitalizan a mano desde el PDF de `literatura/` y se rotulan en la figura como "hand-digitised, approximate".
+- **Modelo de plumas fusionadas** (opcional en el plan): no se implementa (regla R34).
+- Si C4 o C4′ fallan, se pasa a **PD2**: se clasifica la diferencia como (a)–(d) y se presenta a Esteban. El criterio no se redefine.
