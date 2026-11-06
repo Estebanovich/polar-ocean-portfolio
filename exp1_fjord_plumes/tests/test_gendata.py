@@ -533,11 +533,10 @@ def test_b_stevens_namelist_and_cpp(tmp_path):
                 "OBEsFile='OBEs.bin'", "TrelaxStevens=86400.", "SrelaxStevens=86400."):
         assert key in live.replace(" ", ""), key
     assert "OBCS_monSelect" in live
-    # a single constant record needs periodic forcing with cycle == period (get_periodic_interval.F)
+    # constant single-record files are read once at nIter0 (obcs_fields_load.F:347-363):
+    # (b) must not turn on periodic forcing
     d = (out / "data").read_text()
-    assert re.search(r"periodicExternalForcing\s*=\s*\.TRUE\.", d)
-    assert re.search(r"externForcingPeriod\s*=\s*86400", d)
-    assert re.search(r"externForcingCycle\s*=\s*86400", d)
+    assert not re.search(r"periodicExternalForcing\s*=\s*\.TRUE\.", d)
     h = (PKG_DIR / "config" / "b_twoplume3d" / "code" / "OBCS_OPTIONS.h").read_text()
     assert re.search(r"^#define ALLOW_OBCS_STEVENS", h, re.M)
     assert re.search(r"^#define ALLOW_OBCS_PRESCRIBE", h, re.M)

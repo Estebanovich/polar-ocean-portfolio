@@ -206,10 +206,8 @@ def _b_stevens_east(p, bins, T1d, S1d, hFacC, Q0_total, info) -> None:
     bins["OBEv.bin"] = np.zeros((nz, ny))
     bins["OBEt.bin"] = np.broadcast_to(T1d[:, None], (nz, ny))
     bins["OBEs.bin"] = np.broadcast_to(S1d[:, None], (nz, ny))
-    # one constant record: periodicExternalForcing with cycle == period
-    # (pkg/obcs/obcs_fields_load.F:102 loads files only when it is TRUE;
-    # eesupp/src/get_periodic_interval.F: nbRec = 1 -> records 1 and 1)
-    p["externForcingPeriod"] = p["externForcingCycle"] = 86400.0
+    # one constant record, read once at nIter0 without periodicExternalForcing
+    # (pkg/obcs/obcs_fields_load.F:347-363)
     info.update(ob_u_m_per_s=u_ob, ob_area_m2=A_ob, ob_column_0based=i_ob)
 
 

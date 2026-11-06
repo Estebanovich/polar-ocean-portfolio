@@ -13,9 +13,9 @@
 # TrelaxStevens/SrelaxStevens (same file, OBCS_STEVENS_CALC_TRACER_EAST).
 # OBEu.bin = Q0_total/A_ob eastward on wet OB faces (gendata/make_case.py,
 # _b_stevens_east; ob_u_m_per_s, ob_area_m2 in case.json) so the discharge
-# leaves exactly; OBEv = 0; OBEt/OBEs = initial ambient profile. Files are read
-# only with periodicExternalForcing (pkg/obcs/obcs_fields_load.F:102): data
-# sets cycle = period = 86400 s -> one constant record.
+# leaves exactly; OBEv = 0; OBEt/OBEs = initial ambient profile. Without
+# periodicExternalForcing the files are read once, record 1, at nIter0
+# (pkg/obcs/obcs_fields_load.F:347-363): constant single-record boundary values.
 # TrelaxStevens = SrelaxStevens = 86400 s: MITgcm verification/exp4/
 # input.stevens/data.obcs value.
 # OB_Ieast=-2 -> column Nx-1 (pkg/obcs/obcs_readparms.F:671-672); column Nx
@@ -30,7 +30,9 @@
 # the prescribed OB values. No useOBCSbalance: it balances only EmPmR, not
 # addMass (pkg/obcs/obcs_balance_flow.F:300-315).
 # OBCS_monitorFreq/OBCS_monSelect=0: OB statistics of uVel/vVel (max, min,
-# mean, sd; pkg/obcs/obcs_monitor.F:102-122) are printed to STDOUT every 600 s.
+# mean, sd; pkg/obcs/obcs_monitor.F:102-122) are printed to STDOUT every 600 s,
+# plus obc_E_uVel_Int = area-integrated OB transport [m3 s-1]
+# (obcs_monitor.F:262-263): the line to compare with Q0_total.
  &OBCS_PARM01
  OB_Ieast=${ny}*-2,
  useOrlanskiEast=.FALSE.,

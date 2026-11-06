@@ -94,10 +94,6 @@
  dumpInitAndLast=.TRUE.,
  monitorFreq=600.,
  monitorSelect=2,
-# (b) Stevens OB: one constant record per OBE*.bin file (obcs_fields_load.F:102)
- periodicExternalForcing=.TRUE.,
- externForcingPeriod=${externForcingPeriod},
- externForcingCycle=${externForcingCycle},
  &
 
  &PARM04

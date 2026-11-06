@@ -153,3 +153,15 @@ Un caso marcado **no se descarta automáticamente**: se revisan su serie de η̄
 - Después, por caso:
   - `python -c "from exp1_fjord_plumes.analysis.b_checks import eta_retention; print(eta_retention('<run_dir>'))"`
   - `python exp1_fjord_plumes/analysis/animate_b.py /Volumes/LaCie/portfolio_runs/exp1/<case>`
+
+## Cambio de frontera a Stevens y expectativas de la puerta, fijadas antes de correr (2026-11-05)
+
+**Resultado de la puerta con Orlanski:** FALLÓ. En `b_3d_twolayer_x0_40` (3 h) η medio llegó a 2.92 m, contra 0.18 m que explicaría la descarga, y entraban ~800 m³/s por la frontera desde 1–1.5 h. Orlanski deja libre la velocidad normal media en profundidad, y en 3D eso se volvió inestable.
+
+**Cambio, aprobado por Esteban:** frontera de Stevens (1990), con u normal media en profundidad prescrita, u_ob = Q0_total / A_ob = 20 / 354000 = 5.65e-5 m/s (commits 5e76391 y siguientes). Se descartó Flather: con c = √(gH) ≈ 54 m/s, dx = 10 m y dt = 2 s, el número de Courant sería ≈ 11, inestable en forma explícita. MITgcm no lo trae.
+
+**Puerta:** se vuelve a correr el mismo caso, 3 h con np = 5.
+- **Criterio sin cambios:** |retained_last_hour| ≤ 0.5.
+- **Expectativa física:** η medio ≈ 0. pkg/icefront no agrega volumen (solo modifica T y S), y Stevens saca exactamente Q0. Es decir, |η medio| ≪ 0.18 m.
+- **Chequeo informativo**, que no decide la puerta: `obc_E_uVel_Int` en STDOUT ≈ +20 m³/s.
+- **Antes de las 3 h:** prueba corta de 30 min. En STDOUT deben aparecer `ALLOW_OBCS_STEVENS`, `OBCS_FIELDS_LOAD: Reading initial data` y `useStevensEast = T`.
