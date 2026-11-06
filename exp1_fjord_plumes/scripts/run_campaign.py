@@ -227,13 +227,18 @@ def required_ob_pickups(inp: Path) -> list[str]:
     restart reads them back (obcs_read_pickup.F:132-157, 241-246). Comment
     lines and ``.FALSE.`` flags do not count.
     """
-    live = "\n".join(l.split("#")[0] for l in (Path(inp) / "data.obcs").read_text().splitlines())
+    live = "\n".join(re.split(r"[#!]", l)[0] for l in (Path(inp) / "data.obcs").read_text().splitlines())
     out = []
     for scheme in ("orlanski", "stevens"):
         for side in ("North", "South", "East", "West"):
-            if re.search(rf"\buse{scheme}{side}\s*=\s*\.TRUE\.", live, re.IGNORECASE):
-                out.append(f"pickup_{scheme}{side[0]}")
-    return out
+            key = f"use{scheme.capitalize()}{side}"
+            for m in re.finditer(rf"\b{key}\s*=\s*([^,\s/&]+)", live, re.IGNORECASE):
+                v = m.group(1).strip(".").lower()      # Fortran logical: .TRUE. .T. T TRUE true ...
+                if v in ("true", "t"):
+                    out.append(f"pickup_{scheme}{side[0]}")
+                elif v not in ("false", "f"):
+                    raise ValueError(f"data.obcs: unrecognised value {m.group(1)!r} for {key}")
+    return sorted(set(out))
 
 
 def run_stage2(run_dir: Path, inp: Path, build_dir: Path, np_: int,

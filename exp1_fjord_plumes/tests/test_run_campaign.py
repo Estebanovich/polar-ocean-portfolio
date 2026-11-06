@@ -337,6 +337,28 @@ def test_ob_pickup_names_follow_active_scheme(tmp_path):
     assert names(" &OBCS_PARM01\n &\n") == []
 
 
+@pytest.mark.parametrize("val", [".TRUE.", ".T.", "T", "TRUE", "true", ".true.", ".True.", "t"])
+def test_ob_pickup_flag_true_variants(tmp_path, val):
+    (tmp_path / "data.obcs").write_text(f" &OBCS_PARM01\n useStevensEast={val}, ! c\n &\n")
+    assert rc.required_ob_pickups(tmp_path) == ["pickup_stevensE"]
+
+
+@pytest.mark.parametrize("val", [".FALSE.", ".F.", "F", "false"])
+def test_ob_pickup_flag_false_variants(tmp_path, val):
+    (tmp_path / "data.obcs").write_text(f" &OBCS_PARM01\n useStevensEast={val},\n &\n")
+    assert rc.required_ob_pickups(tmp_path) == []
+
+
+def test_ob_pickup_comments_and_unrecognised(tmp_path):
+    (tmp_path / "data.obcs").write_text(
+        "# useStevensEast=.TRUE.\n ! useOrlanskiEast=.TRUE.\n"
+        " &OBCS_PARM01\n useOrlanskiWest=.TRUE., # note useStevensEast=.TRUE.\n &\n")
+    assert rc.required_ob_pickups(tmp_path) == ["pickup_orlanskiW"]
+    (tmp_path / "data.obcs").write_text(" useStevensEast=maybe,\n")
+    with pytest.raises(ValueError, match="useStevensEast"):
+        rc.required_ob_pickups(tmp_path)
+
+
 def test_stage2_orlanski_pickup_still_required_when_orlanski_active(tmp_path):
     """The check is derived from data.obcs, not hard-coded per config."""
     builds = tmp_path / "builds"

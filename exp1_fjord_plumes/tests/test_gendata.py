@@ -345,7 +345,9 @@ def test_c_rbcs_mask_only_in_outflow_cells(tmp_path):
     out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
     add = read_bin(out / "addmass.bin", shape)
     mask = read_bin(out / "rbcs_mask.bin", shape)
-    assert np.array_equal(mask > 0, add > 0)
+    zone = mask > 0
+    zone[add > 0] = False                     # shelf zone is separate (tested below)
+    assert np.array_equal(mask[:, :, :20] > 0, add[:, :, :20] > 0)
     V = p["dx"] * p["dy"] * p["dz"]
     q = add / p["rho0"]
     assert np.allclose(mask[add > 0], q[add > 0] * p["rbcs_tau"] / V)
@@ -355,8 +357,11 @@ def test_c_rbcs_mask_only_in_outflow_cells(tmp_path):
 def test_c_rbcs_targets_are_plume_outflow(tmp_path):
     out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
     mask = read_bin(out / "rbcs_mask.bin", shape)
-    Tr = read_bin(out / "rbcs_T.bin", shape)
-    Sr = read_bin(out / "rbcs_S.bin", shape)
+    nrec = int(round(p["externForcingCycle"] / p["externForcingPeriod"]))
+    Tr = read_bin(out / "rbcs_T.bin", (nrec,) + shape)[3]   # plume cells: same in every record
+    Sr = read_bin(out / "rbcs_S.bin", (nrec,) + shape)[3]
+    add = read_bin(out / "addmass.bin", shape)
+    mask = np.where(add > 0, mask, 0.0)
     zc = -(np.arange(p["nz"]) + 0.5) * p["dz"]
     Ta, Sa = continuous_sermilik(zc)
     _, T_out, S_out = plume_source_sink(zc, Ta, Sa, p["Q0"], p["dz"],
@@ -373,7 +378,8 @@ def test_c_rbcs_targets_are_plume_outflow(tmp_path):
 def test_c_wind_case_has_no_plume_and_two_stages(tmp_path):
     out, meta, p, shape = _c_case(tmp_path, "c_fjord_wind")
     assert not np.any(read_bin(out / "addmass.bin", shape))
-    assert not np.any(read_bin(out / "rbcs_mask.bin", shape))
+    m = read_bin(out / "rbcs_mask.bin", shape)           # no plume: only the shelf zone
+    assert m.any() and not m[:, :, :p["nx"] - 2 - p["sponge_thickness"]].any()
     nrec = int(round(p["externForcingCycle"] / p["externForcingPeriod"]))
     w = read_bin(out / "windx.bin", (nrec, p["ny"], p["nx"]))
     n_on = int(round(p["wind_hours"] * 3600 / p["externForcingPeriod"]))
@@ -577,7 +583,7 @@ def test_c_stevens_namelist_and_cpp(tmp_path):
     assert "&OBCS_PARM04" in flat
     for key in ("OBEuFile='OBEu.bin'", "OBEvFile='OBEv.bin'", "OBEtFile='OBEt.bin'",
                 "OBEsFile='OBEs.bin'", "TrelaxStevens=86400.", "SrelaxStevens=86400.",
-                "OBCSsponge_Theta=.TRUE.", "OBCSsponge_Salt=.TRUE.", "Urelaxobcsinner=21600.",
+                "OBCSsponge_Theta=.FALSE.", "OBCSsponge_Salt=.FALSE.", "Urelaxobcsinner=21600.",
                 "Urelaxobcsbound=600."):
         assert key in flat, key
     assert "OBCS_monitorFreq" in live
@@ -586,3 +592,94 @@ def test_c_stevens_namelist_and_cpp(tmp_path):
     h = (PKG_DIR / "config" / "c_fjord3d" / "code" / "OBCS_OPTIONS.h").read_text()
     assert re.search(r"^#define ALLOW_OBCS_STEVENS", h, re.M)
     assert re.search(r"^#define ALLOW_OBCS_PRESCRIBE", h, re.M)
+
+
+# ---- (c) round 2: shelf relaxation zone by RBCS instead of the OBCS T/S sponge ----
+def _old_sponge_tendency(theta, T_ob, isl, L, tb, ti):
+    """Independent re-implementation of pkg/obcs/obcs_sponge.F:540-565 (east, non-linear)."""
+    trelax = ((L - isl) * T_ob + isl * theta) / L
+    lam = 1.0 / (((L - isl) * tb + isl * ti) / L)
+    return -lam * (theta - trelax)
+
+
+def test_c_zone_mask_reproduces_old_sponge_tendency(tmp_path):
+    from exp1_fjord_plumes.gendata.make_case import sponge_zone_mask
+    out, meta, p, (nz, ny, nx) = _c_case(tmp_path, "c_fjord_shelf")
+    L, tb, ti = p["sponge_thickness"], p["sponge_tau_bound"], p["sponge_tau_inner"]
+    mask = read_bin(out / "rbcs_mask.bin", (nz, ny, nx))
+    assert (L, tb, ti) == (10, 600.0, 21600.0)
+    rng = np.random.default_rng(1)
+    for isl in range(1, L + 1):
+        col = nx - 2 - isl
+        theta, T_ob = rng.uniform(-2, 8, 2)
+        rb = -(mask[10, 5, col] / p["rbcs_tau"]) * (theta - T_ob)       # rbcs_add_tendency.F:88-100
+        old = _old_sponge_tendency(theta, T_ob, isl, L, tb, ti)
+        assert abs(rb - old) <= 1e-12 * max(abs(old), 1e-30) + 1e-300, isl
+    assert mask[:, :, nx - 2 - L].max() == 0.0 and mask[:, :, nx - 2].max() == 0.0
+    assert mask.max() <= 1.0
+    # land rows / land column carry no relaxation
+    assert not mask[:, 0, :].any() and not mask[:, -1, :].any() and not mask[:, :, -1].any()
+
+
+def test_c_rbcs_records_match_obet_and_plume_unchanged(tmp_path):
+    out, meta, p, (nz, ny, nx) = _c_case(tmp_path, "c_fjord_all")
+    nrec = int(round(p["externForcingCycle"] / p["externForcingPeriod"]))
+    assert nrec > 1
+    rT = read_bin(out / "rbcs_T.bin", (nrec, nz, ny, nx))
+    rS = read_bin(out / "rbcs_S.bin", (nrec, nz, ny, nx))
+    oT = read_bin(out / "OBEt.bin", (nrec, nz, ny))
+    oS = read_bin(out / "OBEs.bin", (nrec, nz, ny))
+    mask = read_bin(out / "rbcs_mask.bin", (nz, ny, nx))
+    add = read_bin(out / "addmass.bin", (nz, ny, nx))
+    L = p["sponge_thickness"]
+    for r in (0, nrec // 3, nrec - 1):
+        for isl in range(1, L):                                 # isl = L has mask 0
+            col = nx - 2 - isl
+            w = mask[:, :, col] > 0
+            assert np.array_equal(rT[r][:, :, col][w], oT[r][w])
+            assert np.array_equal(rS[r][:, :, col][w], oS[r][w])
+    # plume cells: mask q tau/V, targets identical in every record, no overlap with the zone
+    pl = add > 0
+    assert pl.any() and not (mask[:, :, nx - 2 - L:] > 0)[pl[:, :, nx - 2 - L:]].any()
+    V = p["dx"] * p["dy"] * p["dz"]
+    assert np.allclose(mask[pl], (add[pl] / p["rho0"]) * p["rbcs_tau"] / V)
+    assert np.all(rT[:, pl] == rT[0][pl]) and np.all(rS[:, pl] == rS[0][pl])
+    far = np.zeros((nz, ny, nx), bool)
+    far[:, :, : nx - 2 - L] = True
+    far &= ~pl
+    assert np.all(rT[:, far] == rT[0][far])
+
+
+def test_c_rbcs_namelist_period_cycle_and_sponge_constants(tmp_path):
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_all")
+    rb = _active((out / "data.rbcs").read_text()).replace(" ", "")
+    assert "rbcsForcingPeriod=%s," % p["externForcingPeriod"] in rb
+    assert "rbcsForcingCycle=%s," % p["externForcingCycle"] in rb
+    assert "rbcsForcingOffset" not in rb                        # 0: same record times as OBEt
+    ob = _active((out / "data.obcs").read_text()).replace(" ", "")
+    assert "OBCSsponge_Theta=.FALSE." in ob and "OBCSsponge_Salt=.FALSE." in ob
+    assert "useOBCSsponge=.TRUE." in ob
+    # one source of truth: rendered data.obcs == cases.yaml params used by the mask
+    assert "spongeThickness=%s," % p["sponge_thickness"] in ob
+    for k in ("Urelaxobcsinner", "Vrelaxobcsinner"):
+        assert "%s=%s," % (k, p["sponge_tau_inner"]) in ob
+    for k in ("Urelaxobcsbound", "Vrelaxobcsbound"):
+        assert "%s=%s," % (k, p["sponge_tau_bound"]) in ob
+
+
+def test_c_shelf_amp_zero_cases_still_have_zone(tmp_path):
+    out, meta, p, (nz, ny, nx) = _c_case(tmp_path, "c_fjord_plume")
+    assert p["shelf_amp"] == 0
+    assert read_bin(out / "rbcs_mask.bin", (nz, ny, nx))[:, :, nx - 3].max() > 0
+
+
+def test_guard_stevens_with_ts_sponge_raises():
+    from exp1_fjord_plumes.gendata.make_case import _check_stevens_sponge
+    bad = {"data.obcs": " &OBCS_PARM01\n useStevensEast=.TRUE.,\n OBCSsponge_Theta=.TRUE.,\n &\n"}
+    with pytest.raises(ValueError, match="Stevens"):
+        _check_stevens_sponge(bad)
+    with pytest.raises(ValueError):
+        _check_stevens_sponge({"data.obcs": "useStevensEast=.T.\nOBCSsponge_Salt=.true.,"})
+    _check_stevens_sponge({"data.obcs": "useStevensEast=.TRUE.,\nOBCSsponge_Theta=.FALSE.,\n"
+                                        "# OBCSsponge_Salt=.TRUE."})
+    _check_stevens_sponge({"data.obcs": "useOrlanskiEast=.TRUE.,\nOBCSsponge_Theta=.TRUE."})

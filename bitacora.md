@@ -221,3 +221,11 @@
 - `data.obcs`: `useStevensEast`, sin OBCS_PARM02 (solo se lee con Orlanski, `obcs_readparms.F:514-518`), `OBCS_PARM04` con Trelax = Srelax = 86400 s. `OBCS_OPTIONS.h`: `ALLOW_OBCS_STEVENS`. Costo conocido: el modo barotrópico queda cerrado en la frontera.
 - `run_campaign.py`: el pickup OB que exige la etapa 2 se deriva de `data.obcs` (`required_ob_pickups`): `pickup_stevensE` si `useStevensEast` (`obcs_write_pickup.F:225-231`, `obcs_read_pickup.F:241-246`), `pickup_orlanskiE` si `useOrlanskiEast`.
 - TDD; suite 220 PASS. Build `c_fjord3d` (--mpi) OK. No se corrió MITgcm (campaña (b) en curso).
+
+## 2026-11-05 — (c) Stevens, ronda 2: la esponja T/S pasa de OBCS a RBCS
+- Defecto crítico (revisión de 78a191d): con Stevens, OBEt/OBEs guardan TENDENCIAS de trazadores (`obcs_calc_stevens.F:744-752`, sumadas en `obcs_apply_ts.F:150-160`), pero la esponja T/S de OBCS las lee como VALORES objetivo (`obcs_sponge.F:545-550`). Esponja T/S apagada; U/V se queda (OBEu/OBEv son velocidades, `obcs_calc_stevens.F:222`, `obcs_sponge.F:136-150`).
+- Zona de relajación rehecha con RBCS (Esteban, opción B): `make_case.sponge_zone_mask`, máscara = rbcs_tau (L−isl)/(L τ(isl)), reproduce la esponja no lineal vieja (`obcs_sponge.F:540-565`) con error relativo < 1e-12 frente a una reimplementación independiente. Constantes (10, 600, 21600 s) en `cases.yaml`, compartidas con `data.obcs`.
+- `rbcs_T/S.bin` con nrec = ciclo/período registros (mismos tiempos que OBEt: offset 0, mismo GET_PERIODIC_INTERVAL, `rbcs_fields_load.F:72-76`); celdas de la pluma sin cambio; error si la zona se traslapa con ellas. Guardia: `useStevens*` con `OBCSsponge_Theta/Salt` TRUE levanta ValueError.
+- `required_ob_pickups` acepta .TRUE./.T./T/TRUE/true, ignora `#` y `!`, y falla si el valor no se reconoce.
+- Con Stevens la frontera saca exactamente Q0: η̄ debe quedar ≈ 0 y obc_E_uVel_Int ≈ +100 m³/s.
+- 238 PASS (la suite pasó de 16 s a ~90 s: rbcs_T/S pesan 330 MB por caso (c)). Build al día, dry-run OK, sin correr MITgcm.

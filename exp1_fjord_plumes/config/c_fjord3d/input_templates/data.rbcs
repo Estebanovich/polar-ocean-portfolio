@@ -4,8 +4,19 @@
 # -(mask/tau)(theta - T_out) (pkg/rbcs/rbcs_add_tendency.F:88-111) equals
 # q (T_out - theta)/V, the source-at-T_out term addMass would add
 # (apply_forcing.F:509-513); verified in the PD3 spike to 7e-5 degC.
-# Fields are constant (rbcsForcingPeriod = 0). Cases without plume have a
-# zero mask (no effect).
+# SHELF RELAXATION ZONE (task-7 round 2): the 10 columns west of the OB u-point
+# (0-based nx-2-isl, isl = 1..10) relax T/S toward the time-varying shelf profile
+# (the OBEt/OBEs record of the same time) with the mask of
+# gendata.make_case.sponge_zone_mask = the former non-linear OBCS sponge
+# (obcs_sponge.F:540-565) written as an RBCS tendency. Shelf records:
+# rbcsForcingPeriod = externForcingPeriod, rbcsForcingCycle = externForcingCycle,
+# rbcsForcingOffset = 0 (default): rbcs_fields_load.F:72-76 calls the same
+# GET_PERIODIC_INTERVAL as obcs_fields_load.F:105 with time - offset, so record
+# r sits at (r-1/2) period like OBEt. startTime=0 < 0.5 period only triggers a
+# WARNING (rbcs_readparms.F:202-209), the interpolation still wraps to the last
+# record. Cases without shelf forcing (shelf_amp = 0) also get the zone, relaxing
+# to the constant initial profile (as the old sponge did). Cases without plume
+# have no outflow cells.
  &RBCS_PARM01
  useRBCtemp=.TRUE.,
  useRBCsalt=.TRUE.,
@@ -15,6 +26,8 @@
  relaxMaskFile(2)='rbcs_mask.bin',
  relaxTFile='rbcs_T.bin',
  relaxSFile='rbcs_S.bin',
+ rbcsForcingPeriod=${externForcingPeriod},
+ rbcsForcingCycle=${externForcingCycle},
  &
  &RBCS_PARM02
  &

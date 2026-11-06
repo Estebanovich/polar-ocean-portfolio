@@ -148,7 +148,6 @@ def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> tuple[np.ndarray, float]:
     else:
         info.update(plume_representation="none", net_addmass_kg_s=0.0)
     info["Q0_total"] = p["Q0"]
-    bins["rbcs_mask.bin"], bins["rbcs_T.bin"], bins["rbcs_S.bin"] = mask, Tr, Sr
 
     per = p["externForcingPeriod"]
     cyc = p["shelf_period_days"] * 86400.0
@@ -163,6 +162,7 @@ def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> tuple[np.ndarray, float]:
         Tz, Sz = profiles.continuous_sermilik(zc, z_c=200.0 - eta[r])
         obT[r], obS[r] = Tz[:, None], Sz[:, None]
     bins["OBEt.bin"], bins["OBEs.bin"] = obT, obS
+    _shelf_relaxation_zone(p, bins, hFacC, mask, Tr, Sr, obT, obS, info)
     # Stevens east OB: depth-mean u_ob = Q0/A_ob, same nrec records as OBEt/OBEs
     _stevens_east(p, bins, hFacC, p["Q0"], info, nrec=nrec)
     if p["wind_tau"] > 0:
@@ -171,6 +171,82 @@ def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> tuple[np.ndarray, float]:
         w[:n_on] = p["wind_tau"]          # down-fjord (+x, away from the ice)
         bins["windx.bin"] = w
     return add, cyc
+
+
+def sponge_zone_mask(p, hFacC) -> np.ndarray:
+    """RBCS mask (nz, ny, nx) that reproduces the former OBCS T/S sponge exactly.
+
+    pkg/obcs/obcs_sponge.F:540-565 (east, useLinearSponge=.FALSE.), for
+    isl = 1..L (L = spongeThickness), cell i = OB_Ie - isl:
+
+        trelax = ((L-isl) T_ob + isl theta)/L ,  lam = 1/(((L-isl) tau_b + isl tau_i)/L)
+        d theta/dt = -lam ((L-isl)/L) (theta - T_ob)                 [K s-1]
+
+    RBCS (pkg/rbcs/rbcs_add_tendency.F:88-100) gives -(mask/tauRelaxT)(theta - relaxT),
+    so with relaxT = T_ob and tauRelaxT = rbcs_tau:
+
+        mask(isl) = rbcs_tau (L-isl) / (L tau(isl)),  tau(isl) = ((L-isl) tau_b + isl tau_i)/L
+
+    (0 at isl = L).  OB_Ieast=-2 -> Fortran OB_Ie = Nx-1 (obcs_readparms.F:671-672),
+    0-based tracer column nx-2, so the zone is 0-based columns nx-2-isl.  Applied
+    where the cell is wet (the old tendency has maskC).  [s]/[s] -> dimensionless.
+    """
+    nz, ny, nx = hFacC.shape
+    L, tb, ti = int(p["sponge_thickness"]), p["sponge_tau_bound"], p["sponge_tau_inner"]
+    m = np.zeros((nz, ny, nx))
+    for isl in range(1, L + 1):
+        tau = ((L - isl) * tb + isl * ti) / L
+        m[:, :, nx - 2 - isl] = np.where(hFacC[:, :, nx - 2 - isl] > 0,
+                                         p["rbcs_tau"] * (L - isl) / (L * tau), 0.0)
+    return m
+
+
+def _shelf_relaxation_zone(p, bins, hFacC, plume_mask, Tr, Sr, obT, obS, info) -> None:
+    """RBCS shelf relaxation zone + plume-outflow cells; writes rbcs_mask/T/S.bin.
+
+    With Stevens, OBEt/OBEs hold tracer TENDENCIES (obcs_calc_stevens.F:744-752,
+    added in obcs_apply_ts.F:150-160) but the OBCS T/S sponge reads them as
+    TARGET values (obcs_sponge.F:545-550), so the T/S sponge is off and the same
+    relaxation is done with RBCS: mask from ``sponge_zone_mask``, targets = the
+    shelf T/S record of OBEt/OBEs at the same time (broadcast in x), records at
+    the same times as OBEt (rbcsForcingOffset = 0 and the same
+    GET_PERIODIC_INTERVAL, pkg/rbcs/rbcs_fields_load.F:72-76).  Cases without
+    shelf forcing (shelf_amp = 0) still get the zone, relaxing to the constant
+    initial profile (as the old sponge did).  Plume cells (mask q tau/V,
+    targets T_out/S_out) are repeated in every record.
+    """
+    nz, ny, nx = hFacC.shape
+    nrec = obT.shape[0]
+    zone = sponge_zone_mask(p, hFacC)
+    if np.any((zone > 0) & (plume_mask > 0)):
+        raise ValueError("RBCS shelf relaxation zone overlaps the plume-outflow cells")
+    mask = plume_mask + zone
+    if mask.max() > 1.0:
+        raise ValueError(f"RBCS mask {mask.max():.3g} > 1: lower rbcs_tau")
+    cols = np.flatnonzero(zone.max(axis=(0, 1)) > 0)
+    rT = np.broadcast_to(Tr, (nrec, nz, ny, nx)).copy()
+    rS = np.broadcast_to(Sr, (nrec, nz, ny, nx)).copy()
+    rT[:, :, :, cols] = obT[:, :, :, None]
+    rS[:, :, :, cols] = obS[:, :, :, None]
+    bins["rbcs_mask.bin"], bins["rbcs_T.bin"], bins["rbcs_S.bin"] = mask, rT, rS
+    info.update(rbcs_zone_columns_0based=[int(c) for c in cols],
+                rbcs_zone_mask_max=float(zone.max()))
+
+
+def _check_stevens_sponge(rendered: dict) -> None:
+    """Raise if a rendered data.obcs combines useStevens* with a T/S sponge
+    (OBCSsponge_Theta/Salt): Stevens stores tendencies in OBEt/OBEs
+    (obcs_calc_stevens.F:744-752), the sponge would read them as targets
+    (obcs_sponge.F:545-550)."""
+    txt = rendered.get("data.obcs")
+    if txt is None:
+        return
+    live = "\n".join(re.split(r"[#!]", l)[0] for l in txt.splitlines())
+    flag = lambda k: re.search(rf"\b{k}\s*=\s*\.?(t|true)\b", live, re.I) is not None
+    if any(flag(f"useStevens{s}") for s in ("North", "South", "East", "West")) and \
+            (flag("OBCSsponge_Theta") or flag("OBCSsponge_Salt")):
+        raise ValueError("data.obcs: useStevens* with OBCSsponge_Theta/Salt=.TRUE. is invalid "
+                         "(OBEt/OBEs hold tendencies under Stevens); use RBCS")
 
 
 def _stevens_east(p, bins, hFacC, Q0_total, info, T1d=None, S1d=None, nrec=1) -> None:
@@ -365,6 +441,7 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
         rendered.update({STAGE2_NAME if f.name == "data" else f"{f.name}.stage2": Template(f.read_text()).substitute(p2)
                          for f in tfiles if f.name == "data"})
         info["stages"] = stages
+    _check_stevens_sponge(rendered)
     missing = []
     for fname, text in rendered.items():
         for line in text.splitlines():

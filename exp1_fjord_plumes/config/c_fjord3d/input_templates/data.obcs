@@ -30,8 +30,13 @@
 # shelf; the baroclinic exchange (u minus its depth mean) is free.
 # Restart: Stevens writes/reads pickup_stevensE.<iter> (pkg/obcs/
 # obcs_write_pickup.F:225-231, obcs_read_pickup.F:241-246), see run_campaign.py.
-# T/S sponge (10 cells = 2 km) relaxes toward the OB values: the
-# relaxation zone of Cowton et al. 2015 (Sec. 3.2), here time dependent.
+# NO OBCS T/S SPONGE (OBCSsponge_Theta/Salt=.FALSE.): under Stevens OBEt/OBEs
+# hold tracer TENDENCIES (obcs_calc_stevens.F:744-752; added in
+# obcs_apply_ts.F:150-160) but the T/S sponge reads them as TARGET VALUES
+# (obcs_sponge.F:545-550). The relaxation zone of Cowton et al. 2015 (Sec. 3.2),
+# here time dependent, is rebuilt with RBCS (data.rbcs, gendata sponge_zone_mask)
+# to reproduce the old non-linear sponge exactly. OBEt/OBEs stay: Stevens
+# restores inflow tracers toward them on TrelaxStevens.
 # No useOBCSbalance: it ignores addMass (obcs_balance_flow.F:300-315).
 # OBCS_monitorFreq: obc_E_uVel_Int (area-integrated OB transport [m3 s-1],
 # obcs_monitor.F:262-263) is printed to STDOUT every hour; compare with Q0_total.
@@ -45,19 +50,22 @@
  OBEtFile='OBEt.bin',
  OBEsFile='OBEs.bin',
  useOBCSsponge=.TRUE.,
- OBCSsponge_Theta=.TRUE.,
- OBCSsponge_Salt=.TRUE.,
+ OBCSsponge_Theta=.FALSE.,
+ OBCSsponge_Salt=.FALSE.,
  OBCS_monitorFreq=3600.,
  &
 
  &OBCS_PARM03
-# relaxation time 600 s at the OB, 6 h at the inner edge (both << 6 d);
-# the T/S sponge uses the U timescales (obcs_sponge.F:553-559)
- spongeThickness=10,
- Urelaxobcsinner=21600.,
- Vrelaxobcsinner=21600.,
- Urelaxobcsbound=600.,
- Vrelaxobcsbound=600.,
+# relaxation time 600 s at the OB, 6 h at the inner edge (both << 6 d); values
+# come from cases.yaml (sponge_*), shared with the RBCS zone of gendata.
+# Only the U/V sponge is active. Under Stevens obcs_calc_stevens.F:213-223 turns
+# OBEu/OBEv into the boundary VELOCITIES (depth mean from the file + baroclinic
+# part), which are what the U/V sponge reads as targets (obcs_sponge.F:136-150).
+ spongeThickness=${sponge_thickness},
+ Urelaxobcsinner=${sponge_tau_inner},
+ Vrelaxobcsinner=${sponge_tau_inner},
+ Urelaxobcsbound=${sponge_tau_bound},
+ Vrelaxobcsbound=${sponge_tau_bound},
  &
 
  &OBCS_PARM04
