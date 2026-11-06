@@ -461,3 +461,5 @@ Corridas: `/Volumes/LaCie/portfolio_runs/exp1/crosscheck_pyo/{pyo_shelf,pyo_shel
 - En ninguno de los dos casos aparece inestabilidad en la OB: con el mismo forzamiento de plataforma que hizo divergir a MITgcm con Stevens por defecto (día 12.8 y 20.3), pyOCEAN corre 30 d con la OB por debajo del interior (razón ≤ 0.51) y transmite al fiordo el 99 % de la amplitud de la picnoclina.
 
 **Interpretación.** La regla pre-registrada dice que si pyOCEAN falla, la causa se atribuye al diseño. La falla ocurrió en el balance de volumen, no en la estabilidad, que es lo que motivó la verificación. Cómo leer esto es decisión de Esteban; no se redefine el criterio.
+
+**Decisión de Esteban (2026-11-06): opción (b).** La FALLA se reporta tal cual, con el diagnóstico post-hoc al lado. No se usa como evidencia sobre el diseño de (c) ni se redefine el criterio. Lo que la verificación sí aporta (estabilidad de 30 d de la OB de pyOCEAN con el mismo forzamiento) se cita como evidencia de apoyo, de clase (c), a que la divergencia original era propia de la OB Stevens por defecto de MITgcm.
