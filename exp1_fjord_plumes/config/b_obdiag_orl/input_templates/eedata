@@ -1,0 +1,6 @@
+# Exp. 1 (b) b_twoplume3d -- case ${case}; MPI, 5 ranks in y (SIZE.h
+# nPy = 5), one tile and one thread per rank
+ &EEPARMS
+ nTx=1,
+ nTy=1,
+ &

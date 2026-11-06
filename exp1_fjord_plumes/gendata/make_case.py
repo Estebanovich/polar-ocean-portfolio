@@ -426,7 +426,7 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
         cells = [(kb, j, front_i) for j in range(ny)]
         add = discharge_addmass((nz, ny, nx), cells, Q0, rho0, hFacC=hFacC, front_i=front_i)
         info.update(Q0_total=Q0, source_cells=cells)
-    elif cfg == "b_twoplume3d":
+    elif p.get("family", cfg) == "b_twoplume3d":
         if p["nsrc"] == 2:
             js, x0_actual = place_sources(yc, p["x0"], dy)
             info["x0_nominal"], info["x0_actual"] = p["x0"], x0_actual

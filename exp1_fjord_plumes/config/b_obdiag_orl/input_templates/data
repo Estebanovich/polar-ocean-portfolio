@@ -1,0 +1,111 @@
+# ====================================================================
+# Exp. 1 (b) b_twoplume3d -- case ${case}
+# 3-D non-hydrostatic near-front box (1.0 km x 1.2 km x 300 m, 10 m
+# isotropic grid, f = 0): one or two subglacial point-discharge plumes
+# (addMass, selectAddFluid=1) on a vertical ice face (pkg/icefront),
+# Cenedese & Gatto 2016a. Physics identical to config (a) (PD1-approved;
+# exp1_fjord_plumes/notes/pd1_a_line2d.md); differences from (a) are
+# marked "(b):". Rendered by gendata/make_case.py from cases.yaml.
+# Cross-fjord side walls = land rows j = 0, Ny-1; land column Nx-1
+# closes the periodic x-wrap (cases.yaml land_j_rows / land_i_cols).
+# ====================================================================
+ &PARM01
+# --- linear EOS, identical to theory/plume.py LinearEOS (C2'': same
+#     physics in model and theory; Jenkins 2011 Table 1 for tAlpha/sBeta)
+ eosType='LINEAR',
+ tAlpha=${tAlpha},
+ sBeta=${sBeta},
+ rhoNil=${rho0},
+ rhoConst=${rho0},
+ HeatCapacity_Cp=3974.,
+ gravity=9.81,
+# tRef/sRef only shift rho by a constant (linear EOS); sRef=34 keeps the
+# density anomaly small (round-off), it does not change g'.
+ tRef=${nz}*0.,
+ sRef=${nz}*34.,
+# --- viscosity / diffusivity: Sciascia et al. 2013 Table 1 (2-D NH
+#     MITgcm, 10 m x 10 m at the front); Pr = 1 horizontally.
+#     (b): same grid spacing (10 m) as Sciascia, now also in y, so the
+#     values are kept; viscAh/diffKh act in x and y.
+ viscAh=0.25,
+ viscAr=1.E-3,
+ diffKhT=0.25,
+ diffKrT=2.E-5,
+ diffKhS=0.25,
+ diffKrS=2.E-5,
+ implicitViscosity=.TRUE.,
+ implicitDiffusion=.TRUE.,
+# no-slip at the glacier face and bottom (Sciascia et al. 2013, par. 14);
+# (b): also at the two cross-fjord side walls (no_slip_sides)
+ no_slip_sides=.TRUE.,
+ no_slip_bottom=.TRUE.,
+ tempAdvScheme=33,
+ saltAdvScheme=33,
+ staggerTimeStep=.TRUE.,
+ f0=${f0},
+ beta=0.,
+# --- dynamics
+ nonHydrostatic=.TRUE.,
+ rigidLid=.FALSE.,
+ implicitFreeSurface=.TRUE.,
+ exactConserv=.TRUE.,
+ hFacMin=0.1,
+# --- subglacial discharge as an interior mass source (kg/s per cell)
+#     selectAddFluid=1 needs #define ALLOW_ADDFLUID (config_check.F:363-373),
+#     no rigid lid (config_check.F:837-845), staggerTimeStep to avoid the
+#     1-step T/S mismatch warning (config_check.F:846-856); convertFW2Salt
+#     is left unset so ini_parms.F:651 sets it to -1, which makes
+#     apply_forcing.F:505-507 use temp_addMass/salt_addMass for the
+#     added water with the linear free surface.
+ selectAddFluid=1,
+ temp_addMass=${T0_src},
+ salt_addMass=${S0_src},
+# --- I/O (global constraints: big-endian float64, single-CPU I/O)
+ readBinaryPrec=64,
+ writeBinaryPrec=64,
+ useSingleCpuIO=.TRUE.,
+ &
+
+ &PARM02
+ cg2dMaxIters=500,
+ cg2dTargetResidual=1.E-13,
+# cg3d needed 280-390 iterations to reach 1e-8 in (a) (40 never converged;
+# bitacora Task 4); (b) keeps the PD1-approved converged setting. Iteration
+# count on the 3-D uniform grid is measured in the Step 2 short run.
+ cg3dMaxIters=500,
+ cg3dTargetResidual=1.E-8,
+ &
+
+ &PARM03
+ nIter0=0,
+ nTimeSteps=${nTimeSteps},
+ deltaT=${deltaT},
+ abEps=0.01,
+# (b): permanent pickups every 1.5 h (mid-run and end of the 3 h case);
+# each pickup is ~60 MB on this grid
+ pChkptFreq=5400.,
+ chkptFreq=0.,
+# all field output via pkg/diagnostics (data.diagnostics)
+ dumpFreq=0.,
+# ...but keep the default state dumps at start and end (T, S, U, V, W, Eta
+# .<iter>.data): diagnostics snapshots are written one step late
+# (pkg/diagnostics/diagnostics_write.F:62-72), so the t = endTime state
+# exists only here and in the pickup.
+ dumpInitAndLast=.TRUE.,
+ monitorFreq=600.,
+ monitorSelect=2,
+ &
+
+ &PARM04
+ usingCartesianGrid=.TRUE.,
+ delXfile='delX.bin',
+ delYfile='delY.bin',
+ delRfile='delZ.bin',
+ &
+
+ &PARM05
+ bathyFile='topog.bin',
+ hydrogThetaFile='T.init.bin',
+ hydrogSaltFile='S.init.bin',
+ addMassFile='addmass.bin',
+ &

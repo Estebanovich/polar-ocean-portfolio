@@ -261,3 +261,22 @@ El análisis de la Task 6 (commit 2d86679) encontró que **4 corridas sermilik d
 - **V3:** `#define OBCS_STEVENS_USE_INTERIOR_VELOCITY` (`obcs_calc_stevens.F:39-42`, copia la u interior). Se probaría en un build aparte con la configuración de (b).
 - **V5:** reemplazar la esponja OBCS U/V por una relajación RBCS de u/v hacia la u prescrita.
 - **V2:** queda al final.
+
+### Resultado de V4, y criterios de V3 y V6 (fijados antes de correr, 2026-11-06)
+
+**V4 (esponja U/V apagada) FALLA el criterio 2.** La razón llega a 3.09: la velocidad junto a la OB es de 1.18 m/s, frente a 2.1 m/s con la esponja. La esponja amplifica la celda espuria, pero no la causa. La causa está en la persistencia baroclínica de Stevens: la u baroclínica de la OB es su propia velocidad del paso anterior.
+
+**Literatura** (revisión de la biblioteca de la tesis; informe de trabajo local, no incluido en el repositorio):
+- La opción mejor respaldada es fijar el transporte medio con una restricción global de volumen y radiar el resto (Marchesiello et al. 2001, §4.2, ecs. 16–20; Marsaleix et al. 2006; Palma & Matano 1998).
+- Marchesiello et al. (2001, §3.3 y §6) reportan "sin éxito" el uso de la física reducida tipo Stevens en una malla C.
+- La OB de la tesis BayIW era Orlanski con CMAX 0.45 y cvelTimeScale 250 s, una esponja U/V de 1200 → 60 s sin esponja T/S, y `useOBCSbalance`. Archivo: `/Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan/run_expand/data.obcs`.
+
+**Builds de diagnóstico.** Son las configuraciones `b_obdiag` y `b_obdiag_orl`, con los mismos binarios de entrada que la producción según `test_obdiag_cases_reuse_the_b_generator`.
+- **V3:** `b_obdiag_iv_twolayer_x0_40`. Es Stevens con `OBCS_STEVENS_USE_INTERIOR_VELOCITY`, es decir, la u baroclínica de la OB se copia de la columna interior. Usa los mismos criterios 1–3.
+- **V6:** `b_obdiag_orl_twolayer_x0_40`. Es Orlanski más `useOBCSbalance`, el esquema de BayIW, y equivale a la plantilla anterior a Stevens más el balance.
+  - El balance no cuenta `addMass` (`obcs_balance_flow.F:304-345`), así que el transporte neto por la OB es ≈ 0 y el dominio se llena a una tasa Q0·t/A.
+  - Por eso sus criterios son:
+    1. `require_ok` pasa.
+    2. Igual que el criterio 2 anterior (razón ≤ 1.5).
+    3. |`obc_E_uVel_Int`| ≤ 0.2 m³/s (1 % de Q0) en todas las salidas, y |η̄(t) − Q0·t/A| ≤ 0.02 m en todas las salidas, con Q0 = 20 m³/s y A = área mojada de hFacC en superficie.
+  - **Adoptar V6 cambia la física:** el agua de la pluma no sale en neto. En (b) es despreciable (η sube 0.19 m en 3 h sobre 300 m). En (c) serían ~1.2 m en 30 d y un sesgo de 100 m³/s en el intercambio. Adoptarlo en (c) requiere la aprobación de Esteban.

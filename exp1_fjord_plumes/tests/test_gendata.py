@@ -134,6 +134,7 @@ def test_cases_yaml_lists_all_cases():
     exp |= {f"b_3d_{s}_single" for s in ("twolayer", "sermilik")}
     exp |= {f"c_fjord_{k}" for k in ("plume", "wind", "shelf", "all")}
     exp |= {"conv_dx10", "conv_dx5", "conv_dx2p5", "sens_freeslip", "sens_xu2012"}  # R20
+    exp |= {"b_obdiag_iv_twolayer_x0_40", "b_obdiag_orl_twolayer_x0_40"}  # OB diagnosis, R36
     assert names == exp
 
 
@@ -707,3 +708,17 @@ def test_guard_stevens_with_default_ts_sponge_raises():
     _check_stevens_sponge({"data.obcs": "useStevensEast=.TRUE.,\n"})        # no sponge at all
     _check_stevens_sponge({"data.obcs": "useStevensEast=.TRUE.,\nuseOBCSsponge=.TRUE.,\n"
                                         "OBCSsponge_Theta=.FALSE.,\nOBCSsponge_Salt=.FALSE.,"})
+
+
+def test_obdiag_cases_reuse_the_b_generator(tmp_path):
+    """OB-diagnosis cases (R36) get the same binaries as production b_3d_twolayer_x0_40;
+    only the OB scheme in data.obcs differs for the Orlanski + balance variant."""
+    a = make_case("b_obdiag_iv_twolayer_x0_40", tmp_path / "iv")
+    o = make_case("b_obdiag_orl_twolayer_x0_40", tmp_path / "orl")
+    b = make_case("b_3d_twolayer_x0_40", tmp_path / "prod")
+    for f in sorted(b.glob("*.bin")):
+        assert (a / f.name).read_bytes() == f.read_bytes(), f.name
+        assert (o / f.name).read_bytes() == f.read_bytes(), f.name
+    assert "useStevensEast=.TRUE." in (a / "data.obcs").read_text()
+    orl = (o / "data.obcs").read_text()
+    assert "useOrlanskiEast=.TRUE." in orl and "useOBCSbalance=.TRUE." in orl and "Stevens" not in orl.split("&OBCS_PARM01")[1]

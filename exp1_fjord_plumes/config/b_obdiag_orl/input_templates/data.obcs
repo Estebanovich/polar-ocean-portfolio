@@ -1,0 +1,31 @@
+# OB diagnosis V6 (2026-11-06, notes/pd1_b_twoplume3d.md): the thesis BayIW scheme
+# (/Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan/run_expand/data.obcs):
+# Orlanski + CMAX 0.45 + cvelTimeScale 250 s + U/V sponge (no T/S sponge) +
+# useOBCSbalance. This is the pre-Stevens (b) template (git 5e76391^) plus the balance.
+# The balance removes the net OB inflow (pkg/obcs/obcs_balance_flow.F); it does NOT
+# count addMass (only EmPmR/shelfice, :304-345), so the net OB transport is ~0 and the
+# domain fills at Q0_total t / A (0.185 m at 3 h for 20 m3/s, A = 1.1682 km2).
+ &OBCS_PARM01
+ OB_Ieast=${ny}*-2,
+ useOrlanskiEast=.TRUE.,
+ useOBCSsponge=.TRUE.,
+ OBCSsponge_Theta=.FALSE.,
+ OBCSsponge_Salt=.FALSE.,
+ useOBCSbalance=.TRUE.,
+ OBCS_balanceFacE=1.,
+ OBCS_monitorFreq=600.,
+ OBCS_monSelect=0,
+ &
+
+ &OBCS_PARM02
+ cvelTimeScale=250.,
+ CMAX=0.45,
+ &
+
+ &OBCS_PARM03
+ spongeThickness=10,
+ Urelaxobcsinner=1200.,
+ Vrelaxobcsinner=1200.,
+ Urelaxobcsbound=60.,
+ Vrelaxobcsbound=60.,
+ &

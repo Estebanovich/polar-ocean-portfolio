@@ -59,7 +59,7 @@ configs:
   # PD2 sensitivity at the production grid (dx0 5 m, dz 10 m, deltaT 3 s);
   # own config name so `--config a_line2d` still selects only production.
   sens_line2d: {<<: [*study, *a_line2d], monitorFreq: "3.0"}  # monitor every step (deltaT 3)
-  b_twoplume3d:
+  b_twoplume3d: &b_twoplume3d
     nx: 100
     ny: 120
     dx: 10.0
@@ -120,6 +120,9 @@ configs:
     deltaT: 60.0          # provisional; Step 5 timed run confirms
     endTime: 2592000.0    # 30 days
     stevens_phasevel: 1   # 1 = useStevensPhaseVel .TRUE. (MITgcm default); 0 = advection-only OB
+  # OB diagnosis builds (2026-11-06, notes/pd1_b_twoplume3d.md); family keeps the (b) generator
+  b_obdiag: {<<: *b_twoplume3d, family: b_twoplume3d, template_config: b_twoplume3d}
+  b_obdiag_orl: {<<: *b_twoplume3d, family: b_twoplume3d}
 cases:
   a_line2d_twolayer_q0.01: {config: a_line2d, strat: twolayer, discharge: line, q0: 0.01}
   a_line2d_twolayer_q0.03: {config: a_line2d, strat: twolayer, discharge: line, q0: 0.03}
@@ -160,3 +163,6 @@ cases:
   sens_xu2012: {config: sens_line2d, strat: twolayer, discharge: line, q0: 0.03,
                 viscAh: "0.", diffKh: "0.", viscAr: "0.1", diffKr: "0.1",
                 viscA4: "1.171875", diffK4: "1.171875"}
+  # OB diagnosis (2026-11-06): V3 = Stevens + interior baroclinic u; V6 = Orlanski + balance (BayIW)
+  b_obdiag_iv_twolayer_x0_40: {config: b_obdiag, strat: twolayer, discharge: points, nsrc: 2, x0: 40.0}
+  b_obdiag_orl_twolayer_x0_40: {config: b_obdiag_orl, strat: twolayer, discharge: points, nsrc: 2, x0: 40.0}
