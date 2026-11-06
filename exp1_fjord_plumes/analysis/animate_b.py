@@ -172,7 +172,7 @@ def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80,
         c.set_bad("0.82")  # land light grey (thesis convention)
     fig = plt.figure(figsize=(10.0, 5.6), facecolor="white")
     gs = fig.add_gridspec(2, 3, width_ratios=[1.35, 1, 1], height_ratios=[1, 0.13],
-                          hspace=0.42, wspace=0.55, left=0.07, right=0.93, top=0.86, bottom=0.08)
+                          hspace=0.42, wspace=0.55, left=0.07, right=0.93, top=0.86, bottom=0.15)
     axW, axT1, axT2 = (fig.add_subplot(gs[0, i]) for i in range(3))
     axC = fig.add_subplot(gs[1, :])
     z0 = np.ma.masked_array(np.zeros((nz, ny)), face_land)
@@ -190,6 +190,8 @@ def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80,
         for j in src:
             ax.plot(0, (j + 0.5) * dy, "k>", ms=5, clip_on=False)
         fig.colorbar(m, ax=ax, extend="both", label="ΔT (°C)", shrink=0.9)
+        for yy, va in ((0.0, "bottom"), (ny * dy, "top")):  # side walls are closed (data.obcs: E only)
+            ax.text(0.5 * X_SHOW, yy, "closed wall", ha="center", va=va, fontsize=7, color="0.25")
         mT.append(m)
     t_end = p["endTime"]
     axC.set_xlim(0, t_end / 60.0)
@@ -201,6 +203,13 @@ def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80,
     bar = axC.barh(0.5, 0.0, height=0.6, color=style.OKABE_ITO[0])[0]
     fig.suptitle(f"{p['case']}: {label}, {p['strat']} stratification", x=0.06, ha="left",
                  fontsize=11)
+    # Boundary types, stated explicitly (R29 follow-up): reflections at the face and the side walls
+    # are expected; only the east edge is open (config/b_twoplume3d/input_templates/data.obcs).
+    fig.text(0.07, 0.008,
+             "Boundaries: ice face (x = 0) and side walls (y = 0, y = %.0f m) are closed (no normal flow), "
+             "so waves reflect there by design.\nThe only open boundary is the east edge (x ≈ %.0f m, "
+             "beyond the panels): Stevens (1990) radiation with interior velocity." % (ny * dy, nx * dx),
+             ha="left", va="bottom", fontsize=7.5, color="0.25")
     clock = fig.text(0.97, 0.955, "", ha="right", va="top", family="monospace", fontsize=11)
 
     def draw(spec_it):
