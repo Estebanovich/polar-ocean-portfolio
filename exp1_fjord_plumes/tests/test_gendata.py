@@ -309,8 +309,14 @@ def _active(text):
     return "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
 
 
+# Small (c) inputs for tests: the production cycle (6 d / 1 h = 144 records) makes
+# rbcs_T/S.bin 345 MB each. Period 6 h and cycle 1 d give nrec = 4; the formulas
+# under test do not depend on nrec.
+C_SMALL = {"externForcingPeriod": 21600.0, "shelf_period_days": 1.0}
+
+
 def _c_case(tmp_path, name):
-    out = make_case(name, tmp_path / name)   # real c_fjord3d templates
+    out = make_case(name, tmp_path / name, overrides=C_SMALL)   # real c_fjord3d templates
     meta = json.loads((out / "case.json").read_text())
     p = meta["params"]
     return out, meta, p, (p["nz"], p["ny"], p["nx"])
@@ -341,16 +347,20 @@ def test_c_sinks_only_below_outflow_in_front_column(tmp_path):
 
 def test_c_rbcs_mask_only_in_outflow_cells(tmp_path):
     """mask = q tau / V in the outflow cells (RBCS tendency = q (T_out - T)/V,
-    PD3 option iii), 0 elsewhere, <= 1."""
+    PD3 option iii), <= 1; 0 everywhere else except the shelf OB zone
+    (0-based columns nx-2-L .. nx-3)."""
     out, meta, p, shape = _c_case(tmp_path, "c_fjord_plume")
+    nx, L = p["nx"], p["sponge_thickness"]
     add = read_bin(out / "addmass.bin", shape)
     mask = read_bin(out / "rbcs_mask.bin", shape)
-    zone = mask > 0
-    zone[add > 0] = False                     # shelf zone is separate (tested below)
-    assert np.array_equal(mask[:, :, :20] > 0, add[:, :, :20] > 0)
     V = p["dx"] * p["dy"] * p["dz"]
     q = add / p["rho0"]
+    assert (add > 0).any()
     assert np.allclose(mask[add > 0], q[add > 0] * p["rbcs_tau"] / V)
+    outside = np.ones(shape, bool)
+    outside[add > 0] = False
+    outside[:, :, nx - 2 - L: nx - 2] = False          # OB zone columns
+    assert np.all(mask[outside] == 0.0)
     assert mask.max() <= 1.0
 
 
@@ -465,7 +475,7 @@ def test_c_case_json_records_melt_volume_from_ambient(tmp_path):
 
 def test_c_wind_run_not_longer_than_stage1_is_single_stage(tmp_path):
     """endTime <= wind_stage1_s (e.g. a short run): one stage with the wind file."""
-    out = make_case("c_fjord_wind", tmp_path / "w", overrides={"endTime": 43200.0})
+    out = make_case("c_fjord_wind", tmp_path / "w", overrides={"endTime": 43200.0, **C_SMALL})
     d = (out / "data").read_text()
     assert not (out / "data.stage2").exists()
     assert "zonalWindFile='windx.bin'" in d and "nTimeSteps=720," in d
@@ -476,7 +486,7 @@ def test_c_wind_stage1_must_align_with_dt_and_diagnostics(tmp_path):
     for bad in (5400.0, 1830.0):          # not a multiple of 10800 / of 3600 and 60
         with pytest.raises(ValueError, match="multiple"):
             make_case("c_fjord_wind", tmp_path / f"w{bad}",
-                      overrides={"endTime": 86400.0, "wind_stage1_s": bad})
+                      overrides={"endTime": 86400.0, "wind_stage1_s": bad, **C_SMALL})
     from exp1_fjord_plumes.gendata.make_case import C_DIAG_PERIODS
     t = (PKG_DIR / "config" / "c_fjord3d" / "input_templates" / "data.diagnostics").read_text()
     assert f"frequency(1) = {C_DIAG_PERIODS[0]:.0f}.," in t
@@ -683,3 +693,17 @@ def test_guard_stevens_with_ts_sponge_raises():
     _check_stevens_sponge({"data.obcs": "useStevensEast=.TRUE.,\nOBCSsponge_Theta=.FALSE.,\n"
                                         "# OBCSsponge_Salt=.TRUE."})
     _check_stevens_sponge({"data.obcs": "useOrlanskiEast=.TRUE.,\nOBCSsponge_Theta=.TRUE."})
+
+
+def test_guard_stevens_with_default_ts_sponge_raises():
+    """OBCSsponge_Theta/Salt default to TRUE (obcs_readparms.F:280-281)."""
+    from exp1_fjord_plumes.gendata.make_case import _check_stevens_sponge
+    with pytest.raises(ValueError, match="default"):
+        _check_stevens_sponge({"data.obcs": " &OBCS_PARM01\n useStevensEast=.TRUE.,\n"
+                                            " useOBCSsponge=.TRUE.,\n &\n"})
+    with pytest.raises(ValueError, match="OBCSsponge_Salt"):      # Theta off, Salt missing
+        _check_stevens_sponge({"data.obcs": "useStevensEast=.TRUE.,\nuseOBCSsponge=.TRUE.,\n"
+                                            "OBCSsponge_Theta=.FALSE.,"})
+    _check_stevens_sponge({"data.obcs": "useStevensEast=.TRUE.,\n"})        # no sponge at all
+    _check_stevens_sponge({"data.obcs": "useStevensEast=.TRUE.,\nuseOBCSsponge=.TRUE.,\n"
+                                        "OBCSsponge_Theta=.FALSE.,\nOBCSsponge_Salt=.FALSE.,"})

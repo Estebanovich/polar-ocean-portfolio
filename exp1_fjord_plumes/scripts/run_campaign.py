@@ -302,11 +302,33 @@ def _sh(cmd: list) -> int:
     return subprocess.run([str(c) for c in cmd], env=env).returncode
 
 
+MIN_FREE_BYTES = 20 * 10**9          # always keep at least 20 GB free on the runs filesystem
+FREE_FACTOR = 4                      # ... and at least 4 x the generated input dir
+
+
+def _dir_bytes(d: Path) -> int:
+    return sum(f.stat().st_size for f in Path(d).rglob("*") if f.is_file())
+
+
+def check_free_space(runs_root: Path, inp: Path, disk_usage=None) -> None:
+    """Raise RuntimeError if the runs filesystem has less than
+    max(20 GB, 4 x size of the generated input dir) free (c inputs are ~0.7 GB;
+    the run copies them to stage 2 and writes the output)."""
+    import shutil
+    free = (disk_usage or shutil.disk_usage)(str(runs_root)).free
+    need = max(MIN_FREE_BYTES, FREE_FACTOR * _dir_bytes(inp))
+    if free < need:
+        raise RuntimeError(f"not enough free space on {runs_root}: {free / 1e9:.1f} GB free, "
+                           f"need {need / 1e9:.1f} GB (max(20 GB, 4 x input dir)); "
+                           "refusing to start the model")
+
+
 def run_campaign(config: str, pattern: str, np_: int, *,
                  runs_root: Path = RUNS_ROOT, build_root: Path = BUILD_ROOT,
                  cases_file: Path | None = None, overrides: dict | None = None,
                  run_suffix: str = "", sh: Callable[[list], int] = _sh,
-                 pgrep: Callable[[], str] | None = None, skip_ok: bool = False) -> dict[str, str]:
+                 pgrep: Callable[[], str] | None = None, skip_ok: bool = False,
+                 disk_usage=None) -> dict[str, str]:
     """Build ``config`` once, then generate and run each selected case in series.
 
     Returns {case: state} with state from run_status.json (OK / FAILED) or
@@ -351,6 +373,7 @@ def run_campaign(config: str, pattern: str, np_: int, *,
             continue
         inp = make_case(name, run_dir / "input", cases_file=cases_file, overrides=overrides)
         check_size(inp, cfg_dir / "code" / "SIZE.h")
+        check_free_space(Path(runs_root), inp, disk_usage)
         print(f"[run_campaign] {name}: running in {run_dir}", flush=True)
         sh([RUN_SH, build_dir, inp, run_dir, np_])
         st1 = _status(run_dir)

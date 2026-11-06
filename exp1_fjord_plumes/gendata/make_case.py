@@ -214,6 +214,12 @@ def _shelf_relaxation_zone(p, bins, hFacC, plume_mask, Tr, Sr, obT, obS, info) -
     shelf forcing (shelf_amp = 0) still get the zone, relaxing to the constant
     initial profile (as the old sponge did).  Plume cells (mask q tau/V,
     targets T_out/S_out) are repeated in every record.
+
+    Known negligible differences from the former OBCS sponge: (i) one-step
+    target lag: RBCS loads its records at myTime (model/src/load_fields_driver.F:249)
+    whereas OBCS loaded OBEt at futureTime (pkg/obcs/obcs_calc.F:413), a lag of
+    dt = 60 s, ~1e-4 of the 6-day cycle; (ii) the old sponge skipped cells whose
+    OBEt was exactly 0 (obcs_sponge.F:545); an exactly 0.0 value is not expected in the shelf profile.
     """
     nz, ny, nx = hFacC.shape
     nrec = obT.shape[0]
@@ -234,19 +240,31 @@ def _shelf_relaxation_zone(p, bins, hFacC, plume_mask, Tr, Sr, obT, obS, info) -
 
 
 def _check_stevens_sponge(rendered: dict) -> None:
-    """Raise if a rendered data.obcs combines useStevens* with a T/S sponge
-    (OBCSsponge_Theta/Salt): Stevens stores tendencies in OBEt/OBEs
-    (obcs_calc_stevens.F:744-752), the sponge would read them as targets
-    (obcs_sponge.F:545-550)."""
+    """Raise if a rendered data.obcs combines useStevens* with a T/S sponge.
+
+    Stevens stores tracer tendencies in OBEt/OBEs (obcs_calc_stevens.F:744-752),
+    the sponge would read them as targets (obcs_sponge.F:545-550).
+    OBCSsponge_Theta/Salt DEFAULT TO TRUE (pkg/obcs/obcs_readparms.F:280-281), so
+    a missing flag counts as TRUE whenever useOBCSsponge is TRUE.
+    """
     txt = rendered.get("data.obcs")
     if txt is None:
         return
     live = "\n".join(re.split(r"[#!]", l)[0] for l in txt.splitlines())
-    flag = lambda k: re.search(rf"\b{k}\s*=\s*\.?(t|true)\b", live, re.I) is not None
-    if any(flag(f"useStevens{s}") for s in ("North", "South", "East", "West")) and \
-            (flag("OBCSsponge_Theta") or flag("OBCSsponge_Salt")):
-        raise ValueError("data.obcs: useStevens* with OBCSsponge_Theta/Salt=.TRUE. is invalid "
-                         "(OBEt/OBEs hold tendencies under Stevens); use RBCS")
+
+    def value(key):
+        m = re.search(rf"\b{key}\s*=\s*\.?(\w+)\b", live, re.I)
+        return None if m is None else m.group(1).lower() in ("t", "true")
+
+    if not any(value(f"useStevens{s}") for s in ("North", "South", "East", "West")):
+        return
+    sponge_on = value("useOBCSsponge") is True
+    for key in ("OBCSsponge_Theta", "OBCSsponge_Salt"):
+        v = value(key)
+        if v or (v is None and sponge_on):       # explicit TRUE, or missing -> default TRUE
+            raise ValueError(f"data.obcs: useStevens* with {key} TRUE (explicitly or by default, "
+                             "obcs_readparms.F:280-281) is invalid (OBEt/OBEs hold tendencies "
+                             "under Stevens); set it to .FALSE. and use RBCS")
 
 
 def _stevens_east(p, bins, hFacC, Q0_total, info, T1d=None, S1d=None, nrec=1) -> None:

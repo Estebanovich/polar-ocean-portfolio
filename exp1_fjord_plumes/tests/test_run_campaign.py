@@ -274,7 +274,9 @@ class StubShell:
                               env={**os.environ, **self.env}).returncode
 
 
-SHORT2 = {"endTime": 21600.0, "wind_stage1_s": 10800.0}   # 180 + 180 steps of 60 s
+# 180 + 180 steps of 60 s; small OB/RBCS series (nrec = 4) so the (c) inputs stay small
+SHORT2 = {"endTime": 21600.0, "wind_stage1_s": 10800.0,
+          "externForcingPeriod": 21600.0, "shelf_period_days": 1.0}
 
 
 def _two_stage(tmp_path, env=None, case="c_fjord_wind"):
@@ -441,3 +443,34 @@ def test_set_rejects_unknown_key_and_keeps_int_types(tmp_path):
     with pytest.raises(ValueError, match="not a parameter"):
         rc.run_campaign("c_fjord3d", "c_fjord_all", 1, runs_root=tmp_path, build_root=tmp_path,
                         sh=Recorder(), pgrep=lambda: "", overrides={"bogus": 1})
+
+
+def test_free_space_guard(tmp_path):
+    from collections import namedtuple
+    DU = namedtuple("DU", "total used free")
+    inp = tmp_path / "in"
+    inp.mkdir()
+    (inp / "a.bin").write_bytes(b"\0" * 1000)
+    rc.check_free_space(tmp_path, inp, lambda p: DU(10**12, 0, 10**11))     # 100 GB: ok
+    with pytest.raises(RuntimeError, match="not enough free space"):
+        rc.check_free_space(tmp_path, inp, lambda p: DU(10**12, 0, 19 * 10**9))   # < 20 GB
+    big = tmp_path / "big"
+    big.mkdir()
+    with open(big / "x.bin", "wb") as f:
+        f.truncate(10 * 10**9)                                           # sparse 10 GB input
+    with pytest.raises(RuntimeError, match="40.0 GB"):                   # 4 x 10 GB > 20 GB
+        rc.check_free_space(tmp_path, big, lambda p: DU(10**12, 0, 30 * 10**9))
+    rc.check_free_space(tmp_path, big, lambda p: DU(10**12, 0, 41 * 10**9))
+
+
+def test_run_campaign_refuses_before_model_when_disk_full(tmp_path):
+    from collections import namedtuple
+    DU = namedtuple("DU", "total used free")
+    builds = tmp_path / "builds"
+    _stub_build(builds / "c_fjord3d")
+    sh = StubShell()
+    with pytest.raises(RuntimeError, match="free space"):
+        rc.run_campaign("c_fjord3d", "c_fjord_plume", 1, runs_root=tmp_path / "runs",
+                        build_root=builds, sh=sh, pgrep=lambda: "", overrides=SHORT2,
+                        disk_usage=lambda p: DU(10**12, 0, 10**9))
+    assert not [c for c in sh.calls if Path(c[0]).name == "run_mitgcm.sh"]

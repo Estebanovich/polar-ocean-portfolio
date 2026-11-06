@@ -229,3 +229,7 @@
 - `required_ob_pickups` acepta .TRUE./.T./T/TRUE/true, ignora `#` y `!`, y falla si el valor no se reconoce.
 - Con Stevens la frontera saca exactamente Q0: η̄ debe quedar ≈ 0 y obc_E_uVel_Int ≈ +100 m³/s.
 - 238 PASS (la suite pasó de 16 s a ~90 s: rbcs_T/S pesan 330 MB por caso (c)). Build al día, dry-run OK, sin correr MITgcm.
+
+## 2026-11-05 — (c) Stevens, ronda 3
+- Pruebas (c) con entradas pequeñas (`externForcingPeriod`=6 h, `shelf_period_days`=1, nrec = 4): la suite pasa de ~90 s y 39 GB de temporales a ~16 s y 0 B tras una corrida (`pytest.ini`: `tmp_path_retention_policy = failed`, `count = 1`). 241 PASS.
+- Runner: `check_free_space` (libre >= max(20 GB, 4 × tamaño de la entrada)) antes de cada caso. Guardia `_check_stevens_sponge` trata la bandera ausente como TRUE (`obcs_readparms.F:280-281`). Comentario del desfase de un paso (RBCS carga en myTime, `load_fields_driver.F:249`; OBCS en futureTime, `obcs_calc.F:413`) y de OBEt = 0 (`obcs_sponge.F:545`).
