@@ -144,6 +144,9 @@ cases:
   b_3d_sermilik_x0_160: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 2, x0: 160.0}
   b_3d_sermilik_x0_320: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 2, x0: 320.0}
   b_3d_sermilik_single: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 1, x0: null}
+  # no-discharge background (Q0 = 0): ambient face melt for the plume-excess metric (2026-11-06, notes/pd1_b)
+  b_bg_twolayer_nodischarge: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 1, Q0: 0.0}
+  b_bg_sermilik_nodischarge: {config: b_twoplume3d, strat: sermilik, discharge: points, nsrc: 1, Q0: 0.0}
   c_fjord_plume: {config: c_fjord3d, discharge: point}
   c_fjord_wind: {config: c_fjord3d, discharge: point, wind_tau: 0.2, Q0: 0.0}
   c_fjord_shelf: {config: c_fjord3d, discharge: point, shelf_amp: 30.0, Q0: 0.0}

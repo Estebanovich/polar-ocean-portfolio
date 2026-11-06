@@ -356,3 +356,17 @@ C4′ **PASA bajo su definición pre-registrada** (0.520 y 0.525), y eso no se c
 - Con fuentes juntas, cada pluma derrite ~25 % menos que una pluma independiente, y el valor se recupera con la separación hasta ~0.94. Es cualitativamente como en el laboratorio, pero mucho más débil que su ≈ 0.5.
 - La caída en x0 = 320 m probablemente es un artefacto del estimador de fondo, porque las plumas ensanchadas contaminan la mediana. Está sin verificar.
 - Es sensible al método de fondo. Antes de usarla en el README hay que definir un estimador robusto, por ejemplo una corrida sin descarga para el fondo, y fijarlo por escrito.
+
+### Métrica de exceso de la pluma con fondo limpio: definición fijada antes de calcular (2026-11-06, aprobada por Esteban)
+
+**Casos de fondo.** `b_bg_twolayer_nodischarge` y `b_bg_sermilik_nodischarge`: (b) con Q0 = 0, el mismo ambiente, la misma OB y 3 h. Las entradas son idénticas a las de `_single` salvo la descarga, según `test_b_background_case_has_no_discharge_and_same_ambient`.
+
+**Definición:**
+- E(caso) = M(caso) − M(fondo de la misma estratificación). M es `face_total_melt` en la ventana de 2–3 h.
+- R_E(x0) = E(x0) / (2·E_single), graficada contra x0_actual/x0c.
+- También se reportan M_fondo/M_single y el ruido del fondo, ε = |M_fondo(2–3 h) − M_fondo(1–2 h)|.
+- Si E_single < 10·ε, R_E se declara no resoluble.
+
+**Estatus.** Es una métrica **posterior a C4′, informativa**. No reemplaza a C4′, que sigue PASA bajo su definición, con la advertencia anterior. No tiene umbral de pase. Se compara cualitativamente con el ≈ 0.5 del laboratorio, sin forzar el acuerdo.
+
+**Supuesto declarado.** El fondo es aditivo: la pluma no cambia el derretimiento ambiente fuera de su huella. Si la pluma altera la circulación de toda la cara, E mezcla los dos efectos.

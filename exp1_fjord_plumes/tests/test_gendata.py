@@ -135,6 +135,7 @@ def test_cases_yaml_lists_all_cases():
     exp |= {f"c_fjord_{k}" for k in ("plume", "wind", "shelf", "all", "control")}
     exp |= {"conv_dx10", "conv_dx5", "conv_dx2p5", "sens_freeslip", "sens_xu2012"}  # R20
     exp |= {"b_obdiag_iv_twolayer_x0_40", "b_obdiag_orl_twolayer_x0_40"}  # OB diagnosis, R36
+    exp |= {"b_bg_twolayer_nodischarge", "b_bg_sermilik_nodischarge"}  # plume-excess background
     assert names == exp
 
 
@@ -736,3 +737,16 @@ def test_c_control_has_no_forcing(tmp_path):
     nz, ny = 50, 30
     rec = obt.reshape(-1, nz, ny)
     assert np.allclose(rec, rec[0])
+
+
+@pytest.mark.parametrize("strat", ["twolayer", "sermilik"])
+def test_b_background_case_has_no_discharge_and_same_ambient(tmp_path, strat):
+    """The background case differs from b_3d_<strat>_single only by Q0 = 0 (no addMass, OB u = 0)."""
+    import numpy as np
+    bg = make_case(f"b_bg_{strat}_nodischarge", tmp_path / "bg")
+    sg = make_case(f"b_3d_{strat}_single", tmp_path / "sg")
+    meta = json.loads((bg / "case.json").read_text())
+    assert meta["Q0_total"] == 0.0 and meta["sum_addmass_kg_s"] == 0.0
+    assert not np.any(np.fromfile(bg / "OBEu.bin", ">f8"))
+    for f in ("T.init.bin", "S.init.bin", "topog.bin", "R_icefront.bin", "OBEt.bin", "OBEs.bin"):
+        assert (bg / f).read_bytes() == (sg / f).read_bytes(), f
