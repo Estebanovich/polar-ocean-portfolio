@@ -290,3 +290,24 @@ done
 - **Lo observado:** sale 300–600 veces Q0. Es la misma inestabilidad de Orlanski que en (b), aquí en sentido de vaciado.
 - **Por qué Flather tampoco sirve en (c):** c = √(9.81·500) ≈ 70 m/s, así que c·dt/dx = 70·60/200 ≈ 21. Forma explícita inestable.
 - **Propuesta:** Stevens, igual que en (b), con u_ob media en profundidad = Q0_total/A_ob. El forzamiento de plataforma (OBEt/OBEs variables + esponja T/S) se mantiene. **Costo:** el modo barotrópico queda cerrado en la frontera (no hay intercambio de setup de viento con la plataforma). El intercambio baroclínico (Jackson 2018), que es el objetivo de (c), sigue libre.
+
+## Stevens + zona RBCS: criterios de la prueba de 1 día, fijados antes de correr (2026-11-05)
+
+**Configuración:**
+- Stevens en el este, con u_ob = Q0/A_ob.
+- La esponja T/S de OBCS se reemplaza por una zona RBCS equivalente (R33; commits 78a191d, 5a6d27e, b5a0588).
+- La esponja U/V se mantiene.
+
+**Caso:** `c_fjord_all_stevens_short1d`. Son 2 etapas de 12 h, con `--set wind_stage1_s=43200` y np = 5.
+
+**Criterios (todos deben pasar):**
+1. Termina OK en las dos etapas, y la etapa 2 arranca desde `pickup_stevensE`.
+2. `obc_E_uVel_Int` = +100 m³/s, con error relativo < 1e-6, en todas las salidas del monitor.
+3. |η medio del dominio| < 0.01 m en todo momento. Lo esperado es ≈ 0: la frontera saca exactamente Q0 = Σ addMass/ρ0, y ni pkg/icefront ni RBCS agregan volumen.
+4. T y S quedan dentro del rango físico de las condiciones iniciales y de la plataforma, con un margen de 0.5 °C y 0.2 psu:
+   - mín(T) ≥ mín(T_init, T_shelf) − 0.5; máx(T) ≤ máx(T_init, T_shelf, T_out) + 0.5;
+   - lo mismo para S;
+   - sin NaN.
+5. **Informativo:** se reporta el desplazamiento de la picnoclina en la zona RBCS a las 24 h frente a la serie de plataforma (debe seguir el forzamiento de ±30 m).
+
+**Si falla cualquiera de 1–4,** no se lanza la campaña de (c) y se analiza el fallo.
