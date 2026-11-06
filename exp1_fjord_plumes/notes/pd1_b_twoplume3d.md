@@ -165,3 +165,13 @@ Un caso marcado **no se descarta automáticamente**: se revisan su serie de η̄
 - **Expectativa física:** η medio ≈ 0. pkg/icefront no agrega volumen (solo modifica T y S), y Stevens saca exactamente Q0. Es decir, |η medio| ≪ 0.18 m.
 - **Chequeo informativo**, que no decide la puerta: `obc_E_uVel_Int` en STDOUT ≈ +20 m³/s.
 - **Antes de las 3 h:** prueba corta de 30 min. En STDOUT deben aparecer `ALLOW_OBCS_STEVENS`, `OBCS_FIELDS_LOAD: Reading initial data` y `useStevensEast = T`.
+
+### Resultado de la puerta con Stevens (2026-11-05)
+
+- **(i) Balance de volumen: PASA.**
+  - η medio = 7.6e-15 m;
+  - retained_last_hour = 9.6e-14, contra un límite de ≤ 0.5;
+  - `obc_E_uVel_Int` = 20.000 m³/s.
+- **(ii) Identidad bit a bit frente a la referencia de 30 min: "FAIL", pero por construcción, no por un defecto.** La referencia (`b_3d_twolayer_x0_40_short30m_dt2`) se corrió con Orlanski. Al cambiar el esquema de frontera, los campos no pueden ser idénticos.
+- **Por qué igual se da por cumplido el fin de (ii):** (ii) verifica que la salida extra de animación (R29) no altera la física. Eso ya se demostró con el mismo código en el primer intento de la puerta (Orlanski, `b_3d_twolayer_x0_40_orlanski`): pasó (ii) y solo falló (i). La salida de diagnósticos no depende del esquema de frontera.
+- **Ruling R32:** la puerta se da por PASADA. Se lanzan los 13 casos restantes.
