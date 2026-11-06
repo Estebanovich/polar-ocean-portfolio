@@ -42,7 +42,7 @@
  OBEvFile='OBEv.bin',
  OBEtFile='OBEt.bin',
  OBEsFile='OBEs.bin',
- useOBCSsponge=.TRUE.,
+ useOBCSsponge=${ob_uv_sponge_flag},
  OBCSsponge_Theta=.FALSE.,
  OBCSsponge_Salt=.FALSE.,
  OBCS_monitorFreq=600.,

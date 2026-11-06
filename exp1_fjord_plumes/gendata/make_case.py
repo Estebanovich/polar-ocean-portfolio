@@ -456,6 +456,10 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     # case parameter so run_campaign --set can switch it (OB-instability tests, 2026-11-06).
     if "stevens_phasevel" in p:
         p["stevens_phasevel_flag"] = ".TRUE." if p["stevens_phasevel"] else ".FALSE."
+    # OBCS U/V sponge on/off (data.obcs useOBCSsponge; pkg/obcs/obcs_sponge.F:141-147 relaxes
+    # toward OBEu, which under Stevens is the self-updated OB velocity, obcs_calc_stevens.F:200-219).
+    if "ob_uv_sponge" in p:
+        p["ob_uv_sponge_flag"] = ".TRUE." if p["ob_uv_sponge"] else ".FALSE."
     stages = _c_stages(p) if cfg == "c_fjord3d" else [{}]
     p.update(stages[0])
     rendered = {f.name: Template(f.read_text()).substitute(p) for f in tfiles}

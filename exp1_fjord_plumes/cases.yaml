@@ -85,6 +85,7 @@ configs:
     deltaT: 2.0           # PD1(b) (Esteban): CFL_w 0.26, melt within 0.06 % of dt = 1 s
     endTime: 10800.0      # Task 6: 3 h of model time per case (plan Step 2; was 6 h)
     stevens_phasevel: 1   # 1 = useStevensPhaseVel .TRUE. (MITgcm default); 0 = advection-only OB
+    ob_uv_sponge: 1       # 1 = OBCS U/V sponge on (as run); 0 = off (OB diagnosis V4)
   c_fjord3d:
     nx: 200
     ny: 30

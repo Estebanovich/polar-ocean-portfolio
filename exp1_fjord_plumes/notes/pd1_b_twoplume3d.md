@@ -243,3 +243,21 @@ El análisis de la Task 6 (commit 2d86679) encontró que **4 corridas sermilik d
 **Si pasa:**
 - Se aplica a (c) y se verifica con `c_fjord_shelf` a 30 d. Los criterios son 1 y 3 con Q0 = 0 (transporte 0), y el criterio 2 en las columnas 196–198 frente a 10–189, en cada volcado de U.
 - Después se vuelven a correr los 14 casos de (b) y los 4 de (c).
+
+### Resultado de V1 y nueva evidencia (2026-11-06)
+
+**V1 (`useStevensPhaseVel=.FALSE.`) FALLA el criterio 2.** La razón OB/interior llega a 3.51 (sin V1 era 3.31). Los criterios 1 y 3 pasan. La velocidad de fase no es la causa.
+
+**Evidencia nueva:**
+- **La corrida Orlanski del mismo caso tiene una OB limpia.** Es `b_3d_twolayer_x0_40_orlanski`, con la esponja U/V y sin esponja T/S, y su razón máxima es 0.41. Su único problema era la deriva de η. Como tampoco tenía relajación de T/S, la falta de esa relajación no explica la celda espuria, y V2 pierde el sustento.
+- **En el caso de referencia, a las 2 h, hay una celda de vuelco espuria pegada a la OB:** u = −0.55 m/s en k = 6–8 y +0.55 m/s en k = 12, con una anomalía de T de +1.3 °C en k = 10, en i = 98.
+- **Mecanismo candidato (fuente MITgcm).**
+  - Con Stevens, la parte baroclínica de la u de la OB es la propia velocidad de la OB en el paso anterior: `OBEuStevens`, guardada en `obcs_save_uv_n.F:99` y usada en `obcs_calc_stevens.F:200-219`. Es decir, se integra con su propia ecuación de momento y no se radía.
+  - La esponja U/V relaja hacia `OBEu` (`obcs_sponge.F:141-147`), que bajo Stevens es esa velocidad autoactualizada y no la prescrita.
+  - Resultado: la esponja arrastra el interior hacia el perfil espurio de la frontera en lugar de amortiguarlo. Es una posible retroalimentación, la misma clase de incompatibilidad que la de la esponja T/S (R33).
+
+**Nuevo orden de variantes (regla R36, dentro del plan de diagnóstico aprobado; fijado antes de correr). Los criterios 1–3 no cambian:**
+- **V4:** esponja U/V apagada (`--set ob_uv_sponge=0`), sin recompilar. Si pasa, la esponja era el amplificador.
+- **V3:** `#define OBCS_STEVENS_USE_INTERIOR_VELOCITY` (`obcs_calc_stevens.F:39-42`, copia la u interior). Se probaría en un build aparte con la configuración de (b).
+- **V5:** reemplazar la esponja OBCS U/V por una relajación RBCS de u/v hacia la u prescrita.
+- **V2:** queda al final.
