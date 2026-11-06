@@ -388,3 +388,19 @@ C4′ **PASA bajo su definición pre-registrada** (0.520 y 0.525), y eso no se c
   - diff/H baja en más de 0.05 → la resolución es importante (clase c).
   - En medio → no concluyente.
   - Los criterios OB 1–3 deben pasar; si no, D2 no se interpreta.
+
+### Resultado de D1 (2026-11-06). Script: `analysis/d1_volume_flux.py`
+
+**D1 tal como se pre-registró:** la mediana de Q_m/Q_t en la mitad inferior es **11.6 (twolayer) y 8.8 (sermilik)**. El modelo lleva mucho **más** flujo ascendente que la teoría, no menos. La hipótesis de sub-arrastre **no se sostiene con esta métrica**.
+
+**Lectura de la métrica (post-hoc).** La franja i < 10 abarca los 1180 m de cara, así que mezcla la pluma con un ascenso que ocupa toda la cara. Separando ambas cosas, en los snapshots de 2 y 2.5 h:
+- **Lejos de la pluma, bajo la interfaz, hay ascenso en toda la cara:** w medio de +1–2 cm/s en twolayer a z = −150 a −250 m (sermilik: +1 cm/s a −200/−250 m). Encima de la interfaz es casi 0. Probablemente es la capa límite convectiva del derretimiento ambiente, la misma que da el ~90 % de fondo en el derretimiento. Se verifica con los casos sin descarga.
+- **Cerca de la pluma** (|y − y_src| ≤ 200 m, i < 10), Q va de 435 a 1445 m³/s en twolayer, frente a Q_t de 500 a 884 m³/s:
+  - bajo la interfaz es mayor que la teoría, y ahí el ascenso de toda la cara aporta buena parte del flujo;
+  - encima de la interfaz (z ≥ −110 m) es comparable, de 0.5 a 1.5 × Q_t.
+
+**Conclusión de D1.** El fallo de C4 **no se explica por sub-arrastre** de la pluma. Queda abierto. Candidatos sin verificar:
+- el ascenso de toda la cara cambia el ambiente efectivo de la pluma;
+- la dinámica de la capa límite de pared en la cara (calor y sal de pkg/icefront) mantiene agua de la cara ascendiendo hasta la superficie.
+
+D2 (resolución) y los casos sin descarga (¿existe el ascenso de toda la cara sin pluma?) son los siguientes discriminantes. C4 sigue en FALLA.
