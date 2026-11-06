@@ -194,3 +194,37 @@ Las 14 corridas (b) terminaron OK a las 22:33. Ninguna métrica de derretimiento
 - **Referencia de laboratorio:** los puntos de Cenedese & Gatto (2016a, Fig. 2) se digitalizan a mano desde el PDF de `literatura/` y se rotulan en la figura como "hand-digitised, approximate".
 - **Modelo de plumas fusionadas** (opcional en el plan): no se implementa (regla R34).
 - Si C4 o C4′ fallan, se pasa a **PD2**: se clasifica la diferencia como (a)–(d) y se presenta a Esteban. El criterio no se redefine.
+
+## Hallazgo crítico: la frontera de Stevens genera velocidades espurias (2026-11-05, 23:15)
+
+El análisis de la Task 6 (commit 2d86679) encontró que **4 corridas sermilik divergieron** aunque `run_status` dice OK:
+- son x0_40, x0_80, x0_160 y x0_320;
+- cg2d da NaN a partir de t ≈ 2.6–2.7 h;
+- los volcados finales son NaN.
+
+`require_ok` no lo detecta, porque solo revisa el estado y `last_iter`.
+
+**Verificación del controlador.** Se tomó max|u| en las 3 columnas junto a la OB (i = 96–98) y en el interior (i = 10–89), en m/s:
+
+| caso | 0.5 h | 1 h | 1.5 h | 2 h | 2.5 h |
+|---|---|---|---|---|---|
+| twolayer x0_0 | 0.01 / 0.26 | 0.01 / 0.25 | 0.10 / 0.26 | **1.24** / 0.28 | |
+| twolayer x0_40 | 0.02 / 0.33 | 0.29 / 0.32 | **2.11** / 0.65 | 1.42 / 0.43 | |
+| twolayer x0_320 | 0.01 / 0.24 | 0.11 / 0.23 | **1.75** / 0.41 | 1.50 / 0.45 | |
+| twolayer single | 0.01 / 0.23 | 0.02 / 0.20 | 0.55 / 0.21 | **2.13** / 0.62 | |
+| sermilik x0_0 | 0.02 / 0.24 | 0.01 / 0.24 | 0.02 / 0.28 | 0.05 / 0.25 | |
+| sermilik x0_20 | 0.02 / 0.35 | 0.02 / 0.30 | 0.04 / 0.36 | 0.14 / 0.31 | |
+| sermilik single | 0.01 / 0.08 | 0.02 / 0.08 | 0.04 / 0.08 | 0.30 / 0.08 | |
+| sermilik x0_40 | 0.02 / 0.28 | 0.07 / 0.26 | 0.62 / 0.26 | 1.49 / 0.39 | NaN a las 2.67 h |
+
+(Las horas están en los mismos tiempos que los volcados UVEL; "/" separa la OB del interior.)
+
+- La inestabilidad empieza en la columna u de la OB (i = 98), a k ≈ 9–10 (~100 m), es decir, en la capa de salida de la pluma.
+- Crece cuando la intrusión llega a la frontera, a ~1.5–2 h, y se propaga hacia el interior.
+- **Afecta a casi todas las corridas (b)**, no solo a las que dieron NaN.
+- **(c) muestra la misma firma, más débil.** En la prueba de 1 día, a las 24 h, max|u| es 0.55 m/s en las columnas 196–198 frente a 0.10 m/s en el interior. No hay NaN.
+- El gate de (b) (R32) y la prueba de (c) verificaron η y el transporte de la OB, que son correctos, pero no las velocidades junto a la frontera. Ese es un hueco del diseño del gate.
+
+**Consecuencia.**
+- La ventana pre-registrada de 2–3 h cae en corridas contaminadas. **Los veredictos C4 (FAIL) y C4′ (PASS) de 2d86679 quedan SUSPENDIDOS**: no se reportan como resultado. Tampoco se cambia la ventana post-hoc para salvarlos.
+- Hay que arreglar la frontera y volver a correr. Esto es una elección numérica nuestra (clase (a)/(c)) y no física.
