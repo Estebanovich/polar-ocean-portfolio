@@ -353,3 +353,30 @@ done
 - Antes del NaN, max|u| oscila entre 0.4 y 1 m/s; en `plume` es ~0.3 m/s.
 - Es la misma firma que en (b): velocidades espurias junto a la OB de Stevens (ver pd1_b_twoplume3d.md, "Hallazgo crítico"). Aquí se dispara con el forzamiento de plataforma.
 - **Las corridas de (c) no se usan** hasta corregir la frontera. `require_ok` debe rechazar campos no finitos.
+
+## Verificación cruzada de la OB de (c) con pyOCEAN: criterios fijados antes de correr (2026-11-06, aprobado por Esteban)
+
+**Pregunta.** La divergencia de (c) con forzamiento de plataforma, ¿es propia de la OB de MITgcm (Stevens, la esponja autorreferente, el balance que ignora `addMass`) o del diseño?
+
+**Configuración.**
+- El modelo es pyOCEAN, hidrostático, en modo ALE z*.
+- La OB este usa Flather implícito (forma θ), Orlanski y una esponja de 10 celdas (1200/60 s) con trazadores relajados hacia un exterior variable en el tiempo.
+- La malla y la estratificación son las de (c): 200 × 30 celdas de 200 m, 50 niveles de 10 m, f0 = 1.37e-4, perfil Sermilik y EOS lineal con tAlpha/sBeta de (c).
+- Viscosidad y difusividad: Ah = Kh = 30 y Ar = Kr = 1e-5.
+- El exterior es la serie de plataforma de (c), con la picnoclina en 200 − 30 sin(2πt/6 d).
+- La fuente es una descarga de Q = 100 m³/s como runoff en la superficie de la cabeza del fiordo. Es un análogo estuarino, porque pyOCEAN no tiene fuente en profundidad: diferencia de clase (b) frente a la pluma de (c), declarada.
+- **Casos:**
+  - `pyo_shelf`: solo plataforma, Q = 0. Es el análogo de `c_fjord_shelf`, que en MITgcm diverge en el día 12.8.
+  - `pyo_shelf_runoff`: plataforma más Q = 100.
+- Duración: 30 días.
+- El código vive en `exp1_fjord_plumes/crosscheck/pyocean_c/`, solo importa pyOCEAN y no modifica `~/pyOCEAN`.
+
+**Criterios (todos deben pasar):**
+1. Llega a los 30 d con campos finitos.
+2. Balance de volumen. Con Q = 0, |η̄| < 0.01 m en todo momento. Con Q = 100, el transporte neto saliente por la OB, promediado en los días 20–30, vale Q ± 2 %, y la deriva de η̄ en los días 20–30 es < 0.01 m.
+3. En cada salida diaria, max|u| en las 3 columnas junto a la OB ≤ 1.5 × max|u| en el interior (columnas 10–189). Es el mismo criterio que en MITgcm.
+4. **Informativo:** la amplitud de la picnoclina realizada a mitad del fiordo (ajuste senoidal de periodo 6 d en los días 6–30) frente a los 30 m nominales, y su fase.
+
+**Interpretación pre-registrada.**
+- Si pyOCEAN pasa 1–3, la falla de (c) se atribuye a la OB de MITgcm, como clase (c), elección numérica.
+- Si falla, se atribuye al diseño del forzamiento o de la zona, y se reconsidera el diseño de (c).
