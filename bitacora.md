@@ -233,3 +233,10 @@
 ## 2026-11-05 — (c) Stevens, ronda 3
 - Pruebas (c) con entradas pequeñas (`externForcingPeriod`=6 h, `shelf_period_days`=1, nrec = 4): la suite pasa de ~90 s y 39 GB de temporales a ~16 s y 0 B tras una corrida (`pytest.ini`: `tmp_path_retention_policy = failed`, `count = 1`). 241 PASS.
 - Runner: `check_free_space` (libre >= max(20 GB, 4 × tamaño de la entrada)) antes de cada caso. Guardia `_check_stevens_sponge` trata la bandera ausente como TRUE (`obcs_readparms.F:280-281`). Comentario del desfase de un paso (RBCS carga en myTime, `load_fields_driver.F:249`; OBCS en futureTime, `obcs_calc.F:413`) y de OBEt = 0 (`obcs_sponge.F:545`).
+
+## 2026-11-05 — Exp. 1 (b): análisis, Figura 2, C4/C4′
+
+- `plume_diag.py`: `face_total_melt`, `face_melt_field`, `face_w_profile`, `ambient_far_from_face` (+ pruebas 3D sintéticas). `fig2_two_plume_melt.py` y `fig2_metrics.json`. Puntos de laboratorio digitalizados a mano (`analysis/data/cenedese_gatto_2016a_fig2.csv`).
+- **C4: FALLA** (twolayer 0.209 H, sermilik 0.188 H, tolerancia 0.15 H; robusto a la elección del ambiente y al perfil inicial). El modelo no despega: w en la cara llega a la superficie. **C4′: PASA** (0.521 y 0.525).
+- **Hallazgo grave:** 4 corridas sermilik (x0_40, 80, 160, 320) divergieron (cg3d sin converger a t ≈ 2.67 h, NaN antes de 2.83 h) pero `run_status` dice OK. La ventana 2–3 h no se puede aplicar a esos casos; no entran en ningún veredicto (C4/C4′ usan solo `_single` y `x0_0`, sanos).
+- GIFs de 4 casos (≤ 2.6 MB). Saturación de escalas ≤ 0.8 %.

@@ -1,0 +1,13 @@
+# Source: Cenedese & Gatto (2016a), J. Phys. Oceanogr. 46, 361-381, Fig. 2 (page 364 of the PDF).
+# HAND-DIGITISED, APPROXIMATE (pixel read-off of a 200 dpi render; estimated error ~ +-0.0003 cm/min in smr, +-0.05 cm in x0).
+# Axes as in the paper: x0 = source separation [cm]; smr = submarine melting rate [cm/min]. Error bars not digitised.
+# Qsg_total = 2.26 cm3/s; for x0 > 0 each source has 1.13 cm3/s. x0 = 0 is a single source of 2.26 cm3/s.
+# The open circle (x0 = 0, single source of 1.13 cm3/s, smr = 0.0134) times 2 is the paper's dashed line (~0.0268 read off the dashed line).
+# The two filled points at x0 = 2 cm overlap in the figure; one value is given.
+x0_cm,smr_cm_per_min,label
+0.0,0.0155,single source 2.26 cm3/s (filled)
+2.0,0.0130,two sources
+3.9,0.0138,two sources
+5.6,0.0147,two sources
+7.5,0.0193,two sources
+0.0,0.0134,single source 1.13 cm3/s (open circle; x2 = dashed line)

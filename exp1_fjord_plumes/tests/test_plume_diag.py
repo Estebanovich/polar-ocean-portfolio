@@ -192,3 +192,76 @@ def test_post_hoc_and_declarations(monkeypatch):
     assert ph["melt_ratio_whole_face"] == pytest.approx(1.0)
     assert "below its own z_detach" in f1.evaluate.__doc__
     assert out["melt_average_range"]
+
+
+def _make_run3d(root: Path, nx=4, ny=6, nz=5, dy=10.0, dz=10.0, m0=2.0e-7, nan=False) -> Path:
+    """Tiny 3-D run: uniform face melt m0 on all wet face cells (rows j = 0 and ny-1 are land)."""
+    run = root / "run3d"
+    run.mkdir()
+    dt = 10.0
+    (run / "run_status.json").write_text(json.dumps({"state": "OK", "last_iter": 720, "n_timesteps": 720, "wall_s": 1}))
+    (run / "case.json").write_text(json.dumps({"params": {"deltaT": dt, "nx": nx, "ny": ny, "nz": nz}}))
+    for name, arr in (("delX.bin", np.full(nx, 10.0)), ("delY.bin", np.full(ny, dy)), ("delZ.bin", np.full(nz, dz))):
+        np.ascontiguousarray(arr, dtype=">f8").tofile(run / name)
+    hfac = np.ones((nz, ny, nx))
+    hfac[:, [0, -1], :] = 0.0
+    hfac[-1, :, 0] = 0.5  # a partial bottom cell on the face
+    np.ascontiguousarray(hfac, dtype=">f8").tofile(run / "hFacC.data")
+    flux = np.zeros((2, nz, ny, nx))
+    flux[0, :, 1:-1, 0] = -m0 * RHO_I_T
+    flux[0, :, [0, -1], 0] = 0.0
+    if nan:
+        flux[:] = np.nan
+    for it in (180, 360, 540, 720):  # 1800 s averages (timeInterval written like the model)
+        stem = run / f"icefrontDiag.{it:010d}"
+        np.ascontiguousarray(flux, dtype=">f8").tofile(f"{stem}.data")
+        Path(f"{stem}.meta").write_text(
+            f" nDims = [ 3 ];\n dimList = [\n {nx}, 1, {nx},\n {ny}, 1, {ny},\n {nz}, 1, {nz}\n ];\n"
+            f" dataprec = [ 'float64' ];\n nrecords = [ 2 ];\n timeStepNumber = [ {it} ];\n"
+            f" timeInterval = [ {it*dt-1800.0:.12E} {it*dt:.12E} ];\n nFlds = [ 2 ];\n"
+            f" fldList = {{\n 'ICFfwFlx' 'ICFhtFlx'\n }};\n")
+    return run
+
+
+RHO_I_T = 917.0
+
+
+def test_face_total_melt_uniform(tmp_path):
+    from exp1_fjord_plumes.analysis.plume_diag import face_total_melt
+    run = _make_run3d(tmp_path)
+    # wet face area: 4 rows x (4 full levels + 0.5 partial) x dy dz = 4*4.5*100 = 1800 m2
+    A = 4 * (4 + 0.5) * 10.0 * 10.0
+    # 1800 s averages end at 0.5, 1, 1.5, 2 h; window (0.5, 2.0) h keeps those starting >= 0.5 h
+    assert face_total_melt(run, (0.5, 2.0)) == pytest.approx(2.0e-7 * A, rel=1e-12)
+
+
+def test_face_total_melt_nan_and_refuses(tmp_path):
+    from exp1_fjord_plumes.analysis.plume_diag import face_total_melt
+    run = _make_run3d(tmp_path, nan=True)
+    assert np.isnan(face_total_melt(run, (0.5, 2.0)))
+    with pytest.raises(ValueError):
+        face_total_melt(run, (5.0, 6.0))  # no average inside the window
+    (run / "run_status.json").write_text(json.dumps({"state": "FAILED"}))
+    with pytest.raises(RuntimeError):
+        face_total_melt(run, (0.5, 0.6))
+
+
+def test_face_w_profile_max_over_y(tmp_path):
+    from exp1_fjord_plumes.analysis.plume_diag import face_w_profile
+    run = _make_run3d(tmp_path)
+    nx, ny, nz = 4, 6, 5
+    w = np.zeros((nz, ny, nx))
+    w[2:, 3, 0] = 0.4  # plume in column j = 3 below level 2; another weaker plume at j = 4
+    w[3:, 4, 0] = 0.1
+    for it in (360, 720):
+        stem = run / f"WVEL.{it:010d}"
+        np.ascontiguousarray(w, dtype=">f8").tofile(f"{stem}.data")
+        Path(f"{stem}.meta").write_text(
+            f" nDims = [ 3 ];\n dimList = [\n {nx}, 1, {nx},\n {ny}, 1, {ny},\n {nz}, 1, {nz}\n ];\n"
+            f" dataprec = [ 'float64' ];\n nrecords = [ 1 ];\n timeStepNumber = [ {it} ];\n")
+    p = face_w_profile(run, (0.0, 2.0))
+    assert p["w_ymax"] == pytest.approx([0, 0, 0.4, 0.4, 0.4])
+    assert list(p["j_max"][2:]) == [3, 3, 3]
+    assert p["t_snapshots_h"] == [1.0, 2.0]
+    # detach_depth interpolates the 5 % crossing between top faces z = -20 m (w = 0.4) and -10 m (w = 0)
+    assert p["z_detach"] == pytest.approx(-10.5)
