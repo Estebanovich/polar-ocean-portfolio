@@ -203,13 +203,23 @@ def plume_profile(run_dir: Path, t_window_h: tuple[float, float]) -> dict:
     }
 
 
-def _avg_period_s(run_dir: Path, it: int, default: float = AVG_PERIOD_S) -> float:
+def _avg_period_s(run_dir: Path, it: int) -> float:
     """Averaging period [s] of a diagnostics file from ``timeInterval = [t_start t_end]``
     in its .meta (pkg/diagnostics writes the interval; (b) averages ICFfwFlx over 900 s,
-    (a) over 3600 s). Falls back to ``default`` if the meta has no timeInterval."""
+    (a) over 3600 s). Raises ValueError if the meta has no timeInterval: guessing a period
+    would silently change which averages enter a window."""
     text = (run_dir / f"icefrontDiag.{it:010d}.meta").read_text()
     m = re.search(r"timeInterval\s*=\s*\[\s*([-+0-9.Ee]+)\s+([-+0-9.Ee]+)\s*\]", text)
-    return float(m.group(2)) - float(m.group(1)) if m else default
+    if not m:
+        raise ValueError(f"{run_dir}: icefrontDiag.{it:010d}.meta has no timeInterval")
+    return float(m.group(2)) - float(m.group(1))
+
+
+def _require_finite(run_dir: Path, what: str, arr) -> None:
+    """Raise ValueError naming the run if ``arr`` (a loaded diagnostic) has a non-finite value."""
+    if not np.all(np.isfinite(arr)):
+        raise ValueError(f"{Path(run_dir).name}: non-finite values in {what} inside the window "
+                         "(diverged run?); no analysis is done on it")
 
 
 def _grid3d(run_dir: Path, params: dict):
@@ -245,6 +255,7 @@ def face_melt_field(run_dir: Path, t_window_h: tuple[float, float]) -> tuple[np.
             t_means.append(round(t, 6))
     if not fw:
         raise ValueError(f"{run_dir}: no ICFfwFlx average inside window {t_window_h} h")
+    _require_finite(run_dir, "ICFfwFlx", fw)
     return melt_rate_m_per_s(np.mean(fw, axis=0)), t_means
 
 
@@ -279,6 +290,7 @@ def face_w_profile(run_dir: Path, t_window_h: tuple[float, float]) -> dict:
     snaps = _snapshots(run_dir, "WVEL", dt, t0, t1)
     if not snaps:
         raise ValueError(f"{run_dir}: no WVEL snapshot in window {t_window_h} h")
+    _require_finite(run_dir, "WVEL", [snaps[i][..., 0] for i in snaps])
     Wm = np.mean([snaps[i][..., 0] for i in sorted(snaps)], axis=0)  # (nz, ny) at i = 0
     w_ymax = Wm.max(axis=1)
     return {"z": 0.5 * (zf[1:] + zf[:-1]), "zf": zf, "w_ymax": w_ymax, "j_max": Wm.argmax(axis=1),
@@ -306,6 +318,7 @@ def ambient_far_from_face(run_dir: Path, t_window_h: tuple[float, float], x_m: f
         snaps = _snapshots(run_dir, f, dt, t0, t1)
         if not snaps:
             raise ValueError(f"{run_dir}: no {f} snapshot in window {t_window_h} h")
+        _require_finite(run_dir, f, [snaps[k][..., i] for k in snaps])
         col = np.mean([snaps[k][..., i] for k in sorted(snaps)], axis=0)  # (nz, ny)
         out[key] = np.array([col[k][wet[k]].mean() if wet[k].any() else np.nan for k in range(nz)])
     return out

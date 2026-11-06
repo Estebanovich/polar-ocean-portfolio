@@ -194,74 +194,138 @@ def test_post_hoc_and_declarations(monkeypatch):
     assert out["melt_average_range"]
 
 
-def _make_run3d(root: Path, nx=4, ny=6, nz=5, dy=10.0, dz=10.0, m0=2.0e-7, nan=False) -> Path:
-    """Tiny 3-D run: uniform face melt m0 on all wet face cells (rows j = 0 and ny-1 are land)."""
-    run = root / "run3d"
-    run.mkdir()
-    dt = 10.0
-    (run / "run_status.json").write_text(json.dumps({"state": "OK", "last_iter": 720, "n_timesteps": 720, "wall_s": 1}))
-    (run / "case.json").write_text(json.dumps({"params": {"deltaT": dt, "nx": nx, "ny": ny, "nz": nz}}))
-    for name, arr in (("delX.bin", np.full(nx, 10.0)), ("delY.bin", np.full(ny, dy)), ("delZ.bin", np.full(nz, dz))):
-        np.ascontiguousarray(arr, dtype=">f8").tofile(run / name)
-    hfac = np.ones((nz, ny, nx))
-    hfac[:, [0, -1], :] = 0.0
-    hfac[-1, :, 0] = 0.5  # a partial bottom cell on the face
-    np.ascontiguousarray(hfac, dtype=">f8").tofile(run / "hFacC.data")
-    flux = np.zeros((2, nz, ny, nx))
-    flux[0, :, 1:-1, 0] = -m0 * RHO_I_T
-    flux[0, :, [0, -1], 0] = 0.0
-    if nan:
-        flux[:] = np.nan
-    for it in (180, 360, 540, 720):  # 1800 s averages (timeInterval written like the model)
-        stem = run / f"icefrontDiag.{it:010d}"
-        np.ascontiguousarray(flux, dtype=">f8").tofile(f"{stem}.data")
-        Path(f"{stem}.meta").write_text(
-            f" nDims = [ 3 ];\n dimList = [\n {nx}, 1, {nx},\n {ny}, 1, {ny},\n {nz}, 1, {nz}\n ];\n"
-            f" dataprec = [ 'float64' ];\n nrecords = [ 2 ];\n timeStepNumber = [ {it} ];\n"
-            f" timeInterval = [ {it*dt-1800.0:.12E} {it*dt:.12E} ];\n nFlds = [ 2 ];\n"
-            f" fldList = {{\n 'ICFfwFlx' 'ICFhtFlx'\n }};\n")
-    return run
+def _meta3d(nx, ny, nz, nrec, it, extra=""):
+    return (f" nDims = [ 3 ];\n dimList = [\n {nx}, 1, {nx},\n {ny}, 1, {ny},\n {nz}, 1, {nz}\n ];\n"
+            f" dataprec = [ 'float64' ];\n nrecords = [ {nrec} ];\n timeStepNumber = [ {it} ];\n{extra}")
 
 
 RHO_I_T = 917.0
+NX3, NY3, NZ3, DT3 = 4, 6, 5, 10.0
+
+
+def _make_run3d(root: Path, m0s=(2.0e-7,) * 4, period=1800.0, interval=True) -> Path:
+    """Tiny 3-D run. Face melt is uniform on the wet face cells (rows j = 0, ny-1 are land; the
+    bottom face cell is half-wet). One icefrontDiag average per entry of ``m0s``, the k-th ending at
+    (k+1) * period (so 0.5, 1.0, 1.5, 2.0 h for period = 1800 s) with melt rate m0s[k]."""
+    run = root / "run3d"
+    run.mkdir()
+    (run / "run_status.json").write_text(json.dumps({"state": "OK", "last_iter": 720, "n_timesteps": 720, "wall_s": 1}))
+    (run / "case.json").write_text(json.dumps({"params": {"deltaT": DT3, "nx": NX3, "ny": NY3, "nz": NZ3}}))
+    for name, arr in (("delX.bin", np.full(NX3, 10.0)), ("delY.bin", np.full(NY3, 10.0)),
+                      ("delZ.bin", np.full(NZ3, 10.0))):
+        np.ascontiguousarray(arr, dtype=">f8").tofile(run / name)
+    hfac = np.ones((NZ3, NY3, NX3))
+    hfac[:, [0, -1], :] = 0.0
+    hfac[-1, :, 0] = 0.5
+    np.ascontiguousarray(hfac, dtype=">f8").tofile(run / "hFacC.data")
+    for k, m0 in enumerate(m0s):
+        it = int(round((k + 1) * period / DT3))
+        flux = np.zeros((2, NZ3, NY3, NX3))
+        flux[0, :, 1:-1, 0] = -m0 * RHO_I_T
+        stem = run / f"icefrontDiag.{it:010d}"
+        np.ascontiguousarray(flux, dtype=">f8").tofile(f"{stem}.data")
+        ti = f" timeInterval = [ {it*DT3-period:.12E} {it*DT3:.12E} ];\n" if interval else ""
+        Path(f"{stem}.meta").write_text(_meta3d(NX3, NY3, NZ3, 2, it, ti + " nFlds = [ 2 ];\n fldList = {\n 'ICFfwFlx' 'ICFhtFlx'\n };\n"))
+    return run
+
+
+FACE_AREA3 = 4 * (4 + 0.5) * 10.0 * 10.0  # wet face: 4 rows x (4 full + 1 half level) x dy dz = 1800 m2
 
 
 def test_face_total_melt_uniform(tmp_path):
     from exp1_fjord_plumes.analysis.plume_diag import face_total_melt
     run = _make_run3d(tmp_path)
-    # wet face area: 4 rows x (4 full levels + 0.5 partial) x dy dz = 4*4.5*100 = 1800 m2
-    A = 4 * (4 + 0.5) * 10.0 * 10.0
-    # 1800 s averages end at 0.5, 1, 1.5, 2 h; window (0.5, 2.0) h keeps those starting >= 0.5 h
-    assert face_total_melt(run, (0.5, 2.0)) == pytest.approx(2.0e-7 * A, rel=1e-12)
+    assert face_total_melt(run, (0.5, 2.0)) == pytest.approx(2.0e-7 * FACE_AREA3, rel=1e-12)
 
 
-def test_face_total_melt_nan_and_refuses(tmp_path):
+def test_face_total_melt_window_selection(tmp_path):
+    """Different melt in each average (ending 0.5, 1, 1.5, 2 h; covering (end-0.5 h, end]).
+    Window (1, 2] h must use exactly the averages ending at 1.5 and 2.0 h: not the one ending
+    at 1.0 h (covers 0.5-1.0 h) and not the one ending at 0.5 h."""
     from exp1_fjord_plumes.analysis.plume_diag import face_total_melt
-    run = _make_run3d(tmp_path, nan=True)
-    assert np.isnan(face_total_melt(run, (0.5, 2.0)))
+    m0s = (1.0e-7, 2.0e-7, 4.0e-7, 8.0e-7)
+    run = _make_run3d(tmp_path, m0s=m0s)
+    assert face_total_melt(run, (1.0, 2.0)) == pytest.approx(np.mean(m0s[2:]) * FACE_AREA3, rel=1e-12)
+    assert face_total_melt(run, (0.5, 1.5)) == pytest.approx(np.mean(m0s[1:3]) * FACE_AREA3, rel=1e-12)
+    assert face_total_melt(run, (0.0, 2.0)) == pytest.approx(np.mean(m0s) * FACE_AREA3, rel=1e-12)
     with pytest.raises(ValueError):
-        face_total_melt(run, (5.0, 6.0))  # no average inside the window
+        face_total_melt(run, (2.0, 3.0))  # nothing averaged entirely inside (2, 3] h
+
+
+def test_face_total_melt_reads_period_from_meta(tmp_path):
+    """900 s averages (as in (b)): ends 0.25, 0.5, 0.75, 1.0 h; window (0.5, 1.0] -> the last two."""
+    from exp1_fjord_plumes.analysis.plume_diag import face_total_melt
+    m0s = (1.0e-7, 2.0e-7, 4.0e-7, 8.0e-7)
+    run = _make_run3d(tmp_path, m0s=m0s, period=900.0)
+    assert face_total_melt(run, (0.5, 1.0)) == pytest.approx(np.mean(m0s[2:]) * FACE_AREA3, rel=1e-12)
+
+
+def test_face_total_melt_missing_timeinterval_raises(tmp_path):
+    from exp1_fjord_plumes.analysis.plume_diag import face_total_melt
+    run = _make_run3d(tmp_path, interval=False)
+    with pytest.raises(ValueError, match="timeInterval"):
+        face_total_melt(run, (0.5, 2.0))
+
+
+def test_face_total_melt_nonfinite_and_refuses(tmp_path):
+    from exp1_fjord_plumes.analysis.plume_diag import face_total_melt
+    run = _make_run3d(tmp_path, m0s=(1e-7, 1e-7, float("nan"), 1e-7))
+    with pytest.raises(ValueError, match="run3d"):  # names the run
+        face_total_melt(run, (0.5, 2.0))
+    assert face_total_melt(run, (0.5, 1.0)) == pytest.approx(1e-7 * FACE_AREA3)  # NaN file outside window
     (run / "run_status.json").write_text(json.dumps({"state": "FAILED"}))
     with pytest.raises(RuntimeError):
-        face_total_melt(run, (0.5, 0.6))
+        face_total_melt(run, (0.5, 1.0))
 
 
-def test_face_w_profile_max_over_y(tmp_path):
+def _write_field(run: Path, name: str, it: int, arr):
+    stem = run / f"{name}.{it:010d}"
+    np.ascontiguousarray(arr, dtype=">f8").tofile(f"{stem}.data")
+    Path(f"{stem}.meta").write_text(_meta3d(NX3, NY3, NZ3, 1, it))
+
+
+def test_face_w_profile_time_mean_then_max_over_y(tmp_path):
+    """Two snapshots whose maxima are in different j: window-mean first (0.2 at j=2 and j=4 ->
+    mean 0.1 each... plus a steady 0.15 at j=3) then max over y. max-then-mean would give 0.3."""
     from exp1_fjord_plumes.analysis.plume_diag import face_w_profile
     run = _make_run3d(tmp_path)
-    nx, ny, nz = 4, 6, 5
-    w = np.zeros((nz, ny, nx))
-    w[2:, 3, 0] = 0.4  # plume in column j = 3 below level 2; another weaker plume at j = 4
-    w[3:, 4, 0] = 0.1
-    for it in (360, 720):
-        stem = run / f"WVEL.{it:010d}"
-        np.ascontiguousarray(w, dtype=">f8").tofile(f"{stem}.data")
-        Path(f"{stem}.meta").write_text(
-            f" nDims = [ 3 ];\n dimList = [\n {nx}, 1, {nx},\n {ny}, 1, {ny},\n {nz}, 1, {nz}\n ];\n"
-            f" dataprec = [ 'float64' ];\n nrecords = [ 1 ];\n timeStepNumber = [ {it} ];\n")
+    w1 = np.zeros((NZ3, NY3, NX3)); w2 = np.zeros_like(w1)
+    w1[2:, 2, 0] = 0.4; w2[2:, 4, 0] = 0.4      # moving plume: window mean 0.2 in each of j = 2, 4
+    w1[2:, 3, 0] = 0.15; w2[2:, 3, 0] = 0.15    # steady plume: mean 0.15 at j = 3
+    _write_field(run, "WVEL", 360, w1)
+    _write_field(run, "WVEL", 720, w2)
     p = face_w_profile(run, (0.0, 2.0))
-    assert p["w_ymax"] == pytest.approx([0, 0, 0.4, 0.4, 0.4])
-    assert list(p["j_max"][2:]) == [3, 3, 3]
+    assert p["w_ymax"] == pytest.approx([0, 0, 0.2, 0.2, 0.2])  # time-mean then max (reverse: 0.4)
+    assert list(p["j_max"][2:]) == [2, 2, 2]
     assert p["t_snapshots_h"] == [1.0, 2.0]
-    # detach_depth interpolates the 5 % crossing between top faces z = -20 m (w = 0.4) and -10 m (w = 0)
+    # detach_depth: 5 % crossing between top faces z = -20 m (0.2) and -10 m (0)
     assert p["z_detach"] == pytest.approx(-10.5)
+
+
+def test_face_w_profile_nonfinite_raises(tmp_path):
+    from exp1_fjord_plumes.analysis.plume_diag import face_w_profile
+    run = _make_run3d(tmp_path)
+    w = np.zeros((NZ3, NY3, NX3)); w[1, 2, 0] = np.nan
+    _write_field(run, "WVEL", 360, w)
+    with pytest.raises(ValueError, match="run3d"):
+        face_w_profile(run, (0.0, 2.0))
+
+
+def test_ambient_far_from_face(tmp_path):
+    """Window mean over snapshots, then mean over the WET y cells of the column nearest x_m
+    (land rows j = 0, ny-1 have hFacC = 0 and must not enter)."""
+    from exp1_fjord_plumes.analysis.plume_diag import ambient_far_from_face
+    run = _make_run3d(tmp_path)
+    T1 = np.full((NZ3, NY3, NX3), 1.0); T2 = np.full_like(T1, 3.0)
+    for T in (T1, T2):
+        T[:, [0, -1], :] = 999.0  # land rows: must be ignored
+    T1[0, 1:-1, 2] = 5.0  # level 0 of column i = 2, wet rows: window mean (5+3)/2 = 4
+    S = np.full((NZ3, NY3, NX3), 34.0)
+    for it, T in ((360, T1), (720, T2)):
+        _write_field(run, "THETA", it, T)
+        _write_field(run, "SALT", it, S)
+    a = ambient_far_from_face(run, (0.0, 2.0), x_m=24.0)  # centres 5, 15, 25, 35 m -> i = 2
+    assert a["i"] == 2 and a["x"] == pytest.approx(25.0)
+    assert a["T"] == pytest.approx([4.0, 2.0, 2.0, 2.0, 2.0])
+    assert a["S"] == pytest.approx(np.full(NZ3, 34.0))
+    assert a["z"] == pytest.approx([-5, -15, -25, -35, -45])
