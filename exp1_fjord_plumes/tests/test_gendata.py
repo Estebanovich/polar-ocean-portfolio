@@ -475,3 +475,69 @@ def test_c_wind_stage1_must_align_with_dt_and_diagnostics(tmp_path):
     t = (PKG_DIR / "config" / "c_fjord3d" / "input_templates" / "data.diagnostics").read_text()
     assert f"frequency(1) = {C_DIAG_PERIODS[0]:.0f}.," in t
     assert f"frequency(5) = -{C_DIAG_PERIODS[1]:.0f}.," in t
+
+
+# ---- Task 6 fix: (b) eastern OB = Stevens (1990) with prescribed depth-mean u ----
+
+def _b_real_case(tmp_path, name="b_3d_twolayer_x0_40"):
+    """Generate a (b) case with the REAL config templates (data.obcs etc.)."""
+    out = make_case(name, tmp_path / "run")
+    meta = json.loads((out / "case.json").read_text())
+    p = meta["params"]
+    return out, meta, p, (p["nz"], p["ny"], p["nx"])
+
+
+def _wet_ob_area_col(out, p):
+    """hFacW * drF at the OB u-point (0-based column nx-2) from the written topography."""
+    nz, ny, nx = p["nz"], p["ny"], p["nx"]
+    depth = -read_bin(out / "topog.bin", (ny, nx))
+    k = (np.arange(nz) * p["dz"])[:, None, None]
+    hFacC = (k < depth[None]).astype(float)
+    i = nx - 2  # Fortran i = Nx-1 (OB_Ieast=-2)
+    return np.minimum(hFacC[:, :, i], hFacC[:, :, i - 1]) * p["dz"]  # [m], (nz, ny)
+
+
+@pytest.mark.parametrize("name", ["b_3d_twolayer_x0_40", "b_3d_twolayer_single",
+                                  "b_3d_sermilik_x0_0"])
+def test_b_stevens_obeu_carries_Q0_total(tmp_path, name):
+    out, meta, p, (nz, ny, nx) = _b_real_case(tmp_path, name)
+    u = read_bin(out / "OBEu.bin", (nz, ny))
+    A_col = _wet_ob_area_col(out, p)
+    Q = float(np.sum(u * A_col) * p["dy"])
+    assert abs(Q - meta["Q0_total"]) / meta["Q0_total"] < 1e-10
+    assert np.all(u >= 0.0) and np.all(u[A_col == 0] == 0.0)
+    assert abs(meta["ob_area_m2"] - A_col.sum() * p["dy"]) < 1e-6
+    assert abs(meta["ob_u_m_per_s"] - meta["Q0_total"] / meta["ob_area_m2"]) < 1e-14
+    assert np.all(u[A_col > 0] == meta["ob_u_m_per_s"])
+
+
+def test_b_stevens_obev_zero_and_tracers_are_ambient(tmp_path):
+    out, meta, p, (nz, ny, nx) = _b_real_case(tmp_path)
+    assert np.all(read_bin(out / "OBEv.bin", (nz, ny)) == 0.0)
+    T0 = read_bin(out / "T.init.bin", (nz, ny, nx))[:, 0, 0]
+    S0 = read_bin(out / "S.init.bin", (nz, ny, nx))[:, 0, 0]
+    for f, ref in (("OBEt.bin", T0), ("OBEs.bin", S0)):
+        a = read_bin(out / f, (nz, ny))
+        assert np.all(a == ref[:, None])
+
+
+def test_b_stevens_namelist_and_cpp(tmp_path):
+    out, meta, p, shape = _b_real_case(tmp_path)
+    txt = (out / "data.obcs").read_text()
+    live = "\n".join(l for l in txt.splitlines() if not l.lstrip().startswith("#"))
+    assert re.search(r"useStevensEast\s*=\s*\.TRUE\.", live)
+    assert not re.search(r"useOrlanskiEast\s*=\s*\.TRUE\.", live)
+    assert "OBCS_PARM02" not in live
+    assert re.search(r"useOBCSprescribe\s*=\s*\.TRUE\.", live)
+    for key in ("OBEuFile='OBEu.bin'", "OBEvFile='OBEv.bin'", "OBEtFile='OBEt.bin'",
+                "OBEsFile='OBEs.bin'", "TrelaxStevens=86400.", "SrelaxStevens=86400."):
+        assert key in live.replace(" ", ""), key
+    assert "OBCS_monSelect" in live
+    # a single constant record needs periodic forcing with cycle == period (get_periodic_interval.F)
+    d = (out / "data").read_text()
+    assert re.search(r"periodicExternalForcing\s*=\s*\.TRUE\.", d)
+    assert re.search(r"externForcingPeriod\s*=\s*86400", d)
+    assert re.search(r"externForcingCycle\s*=\s*86400", d)
+    h = (PKG_DIR / "config" / "b_twoplume3d" / "code" / "OBCS_OPTIONS.h").read_text()
+    assert re.search(r"^#define ALLOW_OBCS_STEVENS", h, re.M)
+    assert re.search(r"^#define ALLOW_OBCS_PRESCRIBE", h, re.M)

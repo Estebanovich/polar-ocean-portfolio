@@ -1,8 +1,10 @@
 C CPP options file for OBCS package
 C Use this file for selecting options within the OBCS package
-C Exp1 b_twoplume3d (same as a_line2d): only the eastern OB (Orlanski + U/V sponge, as in the
-C thesis config verification/BayIW_Rectan/code/OBCS_OPTIONS.h); no prescribe
-C files; no OBCS balance (it ignores addMass, pkg/obcs/obcs_balance_flow.F:300-315).
+C Exp1 b_twoplume3d: only the eastern OB, Stevens (1990) (pkg/obcs/obcs_calc_stevens.F) with
+C prescribed depth-mean normal velocity OBEu (needs ALLOW_OBCS_PRESCRIBE) + U/V sponge.
+C Orlanski stays compiled (as in the thesis config verification/BayIW_Rectan) but is NOT used
+C at run time (useOrlanskiEast=.FALSE.): in 3-D it left the depth-mean u free and drew inflow.
+C No OBCS balance (it ignores addMass, pkg/obcs/obcs_balance_flow.F:300-315).
 
 #ifndef OBCS_OPTIONS_H
 #define OBCS_OPTIONS_H
@@ -18,15 +20,15 @@ C Enable individual open boundaries
 #define ALLOW_OBCS_EAST
 #undef ALLOW_OBCS_WEST
 
-C This include hooks to the Orlanski Open Boundary Radiation code
+C Orlanski radiation code: compiled but not selected at run time in (b)
 #define ALLOW_ORLANSKI
 
 C Enable OB values to be prescribed via external fields that are read
 C from a file
-#undef ALLOW_OBCS_PRESCRIBE
+#define ALLOW_OBCS_PRESCRIBE
 
 C Enable OB conditions following Stevens (1990)
-#undef ALLOW_OBCS_STEVENS
+#define ALLOW_OBCS_STEVENS
 
 C Allow sponge layer treatment of open boundary conditions
 #define ALLOW_OBCS_SPONGE

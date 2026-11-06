@@ -1,30 +1,50 @@
 # Exp. 1 (b) b_twoplume3d -- case ${case}
-# Eastern open boundary at x = 1 km, as (a): Orlanski radiation + U/V
-# sponge (thesis config verification/BayIW_Rectan/run_expand/data.obcs).
+# Eastern open boundary at x = 1 km: Stevens (1990) + U/V sponge.
+# WHY NOT ORLANSKI (task-6 fix, brief task-6-fix-stevens-brief.md): the gate run
+# b_3d_twolayer_x0_40 (3 h, np=5) ended OK but with domain-mean eta = 2.92 m
+# against 0.18 m explained by the discharge, and a net normal transport of
+# about -800 m3/s (INFLOW) through the OB u-points from t = 1-1.5 h on
+# (Q0_total = 20 m3/s). Orlanski leaves the depth-mean normal velocity free
+# and in 3-D it is unstable. Esteban approved Stevens on 2026-11-05.
+# STEVENS: the depth-mean normal velocity is PRESCRIBED from OBEu.bin and the
+# baroclinic part (previous-step boundary u minus its depth mean) is kept
+# (pkg/obcs/obcs_calc_stevens.F:195-228, header lines 19-44); T and S are
+# advected out with a phase speed and restored toward OBEt/OBEs on
+# TrelaxStevens/SrelaxStevens (same file, OBCS_STEVENS_CALC_TRACER_EAST).
+# OBEu.bin = Q0_total/A_ob eastward on wet OB faces (gendata/make_case.py,
+# _b_stevens_east; ob_u_m_per_s, ob_area_m2 in case.json) so the discharge
+# leaves exactly; OBEv = 0; OBEt/OBEs = initial ambient profile. Files are read
+# only with periodicExternalForcing (pkg/obcs/obcs_fields_load.F:102): data
+# sets cycle = period = 86400 s -> one constant record.
+# TrelaxStevens = SrelaxStevens = 86400 s: MITgcm verification/exp4/
+# input.stevens/data.obcs value.
 # OB_Ieast=-2 -> column Nx-1 (pkg/obcs/obcs_readparms.F:671-672); column Nx
 # is land (cases.yaml land_i_cols) so that the periodic x-wrap closes the
 # domain at the ice face (west face of column 1).
-# (b): OB_Ieast is given for all Ny rows, including the two land rows
+# OB_Ieast is given for all Ny rows, including the two land rows
 # Fortran j = 1, Ny = Python rows 0, Ny-1 (side walls). OBCS_CHECK (obcs_check.F:621-643) needs the
 # inside mask = 0 at OB_Ie, true on land too, and demands an OB only where
 # a wet U point leaves the inside mask, so the land rows are consistent.
-# To be confirmed in the Step 2 log ("OBCS_CHECK ... OK").
 # No north/south OB: the cross-fjord boundaries are closed walls.
-# The 10-cell sponge is 100 m of the 990 m wet length.
-# No useOBCSbalance: it balances only EmPmR, not addMass
-# (pkg/obcs/obcs_balance_flow.F:300-315), and would trap the discharge.
+# The U/V sponge (10 cells = 100 m of the 990 m wet length) relaxes toward
+# the prescribed OB values. No useOBCSbalance: it balances only EmPmR, not
+# addMass (pkg/obcs/obcs_balance_flow.F:300-315).
+# OBCS_monitorFreq/OBCS_monSelect=0: OB statistics of uVel/vVel (max, min,
+# mean, sd; pkg/obcs/obcs_monitor.F:102-122) are printed to STDOUT every 600 s.
  &OBCS_PARM01
  OB_Ieast=${ny}*-2,
- useOrlanskiEast=.TRUE.,
+ useOrlanskiEast=.FALSE.,
+ useStevensEast=.TRUE.,
+ useOBCSprescribe=.TRUE.,
+ OBEuFile='OBEu.bin',
+ OBEvFile='OBEv.bin',
+ OBEtFile='OBEt.bin',
+ OBEsFile='OBEs.bin',
  useOBCSsponge=.TRUE.,
  OBCSsponge_Theta=.FALSE.,
  OBCSsponge_Salt=.FALSE.,
- OBCS_monitorFreq=3600.,
- &
-
- &OBCS_PARM02
- cvelTimeScale=250.,
- CMAX=0.45,
+ OBCS_monitorFreq=600.,
+ OBCS_monSelect=0,
  &
 
  &OBCS_PARM03
@@ -33,4 +53,9 @@
  Vrelaxobcsinner=1200.,
  Urelaxobcsbound=60.,
  Vrelaxobcsbound=60.,
+ &
+
+ &OBCS_PARM04
+ TrelaxStevens=86400.,
+ SrelaxStevens=86400.,
  &

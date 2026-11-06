@@ -171,6 +171,48 @@ def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> tuple[np.ndarray, float]:
     return add, cyc
 
 
+def _b_stevens_east(p, bins, T1d, S1d, hFacC, Q0_total, info) -> None:
+    """Config (b) eastern open-boundary files for Stevens (1990) (task-6 fix).
+
+    Stevens (pkg/obcs/obcs_calc_stevens.F:195-228) takes the depth-mean normal
+    velocity from ``OBEu`` (area-weighted with drF*hFacW over the water column)
+    and adds the baroclinic part of the previous step's boundary velocity; the
+    tracers relax toward ``OBEt/OBEs`` (TrelaxStevens/SrelaxStevens).  The
+    Orlanski OB left the depth-mean u free and drew ~800 m3/s IN (gate run
+    b_3d_twolayer_x0_40).  Here the net discharge is prescribed to leave:
+
+        u_ob = Q0_total / A_ob                      [m s-1, + = eastward = out]
+        A_ob = dy * sum_{j,k} hFacW(i_ob,j,k) drF_k [m2]
+
+    Index: OB_Ieast=-2 -> Fortran i_ob = Nx-1 (pkg/obcs/obcs_readparms.F:671-672),
+    the u-point on the WEST face of cell Nx-1, i.e. 0-based column nx-2, and
+    OB_Ie = i_ob is the i used for hFacW and OBEu (obcs_calc_stevens.F:182-199).
+    Its hFacW = min(hFacC(i_ob), hFacC(i_ob-1)) = columns nx-2 and nx-3
+    (0-based).  All cells are full (flat bottom, hFacC in {0,1}); dry rows
+    (side walls) get 0.  The grid is the one actually generated (land rows).
+
+    Files (nz, ny), one constant record each: OBEv = 0 (tangential u is zero),
+    OBEt/OBEs = initial ambient profile broadcast over y.
+    """
+    nz, ny, nx = hFacC.shape
+    i_ob = nx - 2                                           # 0-based u-point column
+    hFacW = np.minimum(hFacC[:, :, i_ob], hFacC[:, :, i_ob - 1])   # (nz, ny)
+    area_col = hFacW * p["dz"]                              # hFacW drF [m]
+    A_ob = float(area_col.sum() * p["dy"])                  # [m2]
+    if A_ob <= 0.0:
+        raise ValueError("no wet open-boundary face for the Stevens eastern OB")
+    u_ob = Q0_total / A_ob                                  # [m s-1]
+    bins["OBEu.bin"] = np.where(hFacW > 0, u_ob, 0.0)
+    bins["OBEv.bin"] = np.zeros((nz, ny))
+    bins["OBEt.bin"] = np.broadcast_to(T1d[:, None], (nz, ny))
+    bins["OBEs.bin"] = np.broadcast_to(S1d[:, None], (nz, ny))
+    # one constant record: periodicExternalForcing with cycle == period
+    # (pkg/obcs/obcs_fields_load.F:102 loads files only when it is TRUE;
+    # eesupp/src/get_periodic_interval.F: nbRec = 1 -> records 1 and 1)
+    p["externForcingPeriod"] = p["externForcingCycle"] = 86400.0
+    info.update(ob_u_m_per_s=u_ob, ob_area_m2=A_ob, ob_column_0based=i_ob)
+
+
 def _melt_volume(sol, z_top: float) -> float:
     """Meltwater volume flux of the half cone below z_top [m^3 s^-1]:
     int 2 b m rho_i/rho0 dz (wall contact width 2b, theory/plume.py)."""
@@ -288,6 +330,7 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
         Q0 = p["Q0"] * len(cells)
         add = discharge_addmass((nz, ny, nx), cells, Q0, rho0, hFacC=hFacC, front_i=front_i)
         info.update(Q0_total=Q0, source_cells=cells)
+        _b_stevens_east(p, bins, T1d, S1d, hFacC, Q0, info)
     else:
         add, p["externForcingCycle"] = _c_forcing(p, bins, zc, T1d, S1d, hFacC, info)
     bins["addmass.bin"] = add
