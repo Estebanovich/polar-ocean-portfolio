@@ -438,3 +438,26 @@ Todos pasan los criterios 1–3. Razón OB/interior en los volcados de U:
 
 - |η̄| ≤ 1.6e-14 m y el error del transporte de la OB es ≤ 3.5e-10 m³/s.
 - **`plume` queda justo en el límite (1.49 frente a 1.5).** Pasa, pero la frontera de (c) acelera el flujo de salida un 35–50 % sobre el interior en varios casos. Es una limitación que se declara (clase c). El control sin forzamiento dirá cuánto de esto es espurio.
+
+## Resultado de la verificación cruzada con pyOCEAN (2026-11-06)
+
+Corridas: `/Volumes/LaCie/portfolio_runs/exp1/crosscheck_pyo/{pyo_shelf,pyo_shelf_runoff}`, 30 d cada una (~68 min de reloj, 5 hilos). Evaluador: `crosscheck/pyocean_c/eval_pyo_c.py` → `figures/crosscheck_pyo_c.json`.
+
+**Veredictos pre-registrados, tal como salieron:**
+
+| Criterio | `pyo_shelf` (Q = 0) | `pyo_shelf_runoff` (Q = 100) |
+|---|---|---|
+| 1. 30 d, campos finitos | PASA | PASA |
+| 2. Balance de volumen | PASA: max\|η̄\| = 8.5e-3 m | **FALLA**: Q_out(d20–30) = 97.48 m³/s (−2.5 %, límite ±2 %); deriva de η̄ d20–30 = 1.05e-2 m (límite 0.01) |
+| 3. OB/interior ≤ 1.5 | PASA: máx 0.51 (día 12) | PASA: máx 0.32 (día 7) |
+| 4. Informativo: picnoclina a mitad del fiordo | A = 29.6 m (0.99 de 30), desfase 27° (0.45 d) | A = 29.7 m (0.99), desfase 27° |
+
+**Veredicto global pre-registrado: FALLA** (por el criterio 2 de `pyo_shelf_runoff`, en ambas partes y por poco).
+
+**Diagnóstico post-hoc (no cambia el veredicto):**
+- η̄ y el caudal saliente por la OB oscilan con el periodo de 6 d del forzamiento de plataforma (η̄ entre 0.005 y 0.019 m; Q_out horario entre 84 y 124 m³/s).
+- La ventana d20–30 cubre 1.67 periodos, no un número entero; su promedio y su "deriva" (η̄(30) − η̄(20)) dependen de la fase de la oscilación. El criterio se diseñó pensando en un estado estacionario y no previó esto.
+- Volumen acumulado en 30 d (5 periodos completos): salida 2.551e8 m³ frente a runoff 2.592e8 m³, es decir 98.4 % (−1.6 %). La diferencia (4.1e6 m³) es la que queda guardada en η̄(30 d). No hay fuga ni crecimiento.
+- En ninguno de los dos casos aparece inestabilidad en la OB: con el mismo forzamiento de plataforma que hizo divergir a MITgcm con Stevens por defecto (día 12.8 y 20.3), pyOCEAN corre 30 d con la OB por debajo del interior (razón ≤ 0.51) y transmite al fiordo el 99 % de la amplitud de la picnoclina.
+
+**Interpretación.** La regla pre-registrada dice que si pyOCEAN falla, la causa se atribuye al diseño. La falla ocurrió en el balance de volumen, no en la estabilidad, que es lo que motivó la verificación. Cómo leer esto es decisión de Esteban; no se redefine el criterio.
