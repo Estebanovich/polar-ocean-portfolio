@@ -1,9 +1,12 @@
 C CPP options file for OBCS package
 C Use this file for selecting options within the OBCS package
-C Exp1 c_fjord3d: only the eastern OB (fjord mouth). u/v by Orlanski
-C radiation (as a_line2d, b_twoplume3d); T/S PRESCRIBED from OBEt/OBEs
-C files (shelf pycnocline oscillation, ALLOW_OBCS_PRESCRIBE); sponge for
-C U/V and T/S; no OBCS balance (it ignores addMass,
+C Exp1 c_fjord3d: only the eastern OB (fjord mouth), Stevens (1990)
+C (pkg/obcs/obcs_calc_stevens.F) with prescribed depth-mean normal velocity
+C OBEu (needs ALLOW_OBCS_PRESCRIBE) and T/S relaxed toward the PRESCRIBED
+C time series OBEt/OBEs (shelf pycnocline oscillation); sponge for U/V and
+C T/S. Orlanski stays compiled (as in a_line2d, b_twoplume3d) but is NOT
+C used at run time (useOrlanskiEast=.FALSE.): it drained the domain (eta
+C -11 m in 24 h). No OBCS balance (it ignores addMass,
 C pkg/obcs/obcs_balance_flow.F:300-315).
 
 #ifndef OBCS_OPTIONS_H
@@ -20,16 +23,16 @@ C Enable individual open boundaries
 #define ALLOW_OBCS_EAST
 #undef ALLOW_OBCS_WEST
 
-C This include hooks to the Orlanski Open Boundary Radiation code
+C Orlanski radiation code: compiled but not selected at run time in (c)
 #define ALLOW_ORLANSKI
 
 C Enable OB values to be prescribed via external fields that are read
 C from a file
-C  Exp1 c_fjord3d: prescribed OB T/S time series (shelf forcing), u/v by Orlanski
+C  Exp1 c_fjord3d: prescribed OB u (Stevens depth-mean) and T/S time series (shelf forcing)
 #define ALLOW_OBCS_PRESCRIBE
 
 C Enable OB conditions following Stevens (1990)
-#undef ALLOW_OBCS_STEVENS
+#define ALLOW_OBCS_STEVENS
 
 C Allow sponge layer treatment of open boundary conditions
 #define ALLOW_OBCS_SPONGE

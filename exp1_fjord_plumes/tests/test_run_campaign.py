@@ -228,21 +228,23 @@ def test_cli_has_skip_ok():
 # ---- two-stage cases of (c): stage 2 restarts from the stage-1 pickups --------
 # The real scripts/run_mitgcm.sh runs a stub mitgcmuv that reads nIter0 and
 # nTimeSteps from `data`, refuses a restart without pickup.<nIter0> and the
-# Orlanski pickup in its cwd, and writes the pickups of its last iteration.
+# OB pickup of the active scheme (pickup_stevensE if useStevensEast, else
+# pickup_orlanskiE) in its cwd, and writes the pickups of its last iteration.
 
 STUB = r'''#!/bin/bash
 get() { grep -v '^ *#' data | grep -iE "^ *$1 *=" | head -1 | sed -E 's/^[^=]*= *//; s/[ ,].*$//'; }
 N0=$(get nIter0); NT=$(get nTimeSteps)
+if grep -v '^ *#' data.obcs | grep -qiE "useStevensEast *= *.TRUE."; then OB=pickup_stevensE; else OB=pickup_orlanskiE; fi
 if [ "$N0" -gt 0 ]; then
   P=$(printf %010d "$N0")
-  for f in pickup.$P.data pickup.$P.meta pickup_orlanskiE.$P.001.001.data; do
+  for f in pickup.$P.data pickup.$P.meta $OB.$P.001.001.data; do
     [ -f "$f" ] && [ ! -L "$f" ] || { echo "missing or linked $f"; exit 4; }
   done
 fi
 END=$((N0 + NT)); E=$(printf %010d "$END")
 echo " time_tsnumber = $END"
 echo "pickup" > pickup.$E.data; echo "meta" > pickup.$E.meta
-[ -n "$STUB_NO_ORLANSKI" ] || echo "orl" > pickup_orlanskiE.$E.001.001.data
+[ -n "$STUB_NO_OB_PICKUP" ] || echo "ob" > $OB.$E.001.001.data
 [ -n "$STUB_FAIL_STAGE1" ] && [ "$N0" -eq 0 ] && exit 3
 echo "PROGRAM MAIN: Execution ended Normally"
 '''
@@ -293,7 +295,7 @@ def test_two_stage_case_restarts_from_copied_pickups(tmp_path):
     inp2 = run / "input_stage2"
     assert "nIter0=180," in (inp2 / "data").read_text() and not (inp2 / "data.stage2").exists()
     for f in ("pickup.0000000180.data", "pickup.0000000180.meta",
-              "pickup_orlanskiE.0000000180.001.001.data"):
+              "pickup_stevensE.0000000180.001.001.data"):
         for d in (inp2, run / "stage2"):
             assert (d / f).is_file() and not (d / f).is_symlink()
     s1 = json.loads((run / "run_status.json").read_text())
@@ -313,12 +315,48 @@ def test_stage2_not_run_when_stage1_failed(tmp_path):
     assert fin["state"] == "FAILED" and "stage 1" in fin["reason"]
 
 
-def test_stage2_refused_without_orlanski_pickup(tmp_path):
-    """C3 lesson from (a): the restart is bit-exact only with the Orlanski pickup."""
-    out, run, sh = _two_stage(tmp_path, env={"STUB_NO_ORLANSKI": "1"})
+def test_stage2_refused_without_stevens_pickup(tmp_path):
+    """(c) uses Stevens: the restart needs pickup_stevensE (obcs_write_pickup.F:225-231,
+    obcs_read_pickup.F:241-246); without it stage 2 is refused."""
+    out, run, sh = _two_stage(tmp_path, env={"STUB_NO_OB_PICKUP": "1"})
     assert out == {"c_fjord_wind": "FAILED"}
     fin = json.loads((run / "run_status_final.json").read_text())
-    assert "orlanski" in fin["reason"].lower() and not (run / "stage2").exists()
+    assert "pickup_stevensE" in fin["reason"] and not (run / "stage2").exists()
+
+
+def test_ob_pickup_names_follow_active_scheme(tmp_path):
+    d = tmp_path
+    def names(txt):
+        (d / "data.obcs").write_text(txt)
+        return rc.required_ob_pickups(d)
+    assert names(" &OBCS_PARM01\n useStevensEast=.TRUE.,\n &\n") == ["pickup_stevensE"]
+    assert names(" &OBCS_PARM01\n useOrlanskiEast=.TRUE.,\n &\n") == ["pickup_orlanskiE"]
+    # commented-out flags and .FALSE. do not count
+    assert names("# useStevensEast=.TRUE.\n &OBCS_PARM01\n useStevensEast=.FALSE.,\n"
+                 " useOrlanskiWest=.TRUE.,\n &\n") == ["pickup_orlanskiW"]
+    assert names(" &OBCS_PARM01\n &\n") == []
+
+
+def test_stage2_orlanski_pickup_still_required_when_orlanski_active(tmp_path):
+    """The check is derived from data.obcs, not hard-coded per config."""
+    builds = tmp_path / "builds"
+    _stub_build(builds / "c_fjord3d")
+    orig = rc.make_case
+
+    def mk(*a, **k):
+        out = orig(*a, **k)
+        t = (out / "data.obcs").read_text().replace("useStevensEast=.TRUE.", "useOrlanskiEast=.TRUE.")
+        (out / "data.obcs").write_text(t)
+        return out
+    rc.make_case = mk
+    try:
+        res = rc.run_campaign("c_fjord3d", "c_fjord_wind", 1, runs_root=tmp_path / "runs",
+                              build_root=builds, sh=StubShell({"STUB_NO_OB_PICKUP": "1"}),
+                              pgrep=lambda: "", overrides=SHORT2, run_suffix="_t")
+    finally:
+        rc.make_case = orig
+    fin = json.loads((tmp_path / "runs" / "c_fjord_wind_t" / "run_status_final.json").read_text())
+    assert res == {"c_fjord_wind": "FAILED"} and "pickup_orlanskiE" in fin["reason"]
 
 
 def test_final_state_needs_stage2_last_iter(tmp_path):
@@ -331,7 +369,7 @@ def test_final_state_needs_stage2_last_iter(tmp_path):
             if Path(cmd[0]).name == "run_mitgcm.sh":
                 d = Path(cmd[3])
                 for f in ("pickup.0000000180.data", "pickup.0000000180.meta",
-                          "pickup_orlanskiE.0000000180.001.001.data"):
+                          "pickup_stevensE.0000000180.001.001.data"):
                     (d / f).write_text("x")
                 (d / "run_status.json").write_text(json.dumps(
                     {"state": "OK", "last_iter": 180 if d.name != "stage2" else 300,

@@ -214,3 +214,10 @@
   - un solo helper `is_two_stage`;
   - `--check-scales` en los cuatro casos en la nota.
 - TDD; suite completa 207 PASS. No cambió `code/` (el build sigue al día). No se corrió MITgcm.
+
+## 2026-11-05 — (c): frontera este Orlanski -> Stevens (Task 7 fix)
+- Motivo: la corrida de 1 día (`c_fjord_all_short1d`) vació el dominio con Orlanski (η̄ −3.03 m a 12 h, −11.38 m a 24 h; obc_E_uVel_Int +28 900 y +58 300 m³/s frente a Q0 = 100 m³/s). Esteban aprobó Stevens (2026-11-05), igual que en (b).
+- `make_case._stevens_east` (antes `_b_stevens_east`) lo comparten (b) y (c). En (c): OBEu = Q0/A_ob (A_ob = 2.8e6 m², u_ob = 3.57e-5 m/s en `c_fjord_all`), OBEv = 0, con los **mismos nrec registros** que OBEt/OBEs, todos iguales: (c) usa `periodicExternalForcing` y pkg/obcs lee todos los archivos OB con la lógica periódica (`obcs_fields_load.F:102-105, 159-173`).
+- `data.obcs`: `useStevensEast`, sin OBCS_PARM02 (solo se lee con Orlanski, `obcs_readparms.F:514-518`), `OBCS_PARM04` con Trelax = Srelax = 86400 s. `OBCS_OPTIONS.h`: `ALLOW_OBCS_STEVENS`. Costo conocido: el modo barotrópico queda cerrado en la frontera.
+- `run_campaign.py`: el pickup OB que exige la etapa 2 se deriva de `data.obcs` (`required_ob_pickups`): `pickup_stevensE` si `useStevensEast` (`obcs_write_pickup.F:225-231`, `obcs_read_pickup.F:241-246`), `pickup_orlanskiE` si `useOrlanskiEast`.
+- TDD; suite 220 PASS. Build `c_fjord3d` (--mpi) OK. No se corrió MITgcm (campaña (b) en curso).

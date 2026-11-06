@@ -540,3 +540,49 @@ def test_b_stevens_namelist_and_cpp(tmp_path):
     h = (PKG_DIR / "config" / "b_twoplume3d" / "code" / "OBCS_OPTIONS.h").read_text()
     assert re.search(r"^#define ALLOW_OBCS_STEVENS", h, re.M)
     assert re.search(r"^#define ALLOW_OBCS_PRESCRIBE", h, re.M)
+
+
+# ---- (c) Stevens eastern OB (task-7 fix) ---------------------------------------
+@pytest.mark.parametrize("name", ["c_fjord_all", "c_fjord_plume", "c_fjord_shelf"])
+def test_c_stevens_obeu_carries_Q0_total_every_record(tmp_path, name):
+    out, meta, p, (nz, ny, nx) = _c_case(tmp_path, name)
+    nrec = int(round(p["externForcingCycle"] / p["externForcingPeriod"]))
+    u = read_bin(out / "OBEu.bin", (nrec, nz, ny))
+    # same record count as the time-varying OBEt/OBEs (periodic read, obcs_fields_load.F:102,159-173)
+    sizes = {f: (out / f).stat().st_size for f in ("OBEu.bin", "OBEv.bin", "OBEt.bin", "OBEs.bin")}
+    assert len(set(sizes.values())) == 1 and sizes["OBEu.bin"] == nrec * nz * ny * 8, sizes
+    assert nrec > 1 and np.all(u == u[0])                    # identical records
+    A_col = _wet_ob_area_col(out, p)
+    Q = float(np.sum(u[0] * A_col) * p["dy"])
+    if p["Q0"] > 0:
+        assert abs(Q - meta["Q0_total"]) / meta["Q0_total"] < 1e-10
+    else:
+        assert Q == 0.0
+    assert meta["Q0_total"] == p["Q0"]
+    assert np.all(u >= 0.0) and np.all(u[:, A_col == 0] == 0.0)
+    assert abs(meta["ob_area_m2"] - A_col.sum() * p["dy"]) < 1e-6
+    assert meta["ob_column_0based"] == nx - 2
+    assert abs(meta["ob_u_m_per_s"] - p["Q0"] / meta["ob_area_m2"]) < 1e-14
+    assert np.all(u[:, A_col > 0] == meta["ob_u_m_per_s"])
+    assert np.all(read_bin(out / "OBEv.bin", (nrec, nz, ny)) == 0.0)
+
+
+def test_c_stevens_namelist_and_cpp(tmp_path):
+    out, meta, p, shape = _c_case(tmp_path, "c_fjord_all")
+    live = _active((out / "data.obcs").read_text())
+    flat = live.replace(" ", "")
+    assert re.search(r"useStevensEast\s*=\s*\.TRUE\.", live)
+    assert not re.search(r"useOrlanskiEast\s*=\s*\.TRUE\.", live)
+    assert "OBCS_PARM02" not in live and "cvelTimeScale" not in live
+    assert "&OBCS_PARM04" in flat
+    for key in ("OBEuFile='OBEu.bin'", "OBEvFile='OBEv.bin'", "OBEtFile='OBEt.bin'",
+                "OBEsFile='OBEs.bin'", "TrelaxStevens=86400.", "SrelaxStevens=86400.",
+                "OBCSsponge_Theta=.TRUE.", "OBCSsponge_Salt=.TRUE.", "Urelaxobcsinner=21600.",
+                "Urelaxobcsbound=600."):
+        assert key in flat, key
+    assert "OBCS_monitorFreq" in live
+    d = _active((out / "data").read_text())
+    assert re.search(r"periodicExternalForcing\s*=\s*\.TRUE\.", d)   # needed for the T/S series
+    h = (PKG_DIR / "config" / "c_fjord3d" / "code" / "OBCS_OPTIONS.h").read_text()
+    assert re.search(r"^#define ALLOW_OBCS_STEVENS", h, re.M)
+    assert re.search(r"^#define ALLOW_OBCS_PRESCRIBE", h, re.M)

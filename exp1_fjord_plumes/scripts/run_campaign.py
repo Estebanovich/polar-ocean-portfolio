@@ -29,8 +29,12 @@ choice (``-DALLOW_USE_MPI`` iff N > 1).
 Two-stage cases (config (c) wind cases: make_case writes ``data.stage2``,
 thesis protocol, verification/BayIW_Rectan/README.md): stage 1 runs in
 ``<run_dir>``; if it is OK and the pickups of its last iteration exist
-(``pickup.<n1>.data/.meta`` AND ``pickup_orlanskiE.<n1>.*`` -- the C3 lesson
-of (a): the restart is bit-exact only with the Orlanski pickup), they are
+(``pickup.<n1>.data/.meta`` AND the OB pickup of the active scheme, derived
+from the case's ``data.obcs``: ``pickup_stevensE.<n1>.*`` if ``useStevensEast``
+-- (c) now uses Stevens, pkg/obcs/obcs_write_pickup.F:225-231, read back at
+obcs_read_pickup.F:241-246 -- or ``pickup_orlanskiE.<n1>.*`` if
+``useOrlanskiEast`` (the C3 lesson of (a): the restart is bit-exact only with
+the OB pickup); N/S/W analogues likewise), they are
 COPIED (never linked: LaCie is exFAT) with the inputs into
 ``<run_dir>/input_stage2`` (``data.stage2`` -> ``data``) and stage 2 runs in
 ``<run_dir>/stage2``. Each stage keeps its own run_status.json; every case
@@ -214,6 +218,24 @@ def _write_final(run_dir: Path, state: str, stages: dict, expected: int | None,
     return state
 
 
+def required_ob_pickups(inp: Path) -> list[str]:
+    """OB pickup stems that the active OB schemes of ``inp/data.obcs`` write.
+
+    pkg/obcs/obcs_write_pickup.F writes ``pickup_orlanskiE.<iter>`` if
+    useOrlanskiEast (and N/S/W analogues, lines 37-195) and
+    ``pickup_stevensE.<iter>`` if useStevensEast (lines 225-231); the
+    restart reads them back (obcs_read_pickup.F:132-157, 241-246). Comment
+    lines and ``.FALSE.`` flags do not count.
+    """
+    live = "\n".join(l.split("#")[0] for l in (Path(inp) / "data.obcs").read_text().splitlines())
+    out = []
+    for scheme in ("orlanski", "stevens"):
+        for side in ("North", "South", "East", "West"):
+            if re.search(rf"\buse{scheme}{side}\s*=\s*\.TRUE\.", live, re.IGNORECASE):
+                out.append(f"pickup_{scheme}{side[0]}")
+    return out
+
+
 def run_stage2(run_dir: Path, inp: Path, build_dir: Path, np_: int,
                sh: Callable[[list], int]) -> str:
     """Stage 2 of a two-stage case (module docstring). Returns the final state."""
@@ -230,8 +252,9 @@ def run_stage2(run_dir: Path, inp: Path, build_dir: Path, np_: int,
     pick = sorted(run_dir.glob(f"pickup*.{tag}*"))
     names = {f.name for f in pick}
     missing = [f for f in (f"pickup.{tag}.data", f"pickup.{tag}.meta") if f not in names]
-    if not any(n.startswith(f"pickup_orlanskiE.{tag}") for n in names):
-        missing.append(f"pickup_orlanskiE.{tag}.* (Orlanski pickup)")
+    for stem in required_ob_pickups(inp):
+        if not any(n.startswith(f"{stem}.{tag}") for n in names):
+            missing.append(f"{stem}.{tag}.* (OB pickup of the active scheme)")
     if missing:
         return _write_final(run_dir, "FAILED", stages, n1 + n2,
                             "missing stage-1 pickup: " + ", ".join(missing))

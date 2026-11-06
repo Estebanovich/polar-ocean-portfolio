@@ -163,6 +163,8 @@ def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> tuple[np.ndarray, float]:
         Tz, Sz = profiles.continuous_sermilik(zc, z_c=200.0 - eta[r])
         obT[r], obS[r] = Tz[:, None], Sz[:, None]
     bins["OBEt.bin"], bins["OBEs.bin"] = obT, obS
+    # Stevens east OB: depth-mean u_ob = Q0/A_ob, same nrec records as OBEt/OBEs
+    _stevens_east(p, bins, hFacC, p["Q0"], info, nrec=nrec)
     if p["wind_tau"] > 0:
         n_on = int(round(p["wind_hours"] * 3600.0 / per))
         w = np.zeros((nrec, ny, nx))
@@ -171,15 +173,16 @@ def _c_forcing(p, bins, zc, T1d, S1d, hFacC, info) -> tuple[np.ndarray, float]:
     return add, cyc
 
 
-def _b_stevens_east(p, bins, T1d, S1d, hFacC, Q0_total, info) -> None:
-    """Config (b) eastern open-boundary files for Stevens (1990) (task-6 fix).
+def _stevens_east(p, bins, hFacC, Q0_total, info, T1d=None, S1d=None, nrec=1) -> None:
+    """Eastern open-boundary files for Stevens (1990), shared by (b) and (c).
 
     Stevens (pkg/obcs/obcs_calc_stevens.F:195-228) takes the depth-mean normal
     velocity from ``OBEu`` (area-weighted with drF*hFacW over the water column)
     and adds the baroclinic part of the previous step's boundary velocity; the
     tracers relax toward ``OBEt/OBEs`` (TrelaxStevens/SrelaxStevens).  The
-    Orlanski OB left the depth-mean u free and drew ~800 m3/s IN (gate run
-    b_3d_twolayer_x0_40).  Here the net discharge is prescribed to leave:
+    Orlanski OB left the depth-mean u free (it drew ~800 m3/s IN in the (b)
+    gate run b_3d_twolayer_x0_40 and drained (c): eta -11 m in 24 h).  Here
+    the net discharge is prescribed to leave:
 
         u_ob = Q0_total / A_ob                      [m s-1, + = eastward = out]
         A_ob = dy * sum_{j,k} hFacW(i_ob,j,k) drF_k [m2]
@@ -191,8 +194,17 @@ def _b_stevens_east(p, bins, T1d, S1d, hFacC, Q0_total, info) -> None:
     (0-based).  All cells are full (flat bottom, hFacC in {0,1}); dry rows
     (side walls) get 0.  The grid is the one actually generated (land rows).
 
-    Files (nz, ny), one constant record each: OBEv = 0 (tangential u is zero),
-    OBEt/OBEs = initial ambient profile broadcast over y.
+    Files, (nz, ny) per record: OBEu = u_ob on wet faces, OBEv = 0 (tangential
+    u is zero).  ``nrec`` is the number of records of each file:
+
+    * nrec = 1 (b, no periodicExternalForcing): files are read once, record 1,
+      at nIter0 (pkg/obcs/obcs_fields_load.F:347-363); OBEt/OBEs = the ambient
+      profile ``T1d/S1d`` broadcast over y (written here).
+    * nrec > 1 (c, periodicExternalForcing): every OB file with a name is read
+      at records iRec0/iRec1 of GET_PERIODIC_INTERVAL
+      (pkg/obcs/obcs_fields_load.F:102-105, 159-173), so OBEu/OBEv must have
+      the same nrec = cycle/period records as the time-varying OBEt/OBEs
+      (written by the caller); the records of OBEu/OBEv are identical.
     """
     nz, ny, nx = hFacC.shape
     i_ob = nx - 2                                           # 0-based u-point column
@@ -202,12 +214,15 @@ def _b_stevens_east(p, bins, T1d, S1d, hFacC, Q0_total, info) -> None:
     if A_ob <= 0.0:
         raise ValueError("no wet open-boundary face for the Stevens eastern OB")
     u_ob = Q0_total / A_ob                                  # [m s-1]
-    bins["OBEu.bin"] = np.where(hFacW > 0, u_ob, 0.0)
-    bins["OBEv.bin"] = np.zeros((nz, ny))
-    bins["OBEt.bin"] = np.broadcast_to(T1d[:, None], (nz, ny))
-    bins["OBEs.bin"] = np.broadcast_to(S1d[:, None], (nz, ny))
-    # one constant record, read once at nIter0 without periodicExternalForcing
-    # (pkg/obcs/obcs_fields_load.F:347-363)
+    u2d = np.where(hFacW > 0, u_ob, 0.0)
+    if nrec == 1:
+        bins["OBEu.bin"], bins["OBEv.bin"] = u2d, np.zeros((nz, ny))
+    else:
+        bins["OBEu.bin"] = np.broadcast_to(u2d, (nrec, nz, ny))
+        bins["OBEv.bin"] = np.zeros((nrec, nz, ny))
+    if T1d is not None:
+        bins["OBEt.bin"] = np.broadcast_to(T1d[:, None], (nz, ny))
+        bins["OBEs.bin"] = np.broadcast_to(S1d[:, None], (nz, ny))
     info.update(ob_u_m_per_s=u_ob, ob_area_m2=A_ob, ob_column_0based=i_ob)
 
 
@@ -328,7 +343,7 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
         Q0 = p["Q0"] * len(cells)
         add = discharge_addmass((nz, ny, nx), cells, Q0, rho0, hFacC=hFacC, front_i=front_i)
         info.update(Q0_total=Q0, source_cells=cells)
-        _b_stevens_east(p, bins, T1d, S1d, hFacC, Q0, info)
+        _stevens_east(p, bins, hFacC, Q0, info, T1d=T1d, S1d=S1d)
     else:
         add, p["externForcingCycle"] = _c_forcing(p, bins, zc, T1d, S1d, hFacC, info)
     bins["addmass.bin"] = add

@@ -2,33 +2,52 @@
 # Eastern open boundary (fjord mouth) at column Nx-1 (OB_Ieast=-2,
 # pkg/obcs/obcs_readparms.F:671-672); column Nx is land and closes the
 # periodic x-wrap, as in (a), (b). Given for all Ny rows incl. land rows.
-# u, v: Orlanski radiation (as (a), (b)) so the plume/wind baroclinic
-# exchange and the net Q0 can leave. T, S: PRESCRIBED time series
-# (OBEt/OBEs.bin, records every externForcingPeriod, cycle = shelf period):
-# OBCS_PRESCRIBE_READ runs after ORLANSKI_EAST (obcs_calc.F:99, 413)
-# and only overwrites fields whose file is set (obcs_fields_load.F:159-174,
-# 518-524), so u, v stay radiated. Shelf cases: Sermilik profile with the
-# pycnocline heaved by A sin(2 pi t/P), A = 30 m, P = 6 d (Jackson et al.
-# 2018); other cases: the initial profile (constant records).
+# WHY NOT ORLANSKI (task-7 fix, brief task-7-fix-stevens-c-brief.md): the 1-day
+# timed run c_fjord_all_short1d (2 stages of 12 h, np=5, dt=60 s) ended OK but
+# the Orlanski OB drained the domain: domain-mean eta -3.03 m at 12 h and
+# -11.38 m at 24 h, OB transport obc_E_uVel_Int = +28,900 then +58,300 m3/s
+# (outflow) against a net source Q0_total = 100 m3/s (sum addMass/rho0 = Q0).
+# Orlanski leaves the depth-mean normal velocity free. Esteban approved
+# Stevens on 2026-11-05, as already done for (b).
+# STEVENS: the depth-mean normal velocity is PRESCRIBED from OBEu.bin and the
+# baroclinic part (previous-step boundary u minus its depth mean) is kept
+# (pkg/obcs/obcs_calc_stevens.F:195-228, header lines 19-44); T and S are
+# advected out with a phase speed and restored toward OBEt/OBEs on
+# TrelaxStevens/SrelaxStevens (same file, OBCS_STEVENS_CALC_TRACER_EAST).
+# OBEu.bin = Q0_total/A_ob eastward on wet OB faces (gendata/make_case.py,
+# _stevens_east; ob_u_m_per_s, ob_area_m2 in case.json) so the discharge
+# leaves exactly; OBEv = 0. OBEt/OBEs keep carrying the time-varying shelf
+# forcing (records every externForcingPeriod, cycle = shelf period; Sermilik
+# profile with the pycnocline heaved by A sin(2 pi t/P), A = 30 m, P = 6 d,
+# Jackson et al. 2018; non-shelf cases: the initial profile, constant records).
+# Because (c) uses periodicExternalForcing, pkg/obcs reads EVERY OB file with
+# the periodic record logic (pkg/obcs/obcs_fields_load.F:102-105, 159-173), so
+# OBEu/OBEv have the same number of records as OBEt/OBEs (all identical).
+# TrelaxStevens = SrelaxStevens = 86400 s: MITgcm verification/exp4/
+# input.stevens/data.obcs value.
+# KNOWN COST: the barotropic mode is closed at the OB (the depth-mean u is
+# fixed at Q0/A_ob), so there is no wind-setup exchange of volume with the
+# shelf; the baroclinic exchange (u minus its depth mean) is free.
+# Restart: Stevens writes/reads pickup_stevensE.<iter> (pkg/obcs/
+# obcs_write_pickup.F:225-231, obcs_read_pickup.F:241-246), see run_campaign.py.
 # T/S sponge (10 cells = 2 km) relaxes toward the OB values: the
 # relaxation zone of Cowton et al. 2015 (Sec. 3.2), here time dependent.
 # No useOBCSbalance: it ignores addMass (obcs_balance_flow.F:300-315).
+# OBCS_monitorFreq: obc_E_uVel_Int (area-integrated OB transport [m3 s-1],
+# obcs_monitor.F:262-263) is printed to STDOUT every hour; compare with Q0_total.
  &OBCS_PARM01
  OB_Ieast=${ny}*-2,
- useOrlanskiEast=.TRUE.,
+ useOrlanskiEast=.FALSE.,
+ useStevensEast=.TRUE.,
  useOBCSprescribe=.TRUE.,
+ OBEuFile='OBEu.bin',
+ OBEvFile='OBEv.bin',
  OBEtFile='OBEt.bin',
  OBEsFile='OBEs.bin',
  useOBCSsponge=.TRUE.,
  OBCSsponge_Theta=.TRUE.,
  OBCSsponge_Salt=.TRUE.,
  OBCS_monitorFreq=3600.,
- &
-
- &OBCS_PARM02
-# phase-speed averaging ~60 steps (as (a): 250 s ~ 80 steps of 3 s)
- cvelTimeScale=3600.,
- CMAX=0.45,
  &
 
  &OBCS_PARM03
@@ -39,4 +58,9 @@
  Vrelaxobcsinner=21600.,
  Urelaxobcsbound=600.,
  Vrelaxobcsbound=600.,
+ &
+
+ &OBCS_PARM04
+ TrelaxStevens=86400.,
+ SrelaxStevens=86400.,
  &
