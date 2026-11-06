@@ -305,3 +305,35 @@ Todas terminan OK y **todas pasan los criterios 1–3 de la OB**. La razón OB/i
 | sermilik | 0.10 | 0.11 | 0.44 | 0.32 | 0.57 | 0.66 | 0.36 |
 
 Las 4 sermilik que divergían ahora son finitas. Las corridas anteriores quedan en `*_stv0`. C4 y C4′ se evalúan con las definiciones pre-registradas sobre estas corridas.
+
+## PD2(b): resultado de C4 y C4′ sobre las corridas V3 (2026-11-06)
+
+Los números vienen de la re-ejecución del revisor de la Task 6 sobre las 14 corridas V3, todas finitas. La ventana es la pre-registrada, 2–3 h. El ambiente teórico sigue la redacción vinculante de (b): media de la ventana lejos de la cara (regla R39). La lectura alternativa con el perfil inicial da el mismo veredicto.
+
+| criterio | twolayer | sermilik | veredicto |
+|---|---|---|---|
+| **C4** (\|Δz_despegue\|/H ≤ 0.15) | 0.214 (modelo −1.9 m; teoría −66.2 m) | 0.187 (−1.5 m; −57.5 m) | **FALLA** |
+| **C4′** (M(0)/(2·M_single) ∈ [0.4, 0.8]) | 0.520 | 0.525 | **PASA** |
+
+**C4′.** La interacción de fuentes juntas reduce el derretimiento total a ~0.52 de dos plumas independientes, en las dos estratificaciones. Coincide con el ≈ 0.5 del laboratorio (Cenedese & Gatto 2016a). La escala de Slater/Cowton daría ≈ 0.66; esa cifra se usa solo como verificación de plausibilidad.
+
+**C4 FALLA: la pluma del modelo llega a la superficie y la teoría semicónica despega a ~60 m.** Se revisó el perfil de w en la cara (máximo en y, media de la ventana) de `_single`:
+- w ≈ 0.45 m/s todavía a 10 m de profundidad, con un máximo de ~1.3 m/s a 150 m.
+- T en la cara ≈ 3.8 °C en toda la columna, contra −1.5 °C en el ambiente superior. El agua profunda sube casi sin diluirse.
+- El modelo arrastra mucho menos agua ambiente que la teoría.
+
+**Clasificación (hipótesis, sin verificar):**
+- **(b)/(d), física de pluma de pared frente a pluma semicónica.**
+  - Kimura et al. (2014, resumen, l. 19–20): "The presence of an ice face reduces the entrainment of seawater into the meltwater plumes, so the plumes remain attached to the ice front, in contrast to previous simple models".
+  - Ezhova et al. (2018, l. 29): el flujo de volumen de una pluma de pared es la mitad del de una pluma cónica con el doble de flujo de flotabilidad.
+  - La teoría semicónica puede sobreestimar el arrastre de una pluma pegada a la pared.
+- **(c), resolución y cierre.**
+  - A dx = 10 m, la pluma mide pocas celdas de ancho (b ≈ 6α z/5 ≈ 24 m a 200 m sobre la fuente), así que el arrastre lo fija sobre todo el cierre de submalla.
+  - En (a), la PD2 mostró una sensibilidad fuerte al cierre (`sens_xu2012`: R_Q de 0.547 a 0.720).
+- No es error nuestro de análisis (clase a): el revisor verificó el estimador. La profundidad de despegue del modelo está acotada en ~−2 m por w = 0 en la superficie.
+
+**Pruebas propuestas (para decidir con Esteban; se pre-registran antes de correr):**
+- **D1 (diagnóstico post-hoc, barato, sin correr el modelo):** comparar el flujo de volumen Q(z) de la pluma del modelo junto a la cara con el Q(z) teórico. Si el modelo arrastra mucho menos, eso confirma el mecanismo, pero no distingue entre (b)/(d) y (c).
+- **D2 (convergencia):** `b_3d_twolayer_single` a dx = dy = dz = 5 m. Son ~8× celdas y ~2× pasos, unas 3 h. Si Δz_despegue no se mueve con la resolución, se descarta que (c) sea la causa dominante.
+
+C4 se reporta como FALLA bajo su definición. No se redefine.
