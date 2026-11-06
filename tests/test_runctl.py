@@ -105,3 +105,19 @@ def test_runner_endtime_derives_steps(tmp_path):
 def test_runner_unparsable_length_is_failed(tmp_path):
     _, st = _run_stub(tmp_path, STEPS(3) + NORMAL, "&PARM03\n&\n")
     assert st["state"] == "FAILED" and "reason" in st
+
+
+NAN_MON = "(PID.TID 0000.0001) %MON dynstat_uvel_max             =                    NaN\n"
+
+
+def test_status_ok_but_nan_in_log_refused(tmp_path):
+    run = _fake_run(tmp_path, "OK")
+    (run / "STDOUT.0000").write_text("(PID.TID 0000.0001) time_tsnumber = 20\n" + NAN_MON + END)
+    with pytest.raises(RuntimeError, match="non-finite"):
+        require_ok(run)
+
+
+def test_runner_nan_in_log_is_failed(tmp_path):
+    r, st = _run_stub(tmp_path, STEPS(10) + 'echo "%MON dynstat_eta_max = NaN"\n' + NORMAL, DATA)
+    assert r.returncode != 0
+    assert st["state"] == "FAILED" and "non-finite" in st["reason"]

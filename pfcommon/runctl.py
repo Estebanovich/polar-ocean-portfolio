@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 _KEYS = ("state", "last_iter", "n_timesteps")
+# Same pattern as scripts/run_mitgcm.sh: monitor / solver lines with NaN or Infinity (gfortran).
+_NONFINITE = re.compile(r"(%MON|cg2d|cg3d).*(NaN|Infinity)")
 
 
 def run_status(run_dir: Path) -> dict:
@@ -30,3 +33,13 @@ def require_ok(run_dir: Path) -> None:
         raise RuntimeError(
             f"{run_dir}: run stopped at iteration {st['last_iter']} < nTimeSteps {st['n_timesteps']}"
         )
+    for name in ("STDOUT.0000", "output.txt"):
+        log = Path(run_dir) / name
+        if log.exists():
+            with log.open(errors="replace") as fh:
+                for n, line in enumerate(fh, 1):
+                    if _NONFINITE.search(line):
+                        raise RuntimeError(
+                            f"{run_dir}: non-finite values in {name} line {n} (run diverged): {line.strip()[:120]}"
+                        )
+            break

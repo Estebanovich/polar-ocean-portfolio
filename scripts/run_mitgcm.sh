@@ -51,6 +51,9 @@ STATE=FAILED
 if [ -n "$REASON" ]; then :
 elif ! grep -q "PROGRAM MAIN: Execution ended Normally" "$LOG" 2>/dev/null; then REASON="no normal-end line in model log"
 elif [ "$LAST" -ne $((NIT0 + NTS)) ]; then REASON="last_iter $LAST != nIter0 + nTimeSteps ($((NIT0 + NTS)))"
+# A diverged run can still reach nTimeSteps and end "Normally" with NaN fields
+# (2026-11-05: 4 (b) sermilik runs and 2 (c) shelf runs). gfortran prints NaN / Infinity.
+elif grep -E -q '(%MON|cg2d|cg3d).*(NaN|Infinity)' "$LOG" 2>/dev/null; then REASON="non-finite values (NaN/Infinity) in model log"
 else STATE=OK; fi
 if [ -n "$REASON" ]; then
   printf '{"state": "%s", "last_iter": %s, "n_timesteps": %s, "wall_s": %s, "reason": "%s"}\n' "$STATE" "$LAST" "$NTS" "$WALL" "$REASON" > run_status.json
