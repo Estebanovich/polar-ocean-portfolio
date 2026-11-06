@@ -422,3 +422,19 @@ La frontera sigue con velocidades 10–40 % mayores que el interior, pero sin cr
 3. El máximo de |u| en el dominio es < 0.01 m/s durante los 30 d (serie `dynstat_uvel_max`).
 
 **Uso en el análisis.** El transporte de intercambio de cada caso de (c) se reporta junto al del control, calculado con la misma métrica y en la misma sección. Una señal menor que 3× la del control no se interpreta como física.
+
+### Re-corrida de los 4 casos (c) con V3 (2026-11-06)
+
+Todos pasan los criterios 1–3. Razón OB/interior en los volcados de U:
+
+| caso | razón |
+|---|---|
+| plume | **1.49** |
+| wind (etapa 1) | 0.93 |
+| wind (etapa 2) | 1.39 |
+| shelf | 1.20 |
+| all (etapa 1) | 1.00 |
+| all (etapa 2) | 1.35 |
+
+- |η̄| ≤ 1.6e-14 m y el error del transporte de la OB es ≤ 3.5e-10 m³/s.
+- **`plume` queda justo en el límite (1.49 frente a 1.5).** Pasa, pero la frontera de (c) acelera el flujo de salida un 35–50 % sobre el interior en varios casos. Es una limitación que se declara (clase c). El control sin forzamiento dirá cuánto de esto es espurio.

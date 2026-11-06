@@ -294,3 +294,14 @@ El análisis de la Task 6 (commit 2d86679) encontró que **4 corridas sermilik d
 - **Elección (regla R37): V3.** Conserva la física: el agua de la pluma sale exactamente a Q0. Además, se queda dentro de la decisión ya aprobada de usar Stevens. V6 hace que se acumule agua.
   - El encabezado de MITgcm advierte que V3 "can give unexpected results" (`obcs_calc_stevens.F:39-42`). Por eso, antes de adoptarlo en las campañas, se verifica en (c) con `c_fjord_shelf` a 30 d, con los criterios pre-registrados.
 - V3 sigue escribiendo `pickup_stevensE`, así que el reinicio de dos etapas de (c) no cambia.
+
+### Re-corrida de las 14 corridas (b) con V3 (2026-11-06)
+
+Todas terminan OK y **todas pasan los criterios 1–3 de la OB**. La razón OB/interior máxima por caso es:
+
+| | x0_0 | x0_20 | x0_40 | x0_80 | x0_160 | x0_320 | single |
+|---|---|---|---|---|---|---|---|
+| twolayer | 0.28 | 0.36 | 0.50 | 0.76 | 0.88 | 0.84 | 0.52 |
+| sermilik | 0.10 | 0.11 | 0.44 | 0.32 | 0.57 | 0.66 | 0.36 |
+
+Las 4 sermilik que divergían ahora son finitas. Las corridas anteriores quedan en `*_stv0`. C4 y C4′ se evalúan con las definiciones pre-registradas sobre estas corridas.
