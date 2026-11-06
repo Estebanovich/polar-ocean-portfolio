@@ -407,3 +407,18 @@ La frontera sigue con velocidades 10–40 % mayores que el interior, pero sin cr
 - El runoff de 100 m³/s se reparte en las 6 celdas de la pluma de (c), en j = 12–17.
 
 **Diferencias declaradas (clase b/c).** El runoff entra en superficie, no en profundidad. La esponja es de 1200/60 s, no la zona de (c) de 600/21600 s. No hay ajuste convectivo. Los esquemas de advección son distintos. `pyo_shelf` es el análogo limpio de `c_fjord_shelf`.
+
+## Caso de control sin forzamiento `c_fjord_control` (aprobado por Esteban, 6 nov; fijado antes de correr)
+
+**Configuración.** Es (c) con Q0 = 0, sin viento y con shelf_amp = 0: el exterior OBEt/OBEs y rbcs_T/S son el perfil inicial constante, lo que verifica `test_c_control_has_no_forcing`. Usa la misma OB (V3) y 30 d.
+
+**Para qué sirve.** Un fiordo estratificado en reposo, con EOS lineal y fondo plano, debería quedarse en reposo. Cualquier movimiento es espurio: viene de la OB, de la zona RBCS o de errores numéricos. Ese movimiento fija el **piso de ruido** del intercambio y de las velocidades de los otros cuatro casos.
+
+**Criterios (deben pasar):**
+1. `require_ok` pasa: 30 d con campos finitos.
+2. |η̄| < 0.01 m y |`obc_E_uVel_Int`| < 1e-6 m³/s en todas las salidas del monitor.
+
+**Expectativa (informativa; si no se cumple se reporta y se investiga):**
+3. El máximo de |u| en el dominio es < 0.01 m/s durante los 30 d (serie `dynstat_uvel_max`).
+
+**Uso en el análisis.** El transporte de intercambio de cada caso de (c) se reporta junto al del control, calculado con la misma métrica y en la misma sección. Una señal menor que 3× la del control no se interpreta como física.

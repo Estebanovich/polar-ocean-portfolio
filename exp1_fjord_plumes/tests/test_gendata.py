@@ -132,7 +132,7 @@ def test_cases_yaml_lists_all_cases():
     exp = {f"a_line2d_{s}_q{q}" for s in ("twolayer", "sermilik") for q in ("0.01", "0.03", "0.1")}
     exp |= {f"b_3d_{s}_x0_{x}" for s in ("twolayer", "sermilik") for x in (0, 20, 40, 80, 160, 320)}
     exp |= {f"b_3d_{s}_single" for s in ("twolayer", "sermilik")}
-    exp |= {f"c_fjord_{k}" for k in ("plume", "wind", "shelf", "all")}
+    exp |= {f"c_fjord_{k}" for k in ("plume", "wind", "shelf", "all", "control")}
     exp |= {"conv_dx10", "conv_dx5", "conv_dx2p5", "sens_freeslip", "sens_xu2012"}  # R20
     exp |= {"b_obdiag_iv_twolayer_x0_40", "b_obdiag_orl_twolayer_x0_40"}  # OB diagnosis, R36
     assert names == exp
@@ -722,3 +722,17 @@ def test_obdiag_cases_reuse_the_b_generator(tmp_path):
     assert "useStevensEast=.TRUE." in (a / "data.obcs").read_text()
     orl = (o / "data.obcs").read_text()
     assert "useOrlanskiEast=.TRUE." in orl and "useOBCSbalance=.TRUE." in orl and "Stevens" not in orl.split("&OBCS_PARM01")[1]
+
+
+def test_c_control_has_no_forcing(tmp_path):
+    """c_fjord_control: no discharge, no wind stress, shelf series = constant initial profile."""
+    import numpy as np
+    out = make_case("c_fjord_control", tmp_path / "ctl")
+    meta = json.loads((out / "case.json").read_text())
+    assert meta["Q0_total"] == 0.0 and meta["sum_addmass_kg_s"] == 0.0
+    w = out / "windx.bin"  # no wind file is written when wind_tau = 0
+    assert not w.exists() or not np.any(np.fromfile(w, ">f8"))
+    obt = np.fromfile(out / "OBEt.bin", ">f8")
+    nz, ny = 50, 30
+    rec = obt.reshape(-1, nz, ny)
+    assert np.allclose(rec, rec[0])

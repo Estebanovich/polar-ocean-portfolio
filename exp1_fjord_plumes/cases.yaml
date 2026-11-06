@@ -148,6 +148,8 @@ cases:
   c_fjord_wind: {config: c_fjord3d, discharge: point, wind_tau: 0.2, Q0: 0.0}
   c_fjord_shelf: {config: c_fjord3d, discharge: point, shelf_amp: 30.0, Q0: 0.0}
   c_fjord_all: {config: c_fjord3d, discharge: point, wind_tau: 0.2, shelf_amp: 30.0}
+  # control without forcing (Q0 = 0, no wind, no shelf): spurious OB/numerical exchange floor (2026-11-06)
+  c_fjord_control: {config: c_fjord3d, discharge: point, Q0: 0.0}
   # PD2 / R20 (24 h, twolayer q0 = 0.03)
   conv_dx10: {config: conv_dx10, strat: twolayer, discharge: line, q0: 0.03}
   conv_dx5: {config: conv_dx5, strat: twolayer, discharge: line, q0: 0.03}
