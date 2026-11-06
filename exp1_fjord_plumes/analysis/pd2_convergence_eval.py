@@ -225,8 +225,19 @@ def _metrics_at(run_dir: Path, window: tuple[float, float], params: dict) -> dic
             "b": ev["post_hoc"]["width_10pct_lower_half"], "ev": ev}
 
 
-def run_metrics(run_dir: Path, require_per_step: bool = True) -> dict:
-    """Validity, X(12-24), sigma, stationarity, C2/C2'' of one run. Invalid runs
+def metric_windows(t0: float = 12.0) -> dict:
+    """Averaging windows (hours) of the note's protocol, starting at ``t0``.
+
+    The protocol (notes/pd2_convergence.md) uses t0 = 12 h: X over 12-24 h,
+    stationarity halves 12-18 / 18-24 h, sigma from hourly windows 12-13 ... 23-24 h.
+    t0 = 24 h is the pre-registered shift for the extended 36 h `sens_xu2012` run
+    (note section "Extensión de sens_xu2012"); the rules themselves are unchanged."""
+    return {"X": (t0, t0 + 12.0), "first": (t0, t0 + 6.0), "second": (t0 + 6.0, t0 + 12.0),
+            "samples": [(t0 + k, t0 + k + 1.0) for k in range(12)]}
+
+
+def run_metrics(run_dir: Path, require_per_step: bool = True, t0: float = 12.0) -> dict:
+    """Validity, X(t0..t0+12 h), sigma, stationarity, C2/C2'' of one run. Invalid runs
     (failed status, monitor check) return ``valid`` False with reasons."""
     run_dir = Path(run_dir)
     out = {"run": run_dir.name, "valid": True, "reasons": []}
@@ -243,10 +254,11 @@ def run_metrics(run_dir: Path, require_per_step: bool = True) -> dict:
     if not mon["valid"]:
         out["valid"] = False
         out["reasons"] += mon["reasons"]
-    x = _metrics_at(run_dir, WINDOW, params)
-    first = _metrics_at(run_dir, (12.0, 18.0), params)["R_Q"]
-    second = _metrics_at(run_dir, (18.0, 24.0), params)["R_Q"]
-    samples = [_metrics_at(run_dir, (t - 1.0, float(t)), params) for t in range(13, 25)]
+    w = metric_windows(t0)
+    x = _metrics_at(run_dir, w["X"], params)
+    first = _metrics_at(run_dir, w["first"], params)["R_Q"]
+    second = _metrics_at(run_dir, w["second"], params)["R_Q"]
+    samples = [_metrics_at(run_dir, win, params) for win in w["samples"]]
     out.update({
         "R_Q": x["R_Q"], "R_w": x["R_w"], "b": x["b"],
         "sigma_R_Q": float(np.std([s["R_Q"] for s in samples], ddof=1)),
@@ -261,7 +273,7 @@ def run_metrics(run_dir: Path, require_per_step: bool = True) -> dict:
     })
     if not out["stationary"]:
         out["valid"] = False
-        out["reasons"].append("not stationary (R_Q(18-24) vs R_Q(12-18) >= 2 %)")
+        out["reasons"].append(f"not stationary (R_Q second half vs first half of {w['X']} h >= 2 %)")
     # r_eff check: mean dx of cell centres within 0-25 m of the face
     nx = int(params["nx"])
     dx = read_bin(run_dir / "delX.bin", (nx,))
@@ -399,7 +411,14 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs-root", type=Path, default=DEFAULT_ROOT)
     ap.add_argument("--out-dir", type=Path, default=FIG_DIR)
+    ap.add_argument("--single", type=Path, default=None,
+                    help="evaluate one run only (e.g. the extended sens_xu2012) and print metrics")
+    ap.add_argument("--t0", type=float, default=12.0, help="window start (h) for --single")
     a = ap.parse_args()
+    if a.single is not None:
+        m = run_metrics(a.single, t0=a.t0)
+        print(json.dumps({k: v for k, v in m.items() if k != "monitor"}, indent=1, default=str))
+        raise SystemExit(0)
     dirs = {k: a.runs_root / k for k in (*CONV, "sens_freeslip", "sens_xu2012", REF)
             if (a.runs_root / k).exists()}
     r = evaluate_study(dirs, a.out_dir)

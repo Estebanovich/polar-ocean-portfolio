@@ -210,3 +210,13 @@ Al implementar el evaluador mecánico (`analysis/pd2_convergence_eval.py`, Task 
 - **C2 y C2'':** pasan en todas las corridas válidas. El flujo de volumen y la altura de desprendimiento están convergidos y concuerdan con la teoría. C2' (velocidad media) **sigue FALLIDO** y no se redefine.
 
 Lectura (hipótesis, todavía sin probar): la pluma de MITgcm es ~2.6× más ancha y ~0.57× más lenta que el sombrero de copa teórico, con un flujo de volumen comparable. Con la mezcla de malla, la pluma 2D resuelta se ensancha más que lo que fija α = 0.1 en la teoría. Candidata a clase (b): mezcla turbulenta no representada, porque el cierre (viscAh/viscAr constantes) no es un LES. La pista que apunta en esa dirección es que `sens_xu2012`, con otro cierre, estrecha la pluma (b ≈ 9.7 m) y acerca R_Q. La clase (d) solo entra con evidencia independiente.
+
+## Extensión de sens_xu2012 (pre-registrada antes de correr, 2026-11-05, aprobada por Esteban)
+
+La corrida de 24 h salió inválida por no ser estacionaria (2.6 % entre 12–18 h y 18–24 h, contra un umbral del 2 %). Se repite **idéntica** salvo `endTime` = 36 h (129600 s), como el caso `sens_xu2012_36h` (`--run-suffix _36h`).
+
+- **Reglas sin cambios:** misma validez del monitor, mismo umbral de estacionariedad del 2 %, mismos umbrales de detección (ΔR_Q 0.03, Δb 2.5 m) y misma comparación contra la producción.
+- **Lo único que se desplaza es la ventana, 12 h:** X = 24–36 h, mitades 24–30 y 30–36 h, σ con ventanas horarias de 24 a 36 h (`metric_windows(t0=24)`).
+- **Comparación:** contra `a_line2d_twolayer_q0.03` en su ventana original de 12–24 h (estacionaria). Esto supone que la producción ya está en estado estacionario a partir de las 12 h, lo que su estacionariedad respalda.
+- **Si sigue sin ser estacionaria a las 36 h:** se reporta como inválida y no se extiende otra vez. Una deriva lenta del cierre de Xu en 2D sería en sí misma un resultado.
+- **Si es válida:** sigue siendo una sensibilidad *conjunta* de cierre y arrastre de pared, como ya se explicó arriba. No se atribuye solo al cierre.

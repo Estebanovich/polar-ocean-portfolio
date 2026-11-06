@@ -270,3 +270,20 @@ def test_make_figure_smoke(tmp_path):
         m["theory_b_lower_half"] = 7.5
     out = ev.make_figure(ev.assemble(metrics), tmp_path / "pd2_convergence")
     assert all(p.exists() and p.stat().st_size > 0 for p in out)
+
+
+def test_metric_windows_default_matches_protocol():
+    from exp1_fjord_plumes.analysis.pd2_convergence_eval import metric_windows, WINDOW
+    w = metric_windows()
+    assert w["X"] == WINDOW == (12.0, 24.0)
+    assert w["first"] == (12.0, 18.0) and w["second"] == (18.0, 24.0)
+    assert w["samples"][0] == (12.0, 13.0) and w["samples"][-1] == (23.0, 24.0)
+    assert len(w["samples"]) == 12
+
+
+def test_metric_windows_shifted_for_extended_run():
+    from exp1_fjord_plumes.analysis.pd2_convergence_eval import metric_windows
+    w = metric_windows(24.0)
+    assert w["X"] == (24.0, 36.0)
+    assert w["first"] == (24.0, 30.0) and w["second"] == (30.0, 36.0)
+    assert w["samples"][-1] == (35.0, 36.0)
