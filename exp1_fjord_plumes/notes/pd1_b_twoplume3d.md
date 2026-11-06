@@ -337,3 +337,22 @@ Los números vienen de la re-ejecución del revisor de la Task 6 sobre las 14 co
 - **D2 (convergencia):** `b_3d_twolayer_single` a dx = dy = dz = 5 m. Son ~8× celdas y ~2× pasos, unas 3 h. Si Δz_despegue no se mueve con la resolución, se descarta que (c) sea la causa dominante.
 
 C4 se reporta como FALLA bajo su definición. No se redefine.
+
+### Corrección: C4′ pasa por construcción y no informa sobre la interacción (2026-11-06)
+
+C4′ **PASA bajo su definición pre-registrada** (0.520 y 0.525), y eso no se cambia. Pero el pase **no es evidencia de interacción entre plumas**:
+- M_single vale 1.38 y 1.36 m³/s (twolayer y sermilik), mientras que M con dos fuentes vale 1.43–1.48 m³/s. Agregar una segunda pluma sube el derretimiento total de la cara solo un 4–8 %.
+- La razón M(x0)/(2·M_single) vale ≈ 0.52–0.54 **para todas las separaciones**, incluso x0 = 320 m = 5.6·x0c. Es casi 0.5 por construcción.
+- Perfil del derretimiento a lo largo de la cara (columna integrada en z, ventana 2–3 h): **~90 % del derretimiento total es de fondo** (derretimiento ambiente sobre los 1180 m de cara). La pluma única agrega solo ~0.10–0.12 m³/s sobre ~1.3 m³/s de fondo.
+- **Falla de diseño de la métrica (clase a, error nuestro).** El total sobre una cara ancha mide sobre todo el derretimiento ambiente. En el laboratorio de Cenedese & Gatto la cara era estrecha y el derretimiento por pluma dominaba. La comparación con su ≈ 0.5 no es válida.
+
+**Métrica post-hoc, etiquetada como tal (no es veredicto).** Se definió el exceso de la pluma como el total menos el fondo, con fondo = mediana de la columna × número de columnas mojadas. Este estimador se eligió después de ver los datos.
+
+| x0 | 0 | 20 | 40 | 80 | 160 | 320 |
+|---|---|---|---|---|---|---|
+| exceso / (2·exceso_single), twolayer | 0.75 | 0.90 | 0.91 | 0.92 | 0.94 | 0.85 |
+| exceso / (2·exceso_single), sermilik | 0.78 | 0.90 | 0.89 | 0.91 | 0.94 | 0.83 |
+
+- Con fuentes juntas, cada pluma derrite ~25 % menos que una pluma independiente, y el valor se recupera con la separación hasta ~0.94. Es cualitativamente como en el laboratorio, pero mucho más débil que su ≈ 0.5.
+- La caída en x0 = 320 m probablemente es un artefacto del estimador de fondo, porque las plumas ensanchadas contaminan la mediana. Está sin verificar.
+- Es sensible al método de fondo. Antes de usarla en el README hay que definir un estimador robusto, por ejemplo una corrida sin descarga para el fondo, y fijarlo por escrito.
