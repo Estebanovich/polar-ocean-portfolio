@@ -398,3 +398,12 @@ done
 La frontera sigue con velocidades 10–40 % mayores que el interior, pero sin crecimiento. Esto queda como limitación conocida (clase (c)).
 
 **Decisión (R38):** se adopta V3 en las configuraciones de producción (b) y (c) y se vuelven a correr los 14 + 4 casos, como en el plan aprobado. Las corridas anteriores se conservan renombradas con el sufijo `_stv0`, como evidencia de la falla.
+
+**Precisiones fijadas antes de evaluar la verificación con pyOCEAN** (commit 32a21ed, antes de cualquier corrida de 30 d):
+- "En todo momento", para Q = 0, significa cada paso del modelo.
+- "Deriva", para Q = 100, es el máximo de |η̄(t) − η̄(20 d)| en los días 20–30, la lectura más estricta.
+- La picnoclina es la isoterma de 1.25 °C, que reproduce los 200.0 m de la tabla de MITgcm en t = 0.
+- La "OB ± 3 columnas" son las caras u 198–200, porque en pyOCEAN la OB está en el borde del dominio.
+- El runoff de 100 m³/s se reparte en las 6 celdas de la pluma de (c), en j = 12–17.
+
+**Diferencias declaradas (clase b/c).** El runoff entra en superficie, no en profundidad. La esponja es de 1200/60 s, no la zona de (c) de 600/21600 s. No hay ajuste convectivo. Los esquemas de advección son distintos. `pyo_shelf` es el análogo limpio de `c_fjord_shelf`.
