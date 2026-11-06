@@ -275,3 +275,18 @@ done
   - `salt_addMass = 1.234567E+05`;
   - CFL;
   - monitor de T/S (C5': T y S dentro del rango inicial y de la fuente).
+
+## Corrida cronometrada de 1 día (2026-11-05): falla de la frontera de Orlanski
+
+`c_fjord_all_short1d` (2 etapas de 12 h, np = 5, dt = 60 s) terminó OK y es muy barata: 13 s + 15 s de pared. **Pero el dominio se vacía:**
+
+| t (h) | η medio (m) | obc_E_uVel_Int (m³/s) |
+|---|---|---|
+| 0 | 0 | 0 |
+| 12 | −3.03 | +28 900 (sale) |
+| 24 | −11.38 | +58 300 (sale) |
+
+- **Lo esperado:** la fuente neta es Q0 = 100 m³/s (Σ addMass/ρ0 = Q0, `net_addmass_over_rho0_Q0` = 1.0). η medio debería *subir* ~Q0·t/A ≈ 0.036 m/día si nada saliera, y quedar ≈ 0 si la frontera sacara Q0.
+- **Lo observado:** sale 300–600 veces Q0. Es la misma inestabilidad de Orlanski que en (b), aquí en sentido de vaciado.
+- **Por qué Flather tampoco sirve en (c):** c = √(9.81·500) ≈ 70 m/s, así que c·dt/dx = 70·60/200 ≈ 21. Forma explícita inestable.
+- **Propuesta:** Stevens, igual que en (b), con u_ob media en profundidad = Q0_total/A_ob. El forzamiento de plataforma (OBEt/OBEs variables + esponja T/S) se mantiene. **Costo:** el modo barotrópico queda cerrado en la frontera (no hay intercambio de setup de viento con la plataforma). El intercambio baroclínico (Jackson 2018), que es el objetivo de (c), sigue libre.
