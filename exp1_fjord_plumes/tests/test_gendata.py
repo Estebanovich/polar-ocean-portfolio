@@ -136,6 +136,7 @@ def test_cases_yaml_lists_all_cases():
     exp |= {"conv_dx10", "conv_dx5", "conv_dx2p5", "sens_freeslip", "sens_xu2012"}  # R20
     exp |= {"b_obdiag_iv_twolayer_x0_40", "b_obdiag_orl_twolayer_x0_40"}  # OB diagnosis, R36
     exp |= {"b_bg_twolayer_nodischarge", "b_bg_sermilik_nodischarge"}  # plume-excess background
+    exp |= {"b_dx5_twolayer_single"}  # PD2(b) D2 resolution test
     assert names == exp
 
 
@@ -750,3 +751,21 @@ def test_b_background_case_has_no_discharge_and_same_ambient(tmp_path, strat):
     assert not np.any(np.fromfile(bg / "OBEu.bin", ">f8"))
     for f in ("T.init.bin", "S.init.bin", "topog.bin", "R_icefront.bin", "OBEt.bin", "OBEs.bin"):
         assert (bg / f).read_bytes() == (sg / f).read_bytes(), f
+
+
+def test_b_dx5_single_matches_10m_case_physics(tmp_path):
+    """D2: same physics and ambient as b_3d_twolayer_single on a grid halved in x, y, z; one source of Q0."""
+    import numpy as np
+    da = make_case("b_dx5_twolayer_single", tmp_path / "a")
+    db = make_case("b_3d_twolayer_single", tmp_path / "b")
+    a, b = (json.loads((d / "case.json").read_text()) for d in (da, db))
+    assert a["Q0_total"] == b["Q0_total"] == 10.0 and len(a["source_cells"]) == 1
+    za = -(np.arange(60) + 0.5) * 5.0
+    zb = -(np.arange(30) + 0.5) * 10.0
+    Ta = np.fromfile(da / "T.init.bin", ">f8").reshape(60, 240, 200)[:, 120, 100]
+    Tb = np.fromfile(db / "T.init.bin", ">f8").reshape(30, 120, 100)[:, 60, 50]
+    assert np.allclose(np.interp(zb[::-1], za[::-1], Ta[::-1]), Tb[::-1], atol=0.15)
+    for f in ("data",):
+        ta, tb = ((d / f).read_text() for d in (da, db))
+        for key in ("viscAh=", "viscAr=", "diffKhT=", "diffKrT="):
+            assert [l for l in ta.splitlines() if key in l] == [l for l in tb.splitlines() if key in l], key

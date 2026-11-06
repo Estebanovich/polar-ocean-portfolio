@@ -370,3 +370,21 @@ C4′ **PASA bajo su definición pre-registrada** (0.520 y 0.525), y eso no se c
 **Estatus.** Es una métrica **posterior a C4′, informativa**. No reemplaza a C4′, que sigue PASA bajo su definición, con la advertencia anterior. No tiene umbral de pase. Se compara cualitativamente con el ≈ 0.5 del laboratorio, sin forzar el acuerdo.
 
 **Supuesto declarado.** El fondo es aditivo: la pluma no cambia el derretimiento ambiente fuera de su huella. Si la pluma altera la circulación de toda la cara, E mezcla los dos efectos.
+
+### D1 y D2 para el fallo de C4: fijados antes de calcular o correr (2026-11-06, aprobados por Esteban)
+
+**D1 (post-hoc, sin modelo).** Q_m(z) es el flujo de volumen ascendente junto a la cara: ∫ w⁺ dx dy sobre i < 10 (100 m), con la media de w en la ventana de 2–3 h, en `b_3d_{twolayer,sermilik}_single`. Se compara con Q_t(z) de `point_plume(half_cone)` con el mismo ambiente que C4.
+- **Lectura:** si Q_m/Q_t < 0.6 en la mitad inferior de la columna, el modelo arrastra mucho menos que la teoría, y eso explica que la pluma llegue a la superficie.
+- D1 no separa la causa física (b/d) de la numérica (c).
+
+**D2 (convergencia).** `b_dx5_twolayer_single`: dx = dy = dz = 5 m, nx × ny × nz = 200 × 240 × 60, dt = 1 s, 3 h. La física queda fija: viscosidades y difusividades iguales, mismo perfil y Q0 = 10 m³/s, según `test_b_dx5_single_matches_10m_case_physics`.
+- **Diferencias declaradas:**
+  - la fuente es una celda de 5 × 5 m (antes 10 × 10 m), así que la velocidad de entrada es 4× mayor;
+  - la esponja U/V tiene 10 celdas = 50 m (antes 100 m);
+  - el ancho mojado es 1190 m (antes 1180 m).
+- **Antes de la corrida larga** se hace una corrida cronometrada de 10 min de modelo. Si la extrapolación supera 8 h, no se corre y se reporta.
+- **Criterios de interpretación (C4 con el mismo código y la misma ventana):**
+  - |Δ(diff/H)| < 0.03 entre 5 y 10 m → la resolución no domina C4, lo que favorece la clase (b)/(d).
+  - diff/H baja en más de 0.05 → la resolución es importante (clase c).
+  - En medio → no concluyente.
+  - Los criterios OB 1–3 deben pasar; si no, D2 no se interpreta.

@@ -123,6 +123,9 @@ configs:
   # OB diagnosis builds (2026-11-06, notes/pd1_b_twoplume3d.md); family keeps the (b) generator
   b_obdiag: {<<: *b_twoplume3d, family: b_twoplume3d, template_config: b_twoplume3d}
   b_obdiag_orl: {<<: *b_twoplume3d, family: b_twoplume3d}
+  # PD2(b) D2 resolution test (2026-11-06, notes/pd1_b): (b) at dx = dy = dz = 5 m, physics fixed
+  b_twoplume3d_dx5: {<<: *b_twoplume3d, family: b_twoplume3d, template_config: b_twoplume3d,
+                     nx: 200, ny: 240, dx: 5.0, dy: 5.0, dz: 5.0, deltaT: 1.0}
 cases:
   a_line2d_twolayer_q0.01: {config: a_line2d, strat: twolayer, discharge: line, q0: 0.01}
   a_line2d_twolayer_q0.03: {config: a_line2d, strat: twolayer, discharge: line, q0: 0.03}
@@ -171,3 +174,4 @@ cases:
   # OB diagnosis (2026-11-06): V3 = Stevens + interior baroclinic u; V6 = Orlanski + balance (BayIW)
   b_obdiag_iv_twolayer_x0_40: {config: b_obdiag, strat: twolayer, discharge: points, nsrc: 2, x0: 40.0}
   b_obdiag_orl_twolayer_x0_40: {config: b_obdiag_orl, strat: twolayer, discharge: points, nsrc: 2, x0: 40.0}
+  b_dx5_twolayer_single: {config: b_twoplume3d_dx5, strat: twolayer, discharge: points, nsrc: 1}
