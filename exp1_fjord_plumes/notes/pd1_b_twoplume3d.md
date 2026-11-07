@@ -465,3 +465,26 @@ Corrida: `/Volumes/LaCie/portfolio_runs/exp1/b_dx5_twolayer_single`. Llegó a 3 
 - Hay diferencias declaradas: la fuente de 5 × 5 m tiene una velocidad de entrada 4× mayor, y la esponja es de 50 m.
 
 **Consecuencia para (b):** todas las corridas de la campaña a 10 m tienen la pluma llegando a la superficie por falta de resolución. R_E y la Figura 2 a 10 m deben llevar esta advertencia o rehacerse a 5 m. Una corrida de 5 m cuesta ~5 h; la campaña completa (14 corridas, ~70 h) excede el presupuesto de 24 h. Decisión de Esteban.
+
+### Subconjunto de (b) a 5 m: fijado antes de correr (2026-11-06, opción 1 aprobada por Esteban)
+
+**Autorización.** Esteban aprobó ~20 h de cómputo adicional, por encima del presupuesto de 24 h de Exp. 1.
+
+**Casos** (config `b_twoplume3d_dx5`, twolayer, misma física que a 10 m según `test_b_dx5_subset_matches_10m_cases`):
+- `b_dx5_bg_twolayer_nodischarge` (Q0 = 0);
+- `b_dx5_twolayer_x0_0`, `b_dx5_twolayer_x0_20`, `b_dx5_twolayer_x0_80`;
+- `b_dx5_twolayer_single` ya existe (D2).
+
+Orden: fondo, x0 = 20, x0 = 0, x0 = 80. Cada uno tarda ~5 h con 5 rangos.
+
+**Requisitos por corrida:** criterios OB 1–3 (razón en columnas 196–198 frente a 20–179). Si una corrida falla, no se interpreta.
+
+**Métrica (la misma que a 10 m, informativa, sin umbral):**
+- R_E(x0) = E(x0)/(2·E_single), con E = M − M_fondo a 5 m, ventana 2–3 h.
+- Se mantiene la regla ε: resoluble solo si E_single ≥ 10·ε.
+- Se reporta junto a R_E a 10 m y se compara cualitativamente con el ≈ 0.5 del laboratorio.
+- También se reporta C4 de cada corrida de dos plumas (z_detach del máximo en y de w), como contexto.
+
+**Lectura fijada ahora:**
+- Si R_E a 5 m difiere de 10 m en más de 0.1 para algún x0, la interacción entre plumas depende de la resolución, y la Figura 2 se presenta a 5 m.
+- Si no, la conclusión "las plumas casi no interactúan" es robusta a la resolución dentro de este rango.

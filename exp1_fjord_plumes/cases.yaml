@@ -175,3 +175,8 @@ cases:
   b_obdiag_iv_twolayer_x0_40: {config: b_obdiag, strat: twolayer, discharge: points, nsrc: 2, x0: 40.0}
   b_obdiag_orl_twolayer_x0_40: {config: b_obdiag_orl, strat: twolayer, discharge: points, nsrc: 2, x0: 40.0}
   b_dx5_twolayer_single: {config: b_twoplume3d_dx5, strat: twolayer, discharge: points, nsrc: 1}
+  # (b) subset at 5 m (option 1, Esteban 2026-11-06; notes/pd1_b "Subconjunto a 5 m")
+  b_dx5_bg_twolayer_nodischarge: {config: b_twoplume3d_dx5, strat: twolayer, discharge: points, nsrc: 1, Q0: 0.0}
+  b_dx5_twolayer_x0_0: {config: b_twoplume3d_dx5, strat: twolayer, discharge: points, nsrc: 2, x0: 0.0}
+  b_dx5_twolayer_x0_20: {config: b_twoplume3d_dx5, strat: twolayer, discharge: points, nsrc: 2, x0: 20.0}
+  b_dx5_twolayer_x0_80: {config: b_twoplume3d_dx5, strat: twolayer, discharge: points, nsrc: 2, x0: 80.0}

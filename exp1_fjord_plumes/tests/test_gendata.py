@@ -137,6 +137,7 @@ def test_cases_yaml_lists_all_cases():
     exp |= {"b_obdiag_iv_twolayer_x0_40", "b_obdiag_orl_twolayer_x0_40"}  # OB diagnosis, R36
     exp |= {"b_bg_twolayer_nodischarge", "b_bg_sermilik_nodischarge"}  # plume-excess background
     exp |= {"b_dx5_twolayer_single"}  # PD2(b) D2 resolution test
+    exp |= {"b_dx5_bg_twolayer_nodischarge", "b_dx5_twolayer_x0_0", "b_dx5_twolayer_x0_20", "b_dx5_twolayer_x0_80"}  # 5 m subset
     assert names == exp
 
 
@@ -769,3 +770,18 @@ def test_b_dx5_single_matches_10m_case_physics(tmp_path):
         ta, tb = ((d / f).read_text() for d in (da, db))
         for key in ("viscAh=", "viscAr=", "diffKhT=", "diffKrT="):
             assert [l for l in ta.splitlines() if key in l] == [l for l in tb.splitlines() if key in l], key
+
+
+def test_b_dx5_subset_matches_10m_cases(tmp_path):
+    """5 m subset: same Q0 and mixing as the 10 m twin, separation exact on the 5 m grid; background has no discharge."""
+    for x in (0, 20, 80):
+        da = make_case(f"b_dx5_twolayer_x0_{x}", tmp_path / f"a{x}")
+        db = make_case(f"b_3d_twolayer_x0_{x}", tmp_path / f"b{x}")
+        a, b = (json.loads((d / "case.json").read_text()) for d in (da, db))
+        assert a["x0_actual"] == b["x0_actual"] == float(x)
+        assert a["Q0_total"] == b["Q0_total"] == 20.0
+        ta, tb = ((d / "data").read_text() for d in (da, db))
+        for key in ("viscAh=", "viscAr=", "diffKhT=", "diffKrT="):
+            assert [l for l in ta.splitlines() if key in l] == [l for l in tb.splitlines() if key in l], key
+    bg = json.loads((make_case("b_dx5_bg_twolayer_nodischarge", tmp_path / "bg") / "case.json").read_text())
+    assert bg["Q0_total"] == 0.0 and bg["sum_addmass_kg_s"] == 0.0 and bg["params"]["dx"] == 5.0
