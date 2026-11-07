@@ -1,0 +1,15 @@
+{
+  "source": "c4_for(run, (2, 3)); notes/pd1_b_twoplume3d.md, D2",
+  "dx10": {
+    "run": "b_3d_twolayer_single",
+    "z_detach_model": -1.866500839000155,
+    "z_detach_theory": -66.14803984366684,
+    "diff_over_H": 0.21427179668222227
+  },
+  "dx5": {
+    "run": "b_dx5_twolayer_single",
+    "z_detach_model": -55.72827295261513,
+    "z_detach_theory": -66.4048148406216,
+    "diff_over_H": 0.035588472960021565
+  }
+}
