@@ -126,7 +126,7 @@ def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80, max_mb: f
     cmap.set_bad("0.82")
     fig = plt.figure(figsize=(10.0, 7.0), facecolor="white")
     gs = fig.add_gridspec(3, 2, width_ratios=[1, 0.03], height_ratios=[0.8, 1.2, 0.8],
-                          hspace=0.55, wspace=0.05, left=0.08, right=0.92, top=0.9, bottom=0.08)
+                          hspace=0.55, wspace=0.05, left=0.08, right=0.92, top=0.9, bottom=0.13)
     axA, axB, axC = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[2, 0])
     cax = fig.add_subplot(gs[0:2, 1])
     zA = np.ma.masked_array(np.zeros((ny, nx)), land)
@@ -151,6 +151,12 @@ def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80, max_mb: f
     axC.set(xlim=(0, t_end / 86400), ylim=(0, QEX_LIM / 1e3), xlabel="time (days)",
             ylabel=r"$Q_{ex}$ (10$^3$ m$^3$/s)", title=f"(c) exchange flux at x = {xs:.0f} km")
     fig.suptitle(f"{p['case']}", x=0.06, ha="left", fontsize=11)
+    # Boundary types stated explicitly (as in animate_b): only the fjord mouth is open.
+    fig.text(0.08, 0.008,
+             "Boundaries: ice face (x = 0) and fjord side walls are closed (no normal flow), so waves "
+             "reflect there by design.\nThe only open boundary is the mouth (x ≈ %.0f km): Stevens (1990) "
+             "radiation with interior velocity, plus the grey sponge." % (nx * dx / 1e3),
+             ha="left", va="bottom", fontsize=7.5, color="0.25")
     clock = fig.text(0.97, 0.965, "", ha="right", va="top", family="monospace", fontsize=11)
 
     def draw(fr):
