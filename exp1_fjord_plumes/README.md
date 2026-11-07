@@ -9,15 +9,52 @@ Subglacial discharge plumes control submarine melting at tidewater glaciers, but
 
 ## 1. Introduction
 
-Ocean-driven melting at the fronts of tidewater glaciers is set by the buoyant plumes that form where subglacial meltwater leaves the glacier bed (Straneo & Cenedese, 2015). Buoyant plume theory (Morton et al., 1956; Jenkins, 2011; Slater et al., 2016) predicts how far a plume rises, how much ambient water it entrains, and therefore how much heat reaches the ice. Ocean models of glacial fjords either resolve the plume (Xu et al., 2012; Sciascia et al., 2013; Kimura et al., 2014) or replace it with a theory-based source and sink (Cowton et al., 2015; Carroll et al., 2017). Either way, the result depends on how well the theory and the model agree, and on which external forcing dominates the fjord.
+### 1.1 Tidewater glaciers and ocean melting
 
-Three questions motivate this experiment:
+Many outlet glaciers of the Greenland Ice Sheet end in the sea at a near-vertical ice cliff, typically several hundred metres deep, at the head of a long, narrow fjord. These are *tidewater glaciers*. Straneo & Cenedese (2015) review how mass loss from the ice sheet quadrupled over the two decades before their review, making Greenland responsible for about a quarter of the rate of sea-level rise at the time, with the widespread retreat and speed-up of marine-terminating glaciers as a major contributor. One proposed trigger is the ocean: warm water in the fjords melts the submerged ice front (*submarine melting*). This undercuts the front, promotes calving and can reduce the resistance that holds the glacier back.
 
-1. **Does a resolved MITgcm plume agree with plume theory when both use the same melt law?** Model–theory comparisons are often confounded by different melt parameterisations. Here the theory is run with MITgcm's own ice-front thermodynamics (`pkg/icefront`), line by line.
-2. **How do two neighbouring plumes interact in a stratified fjord?** Cenedese & Gatto (2016a) found in the laboratory that two sources close together melt about half as much as two independent plumes. Kimura et al. (2014) simulated two plumes, but in an unstratified ambient. Experiment (b) extends these to two-layer and continuous stratification in three dimensions.
-3. **How does the exchange driven by a plume compare with wind- and shelf-driven exchange?** Carroll et al. (2017) showed that wind amplifies plume-driven exchange, Jackson et al. (2018) studied shelf forcing without a plume, and Sanchez et al. (2024) compared plume and coastal forcing in a realistic Sermilik Fjord. Experiment (c) separates the three forcings in one idealised fjord and compares the volume exchanged with the heat delivered to the front.
+The water that reaches the ice comes from the shelf and is strongly layered. Greenland fjords typically hold cold, fresh **Polar Water** (near −1.5 °C) over warm, salty **Atlantic Water** (3–4 °C) below a few hundred metres (Sciascia et al., 2013; Straneo & Cenedese, 2015). The heat available for melting therefore sits at depth, and how much of it reaches the ice depends on the circulation in the fjord.
 
-The experiment is designed as a test of rigour as much as of physics: criteria were pre-registered, a failed criterion is followed by convergence or sensitivity tests rather than by tuning, and every model–reference difference is classified as (a) our error, (b) missing physics, (c) a numerical or set-up choice, or (d) an error in the reference.
+### 1.2 Subglacial discharge plumes
+
+In summer, meltwater produced at the surface of the ice sheet drains through crevasses and moulins to the glacier bed. It flows along the bed and leaves the glacier at the base of the ice front, at the *grounding line*, hundreds of metres below the sea surface (Jenkins, 2011; Slater et al., 2016). This is *subglacial discharge*. Because it is fresh, it is much lighter than the surrounding seawater and rises along the ice face as a turbulent **buoyant plume**.
+
+As the plume rises it **entrains** (mixes in) ambient water. The classical entrainment hypothesis of Morton et al. (1956) states that the inflow of ambient water at each height is proportional to the plume's velocity there, with a constant of proportionality α, the *entrainment coefficient*. Three consequences follow:
+
+- The plume grows in volume and slows down as it rises.
+- It draws warm Atlantic Water against the ice, and the turbulence it creates in the boundary layer next to the ice raises the rate of heat transfer to the ice (Jenkins, 2011).
+- Its buoyancy decreases with height, because the entrained water is denser than the discharge. In a stratified fjord the plume can reach a depth where its density equals that of its surroundings, the **neutral-buoyancy depth**. It then stops being pushed upward, overshoots a little on its momentum, **detaches** from the ice and spreads horizontally into the fjord. Where it detaches sets how much of the ice face it touches.
+
+*Buoyant plume theory* turns these ideas into ordinary differential equations for the plume's width, velocity, temperature and salinity with height, coupled to a melt law at the ice. Its geometry depends on how the discharge leaves the glacier:
+
+- a **line plume** when it emerges as a sheet along a wide stretch of the front (Jenkins, 2011);
+- a **point plume** when it emerges from a single channel; against a wall it takes the shape of a half cone (Slater et al., 2016).
+
+Fjord and climate models use the theory, directly or as a parameterisation, to estimate submarine melting (Cowton et al., 2015; Slater et al., 2016).
+
+Real glaciers rarely have a single channel. When two channels are close, their plumes can merge and compete for the same ambient water. In laboratory experiments, Cenedese & Gatto (2016a) found that two close sources melt less ice than two isolated plumes. Their results come from a two-layer tank, and the numerical study of Kimura et al. (2014) used an unstratified ocean, so how two plumes interact in a continuously stratified fjord remains open.
+
+### 1.3 Fjord circulation and its forcing
+
+The plume also drives the fjord's circulation:
+
+- **Plume-driven exchange.** Its outflow at the neutral-buoyancy depth carries glacially modified water toward the sea, and the ambient water it entrains near the glacier must be replaced by inflow from the shelf. The result is an exchange flow that brings shelf water, including Atlantic Water, toward the ice (Cowton et al., 2015; Carroll et al., 2017).
+- **Wind.** Strong along-fjord winds, often katabatic winds blowing down from the ice sheet, drive an exchange that exports glacial fresh water in the upper layer and renews the warm, salty water at depth (Spall et al., 2017).
+- **Shelf forcing.** Winds over the shelf raise and lower the shelf pycnocline over periods of days. That vertical motion propagates into the fjord as internal waves and drives a strong exchange known as the *intermediary circulation*, which in some East Greenland fjords dominates variability outside summer (Jackson et al., 2014, 2018; Straneo & Cenedese, 2015).
+
+Rotation shapes all three. The relevant scale is the internal Rossby radius Rd, the distance over which rotation balances the pressure gradients of the layered flow. A fjord narrower than Rd behaves almost as a two-dimensional channel; a wider one develops cross-fjord structure and boundary currents (Carroll et al., 2017; Jackson et al., 2018).
+
+Which forcing controls the delivery of heat to the glacier is still debated. Carroll et al. (2017) found that wind can amplify the plume-driven exchange. In a realistic model of Sermilik Fjord, Sanchez et al. (2024) found that including the plume doubles the summer exchange, which is then primarily plume-driven. Most studies compare forcings by the volume of water exchanged, but the glacier responds to the heat that reaches it, and the two need not agree.
+
+### 1.4 This experiment
+
+Experiment 1 asks three linked questions with idealised MITgcm simulations, each building on the previous one:
+
+1. **(a) Does a resolved plume agree with plume theory when both use the same melt law?** Model–theory comparisons are often confounded by different melt parameterisations. Here the theory is run with MITgcm's own ice-front melt law, line by line, and compared with a resolved two-dimensional line plume in two stratifications.
+2. **(b) How do two neighbouring point plumes interact in a stratified ambient?** Two point plumes are placed at increasing separation along a three-dimensional ice face, in a two-layer and a continuous stratification. The total melt is compared with that of two isolated plumes, extending the laboratory experiments of Cenedese & Gatto (2016a) and the unstratified simulations of Kimura et al. (2014).
+3. **(c) In a rotating fjord, how does the plume compare with wind and shelf forcing?** The plume, an along-fjord wind pulse and a shelf pycnocline oscillation are applied separately and together in one idealised fjord. Each is compared both by the volume exchanged with the shelf and by the heat carried toward the glacier.
+
+The experiment is designed as a test of rigour as much as of physics. Success criteria were fixed before running. A failed criterion is followed by convergence or sensitivity tests rather than by tuning. Every model–reference difference is classified as (a) our error, (b) missing physics, (c) a numerical or set-up choice, or (d) an error in the reference.
 
 ## 2. Methods
 
@@ -224,6 +261,8 @@ Paths, the Python environment and compute limits are in the repository `RUNNING.
 - Sanchez, R., et al. (2024). Relative roles of plume and coastal forcing on exchange flow variability of a glacial fjord. *J. Geophys. Res. Oceans.* https://doi.org/10.1029/2023JC020492
 - Sciascia, R., et al. (2013). Seasonal variability of submarine melt rate and circulation in an East Greenland fjord. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/jgrc.20142
 - Slater, D. A., et al. (2016). Scalings for submarine melting at tidewater glaciers from buoyant plume theory. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-15-0132.1
+- Jackson, R. H., et al. (2014). Externally forced fluctuations in ocean temperature at Greenland glaciers in non-summer months. *Nat. Geosci.* https://doi.org/10.1038/NGEO2186
+- Spall, M. A., et al. (2017). Katabatic wind-driven exchange in fjords. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/2017JC013026
 - Stevens, D. P. (1990). On open boundary conditions for three dimensional primitive equation ocean circulation models. *Geophys. Astrophys. Fluid Dyn.* [DOI to verify]
 - Straneo, F., & Cenedese, C. (2015). The dynamics of Greenland's glacial fjords and their role in climate. *Annu. Rev. Mar. Sci.* https://doi.org/10.1146/annurev-marine-010213-135133
 - Xu, Y., et al. (2012). Numerical experiments on subaqueous melting of Greenland tidewater glaciers in response to ocean warming and enhanced subglacial discharge. *Ann. Glaciol.* https://doi.org/10.3189/2012AoG60A139
