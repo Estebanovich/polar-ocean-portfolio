@@ -49,6 +49,7 @@ configs:
                              # closes the domain at the ice face (OB at Nx-1, data.obcs)
     deltaT: 3.0              # Task 4: set from the timed short run (bitacora / PD1)
     endTime: 172800.0        # Task 4: 48 h campaign
+    diag_snap_freq: "-3600."  # snapshot period of THETA/SALT/UVEL/WVEL/ETAN (s, < 0 = instantaneous)
   # PD2 convergence (R20): dx0 = dz refined together near the face; far field
   # held fixed (r 1.03, dxmax 200 m), so the plume-region refinement ratio is
   # r_eff ~ 1.9, not 2 (pd2_convergence.md); L differs by < 0.4 %.
@@ -59,6 +60,8 @@ configs:
   # PD2 sensitivity at the production grid (dx0 5 m, dz 10 m, deltaT 3 s);
   # own config name so `--config a_line2d` still selects only production.
   sens_line2d: {<<: [*study, *a_line2d], monitorFreq: "3.0"}  # monitor every step (deltaT 3)
+  # R29 animation rerun of (a): own config so production campaigns (a_line2d, '*') never select it
+  a_line2d_anim: {<<: *a_line2d, template_config: a_line2d}
   b_twoplume3d: &b_twoplume3d
     nx: 100
     ny: 120
@@ -133,6 +136,8 @@ cases:
   a_line2d_sermilik_q0.01: {config: a_line2d, strat: sermilik, discharge: line, q0: 0.01}
   a_line2d_sermilik_q0.03: {config: a_line2d, strat: sermilik, discharge: line, q0: 0.03}
   a_line2d_sermilik_q0.1: {config: a_line2d, strat: sermilik, discharge: line, q0: 0.1}
+  # R29 animation rerun: first 6 h with 5-min snapshots; output only, physics as a_line2d_twolayer_q0.03
+  a_line2d_twolayer_q0.03_anim: {config: a_line2d_anim, strat: twolayer, discharge: line, q0: 0.03, endTime: 21600.0, diag_snap_freq: "-300."}
   b_3d_twolayer_x0_0: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 2, x0: 0.0}
   b_3d_twolayer_x0_20: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 2, x0: 20.0}
   b_3d_twolayer_x0_40: {config: b_twoplume3d, strat: twolayer, discharge: points, nsrc: 2, x0: 40.0}

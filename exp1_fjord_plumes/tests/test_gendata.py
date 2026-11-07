@@ -137,6 +137,7 @@ def test_cases_yaml_lists_all_cases():
     exp |= {"b_obdiag_iv_twolayer_x0_40", "b_obdiag_orl_twolayer_x0_40"}  # OB diagnosis, R36
     exp |= {"b_bg_twolayer_nodischarge", "b_bg_sermilik_nodischarge"}  # plume-excess background
     exp |= {"b_dx5_twolayer_single"}  # PD2(b) D2 resolution test
+    exp |= {"a_line2d_twolayer_q0.03_anim"}  # R29 animation rerun
     exp |= {"b_dx5_bg_twolayer_nodischarge", "b_dx5_twolayer_x0_0", "b_dx5_twolayer_x0_20", "b_dx5_twolayer_x0_80"}  # 5 m subset
     assert names == exp
 
@@ -785,3 +786,17 @@ def test_b_dx5_subset_matches_10m_cases(tmp_path):
             assert [l for l in ta.splitlines() if key in l] == [l for l in tb.splitlines() if key in l], key
     bg = json.loads((make_case("b_dx5_bg_twolayer_nodischarge", tmp_path / "bg") / "case.json").read_text())
     assert bg["Q0_total"] == 0.0 and bg["sum_addmass_kg_s"] == 0.0 and bg["params"]["dx"] == 5.0
+
+
+def test_a_anim_case_differs_only_in_output(tmp_path):
+    """R29: the animation rerun changes only the snapshot period and the run length, never the physics."""
+    import re
+    da = make_case("a_line2d_twolayer_q0.03_anim", tmp_path / "a")
+    db = make_case("a_line2d_twolayer_q0.03", tmp_path / "b")
+    for f in sorted(p.name for p in db.iterdir() if p.suffix == ".bin"):
+        assert (da / f).read_bytes() == (db / f).read_bytes(), f
+    strip = lambda txt: [l for l in txt.splitlines() if not re.search(r"endTime|nTimeSteps|frequency\((1|2|3|4|5)\)|-- case ", l)]
+    for f in ("data", "data.diagnostics", "data.obcs", "data.icefront", "data.pkg"):
+        assert strip((da / f).read_text()) == strip((db / f).read_text()), f
+    assert "frequency(1) = -300." in (da / "data.diagnostics").read_text()
+    assert "frequency(1) = -3600." in (db / "data.diagnostics").read_text()

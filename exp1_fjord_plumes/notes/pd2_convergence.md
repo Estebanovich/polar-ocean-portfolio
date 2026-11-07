@@ -233,3 +233,13 @@ La corrida de 24 h salió inválida por no ser estacionaria (2.6 % entre 12–18
 - **C2 y C2'' pasan.** melt_ratio = 1.11. R_w = 1.13.
 - **Lectura pre-registrada:** sensibilidad *conjunta* de cierre + arrastre de pared. R_Q sube 0.17 y la pluma se estrecha a la mitad. C2' sigue sin pasar (0.72 < 0.75).
 - **Lectura adicional (hipótesis, no atribución formal):** `sens_freeslip` solo no tuvo efecto detectable (ΔR_Q = +0.019). Es consistente con que la mayor parte del cambio venga de la mezcla de cierre: viscAh = 0 con una biarmónica pequeña frente a viscAh constante. Es decir, la viscosidad/difusión horizontal de malla del cierre de producción ensancha la pluma. Esto respalda la clase (b)/(c) por cierre, **no** por resolución. No se separa formalmente porque el diseño no lo permite.
+
+## Corrida de animación de (a) (R29), fijada antes de correr (2026-11-07)
+
+**Caso:** `a_line2d_twolayer_q0.03_anim` (config `a_line2d_anim` = `a_line2d` con sus mismas plantillas y `code/`). Es la misma física que `a_line2d_twolayer_q0.03`, 6 h, con instantáneas cada 5 min en lugar de cada hora. Corre en serie (np = 1) cuando los 5 núcleos P estén libres (después del subconjunto de (b) a 5 m).
+
+**Verificación (debe pasar para usar la animación):**
+- `test_a_anim_case_differs_only_in_output`: binarios de entrada idénticos; `data*` difieren solo en endTime/nTimeSteps, la frecuencia de instantáneas y el nombre del caso.
+- Con la corrida hecha: THETA y WVEL en t = 1, 2, …, 6 h coinciden con los de la corrida de producción, max |Δ| ≤ 1e-12. Si no coinciden, la animación no se usa y se investiga.
+
+**Productos:** `figures/fig1_anim_a_line2d_twolayer_q0.03_anim.gif` (arranque, 0–6 h). Las animaciones de 48 h ya hechas usan las instantáneas horarias de producción (`fig1_anim_a_line2d_{twolayer,sermilik}_q0.03.gif`).
