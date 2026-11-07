@@ -1,0 +1,891 @@
+[
+ {
+  "command": "file.new",
+  "params": {
+   "width": 1000,
+   "height": 560,
+   "units": "Points",
+   "backgroundContents": "white",
+   "name": "fig0_schematic"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 0,
+   "y": 0,
+   "width": 1000,
+   "height": 110
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#f6f9fb"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 170,
+   "y": 110,
+   "width": 830,
+   "height": 150
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#a9cfe6"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 170,
+   "y": 260,
+   "width": 830,
+   "height": 160
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#f2b48c"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 170,
+   "y": 242,
+   "width": 830,
+   "height": 36
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "gradient": {
+    "kind": "linear",
+    "angle": 90,
+    "stops": [
+     {
+      "offset": 0,
+      "color": "#f2b48c"
+     },
+     {
+      "offset": 1,
+      "color": "#a9cfe6"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 0,
+   "y": 420,
+   "width": 1000,
+   "height": 140
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#a39282"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 170,
+   "y1": 110,
+   "x2": 1000,
+   "y2": 110
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.5
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 0 52 L 60 40 L 120 46 L 170 34 L 170 420 L 0 420 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#e8f3f9"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#6b8fa3"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.5
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 105,
+   "y1": 44,
+   "x2": 105,
+   "y2": 412
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.6,
+   "dash": [
+    5,
+    4
+   ]
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 105,
+   "y1": 412,
+   "x2": 166,
+   "y2": 412
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.6,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "dash": [
+    5,
+    4
+   ]
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 170 420 L 180 420 C 195 350 210 300 228 262 C 300 266 450 262 560 246 C 450 230 300 226 170 236 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b9a7d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 90
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 184,
+   "y1": 404,
+   "x2": 194,
+   "y2": 278
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 3,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 560,
+   "y1": 246,
+   "x2": 700,
+   "y2": 246
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#6a4c9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 3,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 265,
+   "y1": 395,
+   "x2": 218.0,
+   "y2": 391
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#c0392b"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.6,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 265,
+   "y1": 350,
+   "x2": 214.4,
+   "y2": 346
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#c0392b"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.6,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 265,
+   "y1": 305,
+   "x2": 210.8,
+   "y2": 301
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#c0392b"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.6,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 840,
+   "y1": 370,
+   "x2": 470,
+   "y2": 370
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#c0392b"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 3,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 300,
+   "y1": 82,
+   "x2": 420,
+   "y2": 82
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.2,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 480,
+   "y1": 82,
+   "x2": 600,
+   "y2": 82
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.2,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 660,
+   "y1": 82,
+   "x2": 780,
+   "y2": 82
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.2,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 900,
+   "y1": 110,
+   "x2": 900,
+   "y2": 420
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "dash": [
+    3,
+    3
+   ]
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 945,
+   "y1": 220,
+   "x2": 945,
+   "y2": 300
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.2,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "startArrow": "Triangle"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 430 260 C 500 246 600 274 700 260 C 780 246 840 274 900 260"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 30,
+   "y": 24,
+   "text": "Glacier",
+   "size": 15,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 520,
+   "y": 24,
+   "text": "Fjord",
+   "size": 15,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 945,
+   "y": 24,
+   "text": "Shelf",
+   "size": 15,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 46,
+   "y": 300,
+   "text": "surface meltwater drains to the bed",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#2c6ea3",
+   "rotation": -90
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 150,
+   "y": 395,
+   "text": "submarine melting",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#c0392b",
+   "rotation": -90
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 176,
+   "y": 438,
+   "text": "subglacial discharge leaves the bed at the grounding line",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 246,
+   "y": 228,
+   "text": "neutral buoyancy: the plume detaches and spreads",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 270,
+   "y": 330,
+   "text": "entrainment",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#c0392b"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 232,
+   "y": 285,
+   "text": "buoyant plume rises along the ice",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#4b3577"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 575,
+   "y": 236,
+   "text": "outflow of plume water",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#6a4c9c"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 480,
+   "y": 390,
+   "text": "warm Atlantic Water flows toward the glacier",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#c0392b"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 560,
+   "y": 70,
+   "text": "along-fjord wind",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 890,
+   "y": 160,
+   "text": "Polar Water: cold, fresh",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 890,
+   "y": 410,
+   "text": "Atlantic Water: warm, salty",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 960,
+   "y": 318,
+   "text": "pycnocline",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 960,
+   "y": 332,
+   "text": "heaving (days)",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 170,
+   "y1": 484,
+   "x2": 300,
+   "y2": 484
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 170,
+   "y": 500,
+   "text": "(a), (b): plume at the ice face, resolved (metres)",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 170,
+   "y1": 516,
+   "x2": 900,
+   "y2": 516
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 170,
+   "y": 532,
+   "text": "(c): whole fjord with plume, wind and shelf forcing; plume parameterised (40 km)",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 990,
+   "y": 552,
+   "text": "schematic, not to scale",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "justify": "right"
+  }
+ }
+]

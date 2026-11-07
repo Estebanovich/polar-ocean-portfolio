@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="560" viewBox="0 0 1000 560">
+  <defs>
+    <linearGradient id="linear-gradient-1" x1="585" y1="278" x2="585" y2="242" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f2b48c"/>
+      <stop offset="1" stop-color="#a9cfe6"/>
+    </linearGradient>
+  </defs>
+  <title>fig0_schematic</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <rect x="0" y="0" width="1000" height="110" fill="#f6f9fb"/>
+    <rect x="170" y="110" width="830" height="150" fill="#a9cfe6"/>
+    <rect x="170" y="260" width="830" height="160" fill="#f2b48c"/>
+    <rect x="170" y="242" width="830" height="36" fill="url(#linear-gradient-1)"/>
+    <rect x="0" y="420" width="1000" height="140" fill="#a39282"/>
+    <line x1="170" y1="110" x2="1000" y2="110" fill="none" stroke="#2c6ea3" stroke-width="1.5" stroke-miterlimit="10"/>
+    <polygon points="0,52 60,40 120,46 170,34 170,420 0,420" fill="#e8f3f9" stroke="#6b8fa3" stroke-width="1.5" stroke-miterlimit="10"/>
+    <line x1="105" y1="44" x2="105" y2="412" fill="none" stroke="#2c6ea3" stroke-width="1.6" stroke-miterlimit="10" stroke-dasharray="5 4"/>
+    <g>
+      <g>
+        <path d="M105 411.2 L110 411.2 C110.442 411.2 110.8 411.558 110.8 412 C110.8 412.442 110.442 412.8 110 412.8 L105 412.8 C104.558 412.8 104.2 412.442 104.2 412 C104.2 411.558 104.558 411.2 105 411.2 M114 411.2 L119 411.2 C119.442 411.2 119.8 411.558 119.8 412 C119.8 412.442 119.442 412.8 119 412.8 L114 412.8 C113.558 412.8 113.2 412.442 113.2 412 C113.2 411.558 113.558 411.2 114 411.2 M123 411.2 L128 411.2 C128.442 411.2 128.8 411.558 128.8 412 C128.8 412.442 128.442 412.8 128 412.8 L123 412.8 C122.558 412.8 122.2 412.442 122.2 412 C122.2 411.558 122.558 411.2 123 411.2 M132 411.2 L137 411.2 C137.442 411.2 137.8 411.558 137.8 412 C137.8 412.442 137.442 412.8 137 412.8 L132 412.8 C131.558 412.8 131.2 412.442 131.2 412 C131.2 411.558 131.558 411.2 132 411.2 M141 411.2 L146 411.2 C146.442 411.2 146.8 411.558 146.8 412 C146.8 412.442 146.442 412.8 146 412.8 L141 412.8 C140.558 412.8 140.2 412.442 140.2 412 C140.2 411.558 140.558 411.2 141 411.2 M150 411.2 L155 411.2 C155.442 411.2 155.8 411.558 155.8 412 C155.8 412.442 155.442 412.8 155 412.8 L150 412.8 C149.558 412.8 149.2 412.442 149.2 412 C149.2 411.558 149.558 411.2 150 411.2 M159 411.2 L164 411.2 C164.442 411.2 164.8 411.558 164.8 412 C164.8 412.442 164.442 412.8 164 412.8 L159 412.8 C158.558 412.8 158.2 412.442 158.2 412 C158.2 411.558 158.558 411.2 159 411.2" fill="#2c6ea3"/>
+        <path d="M169.2 412 L162.8 415.2 L162.8 408.8 Z" fill="#2c6ea3"/>
+      </g>
+    </g>
+    <path d="M170 420 L180 420 C195 350 210 300 228 262 C300 266 450 262 560 246 C450 230 300 226 170 236 Z" fill="#b9a7d8" opacity="0.9"/>
+    <g>
+      <g>
+        <path d="M182.505 403.881 L192.505 277.881 C192.57 277.055 193.293 276.439 194.119 276.505 C194.945 276.57 195.561 277.293 195.495 278.119 L185.495 404.119 C185.43 404.945 184.707 405.561 183.881 405.495 C183.055 405.43 182.439 404.707 182.505 403.881" fill="#ffffff"/>
+        <path d="M194.475 272.019 L199.506 284.456 L187.544 283.506 Z" fill="#ffffff"/>
+      </g>
+    </g>
+    <g>
+      <g>
+        <path d="M560 244.5 L700 244.5 C700.828 244.5 701.5 245.172 701.5 246 C701.5 246.828 700.828 247.5 700 247.5 L560 247.5 C559.172 247.5 558.5 246.828 558.5 246 C558.5 245.172 559.172 244.5 560 244.5" fill="#6a4c9c"/>
+        <path d="M706 246 L694 252 L694 240 Z" fill="#6a4c9c"/>
+      </g>
+    </g>
+    <g>
+      <g>
+        <path d="M264.932 395.797 L217.932 391.797 C217.492 391.76 217.165 391.372 217.203 390.932 C217.24 390.492 217.628 390.165 218.068 390.203 L265.068 394.203 C265.508 394.24 265.835 394.628 265.797 395.068 C265.76 395.508 265.372 395.835 264.932 395.797" fill="#c0392b"/>
+        <path d="M214.812 390.729 L221.46 388.083 L220.917 394.46 Z" fill="#c0392b"/>
+      </g>
+    </g>
+    <g>
+      <g>
+        <path d="M264.937 350.798 L214.337 346.798 C213.897 346.763 213.568 346.377 213.602 345.937 C213.637 345.497 214.023 345.168 214.463 345.202 L265.063 349.202 C265.503 349.237 265.832 349.623 265.798 350.063 C265.763 350.503 265.377 350.832 264.937 350.798" fill="#c0392b"/>
+        <path d="M211.21 345.748 L217.842 343.062 L217.338 349.442 Z" fill="#c0392b"/>
+      </g>
+    </g>
+    <g>
+      <g>
+        <path d="M264.941 305.798 L210.741 301.798 C210.3 301.765 209.97 301.382 210.002 300.941 C210.035 300.5 210.418 300.17 210.859 300.202 L265.059 304.202 C265.5 304.235 265.83 304.618 265.798 305.059 C265.765 305.5 265.382 305.83 264.941 305.798" fill="#c0392b"/>
+        <path d="M207.609 300.764 L214.227 298.044 L213.756 304.427 Z" fill="#c0392b"/>
+      </g>
+    </g>
+    <g>
+      <g>
+        <path d="M840 371.5 L470 371.5 C469.172 371.5 468.5 370.828 468.5 370 C468.5 369.172 469.172 368.5 470 368.5 L840 368.5 C840.828 368.5 841.5 369.172 841.5 370 C841.5 370.828 840.828 371.5 840 371.5" fill="#c0392b"/>
+        <path d="M464 370 L476 364 L476 376 Z" fill="#c0392b"/>
+      </g>
+    </g>
+    <g>
+      <g>
+        <path d="M300 80.9 L420 80.9 C420.608 80.9 421.1 81.392 421.1 82 C421.1 82.608 420.608 83.1 420 83.1 L300 83.1 C299.392 83.1 298.9 82.608 298.9 82 C298.9 81.392 299.392 80.9 300 80.9" fill="#222222"/>
+        <path d="M424.4 82 L415.6 86.4 L415.6 77.6 Z" fill="#222222"/>
+      </g>
+    </g>
+    <g>
+      <g>
+        <path d="M480 80.9 L600 80.9 C600.608 80.9 601.1 81.392 601.1 82 C601.1 82.608 600.608 83.1 600 83.1 L480 83.1 C479.392 83.1 478.9 82.608 478.9 82 C478.9 81.392 479.392 80.9 480 80.9" fill="#222222"/>
+        <path d="M604.4 82 L595.6 86.4 L595.6 77.6 Z" fill="#222222"/>
+      </g>
+    </g>
+    <g>
+      <g>
+        <path d="M660 80.9 L780 80.9 C780.608 80.9 781.1 81.392 781.1 82 C781.1 82.608 780.608 83.1 780 83.1 L660 83.1 C659.392 83.1 658.9 82.608 658.9 82 C658.9 81.392 659.392 80.9 660 80.9" fill="#222222"/>
+        <path d="M784.4 82 L775.6 86.4 L775.6 77.6 Z" fill="#222222"/>
+      </g>
+    </g>
+    <line x1="900" y1="110" x2="900" y2="420" fill="none" stroke="#555555" stroke-miterlimit="10" stroke-dasharray="3 3"/>
+    <g>
+      <g>
+        <path d="M946.1 220 L946.1 300 C946.1 300.608 945.608 301.1 945 301.1 C944.392 301.1 943.9 300.608 943.9 300 L943.9 220 C943.9 219.392 944.392 218.9 945 218.9 C945.608 218.9 946.1 219.392 946.1 220" fill="#222222"/>
+        <path d="M945 215.6 L949.4 224.4 L940.6 224.4 Z" fill="#222222"/>
+        <path d="M945 304.4 L940.6 295.6 L949.4 295.6 Z" fill="#222222"/>
+      </g>
+    </g>
+    <path d="M430 260 C500 246 600 274 700 260 C780 246 840 274 900 260" fill="none" stroke="#555555" stroke-width="1.2" stroke-miterlimit="10"/>
+    <text transform="matrix(1 0 0 1 30 24)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#222222"><tspan x="0" y="0">Glacier</tspan></text>
+    <text transform="matrix(1 0 0 1 520 24)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#222222" text-anchor="middle"><tspan x="0" y="0">Fjord</tspan></text>
+    <text transform="matrix(1 0 0 1 945 24)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#222222" text-anchor="middle"><tspan x="0" y="0">Shelf</tspan></text>
+    <text transform="matrix(0 -1 1 0 46 300)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="10.5" fill="#2c6ea3"><tspan x="0" y="0">surface meltwater drains to the bed</tspan></text>
+    <text transform="matrix(0 -1 1 0 150 395)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#c0392b"><tspan x="0" y="0">submarine melting</tspan></text>
+    <text transform="matrix(1 0 0 1 176 438)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#ffffff"><tspan x="0" y="0">subglacial discharge leaves the bed at the grounding line</tspan></text>
+    <text transform="matrix(1 0 0 1 246 228)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#222222"><tspan x="0" y="0">neutral buoyancy: the plume detaches and spreads</tspan></text>
+    <text transform="matrix(1 0 0 1 270 330)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#c0392b"><tspan x="0" y="0">entrainment</tspan></text>
+    <text transform="matrix(1 0 0 1 232 285)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="10.5" fill="#4b3577"><tspan x="0" y="0">buoyant plume rises along the ice</tspan></text>
+    <text transform="matrix(1 0 0 1 575 236)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#6a4c9c"><tspan x="0" y="0">outflow of plume water</tspan></text>
+    <text transform="matrix(1 0 0 1 480 390)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#c0392b"><tspan x="0" y="0">warm Atlantic Water flows toward the glacier</tspan></text>
+    <text transform="matrix(1 0 0 1 560 70)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#222222" text-anchor="middle"><tspan x="0" y="0">along-fjord wind</tspan></text>
+    <text transform="matrix(1 0 0 1 890 160)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#222222" text-anchor="end"><tspan x="0" y="0">Polar Water: cold, fresh</tspan></text>
+    <text transform="matrix(1 0 0 1 890 410)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#222222" text-anchor="end"><tspan x="0" y="0">Atlantic Water: warm, salty</tspan></text>
+    <text transform="matrix(1 0 0 1 960 318)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="10.5" fill="#222222" text-anchor="middle"><tspan x="0" y="0">pycnocline</tspan></text>
+    <text transform="matrix(1 0 0 1 960 332)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="10.5" fill="#222222" text-anchor="middle"><tspan x="0" y="0">heaving (days)</tspan></text>
+    <line x1="170" y1="484" x2="300" y2="484" fill="none" stroke="#ffffff" stroke-width="2" stroke-miterlimit="10"/>
+    <text transform="matrix(1 0 0 1 170 500)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#ffffff"><tspan x="0" y="0">(a), (b): plume at the ice face, resolved (metres)</tspan></text>
+    <line x1="170" y1="516" x2="900" y2="516" fill="none" stroke="#ffffff" stroke-width="2" stroke-miterlimit="10"/>
+    <text transform="matrix(1 0 0 1 170 532)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="11" fill="#ffffff"><tspan x="0" y="0">(c): whole fjord with plume, wind and shelf forcing; plume parameterised (40 km)</tspan></text>
+    <text transform="matrix(1 0 0 1 990 552)" x="0" y="0" xml:space="preserve" font-family="Helvetica, sans-serif" font-size="9" fill="#ffffff" text-anchor="end"><tspan x="0" y="0">schematic, not to scale</tspan></text>
+  </g>
+</svg>

@@ -46,6 +46,10 @@ Rotation shapes all three. The relevant scale is the internal Rossby radius Rd, 
 
 Which forcing controls the delivery of heat to the glacier is still debated. Carroll et al. (2017) found that wind can amplify the plume-driven exchange. In a realistic model of Sermilik Fjord, Sanchez et al. (2024) found that including the plume doubles the summer exchange, which is then primarily plume-driven. Most studies compare forcings by the volume of water exchanged, but the glacier responds to the heat that reaches it, and the two need not agree.
 
+![Figure 0](figures/fig0_schematic.png)
+
+*Figure 0.* Schematic of the processes in this experiment, drawn as an along-fjord section with the glacier at the left (not to scale). Surface meltwater drains to the glacier bed and leaves it at the grounding line as subglacial discharge. The buoyant plume rises along the ice, entrains warm Atlantic Water and melts the ice, then detaches at its neutral-buoyancy depth and flows out toward the shelf. The outflow is replaced by warm water flowing toward the glacier at depth. Along-fjord wind and the heaving of the shelf pycnocline force the fjord from outside. Configurations (a) and (b) resolve the plume at the ice face; (c) covers the whole fjord with a parameterised plume. Drawn with VectorCraft from `figures/src/fig0_schematic.py`.
+
 ### 1.4 This experiment
 
 Experiment 1 asks three linked questions with idealised MITgcm simulations, each building on the previous one:
@@ -246,7 +250,7 @@ bash exp1_fjord_plumes/reproduce.sh --quick   # regenerate every figure and this
 bash exp1_fjord_plumes/reproduce.sh           # full: generate inputs, build, run all campaigns, figures
 ```
 
-Paths, the Python environment and compute limits are in the repository `RUNNING.md`. Run output is not stored in the repository.
+Paths, the Python environment and compute limits are in the repository `RUNNING.md`. Figure 0 is drawn with the VectorCraft command-line tool (v0.22.0, https://github.com/storytold/vectorcraft): `python figures/src/fig0_schematic.py --cli /path/to/vectorcraft-cli`. Run output is not stored in the repository.
 
 ## References
 
