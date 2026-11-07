@@ -156,17 +156,6 @@ def marker(x, y, n):
     text(x, y + 4.2, str(n), 10.5, color="#ffffff", style="Bold", justify="center")
 
 
-def curl(x, y, r, color="#ffffff", weight=1.3, cw=True):
-    """A small eddy: three-quarter circle with an arrow head."""
-    s_ = 1 if cw else -1
-    c("path.create", d=f"M {x + r} {y} C {x + r} {y + s_ * r * 0.55} {x + r * 0.55} {y + s_ * r} {x} {y + s_ * r} "
-                       f"C {x - r * 0.55} {y + s_ * r} {x - r} {y + s_ * r * 0.55} {x - r} {y} "
-                       f"C {x - r} {y - s_ * r * 0.55} {x - r * 0.55} {y - s_ * r} {x} {y - s_ * r}")
-    c("paint.setFill", none=True)
-    c("paint.setStroke", color=color)
-    c("stroke.set", weight=weight, endArrow="Triangle", cap="round")
-
-
 def curve_arrow(d, color, weight):
     c("path.create", d=d)
     c("paint.setFill", none=True)
@@ -246,6 +235,56 @@ def portal_jet():
     text(FX, BD + 22, "grounding line", 8.5, color="#ffffff", justify="center")
     label(FX + 40, BD - 6, "portal: fresh meltwater jet", 8.5, color="#0f3f6b")
 
+def spiral(cx, cy, r, turns, phase, color, weight, opacity=None):
+    """An inward spiral turning clockwise on the page (y down), starting at angle `phase` (radians)."""
+    import math
+    n = int(48 * turns)
+    tot = 2 * math.pi * turns
+    pts = []
+    for k in range(n + 1):
+        th = tot * k / n
+        rr = r * (1 - 0.82 * k / n)
+        pts.append(f"{cx + rr * math.cos(phase + th):.2f} {cy + rr * math.sin(phase + th):.2f}")
+    c("path.create", d="M " + " L ".join(pts))
+    c("paint.setFill", none=True)
+    c("paint.setStroke", color=color)
+    c("stroke.set", weight=weight, cap="round", join="round")
+    if opacity is not None:
+        c("object.setProps", opacity=opacity)
+
+
+EDDIES: list[tuple[float, float, float]] = []
+
+
+def plume_eddies():
+    """Large eddies (billows) on the plume's outer edge, growing with height. The shear between the rising
+    plume (left) and the still ambient water (right) rolls them clockwise on the page: the top folds plume
+    water outward, the bottom engulfs ambient water. Interleaved white (plume) and dark-orange (ambient)
+    filaments show that engulfment; faint small eddies inside the plume suggest the turbulent cascade."""
+    import math
+    # outer edge of the plume path in process_section(): cubic from (FX+10, BD) to (FX+70, PC+6)
+    P0, P1, P2, P3 = (FX + 10, BD), (FX + 30, BD - 80), (FX + 52, PC + 60), (FX + 70, PC + 6)
+    def edge(t):
+        b = ((1 - t) ** 3, 3 * t * (1 - t) ** 2, 3 * t * t * (1 - t), t ** 3)
+        return (sum(w * q[0] for w, q in zip(b, (P0, P1, P2, P3))), sum(w * q[1] for w, q in zip(b, (P0, P1, P2, P3))))
+    def mix(f):                                      # plume gradient colour at fraction f of its height
+        a, b = (0x7a, 0x63, 0xb8), (0xd5, 0xc9, 0xef)
+        return "#%02x%02x%02x" % tuple(int(x + f * (y - x)) for x, y in zip(a, b))
+    for t, r in ((0.40, 12.0), (0.58, 15.0), (0.75, 18.0), (0.92, 20.0)):
+        ex, ey = edge(t)
+        cx, cy = ex + 0.25 * r, ey
+        EDDIES.append((cx, cy, r))
+        f = (BD - cy) / (BD - (PC - 64))
+        c("shape.ellipse", x=cx - r * 1.08, y=cy - r, width=2.16 * r, height=2.0 * r)
+        fill(color=mix(f), opacity=92)
+        fx("distort.roughen", size=1.0, relative=False, detail=14, points="smooth", seed=int(cy))
+        spiral(cx, cy, r * 0.92, 2.0, math.pi, "#ffffff", 1.6)
+        spiral(cx, cy, r * 0.92, 2.0, 0.0, "#c4622f", 1.3)
+    for (x, y, r) in ((FX + 22, BD - 112, 4), (FX + 18, PC + 70, 3.5), (FX + 30, PC + 40, 5), (FX + 40, PC + 10, 4.5),
+                      (FX + 16, PC + 20, 3.5), (FX + 34, BD - 140, 3.5)):
+        spiral(x, y, r, 1.3, math.pi / 2, "#ffffff", 0.9, opacity=65)
+
+
 def process_section():
     # sky and distant fjord walls
     rect(40, O, 1030, SL - O, gradient={"kind": "linear", "angle": 90,
@@ -300,14 +339,13 @@ def process_section():
          opacity=88)
     fx("distort.roughen", size=3.2, relative=False, detail=26, points="smooth", seed=11)
     portal_jet()
-    for (x, y, r) in ((FX + 28, BD - 60, 7), (FX + 40, BD - 130, 9), (FX + 52, PC + 70, 10), (FX + 30, PC + 20, 8)):
-        curl(x, y, r)
+    plume_eddies()
     curve_arrow(f"M {FX + 14} {BD - 14} C {FX + 18} {BD - 110} {FX + 24} {PC + 60} {FX + 30} {PC - 30}", "#ffffff", 3.0)
     curve_arrow(f"M {FX + 330} {PC - 4} L {FX + 520} {PC - 4}", PURP, 3.4)
     # entrainment of ambient water, and the warm inflow it draws from the shelf
-    for (y, dx_) in ((BD - 40, 70), (BD - 100, 74), (BD - 160, 80)):
-        curve_arrow(f"M {FX + dx_ + 40} {y + 10} C {FX + dx_ + 20} {y + 8} {FX + dx_} {y + 2} {FX + dx_ - 22} {y - 6}",
-                    "#b8322a", 1.8)
+    for (ex, ey, r) in EDDIES:                       # entrainment: ambient water drawn into the underside of each billow
+        tx, ty = ex + 0.6 * r, ey + 1.05 * r
+        curve_arrow(f"M {tx + 62} {ty + 14} C {tx + 40} {ty + 14} {tx + 20} {ty + 10} {tx + 4} {ty + 2}", "#b8322a", 1.8)
     curve_arrow(f"M 1000 {BD - 52} C 860 {BD - 44} 700 {BD - 44} {FX + 190} {BD - 70}", "#b8322a", 5)
     # wind over the fjord and the surface water it pushes out
     for x0 in (FX + 240, FX + 420, FX + 600):
@@ -321,7 +359,7 @@ def process_section():
          stroke="#4d4d4d", weight=1.4)
     curve_arrow(f"M 960 {PC + 26} L {FX + 700} {PC + 26}", "#4d4d4d", 1.6)
     # numbered processes
-    for (x, y, n) in ((66, O + 150, 1), (FX + 54, BD - 70, 2), (FX - 20, BD - 140, 3), (FX + 120, PC - 44, 4),
+    for (x, y, n) in ((66, O + 150, 1), (FX + 74, BD - 40, 2), (FX - 20, BD - 140, 3), (FX + 120, PC - 44, 4),
                       (760, BD - 74, 5), (FX + 420, SL - 52, 6), (1030, PC - 58, 7)):
         marker(x, y, n)
     # labels
@@ -337,7 +375,7 @@ def process_section():
     # legend
     lx, ly = 40, O + 505
     items = ("subglacial discharge: meltwater drains via moulins to channels at the bed, exits at the grounding line",
-             "buoyant plume: rises along the ice and entrains ambient water (turbulent eddies)",
+             "buoyant plume: rises along the ice; eddies on its edge engulf ambient water (entrainment)",
              "submarine melting: the plume carries heat to the ice face",
              "neutral buoyancy: the plume detaches and flows out toward the sea",
              "warm Atlantic Water flows toward the glacier at depth, replacing the entrained water",
