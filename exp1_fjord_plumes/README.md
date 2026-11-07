@@ -111,7 +111,7 @@ In (b) the depth of the interface is chosen so that the AW layer below it is H2 
 
 ### 2.4 Open boundary
 
-In (b) and (c), the open boundary carries a prescribed depth-mean outflow equal to the discharge (Q0 per unit boundary area), so that the volume added by the sources leaves the domain. Both configurations first diverged under MITgcm's default Stevens (1990) condition. In that condition the baroclinic boundary velocity is updated from its own previous value (`pkg/obcs/obcs_calc_stevens.F`), so the velocity sponge relaxes the flow toward a value that the boundary itself keeps reinforcing (`obcs_sponge.F`). This produced a spurious overturning cell. Defining `OBCS_STEVENS_USE_INTERIOR_VELOCITY` in the configuration's `code/` makes the boundary use the adjacent interior velocity instead, and removes the instability. Orlanski radiation, tested first, was unstable in 3-D.
+In (b) and (c), the open boundary carries a prescribed depth-mean outflow equal to the discharge (Q0 per unit boundary area), so that the volume added by the sources leaves the domain. Both configurations initially diverged under MITgcm's default Stevens (1990) condition. In that condition the baroclinic boundary velocity is updated from its own previous value (`pkg/obcs/obcs_calc_stevens.F`), so the velocity sponge relaxes the flow toward a value that the boundary itself keeps reinforcing (`obcs_sponge.F`). This produced a spurious overturning cell. Defining `OBCS_STEVENS_USE_INTERIOR_VELOCITY` in the configuration's `code/` makes the boundary use the adjacent interior velocity instead, and removes the instability. Orlanski radiation, tested first, was unstable in 3-D.
 
 Each run must satisfy three pre-registered boundary criteria:
 
@@ -126,7 +126,7 @@ All 3-D production runs pass. As an independent check of (c), the shelf-forced f
 | Symbol | Meaning |
 |---|---|
 | H | water depth (500 m in (a) and (c), 300 m in (b)) |
-| z_detach | detachment depth: going up from the depth of maximum plume velocity, the first depth where the vertical velocity at the ice face falls below 5 % of its maximum; interpolated between levels. In (b) the velocity is the maximum along the face. |
+| z_detach | detachment depth: going up from the depth of maximum plume velocity, the deepest level at which the vertical velocity at the ice face falls below 5 % of its maximum; interpolated between levels. In (b) the velocity is the maximum along the face. |
 | M | total melt of the ice face (m³ s⁻¹ of ice), integrated over the whole face and averaged over the analysis window |
 | M_single, M(x0) | M for the single-source run and for two sources at separation x0 |
 | E | plume-induced melt: M minus M of a run with no discharge (same ambient, same boundary) |
