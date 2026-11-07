@@ -248,6 +248,29 @@ def test_fig3_skips_missing_cases(tmp_path):
         "c_fjord_wind", "c_fjord_shelf", "c_fjord_all"]
 
 
+
+def test_fig3_control_floor_flags_cases_below_3x(tmp_path):
+    """Pre-registered rule (pd1_c_fjord3d.md): mean Q_ex < 3x the no-forcing control is not interpreted."""
+    from exp1_fjord_plumes.analysis import fig3_exchange_partition as f3
+    root = tmp_path / "runs"
+    _make_run(root, "c_fjord_plume", ITERS, u_scale=2.0)
+    _make_run(root, "c_fjord_shelf", ITERS, u_scale=4.0)
+    _make_run(root, "c_fjord_control", ITERS, u_scale=1.0)
+    m = f3.main(root, tmp_path / "fig", i_section=I_SEC)
+    assert m["control"]["Q_ex_mean_m3_s"] == pytest.approx(0.5 * U0 * _A_wet())
+    assert m["cases"]["c_fjord_plume"]["Q_ex_over_control"] == pytest.approx(2.0)
+    assert m["cases"]["c_fjord_plume"]["interpretable"] is False
+    assert m["cases"]["c_fjord_shelf"]["interpretable"] is True
+    assert "c_fjord_control" not in m["cases"] and "c_fjord_control" not in m["missing"]
+
+
+def test_fig3_without_control_leaves_flag_unset(tmp_path):
+    from exp1_fjord_plumes.analysis import fig3_exchange_partition as f3
+    root = tmp_path / "runs"
+    _make_run(root, "c_fjord_plume", ITERS)
+    m = f3.main(root, tmp_path / "fig", i_section=I_SEC)
+    assert m["control"] is None and m["cases"]["c_fjord_plume"]["interpretable"] is None
+
 # ---- animate_c -----------------------------------------------------------------
 
 def test_animate_c_frames_across_stages_and_gif_budget(tmp_path):

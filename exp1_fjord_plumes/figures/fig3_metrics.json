@@ -1,0 +1,194 @@
+{
+  "i_section": 100,
+  "T_ref_degC": -1.8994000000000002,
+  "Q_ex_source": "hourly UVEL snapshots (snap1h), R31",
+  "heat_source": "ADVx_TH 3-h means (mean3h), R31: rho0 cp sum(-ADVx + T_ref u dA)",
+  "W_over_Rd": 0.6671639368936484,
+  "Rd": {
+    "W_m": 5600.0,
+    "Rd_m": 8393.73906520473,
+    "W_over_Rd": 0.6671639368936484,
+    "c_m_s": 1.149942251933048,
+    "gprime": 0.011019726523173744,
+    "h1_m": 200.0
+  },
+  "cases": {
+    "c_fjord_plume": {
+      "run": "/Volumes/LaCie/portfolio_runs/exp1/c_fjord_plume",
+      "n_hourly": 720,
+      "n_3h": 240,
+      "t_first_h": 0.0,
+      "t_last_h": 719.0,
+      "Q_ex_mean_m3_s": 4128.000373358839,
+      "Q_ex_max_m3_s": 5101.355013440823,
+      "heat_toward_front_mean_W": 31084885559.759384,
+      "C5p": {
+        "pass": true,
+        "monitor": {
+          "T": [
+            -1.499832626437,
+            3.9999991919043
+          ],
+          "S": [
+            32.900051733647,
+            34.599999750225
+          ]
+        },
+        "allowed": {
+          "T": [
+            -1.4998326264370467,
+            3.999999191904335
+          ],
+          "S": [
+            32.90005173364673,
+            34.59999975022498
+          ]
+        },
+        "tol": 1e-06
+      },
+      "cross_check": {
+        "Q_ex_mean_from_3h_means_m3_s": 4130.550317420372,
+        "Q_ex_rel_diff": 0.0006177189512844637,
+        "heat_from_mean_products_W": 31084043605.289528,
+        "heat_rel_diff": -2.7085654481102728e-05
+      },
+      "Q_ex_over_control": 44.07249734878626,
+      "interpretable": true
+    },
+    "c_fjord_wind": {
+      "run": "/Volumes/LaCie/portfolio_runs/exp1/c_fjord_wind",
+      "n_hourly": 720,
+      "n_3h": 240,
+      "t_first_h": 0.0,
+      "t_last_h": 719.0,
+      "Q_ex_mean_m3_s": 1993.5796562773176,
+      "Q_ex_max_m3_s": 20166.592952873012,
+      "heat_toward_front_mean_W": 35884805.25656364,
+      "C5p": {
+        "pass": true,
+        "monitor": {
+          "T": [
+            -1.499832626437,
+            3.9999991919043
+          ],
+          "S": [
+            32.900051733647,
+            34.599999750225
+          ]
+        },
+        "allowed": {
+          "T": [
+            -1.4998326264370467,
+            3.999999191904335
+          ],
+          "S": [
+            32.90005173364673,
+            34.59999975022498
+          ]
+        },
+        "tol": 1e-06
+      },
+      "cross_check": {
+        "Q_ex_mean_from_3h_means_m3_s": 1959.5917502196774,
+        "Q_ex_rel_diff": -0.01704868222878389,
+        "heat_from_mean_products_W": 34845342.9191968,
+        "heat_rel_diff": -0.02896664284326066
+      },
+      "Q_ex_over_control": 21.284405564233367,
+      "interpretable": true
+    },
+    "c_fjord_shelf": {
+      "run": "/Volumes/LaCie/portfolio_runs/exp1/c_fjord_shelf",
+      "n_hourly": 720,
+      "n_3h": 240,
+      "t_first_h": 0.0,
+      "t_last_h": 719.0,
+      "Q_ex_mean_m3_s": 34631.094357222384,
+      "Q_ex_max_m3_s": 67152.53382859468,
+      "heat_toward_front_mean_W": -4789119188.558644,
+      "C5p": {
+        "pass": true,
+        "monitor": {
+          "T": [
+            -1.4999652855915,
+            3.9999998300819
+          ],
+          "S": [
+            32.900010739645,
+            34.599999947481
+          ]
+        },
+        "allowed": {
+          "T": [
+            -1.499966194170422,
+            3.999999836786147
+          ],
+          "S": [
+            32.90001044907459,
+            34.599999949552085
+          ]
+        },
+        "tol": 1e-06
+      },
+      "cross_check": {
+        "Q_ex_mean_from_3h_means_m3_s": 34632.28231609175,
+        "Q_ex_rel_diff": 3.430324370084547e-05,
+        "heat_from_mean_products_W": -4837520029.939967,
+        "heat_rel_diff": -0.010106418210879776
+      },
+      "Q_ex_over_control": 369.73805140486445,
+      "interpretable": true
+    },
+    "c_fjord_all": {
+      "run": "/Volumes/LaCie/portfolio_runs/exp1/c_fjord_all",
+      "n_hourly": 720,
+      "n_3h": 240,
+      "t_first_h": 0.0,
+      "t_last_h": 719.0,
+      "Q_ex_mean_m3_s": 35156.4617210362,
+      "Q_ex_max_m3_s": 64936.27876339365,
+      "heat_toward_front_mean_W": 27282785963.91547,
+      "C5p": {
+        "pass": true,
+        "monitor": {
+          "T": [
+            -1.4999651991976,
+            3.9999998278469
+          ],
+          "S": [
+            32.900010751743,
+            34.59999994679
+          ]
+        },
+        "allowed": {
+          "T": [
+            -1.499966194170422,
+            3.999999836786147
+          ],
+          "S": [
+            32.90001044907459,
+            34.599999949552085
+          ]
+        },
+        "tol": 1e-06
+      },
+      "cross_check": {
+        "Q_ex_mean_from_3h_means_m3_s": 35160.83813889896,
+        "Q_ex_rel_diff": 0.0001244840250844142,
+        "heat_from_mean_products_W": 27242102476.908073,
+        "heat_rel_diff": -0.001491177882684164
+      },
+      "Q_ex_over_control": 375.34712351112086,
+      "interpretable": true
+    }
+  },
+  "control": {
+    "run": "/Volumes/LaCie/portfolio_runs/exp1/c_fjord_control",
+    "Q_ex_mean_m3_s": 93.66386344504535,
+    "Q_ex_max_m3_s": 121.54813072159857,
+    "heat_toward_front_mean_W": -5075143.4749151645
+  },
+  "control_factor": 3.0,
+  "missing": [],
+  "C5p_all_pass": true
+}

@@ -463,3 +463,27 @@ Corridas: `/Volumes/LaCie/portfolio_runs/exp1/crosscheck_pyo/{pyo_shelf,pyo_shel
 **Interpretación.** La regla pre-registrada dice que si pyOCEAN falla, la causa se atribuye al diseño. La falla ocurrió en el balance de volumen, no en la estabilidad, que es lo que motivó la verificación. Cómo leer esto es decisión de Esteban; no se redefine el criterio.
 
 **Decisión de Esteban (2026-11-06): opción (b).** La FALLA se reporta tal cual, con el diagnóstico post-hoc al lado. No se usa como evidencia sobre el diseño de (c) ni se redefine el criterio. Lo que la verificación sí aporta (estabilidad de 30 d de la OB de pyOCEAN con el mismo forzamiento) se cita como evidencia de apoyo, de clase (c), a que la divergencia original era propia de la OB Stevens por defecto de MITgcm.
+
+## Figura 3: intercambio de (c) frente al control (2026-11-06)
+
+Script: `analysis/fig3_exchange_partition.py` (ahora incluye el control) → `figures/fig3_exchange_partition.{png,pdf}`, `figures/fig3_metrics.json`. Sección x = 20 km (i = 100), Q_ex = ½∫|u| dA con snapshots horarios; calor hacia el frente con ADVx_TH (medias de 3 h), T_ref = −1.90 °C. W/Rd = 0.67. Las 5 corridas usan la OB V3.
+
+**Regla pre-registrada del control (3×): todos los casos son interpretables.**
+
+| Caso | Q_ex medio (m³/s) | Q_ex máx | / control | Calor hacia el frente (GW) | C5′ |
+|---|---|---|---|---|---|
+| control | 94 | 122 | 1 | −0.005 | — |
+| plume | 4 128 | 5 101 | 44 | 31.1 | PASA |
+| wind | 1 994 | 20 167 | 21 | 0.04 | PASA |
+| shelf | 34 631 | 67 153 | 370 | −4.8 | PASA |
+| all | 35 156 | 64 936 | 375 | 27.3 | PASA |
+
+Verificación cruzada con medias de 3 h: Q_ex difiere ≤ 1.7 % y el calor ≤ 2.9 %.
+
+**Observaciones (post-hoc, descriptivas; no son criterios):**
+- El forzamiento de plataforma domina el **volumen** intercambiado (~8× la pluma). Concuerda cualitativamente con Jackson et al. 2018 y Carroll et al. 2017 `[verificar cifras en literatura/*.md]`.
+- Pero el **calor** neto hacia el frente lo pone la pluma (31 GW), no la plataforma (−4.8 GW, 5 periodos completos en 30 d). Q_ex = ½∫|u| cuenta el vaivén reversible de la plataforma como intercambio aunque casi no lleve calor neto. Lectura: intercambio de volumen ≠ entrega de calor.
+- En `all`, el calor (27.3 GW) es menor que la suma de plume + shelf (26.3 GW, casi igual): no hay sinergia apreciable en este diagnóstico.
+- Q_ex de `shelf` oscila con periodo de ~3 d, la mitad del forzamiento de 6 d, porque |u| rectifica.
+- `wind` es un pulso de 12 h; su media de 30 d diluye la respuesta (máx 20 167 m³/s el día 1, ~0 después del día 15). No se compara su media con la de los forzamientos continuos.
+- Esta T_ref afecta solo a los casos con transporte neto (plume, all), como ya estaba declarado (clase c).
