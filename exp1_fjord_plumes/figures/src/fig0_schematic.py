@@ -17,29 +17,18 @@ import argparse
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 FIG = HERE.parent
-PANELS = HERE / "panels"
+W, H = 1100, 1400
 SAT = HERE / "sat"
-W, H = 1100, 1230
-OY = 480                                # vertical offset of the section (c) below the satellite row
-# panel (a): along-fjord section of configuration (c); x in km -> points, depth in m -> points
-X0, KX = 120.0, 21.0                    # x of the ice face; points per km (0-40 km -> 120-960)
-Y0, KZ = 110.0 + OY, 0.54                    # y of the sea surface; points per metre of depth
+O = 500                                  # top of the process schematic (c)
+SL, PC, BD = O + 110, O + 250, O + 420   # sea level, pycnocline centre, sea floor (y, points)
+FX = 230                                 # x of the ice face
 
-
-def X(km):
-    return X0 + KX * km
-
-
-def Y(m):
-    return Y0 + KZ * m
-
-
-ICE, ICE_LINE = "#e8f3f9", "#6b8fa3"
+ICE, ICE_LINE = "#eaf4fa", "#6b8fa3"
+ICE_DEEP = "#b9d7ea"
 PW, AW = "#a9cfe6", "#f2b48c"
 PLUME = "#b9a7d8"
 INK, WARM, COOL, BEDC, PURP = "#222222", "#c0392b", "#2c6ea3", "#a39282", "#5b3f8f"
@@ -132,9 +121,9 @@ def satellite_row():
     c("shape.rectangle", x=mx, y=my, width=5.6 / 0.104 * sa, height=40 / 0.111 * sa)
     fill(color="#f2b48c", stroke=INK, weight=1.2, opacity=85)
     line(mx, my, mx + 5.6 / 0.104 * sa, my, color=COOL, weight=3)
-    label(mx + 26, my + 10, "model domain of (c)", 8.5)
-    label(mx + 26, my + 24, "at the same scale", 8.5)
-    label(mx + 26, my + 38, "(ice face at the top)", 8.5)
+    label(mx + 26, my + 10, "fjord model domain,", 8.5)
+    label(mx + 26, my + 24, "configuration (c),", 8.5)
+    label(mx + 26, my + 38, "same scale, ice at top", 8.5)
     text(ax0, 52, "(a)", 13, style="Bold")
     text(ax0 + 26, 52, "Sermilik Fjord and Helheim Glacier, SE Greenland", 10.5)
     # (b) HLS zoom on the terminus, 1000 x 560 px placed at 700 x 392 pt
@@ -146,7 +135,7 @@ def satellite_row():
     arrow(*Q(120, 255), *Q(370, 300), color=COOL, weight=2.6)
     label(*Q(70, 235), "glacier ice flows to the sea", 10, color=COOL)
     line(*Q(415, 215), *Q(400, 395), color=WARM, weight=2.2, dash=[5, 3])
-    label(*Q(330, 450), "calving front (terminus): the ice face in (c)-(e)", 10, color=WARM)
+    label(*Q(330, 450), "calving front (terminus): the ice face in (c) and (d)", 10, color=WARM)
     label(*Q(600, 330), "ice mélange: icebergs and sea ice", 10)
     sx, sy = Q(40, 530)
     line(sx, sy, sx + 5 / 0.036 * sb, sy, color=INK, weight=2.2)
@@ -157,80 +146,190 @@ def satellite_row():
          "Sentinel-2 (HLS S30), 30 Jul 2022; contains modified Copernicus Sentinel data 2022.", 8.5, color="#555555")
 
 
+def fx(effect, **params):
+    c("effect.apply", effect=effect, params=params)
+
+
+def marker(x, y, n):
+    c("shape.ellipse", x=x - 9, y=y - 9, width=18, height=18)
+    fill(color="#1d1d1d", stroke="#ffffff", weight=1.2)
+    text(x, y + 4.2, str(n), 10.5, color="#ffffff", style="Bold", justify="center")
+
+
+def curl(x, y, r, color="#ffffff", weight=1.3, cw=True):
+    """A small eddy: three-quarter circle with an arrow head."""
+    s_ = 1 if cw else -1
+    c("path.create", d=f"M {x + r} {y} C {x + r} {y + s_ * r * 0.55} {x + r * 0.55} {y + s_ * r} {x} {y + s_ * r} "
+                       f"C {x - r * 0.55} {y + s_ * r} {x - r} {y + s_ * r * 0.55} {x - r} {y} "
+                       f"C {x - r} {y - s_ * r * 0.55} {x - r * 0.55} {y - s_ * r} {x} {y - s_ * r}")
+    c("paint.setFill", none=True)
+    c("paint.setStroke", color=color)
+    c("stroke.set", weight=weight, endArrow="Triangle", cap="round")
+
+
+def curve_arrow(d, color, weight):
+    c("path.create", d=d)
+    c("paint.setFill", none=True)
+    c("paint.setStroke", color=color)
+    c("stroke.set", weight=weight, endArrow="Triangle", cap="round", join="round")
+
+
+def process_section():
+    # sky and distant fjord walls
+    rect(40, O, 1030, SL - O, gradient={"kind": "linear", "angle": 90,
+                                         "stops": [{"offset": 0, "color": "#ffffff"}, {"offset": 1, "color": "#dfeaf3"}]})
+    path(f"M {FX + 60} {SL} L {FX + 110} {O + 62} L {FX + 170} {O + 80} L {FX + 250} {O + 40} L {FX + 330} {O + 72} "
+         f"L {FX + 420} {O + 50} L {FX + 520} {O + 84} L {FX + 610} {O + 58} L {FX + 700} {O + 90} L 1070 {O + 76} "
+         f"L 1070 {SL} Z", gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": "#b9b4ac"},
+                                                                          {"offset": 1, "color": "#e3dfd8"}]}, opacity=55)
+    fx("distort.roughen", size=4, relative=False, detail=12, points="corner", seed=3)
+    # water: Atlantic Water below, Polar Water above, a pycnocline between; fine grain
+    rect(FX, SL, 1070 - FX, BD - SL, gradient={"kind": "linear", "angle": 90, "stops": [
+        {"offset": 0, "color": "#e98f62"}, {"offset": 0.38, "color": "#f3b48e"}, {"offset": 0.52, "color": "#cdd6dc"},
+        {"offset": 0.66, "color": "#9ec9e2"}, {"offset": 1, "color": "#c5e1f0"}]})
+    fx("texture.grain", intensity=12, contrast=50, grainType="soft")
+    # sea-surface ripples
+    c("path.create", d=f"M {FX} {SL} L 1070 {SL}")
+    c("paint.setFill", none=True)
+    c("paint.setStroke", color="#3b7fb3")
+    c("stroke.set", weight=1.3)
+    fx("distort.zigZag", size=1.6, relative=False, ridges=40, points="smooth")
+    # sea floor: rock with a rough top and a sandstone texture
+    path(f"M 40 {BD} L 1070 {BD + 4} L 1070 {O + 470} L 40 {O + 470} Z", color="#8f7f6d")
+    fx("texture.texturizer", texture="sandstone", scaling=120, relief=4, lightDirection="top")
+    fx("distort.roughen", size=2.5, relative=False, detail=18, points="corner", seed=7)
+    # glacier body, crevasses, supraglacial lake, moulin and subglacial channel
+    path(f"M 40 {O + 26} C 110 {O + 30} 170 {O + 44} {FX} {O + 66} L {FX} {BD} L 40 {BD} Z",
+         gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": ICE_DEEP}, {"offset": 1, "color": ICE}]},
+         stroke=ICE_LINE, weight=1.4)
+    fx("texture.texturizer", texture="canvas", scaling=80, relief=2, lightDirection="topLeft")
+    for k in range(6):                                   # crevasses near the front
+        x = 120 + k * 17
+        line(x, O + 34 + k * 5.5, x + 6, O + 52 + k * 6, color="#7e9fb4", weight=1.1)
+    for k in range(9):                                   # layering in the ice cliff
+        y = O + 90 + k * 34
+        line(FX - 50, y, FX - 2, y + 4, color="#c3dbea", weight=1.0)
+    c("shape.ellipse", x=72, y=O + 24, width=46, height=8)
+    fill(color="#4a9fd0")
+    line(96, O + 32, 96, BD - 9, color=COOL, weight=1.8, dash=[5, 3])
+    curve_arrow(f"M 96 {BD - 9} L {FX - 4} {BD - 9}", COOL, 3.2)
+    # icebergs in front of the glacier (above and below the waterline)
+    for (x0, w, h_up, h_dn) in ((FX + 22, 34, 12, 34), (FX + 78, 22, 8, 22), (FX + 122, 46, 15, 44), (FX + 196, 18, 6, 18)):
+        path(f"M {x0} {SL} L {x0 + w * 0.2} {SL - h_up} L {x0 + w * 0.7} {SL - h_up * 0.8} L {x0 + w} {SL} "
+             f"L {x0 + w * 0.85} {SL + h_dn} L {x0 + w * 0.25} {SL + h_dn * 0.9} Z", color="#f4fafd", stroke="#8fb3c9",
+             weight=0.8, opacity=92)
+        fx("distort.roughen", size=1.5, relative=False, detail=20, points="corner", seed=int(x0))
+    # meltwater boundary layer on the ice face, and heat flux into the ice
+    line(FX + 2, BD - 4, FX + 2, PC - 60, color="#e7f4fb", weight=2.6)
+    for y in (BD - 50, BD - 110, BD - 170):
+        curve_arrow(f"M {FX + 22} {y} C {FX + 16} {y - 4} {FX + 12} {y + 4} {FX + 5} {y}", WARM, 1.6)
+    # the plume: turbulent half cone, overshoot, outflow tongue at neutral buoyancy
+    path(f"M {FX} {BD} L {FX + 10} {BD} C {FX + 30} {BD - 80} {FX + 52} {PC + 60} {FX + 70} {PC + 6} "
+         f"C {FX + 140} {PC + 16} {FX + 260} {PC + 12} {FX + 390} {PC - 4} C {FX + 260} {PC - 24} {FX + 140} {PC - 30} "
+         f"{FX + 64} {PC - 30} C {FX + 50} {PC - 56} {FX + 24} {PC - 64} {FX} {PC - 52} Z",
+         gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": "#7a63b8"}, {"offset": 1, "color": "#d5c9ef"}]},
+         opacity=88)
+    fx("distort.roughen", size=3.2, relative=False, detail=26, points="smooth", seed=11)
+    for (x, y, r) in ((FX + 28, BD - 60, 7), (FX + 40, BD - 130, 9), (FX + 52, PC + 70, 10), (FX + 30, PC + 20, 8)):
+        curl(x, y, r)
+    curve_arrow(f"M {FX + 14} {BD - 14} C {FX + 18} {BD - 110} {FX + 24} {PC + 60} {FX + 30} {PC - 30}", "#ffffff", 3.0)
+    curve_arrow(f"M {FX + 330} {PC - 4} L {FX + 520} {PC - 4}", PURP, 3.4)
+    # entrainment of ambient water, and the warm inflow it draws from the shelf
+    for (y, dx_) in ((BD - 40, 70), (BD - 100, 74), (BD - 160, 80)):
+        curve_arrow(f"M {FX + dx_ + 40} {y + 10} C {FX + dx_ + 20} {y + 8} {FX + dx_} {y + 2} {FX + dx_ - 22} {y - 6}",
+                    "#b8322a", 1.8)
+    curve_arrow(f"M 1000 {BD - 52} C 860 {BD - 44} 700 {BD - 44} {FX + 190} {BD - 70}", "#b8322a", 5)
+    # wind over the fjord and the surface water it pushes out
+    for x0 in (FX + 240, FX + 420, FX + 600):
+        curve_arrow(f"M {x0} {SL - 30} C {x0 + 50} {SL - 36} {x0 + 100} {SL - 26} {x0 + 140} {SL - 30}", INK, 2.4)
+    curve_arrow(f"M {FX + 560} {SL + 20} L {FX + 700} {SL + 20}", "#2c6ea3", 2.0)
+    # shelf: heaving pycnocline at the mouth, waves propagating into the fjord
+    line(990, SL, 990, BD, color="#555555", weight=0.9, dash=[3, 3])
+    arrow(1030, PC - 40, 1030, PC + 40, color=INK, weight=2.4, both=True)
+    path(f"M {FX + 420} {PC} C {FX + 470} {PC - 12} {FX + 520} {PC + 12} {FX + 570} {PC} "
+         f"C {FX + 620} {PC - 12} {FX + 670} {PC + 12} {FX + 720} {PC} C {FX + 740} {PC - 12} 960 {PC + 12} 990 {PC}",
+         stroke="#4d4d4d", weight=1.4)
+    curve_arrow(f"M 960 {PC + 26} L {FX + 700} {PC + 26}", "#4d4d4d", 1.6)
+    # numbered processes
+    for (x, y, n) in ((150, BD - 20, 1), (FX + 54, BD - 70, 2), (FX - 20, BD - 140, 3), (FX + 120, PC - 44, 4),
+                      (760, BD - 74, 5), (FX + 420, SL - 52, 6), (1030, PC - 58, 7)):
+        marker(x, y, n)
+    # labels
+    text(50, O + 18, "Glacier", 12, style="Bold")
+    text(FX + 440, O + 18, "Fjord", 12, style="Bold", justify="center")
+    text(1030, O + 18, "Shelf", 12, style="Bold", justify="center")
+    text(FX + 560, SL + 46, "Polar Water: cold, fresh", 10.5, color="#1f4e79")
+    text(FX + 560, BD - 14, "Atlantic Water: warm, salty", 10.5, color="#7a2a14")
+    text(FX + 600, PC - 14, "pycnocline", 9.5, color="#4d4d4d")
+    text(52, O + 470 + 18, "(c) is a schematic: not to scale; the plume and icebergs are enlarged.", 9, color="#555555")
+    text(20, O - 8, "(c)", 13, style="Bold")
+    text(46, O - 8, "Processes at a tidewater glacier and in its fjord", 11)
+    # legend
+    lx, ly = 40, O + 505
+    items = ("subglacial discharge: surface meltwater drains to the bed and leaves at the grounding line",
+             "buoyant plume: rises along the ice and entrains ambient water (turbulent eddies)",
+             "submarine melting: the plume carries heat to the ice face",
+             "neutral buoyancy: the plume detaches and flows out toward the sea",
+             "warm Atlantic Water flows toward the glacier at depth, replacing the entrained water",
+             "along-fjord wind drives an exchange with the shelf",
+             "shelf forcing: the pycnocline heaves over days and the motion enters the fjord")
+    for k, s_ in enumerate(items):
+        col, row = k % 2, k // 2
+        x, y = lx + col * 520, ly + row * 24
+        marker(x + 9, y, k + 1)
+        text(x + 26, y + 4, s_, 10)
+
+
+def plume_geometry():
+    """(d): line plume versus two point plumes on the ice face, drawn in perspective."""
+    y0 = O + 650
+    text(20, y0 - 8, "(d)", 13, style="Bold")
+    text(46, y0 - 8, "Plume geometry at the ice face: configurations (a) and (b)", 11)
+    for k, (x0, title) in enumerate(((60, "configuration (a): a line plume, discharge along the whole face"),
+                                      (560, "configuration (b): two point plumes, x0 apart"))):
+        top, bot, wid, sk = y0 + 40, y0 + 190, 380, 60
+        # the ice face as a parallelogram seen obliquely, with a stippled texture
+        path(f"M {x0} {top + 20} L {x0 + wid} {top + 20} L {x0 + wid + sk} {top - 10} L {x0 + sk} {top - 10} Z",
+             color="#f6fbfe", stroke=ICE_LINE, weight=1.0)
+        path(f"M {x0} {top + 20} L {x0 + wid} {top + 20} L {x0 + wid} {bot} L {x0} {bot} Z",
+             gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": ICE_DEEP}, {"offset": 1, "color": ICE}]},
+             stroke=ICE_LINE, weight=1.2)
+        fx("texture.texturizer", texture="canvas", scaling=80, relief=2, lightDirection="topLeft")
+        rect(x0 - 10, bot, wid + 20, 12, color="#8f7f6d")
+        fx("texture.texturizer", texture="sandstone", scaling=100, relief=3, lightDirection="top")
+        if k == 0:
+            path(f"M {x0 + 10} {bot} L {x0 + wid - 10} {bot} L {x0 + wid - 10} {top + 60} L {x0 + 10} {top + 60} Z",
+                 gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": "#7a63b8"},
+                                                                    {"offset": 1, "color": "#d5c9ef"}]}, opacity=80)
+            fx("distort.roughen", size=2.5, relative=False, detail=20, points="smooth", seed=5)
+            for xx in range(int(x0) + 50, int(x0 + wid) - 20, 70):
+                curve_arrow(f"M {xx} {bot - 8} L {xx} {top + 72}", "#ffffff", 2.2)
+            text(x0 + wid / 2, bot + 28, "q0 per metre of ice face (2-D)", 10, justify="center")
+        else:
+            for xs in (x0 + wid / 2 - 45, x0 + wid / 2 + 45):
+                path(f"M {xs - 4} {bot} L {xs + 4} {bot} L {xs + 60} {top + 60} L {xs - 60} {top + 60} Z",
+                     gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": "#7a63b8"},
+                                                                        {"offset": 1, "color": "#d5c9ef"}]}, opacity=72)
+                fx("distort.roughen", size=2.5, relative=False, detail=20, points="smooth", seed=int(xs))
+                curve_arrow(f"M {xs} {bot - 8} L {xs} {top + 74}", "#ffffff", 2.2)
+                c("shape.ellipse", x=xs - 5, y=bot - 3, width=10, height=6)
+                fill(color="#1f5f99")
+            arrow(x0 + wid / 2 - 45, bot + 20, x0 + wid / 2 + 45, bot + 20, color=INK, weight=1.4, both=True)
+            text(x0 + wid / 2, bot + 36, "x0", 11, justify="center", style="Bold")
+            text(x0 + wid + 8, top + 100, "the cones widen", 9.5)
+            text(x0 + wid + 8, top + 113, "as they rise and", 9.5)
+            text(x0 + wid + 8, top + 126, "merge if x0 < x0c", 9.5)
+            text(x0 + wid + 8, top + 139, "(Cenedese &", 9.5)
+            text(x0 + wid + 8, top + 152, "Gatto 2016a)", 9.5)
+        text(x0, top - 22, title, 10.5)
+        text(x0 + wid + sk + 6, top - 4, "ice face", 9.5, color=ICE_LINE)
+
+
 def build() -> list[dict]:
     c("file.new", width=W, height=H, units="Points", backgroundContents="white", name="fig0_schematic")
     satellite_row()
-    o = OY
-    # ---------------- (c) along-fjord section --------------------------------------------------
-    rect(70, 40 + o, 1000, Y0 - 40 - o, color="#f6f9fb")
-    rect(X0, Y0, 1060 - X0, Y(165) - Y0, color=PW)
-    rect(X0, Y(235), 1060 - X0, Y(500) - Y(235), color=AW)
-    rect(X0, Y(165), 1060 - X0, Y(235) - Y(165),
-         gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": AW}, {"offset": 1, "color": PW}]})
-    rect(70, Y(500), 1000, 14, color=BEDC)
-    rect(X(38), Y0, X(40) - X(38), Y(500) - Y0, color="#7f7f7f", opacity=25)
-    line(X(40), Y0, X(40), Y(500), color="#444444", weight=1.0, dash=[4, 3])
-    line(X0, Y0, 1060, Y0, color=COOL, weight=1.4)
-    path(f"M 70 {70 + o} L 95 {62 + o} L {X0} {56 + o} L {X0} {Y(500)} L 70 {Y(500)} Z", color=ICE, stroke=ICE_LINE, weight=1.4)
-    zn = Y(181)
-    path(f"M {X0} {Y(500)} L {X0 + 6} {Y(500)} C {X0 + 18} {Y(380)} {X0 + 30} {Y(260)} {X0 + 44} {zn + 8} "
-         f"C {X(6)} {zn + 9} {X(11)} {zn + 6} {X(15)} {zn} C {X(11)} {zn - 6} {X(6)} {zn - 9} {X0} {zn - 8} Z",
-         color=PLUME, opacity=92)
-    arrow(X0 + 9, Y(480), X0 + 20, Y(260), color="#ffffff", weight=2.6)
-    arrow(X(15) + 4, zn, X(19), zn, color=PURP, weight=2.6)
-    line(X0, zn, X(3.2), zn, color=INK, weight=0.9, dash=[3, 2])
-    for d in (440, 370, 300):
-        arrow(X0 + 70, Y(d), X0 + 30 - (500 - d) * 0.025, Y(d) - 3, color=WARM, weight=1.4)
-    arrow(X(31), Y(390), X(9), Y(390), color=WARM, weight=2.8)
-    line(X(20), Y0 - 6, X(20), Y(500), color=INK, weight=1.2, dash=[6, 3])
-    for k0 in (6.0, 14.5, 23.0):
-        arrow(X(k0), 84 + o, X(k0) + 130, 84 + o, color=INK, weight=2.0)
-    arrow(1010, Y(200) - 34, 1010, Y(200) + 34, color=INK, weight=2.0, both=True)
-    path(f"M {X(13)} {Y(200)} C {X(18)} {Y(200) - 9} {X(23)} {Y(200) + 9} {X(28)} {Y(200)} "
-         f"C {X(32)} {Y(200) - 9} {X(36)} {Y(200) + 9} {X(40)} {Y(200)}", stroke="#555555", weight=1.1)
-    line(1068, Y0, 1068, Y(500), color=INK, weight=0.8)
-    for d in range(0, 501, 100):
-        line(1068, Y(d), 1073, Y(d), color=INK, weight=0.8)
-        text(1077, Y(d) + 3.5, f"{d}", 9)
-    text(1094, Y(250), "depth (m)", 9, rotation=-90, justify="center")
-    line(X0, Y(500) + 18, X(40), Y(500) + 18, color=INK, weight=0.8)
-    for k in range(0, 41, 10):
-        line(X(k), Y(500) + 18, X(k), Y(500) + 23, color=INK, weight=0.8)
-        text(X(k), Y(500) + 34, f"{k}", 9, justify="center")
-    text(X(20), Y(500) + 47, "distance from the ice face (km)", 9, justify="center")
-    text(20, 34 + o, "(c)", 13, style="Bold")
-    text(48, 34 + o, "Along-fjord section of the idealised fjord, configuration (c); vertical scale exaggerated, plume enlarged", 11)
-    text(76, 52 + o, "Glacier", 11, style="Bold")
-    text(X(20), 70 + o, "along-fjord wind  τ = 0.2 N/m² for 12 h", 10.5, justify="center")
-    text(X(20) + 5, Y(30), "Q_ex and heat toward the front, x = 20 km", 10)
-    text(X(6), Y(120), "Polar Water  −1.5 °C, 32.9 psu", 10.5)
-    text(X(6), Y(470), "Atlantic Water  4.0 °C, 34.6 psu", 10.5)
-    text(X(3.4), zn + 3.5, "z_n ≈ 181 m", 9.5)
-    text(X(4.2), zn - 12, "neutral buoyancy: plume detaches, outflow", 10, color=PURP)
-    text(X0 + 74, Y(372), "entrainment", 10, color=WARM)
-    text(X(9.5), Y(410), "warm inflow at depth", 10, color=WARM)
-    text(X0 + 4, Y(500) + 11, "Q0 = 100 m³/s", 9.5, color="#ffffff")
-    text(X(39), Y(470), "sponge", 9, rotation=-90, justify="center")
-    text(1010, Y(200) + 50, "shelf", 10, justify="center", style="Bold")
-    text(1010, Y(200) + 63, "z_c(t) = 200 m", 9, justify="center")
-    text(1010, Y(200) + 75, "− 30 sin(2πt / 6 d)", 9, justify="center")
-    c("shape.rectangle", x=X0 - 4, y=Y0 + 4, width=60, height=Y(500) - Y0 - 6)
-    fill(stroke=INK, weight=1.0)
-    c("stroke.set", dash=[4, 3])
-    line(X0 - 4, Y(500) - 2, 155, 446 + o, color="#666666", weight=0.8, dash=[4, 3])
-    line(X0 + 56, Y(500) - 2, 560, 446 + o, color="#666666", weight=0.8, dash=[4, 3])
-    # ---------------- (d)-(g) data panels ---------------------------------------------------------
-    py = 470 + o
-    for tag, title, name, r in (
-            ("(d)", "config (a): resolved line plume", "p_plume2d.png", [40, py, 245, 255]),
-            ("(e)", "config (b): two plumes on the ice face", "p_face_w.png", [300, py, 280, 255]),
-            ("(f)", "initial T and S profiles", "p_profiles.png", [600, py, 230, 255]),
-            ("(g)", "forcing of config (c)", "p_forcing.png", [850, py, 235, 255])):
-        c("file.place", path=str(PANELS / name), rect=r, link=False)
-        text(r[0] + 4, py - 8, tag, 12, style="Bold")
-        text(r[0] + 30, py - 8, title, 10.5)
-    text(40, H - 10, "(d), (e): model output of this experiment (w, vertical velocity; black line in (d), the 1.25 °C "
-         "isotherm between PW and AW). Schematic in (c) not to scale.", 9, color="#555555")
+    process_section()
+    plume_geometry()
     return cmds
 
 
@@ -244,7 +343,6 @@ def main() -> None:
         print(f"wrote {cmd_file}; pass --cli to render")
         return
     outs = [FIG / f"fig0_schematic.{e}" for e in ("png", "svg", "pdf")]
-    subprocess.run([sys.executable, str(HERE / "fig0_panels.py")], check=True)
     args = [a.cli, "run", "--commands", str(cmd_file), "--ppi", "150"]
     for o in outs:
         args += ["--export", str(o)]
