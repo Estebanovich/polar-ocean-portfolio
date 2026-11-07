@@ -483,7 +483,7 @@ Verificación cruzada con medias de 3 h: Q_ex difiere ≤ 1.7 % y el calor ≤ 2
 **Observaciones (post-hoc, descriptivas; no son criterios):**
 - El forzamiento de plataforma domina el **volumen** intercambiado (~8× la pluma). Concuerda cualitativamente con Jackson et al. 2018 y Carroll et al. 2017 `[verificar cifras en literatura/*.md]`.
 - Pero el **calor** neto hacia el frente lo pone la pluma (31 GW), no la plataforma (−4.8 GW, 5 periodos completos en 30 d). Q_ex = ½∫|u| cuenta el vaivén reversible de la plataforma como intercambio aunque casi no lleve calor neto. Lectura: intercambio de volumen ≠ entrega de calor.
-- En `all`, el calor (27.3 GW) es menor que la suma de plume + shelf (26.3 GW, casi igual): no hay sinergia apreciable en este diagnóstico.
+- En `all`, el calor (27.3 GW) es casi igual a la suma de plume + shelf + wind (31.1 − 4.8 + 0.04 = 26.3 GW; +4 %): no hay sinergia apreciable en este diagnóstico.
 - Q_ex de `shelf` oscila con periodo de ~3 d, la mitad del forzamiento de 6 d, porque |u| rectifica.
 - `wind` es un pulso de 12 h; su media de 30 d diluye la respuesta (máx 20 167 m³/s el día 1, ~0 después del día 15). No se compara su media con la de los forzamientos continuos.
 - Esta T_ref afecta solo a los casos con transporte neto (plume, all), como ya estaba declarado (clase c).
