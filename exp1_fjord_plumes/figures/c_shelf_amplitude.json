@@ -1,0 +1,50 @@
+{
+  "definition": "Pycnocline = depth of the T = 1.25 degC isotherm (eval_pyo_c.pycnocline_depth), y-mean over wet rows of a\ncolumn, from the 3-h mean THETA (mean3h record 1; a 3-h boxcar attenuates a 6-d sine by < 0.1 %).\nSine fit with period 6 d over days 6-30 (eval_pyo_c.sine_fit). Columns: i = 100 (x = 20 km, mid-fjord,\nthe pyOCEAN I_MID) and i = 25 (x = 5 km, near the ice face). Nominal forcing: 30 m (Jackson et al. 2018).",
+  "nominal_m": 30.0,
+  "cases": {
+    "c_fjord_shelf": {
+      "x20km_mid": {
+        "mean": 199.70624036738664,
+        "amplitude": 33.37277758245044,
+        "phase_rad": 0.14142563474068176,
+        "phase_deg": 8.103091985599818,
+        "lag_days": 0.1350515330933303,
+        "rms_residual": 0.8158865682771388,
+        "amplitude_over_nominal": 1.1124259194150146,
+        "n_samples": 192
+      },
+      "x5km_near_face": {
+        "mean": 199.80292390021,
+        "amplitude": 34.4357173296448,
+        "phase_rad": 0.15878630416622763,
+        "phase_deg": 9.097785073205403,
+        "lag_days": 0.15162975122009006,
+        "rms_residual": 1.0670141838749496,
+        "amplitude_over_nominal": 1.1478572443214934,
+        "n_samples": 192
+      }
+    },
+    "c_fjord_all": {
+      "x20km_mid": {
+        "mean": 177.89522001235918,
+        "amplitude": 30.99261656663802,
+        "phase_rad": 0.15854901810323896,
+        "phase_deg": 9.084189583258878,
+        "lag_days": 0.15140315972098128,
+        "rms_residual": 11.724304273069437,
+        "amplitude_over_nominal": 1.033087218887934,
+        "n_samples": 192
+      },
+      "x5km_near_face": {
+        "mean": 161.5739021137906,
+        "amplitude": 31.404588925761818,
+        "phase_rad": 0.181310064325887,
+        "phase_deg": 10.388301469118796,
+        "lag_days": 0.1731383578186466,
+        "rms_residual": 2.4463168916586895,
+        "amplitude_over_nominal": 1.0468196308587272,
+        "n_samples": 192
+      }
+    }
+  }
+}

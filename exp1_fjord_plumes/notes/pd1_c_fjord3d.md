@@ -487,3 +487,20 @@ Verificación cruzada con medias de 3 h: Q_ex difiere ≤ 1.7 % y el calor ≤ 2
 - Q_ex de `shelf` oscila con periodo de ~3 d, la mitad del forzamiento de 6 d, porque |u| rectifica.
 - `wind` es un pulso de 12 h; su media de 30 d diluye la respuesta (máx 20 167 m³/s el día 1, ~0 después del día 15). No se compara su media con la de los forzamientos continuos.
 - Esta T_ref afecta solo a los casos con transporte neto (plume, all), como ya estaba declarado (clase c).
+
+## Amplitud realizada de la picnoclina en MITgcm (2026-11-07)
+
+Script: `analysis/c_shelf_amplitude.py` → `figures/c_shelf_amplitude.json`. Es la misma definición informativa que el criterio 4 de la verificación con pyOCEAN: isoterma de 1.25 °C, media en y, ajuste senoidal de 6 d en los días 6–30. Usa las medias de 3 h de THETA. Se agregó la columna x = 5 km (cerca de la cara); la decisión se tomó antes de calcular.
+
+| Caso | Columna | A (m) | A/30 | Desfase | Media | RMS residual |
+|---|---|---|---|---|---|---|
+| shelf | x = 20 km | 33.4 | 1.11 | 0.14 d | 199.7 m | 0.8 m |
+| shelf | x = 5 km | 34.4 | 1.15 | 0.15 d | 199.8 m | 1.1 m |
+| all | x = 20 km | 31.0 | 1.03 | 0.15 d | 177.9 m | 11.7 m |
+| all | x = 5 km | 31.4 | 1.05 | 0.17 d | 161.6 m | 2.4 m |
+
+**Lectura:**
+- La señal de plataforma entra completa al fiordo, e incluso se amplifica un 10–15 % hacia la cabeza. Probablemente es la respuesta casi estática de un fiordo corto con la cabeza cerrada como antinodo: 40 km frente a una longitud de onda interna de cientos de km. No está verificado.
+- **Corrección de la nota del 1 de noviembre:** la "atenuación a ~25 %" que se vio en la prueba de 1 día era efecto de la fase, como ya advertía esa nota. Con 30 d no hay atenuación. La consecuencia que se fijó entonces se mantiene: los resultados de (c) se reportan frente a la amplitud **realizada**, que es ≈ 31–34 m.
+- pyOCEAN da 29.6 m (0.99) a 20 km, con un desfase de 0.45 d. MITgcm da un ~13 % más y un desfase menor. Es una diferencia entre modelos (clase c, OB y coordenada vertical distintas) que se reporta tal cual.
+- En `all`, la picnoclina media sube a 178 m (20 km) y 162 m (5 km) por la salida de la pluma y el viento. El RMS residual de 11.7 m a 20 km refleja variabilidad que no es de 6 d.
