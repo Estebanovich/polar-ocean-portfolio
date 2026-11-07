@@ -174,6 +174,78 @@ def curve_arrow(d, color, weight):
     c("stroke.set", weight=weight, endArrow="Triangle", cap="round", join="round")
 
 
+def subglacial_system():
+    """Process 1 in detail: surface streams -> supraglacial lake -> moulin -> distributed cavities and a
+    channel at the bed -> portal at the grounding line, where fresh meltwater leaves as a jet; plus a
+    magnified cross-section of the channel (melt-opening against creep-closure). Schematic only."""
+    MW, MW_D = "#4a9fd0", "#1f5f99"
+    # surface melt streams feeding the lake
+    for d in (f"M 44 {O + 34} C 52 {O + 36} 56 {O + 31} 66 {O + 32}",
+              f"M 150 {O + 44} C 138 {O + 40} 128 {O + 38} 112 {O + 34}",
+              f"M 176 {O + 52} C 160 {O + 48} 150 {O + 40} 134 {O + 39}"):
+        curve_arrow(d, MW, 1.1)
+    c("shape.ellipse", x=64, y=O + 27, width=48, height=8)
+    fill(color=MW, stroke=MW_D, weight=0.8)
+    # moulin: a sinuous vertical shaft from the lake to the bed
+    path(f"M 85 {O + 33} C 80 {O + 120} 94 {O + 200} 86 {O + 290} C 82 {O + 340} 92 {O + 380} 90 {BD - 12} "
+         f"L 97 {BD - 12} C 99 {O + 380} 89 {O + 340} 93 {O + 290} C 101 {O + 200} 87 {O + 120} 92 {O + 33} Z",
+         gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": MW_D}, {"offset": 1, "color": MW}]},
+         stroke=MW_D, weight=0.6)
+    for y in (O + 90, O + 210, O + 330):
+        arrow(89 if y != O + 210 else 93, y, 89 if y != O + 210 else 93, y + 26, color="#ffffff", weight=1.1)
+    # distributed drainage: linked cavities on the bed upstream of the moulin
+    for (x, w) in ((46, 12), (62, 9), (74, 7)):
+        c("shape.ellipse", x=x, y=BD - 4, width=w, height=5)
+        fill(color=MW, stroke=MW_D, weight=0.5)
+    line(46, BD - 1.5, 90, BD - 1.5, color=MW, weight=1.0)
+    # channel at the bed (semicircular, cut up into the ice), widening toward the portal
+    path(f"M 86 {BD} C 120 {BD - 9} 170 {BD - 12} {FX} {BD - 16} L {FX} {BD} Z",
+         gradient={"kind": "linear", "angle": 0, "stops": [{"offset": 0, "color": MW}, {"offset": 1, "color": MW_D}]},
+         stroke=MW_D, weight=0.7)
+    curve_arrow(f"M 104 {BD - 4} C 140 {BD - 6} 180 {BD - 7} {FX - 6} {BD - 8}", "#ffffff", 1.6)
+    # labels for the drainage path
+    text(116, O + 26, "lake", 8.5, color=MW_D)
+    text(100, O + 118, "moulin", 8.5, color=MW_D)
+    text(44, BD + 22, "cavities", 8.5, color="#ffffff")
+    text(116, BD - 18, "channel", 8.5, color=MW_D)
+    # magnified cross-section of the channel (a Roethlisberger channel)
+    cx, cy, r = 160, O + 196, 44
+    bed = cy + 16
+    hw = (r * r - 16 * 16) ** 0.5
+    line(196, BD - 13, cx + 30, cy + 32, color="#455a66", weight=0.8, dash=[2, 2])
+    c("shape.ellipse", x=cx - r, y=cy - r, width=2 * r, height=2 * r)
+    fill(gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": ICE}, {"offset": 1, "color": ICE_DEEP}]})
+    path(f"M {cx - hw} {bed} A {r} {r} 0 0 0 {cx + hw} {bed} Z", color="#8f7f6d")
+    fx("texture.texturizer", texture="sandstone", scaling=90, relief=3, lightDirection="top")
+    path(f"M {cx - 19} {bed} A 19 19 0 0 1 {cx + 19} {bed} Z", color=MW, stroke=MW_D, weight=0.8)
+    c("shape.ellipse", x=cx - r, y=cy - r, width=2 * r, height=2 * r)
+    fill(stroke="#455a66", weight=1.2)
+    for (x1, y1, x2, y2) in ((cx - 36, cy - 22, cx - 20, cy - 8), (cx + 36, cy - 22, cx + 20, cy - 8), (cx, cy - 40, cx, cy - 23)):
+        arrow(x1, y1, x2, y2, color="#455a66", weight=1.1)
+    for (x1, y1, x2, y2) in ((cx - 6, bed - 5, cx - 15, bed - 15), (cx + 6, bed - 5, cx + 15, bed - 15), (cx, bed - 6, cx, bed - 17)):
+        arrow(x1, y1, x2, y2, color=WARM, weight=1.1)
+    text(cx, cy - r - 6, "channel cross-section", 8.5, color="#455a66", justify="center")
+    text(cx, bed + 13, "bed", 8, color="#ffffff", justify="center")
+    for k, (t_, col) in enumerate((("grey: ice creep", "#455a66"), ("closes it;", "#455a66"), ("red: melting by", WARM),
+                                    ("the flowing water", WARM), ("opens it", WARM))):
+        text(cx - r - 2, cy + r + 10 + 9.5 * k, t_, 7.5, color=col)
+
+
+def portal_jet():
+    """Portal and fresh-water jet, drawn over the plume so the source stays visible."""
+    MW, MW_D = "#4a9fd0", "#1f5f99"
+    # portal at the grounding line and the fresh meltwater jet that turns upward along the ice
+    path(f"M {FX} {BD - 17} C {FX + 4} {BD - 18} {FX + 7} {BD - 14} {FX + 7} {BD - 8} C {FX + 7} {BD - 4} {FX + 4} {BD - 1} {FX} {BD} Z",
+         color="#0f3f6b")
+    path(f"M {FX} {BD - 16} C {FX + 18} {BD - 16} {FX + 26} {BD - 8} {FX + 32} {BD - 2} C {FX + 36} {BD - 18} {FX + 28} {BD - 54} "
+         f"{FX + 16} {BD - 96} L {FX + 5} {BD - 96} C {FX + 9} {BD - 60} {FX + 7} {BD - 32} {FX} {BD - 22} Z",
+         gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": "#3fa6e0"}, {"offset": 1, "color": "#b7a6e2"}]},
+         stroke="#ffffff", weight=0.8, opacity=95)
+    fx("distort.roughen", size=1.4, relative=False, detail=18, points="smooth", seed=23)
+    line(FX, BD + 2, FX, BD + 10, color="#ffffff", weight=1.6)
+    text(FX, BD + 22, "grounding line", 8.5, color="#ffffff", justify="center")
+    label(FX + 40, BD - 6, "portal: fresh meltwater jet", 8.5, color="#0f3f6b")
+
 def process_section():
     # sky and distant fjord walls
     rect(40, O, 1030, SL - O, gradient={"kind": "linear", "angle": 90,
@@ -209,10 +281,7 @@ def process_section():
     for k in range(9):                                   # layering in the ice cliff
         y = O + 90 + k * 34
         line(FX - 50, y, FX - 2, y + 4, color="#c3dbea", weight=1.0)
-    c("shape.ellipse", x=72, y=O + 24, width=46, height=8)
-    fill(color="#4a9fd0")
-    line(96, O + 32, 96, BD - 9, color=COOL, weight=1.8, dash=[5, 3])
-    curve_arrow(f"M 96 {BD - 9} L {FX - 4} {BD - 9}", COOL, 3.2)
+    subglacial_system()
     # icebergs in front of the glacier (above and below the waterline)
     for (x0, w, h_up, h_dn) in ((FX + 22, 34, 12, 34), (FX + 78, 22, 8, 22), (FX + 122, 46, 15, 44), (FX + 196, 18, 6, 18)):
         path(f"M {x0} {SL} L {x0 + w * 0.2} {SL - h_up} L {x0 + w * 0.7} {SL - h_up * 0.8} L {x0 + w} {SL} "
@@ -230,6 +299,7 @@ def process_section():
          gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": "#7a63b8"}, {"offset": 1, "color": "#d5c9ef"}]},
          opacity=88)
     fx("distort.roughen", size=3.2, relative=False, detail=26, points="smooth", seed=11)
+    portal_jet()
     for (x, y, r) in ((FX + 28, BD - 60, 7), (FX + 40, BD - 130, 9), (FX + 52, PC + 70, 10), (FX + 30, PC + 20, 8)):
         curl(x, y, r)
     curve_arrow(f"M {FX + 14} {BD - 14} C {FX + 18} {BD - 110} {FX + 24} {PC + 60} {FX + 30} {PC - 30}", "#ffffff", 3.0)
@@ -251,7 +321,7 @@ def process_section():
          stroke="#4d4d4d", weight=1.4)
     curve_arrow(f"M 960 {PC + 26} L {FX + 700} {PC + 26}", "#4d4d4d", 1.6)
     # numbered processes
-    for (x, y, n) in ((150, BD - 20, 1), (FX + 54, BD - 70, 2), (FX - 20, BD - 140, 3), (FX + 120, PC - 44, 4),
+    for (x, y, n) in ((66, O + 150, 1), (FX + 54, BD - 70, 2), (FX - 20, BD - 140, 3), (FX + 120, PC - 44, 4),
                       (760, BD - 74, 5), (FX + 420, SL - 52, 6), (1030, PC - 58, 7)):
         marker(x, y, n)
     # labels
@@ -266,7 +336,7 @@ def process_section():
     text(46, O - 8, "Processes at a tidewater glacier and in its fjord", 11)
     # legend
     lx, ly = 40, O + 505
-    items = ("subglacial discharge: surface meltwater drains to the bed and leaves at the grounding line",
+    items = ("subglacial discharge: meltwater drains via moulins to channels at the bed, exits at the grounding line",
              "buoyant plume: rises along the ice and entrains ambient water (turbulent eddies)",
              "submarine melting: the plume carries heat to the ice face",
              "neutral buoyancy: the plume detaches and flows out toward the sea",
