@@ -436,3 +436,32 @@ Script: `analysis/excess_clean_bg.py` → `figures/fig2_excess_clean.json`. Vent
 - sermilik: ≈ 0 sobre −150 m; +1.1 a +2.3 cm/s entre −180 y −270 m.
 
 Confirmado: el ascenso a lo largo de toda la cara existe sin pluma. Es la capa límite convectiva del derretimiento ambiente bajo la interfaz (agua más cálida). Explica el Q_m/Q_t ≈ 9–12 de D1, que medía sobre toda la cara. Esto no explica todavía el fallo de C4, que sigue abierto hasta D2.
+
+### Resultado de D2: convergencia de C4 con dx = 5 m (2026-11-06)
+
+Corrida: `/Volumes/LaCie/portfolio_runs/exp1/b_dx5_twolayer_single`. Llegó a 3 h (10 800 pasos) en 18 240 s de reloj con 5 rangos; la estimación previa era 23 328 s.
+
+**Criterios OB 1–3 (requisito para interpretar): PASAN.**
+- 1. `require_ok`: PASA.
+- 2. Razón OB/interior máx 0.48, con columnas 196–198 frente a 20–179 (los mismos 100–900 m que i = 10–89 a 10 m). Con 10–189 da 0.41. A 10 m daba 0.52.
+- 3. |η̄| máx 1.2e-16 m; error del transporte de la OB 1.9e-12 m³/s.
+
+**C4, mismo código (`c4_for`) y misma ventana de 2–3 h:**
+
+| | z_detach modelo | z_detach teoría | diff/H |
+|---|---|---|---|
+| 10 m (`b_3d_twolayer_single`) | −1.9 m | −66.1 m | 0.214 |
+| 5 m (`b_dx5_twolayer_single`) | −55.7 m | −66.4 m | 0.036 |
+
+**Veredicto pre-registrado: Δ(diff/H) = −0.179, una caída de más de 0.05, así que la resolución es importante (clase c).** El fallo de C4 a 10 m se atribuye a la resolución, no a física ausente ni a la teoría.
+
+**Perfil de w (máximo en y, i = 0, media 2–3 h), para entender el cambio:**
+- A 10 m, la pluma sigue a 0.35 m/s en z = −15 m y llega a la superficie.
+- A 5 m, w cae de 0.57 m/s (−97.5 m) a 0.11 (−62.5) y a 0.02 (−52.5), y es ~0 encima. Se desprende bajo la interfaz, como predice la teoría.
+
+**Lo que esto NO dice:**
+- C4 sigue siendo **FALLA** a la resolución de producción (10 m); no se reetiqueta. El valor de 5 m está bajo el umbral, pero C4 se definió para la campaña.
+- Solo dos resoluciones y una estratificación (twolayer). No demuestra convergencia: 5 m puede seguir sin converger, aunque la diferencia con la teoría ya es del 3.6 % de H.
+- Hay diferencias declaradas: la fuente de 5 × 5 m tiene una velocidad de entrada 4× mayor, y la esponja es de 50 m.
+
+**Consecuencia para (b):** todas las corridas de la campaña a 10 m tienen la pluma llegando a la superficie por falta de resolución. R_E y la Figura 2 a 10 m deben llevar esta advertencia o rehacerse a 5 m. Una corrida de 5 m cuesta ~5 h; la campaña completa (14 corridas, ~70 h) excede el presupuesto de 24 h. Decisión de Esteban.
