@@ -124,7 +124,7 @@ The comparisons in (a) and (b) say that plume theory predicts *where* a plume de
 
 The two-plume results at 10 m show weaker interaction than the laboratory (R_E = {{b_RE_twolayer_sep_range}} for separated sources, against about 0.5 in Cenedese & Gatto, 2016a). With x0c spanning only about six cells, that difference cannot yet be separated from resolution; the 5 m subset is designed to do so.
 
-Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA, widely used to compare forcings, ranks shelf forcing first by an order of magnitude, yet the shelf delivers almost no net heat to the front. Which forcing "matters most" depends on whether the question is renewal of fjord water or heat for melting.
+Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA ranks shelf forcing highest by an order of magnitude, yet the shelf delivers almost no net heat to the front. Which forcing "matters most" depends on whether the question is renewal of fjord water or heat for melting.
 
 ### 4.2 Relation to previous work
 
