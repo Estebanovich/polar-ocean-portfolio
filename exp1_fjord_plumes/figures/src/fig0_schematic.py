@@ -17,18 +17,32 @@ import argparse
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 FIG = HERE.parent
-W, H = 1000, 560
-SEA, PYC, BED = 110, 260, 420          # sea surface, pycnocline centre, sea floor (y, points)
-FACE, MOUTH = 170, 900                 # ice face and fjord mouth (x, points)
+PANELS = HERE / "panels"
+SAT = HERE / "sat"
+W, H = 1100, 1230
+OY = 480                                # vertical offset of the section (c) below the satellite row
+# panel (a): along-fjord section of configuration (c); x in km -> points, depth in m -> points
+X0, KX = 120.0, 21.0                    # x of the ice face; points per km (0-40 km -> 120-960)
+Y0, KZ = 110.0 + OY, 0.54                    # y of the sea surface; points per metre of depth
+
+
+def X(km):
+    return X0 + KX * km
+
+
+def Y(m):
+    return Y0 + KZ * m
+
 
 ICE, ICE_LINE = "#e8f3f9", "#6b8fa3"
-PW, AW = "#a9cfe6", "#f2b48c"          # Polar Water (cold), Atlantic Water (warm)
-PLUME = "#b9a7d8"                      # mixed plume water
-INK, WARM, COOL, BEDC = "#222222", "#c0392b", "#2c6ea3", "#a39282"
+PW, AW = "#a9cfe6", "#f2b48c"
+PLUME = "#b9a7d8"
+INK, WARM, COOL, BEDC, PURP = "#222222", "#c0392b", "#2c6ea3", "#a39282", "#5b3f8f"
 FONT = "Helvetica"
 
 cmds: list[dict] = []
@@ -89,62 +103,134 @@ def text(x, y, s, size=12, color=INK, style=None, justify=None, rotation=None):
     c("text.create", **p)
 
 
+def label(x, y, s, size=10, color=INK, style=None, pad=3):
+    """Text on a translucent white box (for labels over imagery)."""
+    w = 0.53 * size * len(s)
+    rect(x - pad, y - size - pad + 2, w + 2 * pad, size + 2 * pad, color="#ffffff", opacity=78)
+    text(x, y, s, size, color=color, style=style)
+
+
+def satellite_row():
+    # (a) MODIS overview, 900 x 1100 px placed at 300 x 367 pt
+    ax0, ay0, sa = 40.0, 64.0, 300.0 / 900.0
+    P = lambda px, py: (ax0 + sa * px, ay0 + sa * py)
+    c("file.place", path=str(SAT / "sermilik_modis_2022-08-05.jpg"), rect=[ax0, ay0, 300, 366.7], link=False)
+    x1, y1 = P(193, 90)
+    x2, y2 = P(536, 270)
+    c("shape.rectangle", x=x1, y=y1, width=x2 - x1, height=y2 - y1)
+    fill(stroke="#ffd400", weight=1.6)
+    label(*P(20, 470), "Greenland Ice Sheet", 9.5)
+    label(*P(150, 60), "Helheim Glacier", 9.5)
+    text(*P(560, 520), "Sermilik Fjord", 10, color="#ffffff", style="Bold")
+    text(*P(470, 1075), "shelf (Irminger Sea)", 9.5, color="#ffffff")
+    # scale bar 20 km (0.104 km per px across, 0.111 km per px along)
+    bx, by = P(660, 1000)
+    line(bx, by, bx + 20 / 0.104 * sa, by, color="#ffffff", weight=2.2)
+    text(bx, by - 5, "20 km", 9, color="#ffffff")
+    # model domain of (c) at the same scale: 40 km x 5.6 km, ice face at the top
+    mx, my = P(70, 640)
+    c("shape.rectangle", x=mx, y=my, width=5.6 / 0.104 * sa, height=40 / 0.111 * sa)
+    fill(color="#f2b48c", stroke=INK, weight=1.2, opacity=85)
+    line(mx, my, mx + 5.6 / 0.104 * sa, my, color=COOL, weight=3)
+    label(mx + 26, my + 10, "model domain of (c)", 8.5)
+    label(mx + 26, my + 24, "at the same scale", 8.5)
+    label(mx + 26, my + 38, "(ice face at the top)", 8.5)
+    text(ax0, 52, "(a)", 13, style="Bold")
+    text(ax0 + 26, 52, "Sermilik Fjord and Helheim Glacier, SE Greenland", 10.5)
+    # (b) HLS zoom on the terminus, 1000 x 560 px placed at 700 x 392 pt
+    bx0, by0, sb = 370.0, 64.0, 0.7
+    Q = lambda px, py: (bx0 + sb * px, by0 + sb * py)
+    c("file.place", path=str(SAT / "helheim_hls_2022-07-30.jpg"), rect=[bx0, by0, 700, 392], link=False)
+    c("shape.rectangle", x=bx0, y=by0, width=700, height=392)
+    fill(stroke="#ffd400", weight=1.6)
+    arrow(*Q(120, 255), *Q(370, 300), color=COOL, weight=2.6)
+    label(*Q(70, 235), "glacier ice flows to the sea", 10, color=COOL)
+    line(*Q(415, 215), *Q(400, 395), color=WARM, weight=2.2, dash=[5, 3])
+    label(*Q(330, 450), "calving front (terminus): the ice face in (c)-(e)", 10, color=WARM)
+    label(*Q(600, 330), "ice mélange: icebergs and sea ice", 10)
+    sx, sy = Q(40, 530)
+    line(sx, sy, sx + 5 / 0.036 * sb, sy, color=INK, weight=2.2)
+    text(sx, sy - 5, "5 km", 9, color=INK)
+    text(bx0, 52, "(b)", 13, style="Bold")
+    text(bx0 + 26, 52, "Helheim Glacier terminus, 30 m resolution", 10.5)
+    text(40, 474, "Imagery: NASA Worldview / GIBS. (a) MODIS Terra true colour, 5 Aug 2022. (b) Harmonized Landsat "
+         "Sentinel-2 (HLS S30), 30 Jul 2022; contains modified Copernicus Sentinel data 2022.", 8.5, color="#555555")
+
+
 def build() -> list[dict]:
     c("file.new", width=W, height=H, units="Points", backgroundContents="white", name="fig0_schematic")
-    # sky, water masses, pycnocline band, sea floor
-    rect(0, 0, W, SEA, color="#f6f9fb")
-    rect(FACE, SEA, W - FACE, PYC - SEA, color=PW)
-    rect(FACE, PYC, W - FACE, BED - PYC, color=AW)
-    rect(FACE, PYC - 18, W - FACE, 36,
+    satellite_row()
+    o = OY
+    # ---------------- (c) along-fjord section --------------------------------------------------
+    rect(70, 40 + o, 1000, Y0 - 40 - o, color="#f6f9fb")
+    rect(X0, Y0, 1060 - X0, Y(165) - Y0, color=PW)
+    rect(X0, Y(235), 1060 - X0, Y(500) - Y(235), color=AW)
+    rect(X0, Y(165), 1060 - X0, Y(235) - Y(165),
          gradient={"kind": "linear", "angle": 90, "stops": [{"offset": 0, "color": AW}, {"offset": 1, "color": PW}]})
-    rect(0, BED, W, H - BED, color=BEDC)
-    line(FACE, SEA, W, SEA, color=COOL, weight=1.5)
-    # glacier (ice above and below the sea surface, grounded on the bed)
-    path(f"M 0 52 L 60 40 L 120 46 L {FACE} 34 L {FACE} {BED} L 0 {BED} Z", color=ICE, stroke=ICE_LINE, weight=1.5)
-    # surface meltwater draining to the bed and out at the grounding line
-    line(105, 44, 105, BED - 8, color=COOL, weight=1.6, dash=[5, 4])
-    arrow(105, BED - 8, FACE - 4, BED - 8, color=COOL, weight=1.6, dash=[5, 4])
-    # buoyant plume (half cone against the face) and its outflow at neutral buoyancy
-    path(f"M {FACE} {BED} L {FACE + 10} {BED} C {FACE + 25} 350 {FACE + 40} 300 {FACE + 58} 262 "
-         f"C 300 266 450 262 560 246 C 450 230 300 226 {FACE} 236 Z", color=PLUME, opacity=90)
-    arrow(FACE + 14, BED - 16, FACE + 24, 278, color="#ffffff", weight=3)
-    arrow(560, 246, 700, 246, color="#6a4c9c", weight=3)
-    # entrainment of ambient water into the plume
-    for y in (395, 350, 305):
-        arrow(FACE + 95, y, FACE + 50 - (BED - y) * 0.08, y - 4, color=WARM, weight=1.6)
-    # warm inflow at depth
-    arrow(840, 370, 470, 370, color=WARM, weight=3)
-    # wind over the fjord
-    for x0 in (300, 480, 660):
-        arrow(x0, 82, x0 + 120, 82, color=INK, weight=2.2)
-    # shelf pycnocline heaving at the mouth
-    line(MOUTH, SEA, MOUTH, BED, color="#555555", weight=1.0, dash=[3, 3])
-    arrow(945, PYC - 40, 945, PYC + 40, color=INK, weight=2.2, both=True)
-    path(f"M {FACE + 260} {PYC} C 500 {PYC - 14} 600 {PYC + 14} 700 {PYC} C 780 {PYC - 14} 840 {PYC + 14} {MOUTH} {PYC}",
-         stroke="#555555", weight=1.2)
-    # labels
-    text(30, 24, "Glacier", 15, style="Bold")
-    text(520, 24, "Fjord", 15, style="Bold", justify="center")
-    text(945, 24, "Shelf", 15, style="Bold", justify="center")
-    text(46, 300, "surface meltwater drains to the bed", 10.5, color=COOL, rotation=-90)
-    text(150, 395, "submarine melting", 11, color=WARM, rotation=-90)
-    text(FACE + 6, BED + 18, "subglacial discharge leaves the bed at the grounding line", 11, color="#ffffff")
-    text(FACE + 76, 228, "neutral buoyancy: the plume detaches and spreads", 11)
-    text(FACE + 100, 330, "entrainment", 11, color=WARM)
-    text(FACE + 62, 285, "buoyant plume rises along the ice", 10.5, color="#4b3577")
-    text(575, 236, "outflow of plume water", 11, color="#6a4c9c")
-    text(480, 390, "warm Atlantic Water flows toward the glacier", 11, color=WARM)
-    text(560, 70, "along-fjord wind", 11, justify="center")
-    text(890, 160, "Polar Water: cold, fresh", 11, justify="right")
-    text(890, 410, "Atlantic Water: warm, salty", 11, justify="right")
-    text(960, PYC + 58, "pycnocline", 10.5, justify="center")
-    text(960, PYC + 72, "heaving (days)", 10.5, justify="center")
-    # which part of the experiment covers what
-    line(FACE, 484, 300, 484, color="#ffffff", weight=2)
-    text(FACE, 500, "(a), (b): plume at the ice face, resolved (metres)", 11, color="#ffffff")
-    line(FACE, 516, MOUTH, 516, color="#ffffff", weight=2)
-    text(FACE, 532, "(c): whole fjord with plume, wind and shelf forcing; plume parameterised (40 km)", 11, color="#ffffff")
-    text(W - 10, H - 8, "schematic, not to scale", 9, color="#ffffff", justify="right")
+    rect(70, Y(500), 1000, 14, color=BEDC)
+    rect(X(38), Y0, X(40) - X(38), Y(500) - Y0, color="#7f7f7f", opacity=25)
+    line(X(40), Y0, X(40), Y(500), color="#444444", weight=1.0, dash=[4, 3])
+    line(X0, Y0, 1060, Y0, color=COOL, weight=1.4)
+    path(f"M 70 {70 + o} L 95 {62 + o} L {X0} {56 + o} L {X0} {Y(500)} L 70 {Y(500)} Z", color=ICE, stroke=ICE_LINE, weight=1.4)
+    zn = Y(181)
+    path(f"M {X0} {Y(500)} L {X0 + 6} {Y(500)} C {X0 + 18} {Y(380)} {X0 + 30} {Y(260)} {X0 + 44} {zn + 8} "
+         f"C {X(6)} {zn + 9} {X(11)} {zn + 6} {X(15)} {zn} C {X(11)} {zn - 6} {X(6)} {zn - 9} {X0} {zn - 8} Z",
+         color=PLUME, opacity=92)
+    arrow(X0 + 9, Y(480), X0 + 20, Y(260), color="#ffffff", weight=2.6)
+    arrow(X(15) + 4, zn, X(19), zn, color=PURP, weight=2.6)
+    line(X0, zn, X(3.2), zn, color=INK, weight=0.9, dash=[3, 2])
+    for d in (440, 370, 300):
+        arrow(X0 + 70, Y(d), X0 + 30 - (500 - d) * 0.025, Y(d) - 3, color=WARM, weight=1.4)
+    arrow(X(31), Y(390), X(9), Y(390), color=WARM, weight=2.8)
+    line(X(20), Y0 - 6, X(20), Y(500), color=INK, weight=1.2, dash=[6, 3])
+    for k0 in (6.0, 14.5, 23.0):
+        arrow(X(k0), 84 + o, X(k0) + 130, 84 + o, color=INK, weight=2.0)
+    arrow(1010, Y(200) - 34, 1010, Y(200) + 34, color=INK, weight=2.0, both=True)
+    path(f"M {X(13)} {Y(200)} C {X(18)} {Y(200) - 9} {X(23)} {Y(200) + 9} {X(28)} {Y(200)} "
+         f"C {X(32)} {Y(200) - 9} {X(36)} {Y(200) + 9} {X(40)} {Y(200)}", stroke="#555555", weight=1.1)
+    line(1068, Y0, 1068, Y(500), color=INK, weight=0.8)
+    for d in range(0, 501, 100):
+        line(1068, Y(d), 1073, Y(d), color=INK, weight=0.8)
+        text(1077, Y(d) + 3.5, f"{d}", 9)
+    text(1094, Y(250), "depth (m)", 9, rotation=-90, justify="center")
+    line(X0, Y(500) + 18, X(40), Y(500) + 18, color=INK, weight=0.8)
+    for k in range(0, 41, 10):
+        line(X(k), Y(500) + 18, X(k), Y(500) + 23, color=INK, weight=0.8)
+        text(X(k), Y(500) + 34, f"{k}", 9, justify="center")
+    text(X(20), Y(500) + 47, "distance from the ice face (km)", 9, justify="center")
+    text(20, 34 + o, "(c)", 13, style="Bold")
+    text(48, 34 + o, "Along-fjord section of the idealised fjord, configuration (c); vertical scale exaggerated, plume enlarged", 11)
+    text(76, 52 + o, "Glacier", 11, style="Bold")
+    text(X(20), 70 + o, "along-fjord wind  τ = 0.2 N/m² for 12 h", 10.5, justify="center")
+    text(X(20) + 5, Y(30), "Q_ex and heat toward the front, x = 20 km", 10)
+    text(X(6), Y(120), "Polar Water  −1.5 °C, 32.9 psu", 10.5)
+    text(X(6), Y(470), "Atlantic Water  4.0 °C, 34.6 psu", 10.5)
+    text(X(3.4), zn + 3.5, "z_n ≈ 181 m", 9.5)
+    text(X(4.2), zn - 12, "neutral buoyancy: plume detaches, outflow", 10, color=PURP)
+    text(X0 + 74, Y(372), "entrainment", 10, color=WARM)
+    text(X(9.5), Y(410), "warm inflow at depth", 10, color=WARM)
+    text(X0 + 4, Y(500) + 11, "Q0 = 100 m³/s", 9.5, color="#ffffff")
+    text(X(39), Y(470), "sponge", 9, rotation=-90, justify="center")
+    text(1010, Y(200) + 50, "shelf", 10, justify="center", style="Bold")
+    text(1010, Y(200) + 63, "z_c(t) = 200 m", 9, justify="center")
+    text(1010, Y(200) + 75, "− 30 sin(2πt / 6 d)", 9, justify="center")
+    c("shape.rectangle", x=X0 - 4, y=Y0 + 4, width=60, height=Y(500) - Y0 - 6)
+    fill(stroke=INK, weight=1.0)
+    c("stroke.set", dash=[4, 3])
+    line(X0 - 4, Y(500) - 2, 155, 446 + o, color="#666666", weight=0.8, dash=[4, 3])
+    line(X0 + 56, Y(500) - 2, 560, 446 + o, color="#666666", weight=0.8, dash=[4, 3])
+    # ---------------- (d)-(g) data panels ---------------------------------------------------------
+    py = 470 + o
+    for tag, title, name, r in (
+            ("(d)", "config (a): resolved line plume", "p_plume2d.png", [40, py, 245, 255]),
+            ("(e)", "config (b): two plumes on the ice face", "p_face_w.png", [300, py, 280, 255]),
+            ("(f)", "initial T and S profiles", "p_profiles.png", [600, py, 230, 255]),
+            ("(g)", "forcing of config (c)", "p_forcing.png", [850, py, 235, 255])):
+        c("file.place", path=str(PANELS / name), rect=r, link=False)
+        text(r[0] + 4, py - 8, tag, 12, style="Bold")
+        text(r[0] + 30, py - 8, title, 10.5)
+    text(40, H - 10, "(d), (e): model output of this experiment (w, vertical velocity; black line in (d), the 1.25 °C "
+         "isotherm between PW and AW). Schematic in (c) not to scale.", 9, color="#555555")
     return cmds
 
 
@@ -158,7 +244,8 @@ def main() -> None:
         print(f"wrote {cmd_file}; pass --cli to render")
         return
     outs = [FIG / f"fig0_schematic.{e}" for e in ("png", "svg", "pdf")]
-    args = [a.cli, "run", "--commands", str(cmd_file), "--ppi", "200"]
+    subprocess.run([sys.executable, str(HERE / "fig0_panels.py")], check=True)
+    args = [a.cli, "run", "--commands", str(cmd_file), "--ppi", "150"]
     for o in outs:
         args += ["--export", str(o)]
     r = subprocess.run(args, capture_output=True, text=True, env={**os.environ, "VECTORCRAFT_NO_PREFS": "1"})
