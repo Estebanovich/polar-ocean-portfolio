@@ -1,7 +1,7 @@
 """Figure 0: schematic of the phenomenon (along-fjord section), drawn with VectorCraft.
 
 Writes the VectorCraft command list (``fig0_schematic.commands.json``) and, if the VectorCraft CLI is
-available, renders ``figures/fig0_schematic.{png,svg,pdf}`` with its headless batch mode:
+available, renders ``figures/fig0_schematic.{svg,pdf}`` and a JPEG copy for the README (``.jpg``) with its headless batch mode:
 
     vectorcraft-cli run --commands fig0_schematic.commands.json --export fig0_schematic.png ...
 
@@ -458,7 +458,13 @@ def main() -> None:
     bad = [l for l in r.stdout.splitlines() if '"error"' in l]
     if r.returncode or bad:
         raise SystemExit(f"vectorcraft-cli failed (rc {r.returncode}):\n" + "\n".join(bad) + r.stderr[-2000:])
-    print("rendered", ", ".join(o.name for o in outs))
+    # README copy: JPEG q92 without chroma subsampling (1.6 MB instead of 5 MB; mean |error| 1/255).
+    # A 256-colour PNG was rejected: it bands the plume gradient. The vector masters are the SVG/PDF.
+    from PIL import Image
+    jpg = FIG / "fig0_schematic.jpg"
+    Image.open(outs[0]).convert("RGB").save(jpg, quality=92, subsampling=0, optimize=True)
+    outs[0].unlink()
+    print("rendered", ", ".join(o.name for o in outs[1:] + [jpg]))
 
 
 if __name__ == "__main__":
