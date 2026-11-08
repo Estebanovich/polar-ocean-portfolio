@@ -295,7 +295,7 @@ done
 
 **Configuración:**
 - Stevens en el este, con u_ob = Q0/A_ob.
-- La esponja T/S de OBCS se reemplaza por una zona RBCS equivalente (R33; commits 176b931, 6614d01, f13020d).
+- La esponja T/S de OBCS se reemplaza por una zona RBCS equivalente (R33; commits 2d83953, f407f17, 9aff115).
 - La esponja U/V se mantiene.
 
 **Caso:** `c_fjord_all_stevens_short1d`. Son 2 etapas de 12 h, con `--set wind_stage1_s=43200` y np = 5.
@@ -399,7 +399,7 @@ La frontera sigue con velocidades 10–40 % mayores que el interior, pero sin cr
 
 **Decisión (R38):** se adopta V3 en las configuraciones de producción (b) y (c) y se vuelven a correr los 14 + 4 casos, como en el plan aprobado. Las corridas anteriores se conservan renombradas con el sufijo `_stv0`, como evidencia de la falla.
 
-**Precisiones fijadas antes de evaluar la verificación con pyOCEAN** (commit 5c8e9a2, antes de cualquier corrida de 30 d):
+**Precisiones fijadas antes de evaluar la verificación con pyOCEAN** (commit bbef9b7, antes de cualquier corrida de 30 d):
 - "En todo momento", para Q = 0, significa cada paso del modelo.
 - "Deriva", para Q = 100, es el máximo de |η̄(t) − η̄(20 d)| en los días 20–30, la lectura más estricta.
 - La picnoclina es la isoterma de 1.25 °C, que reproduce los 200.0 m de la tabla de MITgcm en t = 0.
