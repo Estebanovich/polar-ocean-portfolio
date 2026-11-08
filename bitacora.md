@@ -250,3 +250,26 @@
 - A 5 m, las plumas cercanas suben casi hasta la superficie (z_despegue −9 y −17 m, frente a −55 m de la pluma única). R_E > 1 en x0 = 20 queda sin explicar. Es estable entre las dos mitades de la ventana (post-hoc).
 - Commits: análisis en `excess_dx5.py` (0d24952); Figura 2 con panel (b) y README (7127d06).
 - Animación de (a): la nueva corrida es idéntica bit a bit a la de producción de 1 a 6 h (diferencia 0.0). GIF cada 5 min y sección «Animations» en el README (92f033f). 293 tests PASAN.
+
+## 2026-11-08 (tarde): correcciones de la revisión final (PD4)
+
+- **Bloqueantes:**
+  - Tabla de criterios completa (C1–C6, con resultado). C4 es ±0.15 H, no 0.10 H.
+  - C4′ pasa solo por construcción.
+  - C6 excedido: ~49 h sumadas en 74 corridas, con extensiones aprobadas.
+- **(a):** `pd2_convergence_eval` usa la extensión pre-registrada `sens_xu2012_36h`, con ventana de 24–36 h.
+  - R_Q pasa de 0.547 a 0.720 y b de 20.0 a 9.8 m.
+  - El déficit de velocidad no es de resolución, pero depende del cierre.
+  - La pluma es más ancha que el sombrero de copa; no es un chorro estrecho.
+- **(b):** a 5 m la pluma se desprende por encima de la interfaz (−100 m), no por debajo. Se corrigió también en `pd1_b_twoplume3d.md`.
+- **Etiquetas y límites:**
+  - D1 (lectura del afloramiento) queda etiquetada como post hoc.
+  - §4.1 acotada.
+  - Nueva limitación: OB barotrópicamente cerrada en (c).
+  - Conclusión 6 reescrita.
+- **Citas verificadas contra los PDF:**
+  - Cenedese & Gatto: la referencia es 2× una pluma con la descarga por fuente, igual que la nuestra.
+  - Kimura: la comparación es contra una sola pluma con la misma descarga total.
+  - Jackson 2018: lo que llaman simplificación es la condición en la boca; 30 m es «típico de Sermilik» y su control usa 14 m.
+  - Carroll (viento) y Sanchez (Sermilik, la pluma duplica el intercambio) quedan separados.
+- `.gitignore` sin entradas del asistente en todo el historial (reescrito; las entradas se movieron a `.git/info/exclude`). Las referencias de commits en las notas están actualizadas.
