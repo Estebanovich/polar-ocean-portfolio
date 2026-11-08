@@ -488,3 +488,63 @@ Orden: fondo, x0 = 20, x0 = 0, x0 = 80. Cada uno tarda ~5 h con 5 rangos.
 **Lectura fijada ahora:**
 - Si R_E a 5 m difiere de 10 m en más de 0.1 para algún x0, la interacción entre plumas depende de la resolución, y la Figura 2 se presenta a 5 m.
 - Si no, la conclusión "las plumas casi no interactúan" es robusta a la resolución dentro de este rango.
+
+### Resultado del subconjunto de (b) a 5 m (2026-11-08)
+
+Corridas en `/Volumes/LaCie/portfolio_runs/exp1/b_dx5_*`:
+- fondo: 40 767 s de reloj;
+- x0 = 20: 22 838 s, aceptada por R41 (falló `MPI_Finalize` tras la última escritura; ver `pd2_convergence.md`);
+- x0 = 0: 19 129 s;
+- x0 = 80: 20 979 s.
+
+Script: `analysis/excess_dx5.py` → `figures/fig2_excess_dx5.json`.
+
+**Criterios OB 1–3 (requisito): PASAN las cuatro corridas** (columnas 196–198 frente a 20–179):
+
+| corrida | 1 `require_ok` | 2 razón OB/interior máx | 3 \|η̄\| máx; error de transporte |
+|---|---|---|---|
+| fondo (Q = 0) | PASA | 0.10 | 1.5e-18 m; 1.3e-13 m³/s |
+| x0 = 20 | PASA | 0.52 | 7.4e-16 m; 2.0e-12 m³/s |
+| x0 = 0 | PASA | 0.51 | 4.5e-16 m; 2.0e-12 m³/s |
+| x0 = 80 | PASA | 0.88 | 6.4e-16 m; 3.0e-12 m³/s |
+
+**Ruido (regla ε):** M_fondo = 1.2893 m³/s; ε = 2.4e-4; E_single = 0.0639 ≥ 10·ε = 2.4e-3, así que es **resoluble**. M_fondo/M_single = 0.953. A 10 m, E_single valía 0.1036: el exceso de la pluma única baja 38 % con la resolución.
+
+**R_E(x0), ventana 2–3 h:**
+
+| x0 (m) | 0 | 20 | 80 |
+|---|---|---|---|
+| R_E a 5 m | **0.977** | **1.204** | **0.947** |
+| R_E a 10 m | 0.762 | 0.953 | 0.927 |
+| diferencia | +0.215 | +0.251 | +0.020 |
+| \|dif\| > 0.1 | sí | sí | no |
+
+**Lectura fijada de antemano: se cumple la condición de dependencia con la resolución** (x0 = 0 y x0 = 20). La interacción entre plumas depende de la resolución, y la Figura 2 se presenta a 5 m. La conclusión de 10 m («las plumas casi no interactúan; solo la fusión total baja a 0.76») **no es robusta a la resolución**.
+
+**C4 de cada corrida de dos plumas (solo contexto, sin umbral).** z_despegue del máximo en y de w en la cara. La teoría usa el ambiente lejano medio de la ventana:
+
+| x0 | modelo | teoría Q0 | teoría 2Q0 |
+|---|---|---|---|
+| 0 | −9.3 m | −66.3 m | −37.8 m |
+| 20 | −17.1 m | −66.5 m | −37.8 m |
+| 80 | −55.1 m | −66.4 m | −37.7 m |
+| `_single` (D2) | −55.7 m | −66.4 m | — |
+
+Con x0 ≤ 20 m (≤ 4 celdas a 5 m), las plumas juntas suben más que una sola y casi llegan a la superficie. Superan incluso la teoría para 2Q0 en una fuente puntual. Con x0 = 80 m, cada pluma despega como la única.
+
+**Sensibilidad a la ventana (post-hoc).** R_E en las mitades 2–2.5 h y 2.5–3 h:
+- x0 = 0: 0.972 / 0.982;
+- x0 = 20: 1.203 / 1.206;
+- x0 = 80: 0.943 / 0.951.
+
+Es estable dentro de 0.01.
+
+**Interpretación (cautelosa):**
+- A 5 m, R_E ≈ 1 o mayor para x0 ≤ 20 m: dos plumas cercanas derriten igual o más que dos independientes. Esto es lo contrario de la caída hacia ≈ 0.5 del laboratorio para x0 < x0c.
+- Un mecanismo posible, sin verificar: la pluma fusionada o casi fusionada tiene más flujo de flotación, sube por encima de la interfaz y pone en contacto con la cara un flujo más rápido a lo largo de más profundidad. El x0 = 0 a 10 m no lo mostraba porque ahí todas las plumas llegaban a la superficie (C4 FALLA a 10 m).
+- R_E > 1 en x0 = 20 y no en x0 = 0 queda **sin explicar**. Hay que verlo en el campo de derretimiento por profundidad antes de afirmar nada.
+- Limitaciones:
+  - solo tres x0 y una estratificación (twolayer);
+  - dos resoluciones: no demuestra convergencia a 5 m;
+  - se mantiene el supuesto de fondo aditivo;
+  - la fuente de 5 × 5 m tiene una velocidad de entrada 4× mayor que a 10 m (diferencia declarada en D2).

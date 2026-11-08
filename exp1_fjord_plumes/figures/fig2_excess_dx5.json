@@ -1,0 +1,62 @@
+{
+ "source": "analysis/excess_dx5.py; notes/pd1_b_twoplume3d.md (5 m subset, pre-registered)",
+ "M_bg": 1.2893187531941523,
+ "M_bg_1_2h": 1.2890815272876572,
+ "eps": 0.00023722590649510877,
+ "M_single": 1.3532571893777157,
+ "E_single": 0.06393843618356332,
+ "Mbg_over_Msingle": 0.9527521917596722,
+ "resolvable": true,
+ "R_E": {
+  "0": {
+   "x0_actual": 0.0,
+   "E": 0.124914096809017,
+   "R_E": 0.9768310289165996,
+   "R_E_10m": 0.762137195450982,
+   "diff_5m_minus_10m": 0.21469383346561755,
+   "exceeds_0p1": true,
+   "c4": {
+    "z_detach_model": -9.337310289209997,
+    "z_detach_theory_Q0": -66.3487525589564,
+    "diff_over_H_Q0": 0.1900381408991547,
+    "z_detach_theory_2Q0": -37.77606737190541,
+    "diff_over_H_2Q0": 0.09479585694231805,
+    "label": "context only (pre-registered, no threshold)"
+   }
+  },
+  "20": {
+   "x0_actual": 20.0,
+   "E": 0.15400500569072695,
+   "R_E": 1.2043225865627059,
+   "R_E_10m": 0.9530016225547323,
+   "diff_5m_minus_10m": 0.25132096400797355,
+   "exceeds_0p1": true,
+   "c4": {
+    "z_detach_model": -17.073670332359725,
+    "z_detach_theory_Q0": -66.46727859912444,
+    "diff_over_H_Q0": 0.16464536088921572,
+    "z_detach_theory_2Q0": -37.82671540309818,
+    "diff_over_H_2Q0": 0.06917681690246151,
+    "label": "context only (pre-registered, no threshold)"
+   }
+  },
+  "80": {
+   "x0_actual": 80.0,
+   "E": 0.12106689627235445,
+   "R_E": 0.9467458347337339,
+   "R_E_10m": 0.9268361106954954,
+   "diff_5m_minus_10m": 0.01990972403823843,
+   "exceeds_0p1": false,
+   "c4": {
+    "z_detach_model": -55.14949451345945,
+    "z_detach_theory_Q0": -66.42885604747536,
+    "diff_over_H_Q0": 0.03759787178005304,
+    "z_detach_theory_2Q0": -37.74615231442272,
+    "diff_over_H_2Q0": -0.058011140663455765,
+    "label": "context only (pre-registered, no threshold)"
+   }
+  }
+ },
+ "resolution_dependent": true,
+ "reading": "interaction depends on resolution: Fig. 2 at 5 m"
+}
