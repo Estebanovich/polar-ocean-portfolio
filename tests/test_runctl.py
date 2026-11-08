@@ -121,3 +121,61 @@ def test_runner_nan_in_log_is_failed(tmp_path):
     r, st = _run_stub(tmp_path, STEPS(10) + 'echo "%MON dynstat_eta_max = NaN"\n' + NORMAL, DATA)
     assert r.returncode != 0
     assert st["state"] == "FAILED" and "non-finite" in st["reason"]
+
+
+# Ruling (2026-11-07, b_dx5_twolayer_x0_20): a run whose only defect is a missing normal-end line
+# (MPI_Finalize failed after the last write) may be accepted by an explicit run_accepted.json.
+NOEND = "no normal-end line in model log"
+
+
+def _accept(d, **kw):
+    rec = {"accepted": True, "ruling": "MPI_Finalize failed after the last write", "evidence": "sizes match"}
+    rec.update(kw)
+    (d / "run_accepted.json").write_text(json.dumps(rec))
+
+
+def _noend_run(tmp_path, last_iter=20):
+    (tmp_path / "STDOUT.0000").write_text("(PID.TID 0000.0001) time_tsnumber = 20\n")
+    (tmp_path / "run_status.json").write_text(json.dumps(
+        {"state": "FAILED", "last_iter": last_iter, "n_timesteps": 20, "wall_s": 1.0, "reason": NOEND}))
+    return tmp_path
+
+
+def test_noend_without_acceptance_refused(tmp_path):
+    with pytest.raises(RuntimeError, match="FAILED"):
+        require_ok(_noend_run(tmp_path))
+
+
+def test_noend_with_acceptance_ok(tmp_path):
+    d = _noend_run(tmp_path)
+    _accept(d)
+    require_ok(d)
+
+
+def test_acceptance_ignored_for_short_run(tmp_path):
+    d = _noend_run(tmp_path, last_iter=10)
+    _accept(d)
+    with pytest.raises(RuntimeError):
+        require_ok(d)
+
+
+def test_acceptance_ignored_for_other_failure(tmp_path):
+    d = _fake_run(tmp_path, "FAILED")
+    _accept(d)
+    with pytest.raises(RuntimeError, match="FAILED"):
+        require_ok(d)
+
+
+def test_acceptance_needs_ruling_and_evidence(tmp_path):
+    d = _noend_run(tmp_path)
+    _accept(d, evidence="")
+    with pytest.raises(RuntimeError, match="FAILED"):
+        require_ok(d)
+
+
+def test_acceptance_does_not_skip_nan_check(tmp_path):
+    d = _noend_run(tmp_path)
+    (d / "STDOUT.0000").write_text("(PID.TID 0000.0001) %MON theta_max = NaN\n")
+    _accept(d)
+    with pytest.raises(RuntimeError, match="non-finite"):
+        require_ok(d)

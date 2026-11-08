@@ -243,3 +243,12 @@ La corrida de 24 h salió inválida por no ser estacionaria (2.6 % entre 12–18
 - Con la corrida hecha: THETA y WVEL en t = 1, 2, …, 6 h coinciden con los de la corrida de producción, max |Δ| ≤ 1e-12. Si no coinciden, la animación no se usa y se investiga.
 
 **Productos:** `figures/fig1_anim_a_line2d_twolayer_q0.03_anim.gif` (arranque, 0–6 h). Las animaciones de 48 h ya hechas usan las instantáneas horarias de producción (`fig1_anim_a_line2d_{twolayer,sermilik}_q0.03.gif`).
+
+## Nota (2026-11-07): aceptación de `b_dx5_twolayer_x0_20`
+
+La corrida quedó marcada `FAILED` («no normal-end line in model log»), aunque completó los 10 800 de 10 800 pasos. Tras la última escritura falló `MPI_Finalize`: OFI usaba la interfaz utun10 (Tailscale), que se desconectó cuando la laptop pasó a batería hacia las 16:10. `main.F` imprime «Execution ended Normally» solo después de `EEDIE`/`MPI_FINALIZE`, por eso falta la línea. Evidencia de que la corrida está completa:
+- hay 27 archivos en la iteración 10 800, los mismos que en la corrida OK `b_dx5_bg_twolayer_nodischarge`, con tamaños idénticos;
+- el pickup final tiene 0 NaN;
+- no hay líneas de monitor no finitas.
+
+Esteban aprobó aceptarla. Se registró en `run_accepted.json` (que `require_ok` respeta solo ante esta causa y con la corrida completa) sin tocar `run_status.json`. Los criterios de evaluación no cambian.

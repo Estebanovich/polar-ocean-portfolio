@@ -24,10 +24,32 @@ def run_status(run_dir: Path) -> dict:
     return st
 
 
+NO_NORMAL_END = "no normal-end line in model log"
+
+
+def _accepted(run_dir: Path, st: dict) -> bool:
+    """Explicit acceptance of a run whose only defect is a missing normal-end line.
+
+    Allowed only when the run reached its last time step and failed for no other reason (e.g.
+    MPI_Finalize failed after the last write, so main.F never printed its normal-end line). The
+    acceptance lives in run_accepted.json with a non-empty ruling and evidence; run_status.json
+    stays untouched. The length and non-finite checks of require_ok still apply.
+    """
+    f = Path(run_dir) / "run_accepted.json"
+    if st.get("reason") != NO_NORMAL_END or st["last_iter"] < st["n_timesteps"] or not f.exists():
+        return False
+    try:
+        rec = json.loads(f.read_text())
+    except json.JSONDecodeError:
+        return False
+    return (isinstance(rec, dict) and rec.get("accepted") is True
+            and bool(str(rec.get("ruling", "")).strip()) and bool(str(rec.get("evidence", "")).strip()))
+
+
 def require_ok(run_dir: Path) -> None:
     """Raise RuntimeError unless the run finished OK and reached its last time step."""
     st = run_status(run_dir)
-    if st["state"] != "OK":
+    if st["state"] != "OK" and not _accepted(run_dir, st):
         raise RuntimeError(f"{run_dir}: run state is {st['state']}, refusing to use it")
     if st["last_iter"] < st["n_timesteps"]:
         raise RuntimeError(
