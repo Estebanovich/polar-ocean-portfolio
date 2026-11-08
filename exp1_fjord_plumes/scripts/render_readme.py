@@ -83,6 +83,9 @@ def values() -> dict[str, str]:
     if b5:
         for x0, x in b5["R_E"].items():
             v[f"b5_RE_{x0}"] = f"{x['R_E']:.2f}"
+            v[f"b5_dRE_{x0}"] = f"{x['diff_5m_minus_10m']:+.2f}"
+            v[f"b5_zdet_{x0}"] = f"{x['c4']['z_detach_model']:.0f}"
+        v["b5_Esingle_change_pct"] = f"{100 * (b5['E_single'] / ex['twolayer']['E_single'] - 1):.0f}"
     # ---- (c) Figure 3, control, amplitude, pyOCEAN -------------------------------------------
     f3 = _load("fig3_metrics.json")
     if f3:

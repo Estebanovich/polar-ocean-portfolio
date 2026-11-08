@@ -5,7 +5,7 @@
 
 ## Abstract
 
-Subglacial discharge plumes control submarine melting at tidewater glaciers, but the theory used to parameterise them assumes an isolated plume in a quiescent ambient. We test that theory and two of its extensions with idealised MITgcm simulations. (a) A two-dimensional line plume against a vertical ice face reproduces the detachment depth of line-plume theory in 5 of 6 cases and the face-mean melt rate in 6 of 6 (model/theory 1.00–1.23), but its mean plume velocity is 0.50–0.61 of the theory's top-hat velocity, and this deficit persists at every resolution tested. (b) In three dimensions, two point plumes separated by x0 were simulated in two-layer and continuous stratification. At 10 m resolution the plume reaches the surface instead of detaching at the depth predicted by half-cone plume theory; a 5 m run detaches within 0.036 H of the theory, which attributes the failure to resolution rather than to missing physics (one stratification, two resolutions). (c) In a 40 km rotating fjord forced by a plume, an along-fjord wind pulse and a shelf pycnocline oscillation, the shelf oscillation dominates the volume exchanged at mid-fjord (8× the plume), while the plume dominates the heat carried toward the glacier. All success criteria were fixed before the runs, failed criteria are reported as failed, and every number below is read from the metrics files in `figures/`.
+Subglacial discharge plumes control submarine melting at tidewater glaciers, but the theory used to parameterise them assumes an isolated plume in a quiescent ambient. We test that theory and two of its extensions with idealised MITgcm simulations. (a) A two-dimensional line plume against a vertical ice face reproduces the detachment depth of line-plume theory in 5 of 6 cases and the face-mean melt rate in 6 of 6 (model/theory 1.00–1.23), but its mean plume velocity is 0.50–0.61 of the theory's top-hat velocity, and this deficit persists at every resolution tested. (b) In three dimensions, two point plumes separated by x0 were simulated in two-layer and continuous stratification. At 10 m resolution the plume reaches the surface instead of detaching at the depth predicted by half-cone plume theory; a 5 m run detaches within 0.036 H of the theory, which attributes the failure to resolution rather than to missing physics (one stratification, two resolutions). The two-plume interaction is also resolution-dependent: at 10 m separated plumes melt almost as two isolated plumes, but at 5 m close plumes (x0 ≤ 20 m) rise higher together and melt as much as, or more than, two isolated plumes (R_E = 0.98–1.20), the opposite of the halving seen in the laboratory. (c) In a 40 km rotating fjord forced by a plume, an along-fjord wind pulse and a shelf pycnocline oscillation, the shelf oscillation dominates the volume exchanged at mid-fjord (8× the plume), while the plume dominates the heat carried toward the glacier. All success criteria were fixed before the runs, failed criteria are reported as failed, and every number below is read from the metrics files in `figures/`.
 
 ## 1. Introduction
 
@@ -179,13 +179,17 @@ A resolution study at dx = 10, 5 and 2.5 m (`notes/pd2_convergence.md`) gives a 
 
 ![Figure 2](figures/fig2_two_plume_melt.png)
 
+*Figure 2. (a) Total face melt of two plumes normalised by twice the single-plume melt, at 10 m (criterion C4'); the ambient melting background dominates both. (b) Plume-induced excess R_E = E(x0)/(2 E_single) against x0/x0c: 10 m in both stratifications (open circles, dashed) and the 5 m two-layer subset (diamonds), which the pre-registered reading makes the reference result. Squares: Cenedese & Gatto (2016a), hand-digitised, approximate. Window 2–3 h.*
+
 | x0 (m) | 0 | 20 | 40 | 80 | 160 | 320 |
 |---|---|---|---|---|---|---|
 | R_E, two-layer, 10 m | 0.76 | 0.95 | 0.92 | 0.93 | 0.95 | 0.98 |
 | R_E, Sermilik, 10 m | 0.78 | 0.91 | 0.89 | 0.91 | 0.95 | 0.99 |
-| R_E, two-layer, 5 m | [pending] | [pending] | — | [pending] | — | — |
+| R_E, two-layer, 5 m | 0.98 | 1.20 | — | 0.95 | — | — |
 
-At 10 m, separated plumes melt almost as two independent plumes (R_E = 0.92–0.98), and only the merged source (x0 = 0) drops to 0.76. Because the 10 m plumes are under-resolved, this result is only interpreted together with the 5 m subset.
+At 10 m, separated plumes melt almost as two independent plumes (R_E = 0.92–0.98), and only the merged source (x0 = 0) drops to 0.76.
+
+The 5 m subset (two-layer; x0 = 0, 20, 80 m and a no-discharge background, all passing the open-boundary criteria) changes this. Its pre-registered reading was: if R_E at 5 m differs from 10 m by more than 0.1 at any x0, the interaction depends on resolution and Figure 2 is presented at 5 m. It does, at x0 = 0 (+0.21) and x0 = 20 m (+0.25); at x0 = 80 m the change is +0.02. At 5 m the close plumes detach near the surface (z = -9 m and -17 m, against -55 m at x0 = 80 m, where each plume detaches like the single one), and R_E rises to 0.98 and 1.20. The single-plume excess E_single itself changes by -38 % between 10 and 5 m. R_E > 1 at x0 = 20 m but not at x0 = 0 is not explained yet; it is stable to splitting the window into two halves (post hoc, within 0.01).
 
 ### 3.3 (c) Shelf forcing moves the most water; the plume delivers the heat
 
@@ -215,13 +219,13 @@ At 10 m, separated plumes melt almost as two independent plumes (R_E = 0.92–0.
 
 The comparisons in (a) and (b) say that plume theory predicts *where* a plume detaches and *how much* it melts when the model resolves it, but not the shape of its velocity profile: the resolved plume is a narrow near-wall jet, not a top-hat. In three dimensions this only holds at a resolution of about 5 m; at 10 m the point plume overshoots the interface. Any fjord model that resolves plumes at coarser grid spacing, or calibrates a parameterisation against such a model, inherits that bias.
 
-The two-plume results at 10 m show weaker interaction than the laboratory (R_E = 0.92–0.98 for separated sources, against about 0.5 in Cenedese & Gatto, 2016a). With x0c spanning only about six cells, that difference cannot yet be separated from resolution; the 5 m subset is designed to do so.
+The two-plume results show no reduction of melting comparable to the laboratory's (about 0.5 in Cenedese & Gatto, 2016a) at either resolution, but the reason changes with resolution. At 10 m, separated plumes behave as independent ones (R_E = 0.92–0.98) because every plume overshoots the interface anyway. At 5 m, where a single plume detaches below the interface as theory predicts, two close plumes combine their buoyancy, rise much higher than either alone and melt as much as or more than two isolated plumes (R_E = 0.98–1.20). One possible mechanism, not yet tested, is that the merged plume keeps fast flow against the face over a greater depth. The laboratory set-up differs in scale, source geometry and stratification, so the comparison remains qualitative.
 
 Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA ranks shelf forcing highest by an order of magnitude, yet the shelf delivers almost no net heat to the front. Which forcing "matters most" depends on whether the question is renewal of fjord water or heat for melting.
 
 ### 4.2 Relation to previous work
 
-- **Cenedese & Gatto (2016a):** they found that close plumes melt about half as much as two independent plumes, in a two-layer laboratory tank. Experiment (b) uses the same normalisation and adds continuous stratification and a no-discharge background; at 10 m it does not reproduce the reduction, a discrepancy left open pending the 5 m runs.
+- **Cenedese & Gatto (2016a):** they found that close plumes melt about half as much as two independent plumes, in a two-layer laboratory tank. Experiment (b) uses the same normalisation and adds continuous stratification and a no-discharge background; it does not reproduce the reduction at 10 m or at 5 m; at 5 m close plumes enhance rather than reduce the plume-induced melt, a discrepancy left open.
 - **Kimura et al. (2014):** they simulated two plumes in an unstratified ambient and found that close plumes give a higher peak but a lower face-mean melt. Experiment (b) adds stratification and shows that, in it, the detachment height is resolution-sensitive.
 - **Jackson et al. (2018):** they studied shelf forcing without a plume and noted that boundary-imposed forcing is a simplification. Experiment (c) uses that simplification deliberately and measures the amplitude actually realised inside the fjord.
 - **Carroll et al. (2017) and Sanchez et al. (2024):** they showed that wind amplifies plume-driven exchange and that the plume roughly doubles summer exchange in Sermilik. These are not claimed here as findings. Experiment (c) separates the forcings in a single idealised fjord and adds the heat delivered to the front.
@@ -239,9 +243,10 @@ Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA ranks
 
 1. With the same melt law, a resolved 2-D line plume matches line-plume theory in detachment depth and face-mean melt, but carries 0.50–0.61 of the theory's mean velocity, a deficit that does not shrink with resolution.
 2. A 3-D point plume at 10 m resolution fails to detach at the theoretical depth; at 5 m it detaches within 0.036 H. The failure is numerical; in this set-up a resolved point plume needs a grid spacing of 5 m or finer (convergence not yet demonstrated).
-3. Ambient melting of the whole face is about 0.93 of the total in these short runs, so plume-induced melting must be measured against a no-discharge background.
-4. In an idealised rotating fjord, shelf forcing dominates the volume exchanged while the plume dominates the heat delivered to the front; in this diagnostic the forcings add nearly linearly in heat.
-5. The default MITgcm Stevens open boundary is unstable for these set-ups; the interior-velocity option fixes it, as supported by an independent pyOCEAN run.
+3. Two-plume interaction depends on resolution: at 5 m, close plumes (x0 ≤ 20 m) melt as much as or more than two isolated plumes (R_E = 0.98–1.20), whereas at 10 m they appeared nearly independent; neither reproduces the laboratory halving. Only three separations and one stratification were run at 5 m.
+4. Ambient melting of the whole face is about 0.93 of the total in these short runs, so plume-induced melting must be measured against a no-discharge background.
+5. In an idealised rotating fjord, shelf forcing dominates the volume exchanged while the plume dominates the heat delivered to the front; in this diagnostic the forcings add nearly linearly in heat.
+6. The default MITgcm Stevens open boundary is unstable for these set-ups; the interior-velocity option fixes it, as supported by an independent pyOCEAN run.
 
 ## Reproducing
 

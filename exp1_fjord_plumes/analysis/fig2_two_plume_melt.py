@@ -137,10 +137,46 @@ def lab_points():
     return x0[sel] / x0c, smr[sel] / (2 * single_half), x0c
 
 
-def make_figure(cases, window, stem: Path):
+def load_excess(fig_dir: Path):
+    """R_E at 10 m (fig2_excess_clean.json) and 5 m (fig2_excess_dx5.json), both for the 2-3 h window;
+    None if either is missing. Panel (b) is presented at 5 m by the pre-registered reading of the 5 m
+    subset (notes/pd1_b_twoplume3d.md, 2026-11-08: |R_E(5 m) - R_E(10 m)| > 0.1 at x0 = 0 and 20 m)."""
+    f10, f5 = fig_dir / "fig2_excess_clean.json", fig_dir / "fig2_excess_dx5.json"
+    if not (f10.exists() and f5.exists()):
+        return None
+    return json.loads(f10.read_text()), json.loads(f5.read_text())
+
+
+def _panel_excess(ax, cases, excess):
+    e10, e5 = excess
+    cols = dict(zip(STRATS, style.OKABE_ITO))
+    for s in STRATS:
+        x0c = cases[(s, "single")]["x0c"]
+        pts = sorted((float(k) / x0c, v["R_E"]) for k, v in e10[s]["R_E"].items())
+        ax.plot(*zip(*pts), "o--", color=cols[s], ms=4, lw=0.8, alpha=0.55, mfc="none",
+                label=f"10 m, {s}")
+    x0c = cases[("twolayer", "single")]["x0c"]
+    pts = sorted((v["x0_actual"] / x0c, v["R_E"]) for v in e5["R_E"].values())
+    ax.plot(*zip(*pts), "D-", color=cols["twolayer"], ms=6, lw=1.8, label="5 m, twolayer")
+    lx, ly, _ = lab_points()
+    ax.plot(lx, ly, "s", color="k", mfc="none", ms=6, label="Cenedese & Gatto 2016a (approx.)")
+    ax.axhline(1, color="0.5", ls="--", lw=0.8)
+    ax.set_xlabel(r"$x_0^{actual}/x_{0c}$")
+    ax.set_ylabel(r"$R_E = E(x_0)\,/\,(2\,E_{single})$")
+    ax.set_xlim(-0.1, 6.0)
+    ax.set_title("(b) plume excess over the no-discharge background", fontsize=8, loc="left")
+    ax.legend(fontsize=6.5, frameon=False, loc="lower right")
+
+
+def make_figure(cases, window, stem: Path, excess=None):
     import matplotlib.pyplot as plt
     style.apply()
-    fig, ax = plt.subplots(figsize=(5.6, 4.0))
+    if excess is None:
+        fig, ax = plt.subplots(figsize=(5.6, 4.0))
+    else:
+        fig, (ax, axb) = plt.subplots(1, 2, figsize=(10.4, 4.2))
+        _panel_excess(axb, cases, excess)
+        ax.set_title("(a) total face melt, 10 m (C4')", fontsize=8, loc="left")
     cols = dict(zip(STRATS, style.OKABE_ITO))
     for s in STRATS:
         ms = cases[(s, "single")]
@@ -215,7 +251,7 @@ def main(runs_root: Path, window, out_dir: Path):
                           "denominator = 2 x open circle (single 1.13 cm3/s)"}
     if canonical:
         res["verdict"] = reduce_verdicts(res["C4"], res["C4p"])
-        make_figure(cases, window, out_dir / "fig2_two_plume_melt")
+        make_figure(cases, window, out_dir / "fig2_two_plume_melt", load_excess(out_dir))
         target = out_dir / "fig2_metrics.json"
     else:
         tag = f"{window[0]:g}-{window[1]:g}h"

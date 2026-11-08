@@ -58,7 +58,7 @@ def test_non_preregistered_window_gives_no_verdict(tmp_path, monkeypatch):
     c4 = {"pass": True, "z_detach_model": 0.0, "post_hoc": {"pass_initial": True}}
     monkeypatch.setattr(f2, "collect", lambda root, window: cases)
     monkeypatch.setattr(f2, "c4_for", lambda run, window: dict(c4))
-    monkeypatch.setattr(f2, "make_figure", lambda cases, window, stem: None)
+    monkeypatch.setattr(f2, "make_figure", lambda cases, window, stem, excess=None: None)
     # canonical window: verdict, canonical file name
     r = f2.main(tmp_path, f2.WIN_MAIN, tmp_path)
     assert r["verdict"]["C4"] == "PASS" and (tmp_path / "fig2_metrics.json").exists()
@@ -71,3 +71,12 @@ def test_non_preregistered_window_gives_no_verdict(tmp_path, monkeypatch):
     txt = out.read_text()
     assert "post_hoc_window" in out.name and '"pass' not in txt and "NOT the pre-registered" in txt
     assert json.loads(txt)["C4p"]["twolayer"]["ratio"] == pytest.approx(0.5)
+
+
+def test_load_excess_needs_both_resolutions(tmp_path):
+    assert f2.load_excess(tmp_path) is None
+    (tmp_path / "fig2_excess_clean.json").write_text("{}")
+    assert f2.load_excess(tmp_path) is None
+    (tmp_path / "fig2_excess_dx5.json").write_text('{"R_E": {}}')
+    e10, e5 = f2.load_excess(tmp_path)
+    assert e10 == {} and e5 == {"R_E": {}}
