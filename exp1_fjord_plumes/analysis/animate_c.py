@@ -3,7 +3,7 @@
 Usage::
 
     animate_c.py <run_dir> [--out exp1_fjord_plumes/figures/anim/<case>.gif]
-                 [--stride N] [--dpi D] [--max-mb 8] [--frame-png PATH]
+                 [--stride N] [--dpi D] [--max-mb 5] [--frame-png PATH]
                  [--check-scales]
 
 Panels (after verification/BayIW_Rectan/make_animation.py and animate_b.py:
@@ -100,7 +100,7 @@ def check_scales(run_dir: Path, i_section: int = I_SECTION, k_plan: int = K_PLAN
             "limits": {"T_LIM": list(T_LIM), "QEX_LIM": QEX_LIM, "U_REF": U_REF}}
 
 
-def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80, max_mb: float = 8.0,
+def make_gif(run_dir: Path, out: Path, stride: int = 1, dpi: int = 80, max_mb: float = 5.0,
              frame_png: Path | None = None, i_section: int = I_SECTION,
              k_plan: int = K_PLAN) -> dict:
     run_dir = Path(run_dir)
@@ -206,7 +206,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--stride", type=int, default=1)
     ap.add_argument("--dpi", type=int, default=80)
-    ap.add_argument("--max-mb", type=float, default=8.0)
+    ap.add_argument("--max-mb", type=float, default=5.0)
     ap.add_argument("--frame-png", type=Path, default=None)
     ap.add_argument("--check-scales", action="store_true",
                     help="only report saturation of the fixed scales (all frames); no GIF")
