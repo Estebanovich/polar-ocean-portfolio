@@ -240,3 +240,13 @@
 - **C4: FALLA** (twolayer 0.209 H, sermilik 0.188 H, tolerancia 0.15 H; robusto a la elección del ambiente y al perfil inicial). El modelo no despega: w en la cara llega a la superficie. **C4′: PASA** (0.521 y 0.525).
 - **Hallazgo grave:** 4 corridas sermilik (x0_40, 80, 160, 320) divergieron (cg3d sin converger a t ≈ 2.67 h, NaN antes de 2.83 h) pero `run_status` dice OK. La ventana 2–3 h no se puede aplicar a esos casos; no entran en ningún veredicto (C4/C4′ usan solo `_single` y `x0_0`, sanos).
 - GIFs de 4 casos (≤ 2.6 MB). Saturación de escalas ≤ 0.8 %.
+
+## 2026-11-07/08 — Exp. 1 (b): subconjunto a 5 m y animación de (a)
+
+- Corridas a 5 m (twolayer): fondo sin descarga (11.3 h de reloj; cg3d ~480 iteraciones/paso frente a ~300 con pluma), x0 = 20, 0 y 80 m (~5.3–6.3 h cada una).
+- x0 = 20: `MPI_Finalize` falló tras la última escritura (OFI sobre utun10 = Tailscale, que se cayó cuando la laptop pasó a batería), así que no salió la línea de fin normal. **R41:** Esteban la aceptó. Se agregó `run_accepted.json`, que `require_ok` respeta solo con esa causa y la corrida completa; `run_status.json` no se tocó (962b7a7).
+- **Criterios OB 1–3: PASAN las cuatro corridas.**
+- **R_E a 5 m:** 0.977 / 1.204 / 0.947 para x0 = 0 / 20 / 80, frente a 0.762 / 0.953 / 0.927 a 10 m. Se cumple la condición fijada de antemano (diferencia > 0.1 en x0 = 0 y 20): la interacción depende de la resolución y la Figura 2 se presenta a 5 m.
+- A 5 m, las plumas cercanas suben casi hasta la superficie (z_despegue −9 y −17 m, frente a −55 m de la pluma única). R_E > 1 en x0 = 20 queda sin explicar. Es estable entre las dos mitades de la ventana (post-hoc).
+- Commits: análisis en `excess_dx5.py` (15135c5); Figura 2 con panel (b) y README (34366cb).
+- Animación de (a): la nueva corrida es idéntica bit a bit a la de producción de 1 a 6 h (diferencia 0.0). GIF cada 5 min y sección «Animations» en el README (41a06e5). 293 tests PASAN.
