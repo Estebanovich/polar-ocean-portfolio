@@ -178,7 +178,7 @@ A resolution study at dx = 10, 5 and 2.5 m (`notes/pd2_convergence.md`) gives a 
 
 **Diagnosis.** Two pre-registered diagnostics followed:
 
-- *D1 (entrainment):* the upward volume flux next to the face is larger, not smaller, than the theory's in the lower half of the column. Most of that excess is a face-wide upwelling of 1–3 cm s⁻¹ below the interface, which also exists without any discharge: it is the convective boundary layer of ambient melting by the warm lower layer. Under-entrainment does not explain C4.
+- *D1 (entrainment):* the upward volume flux next to the face is larger, not smaller, than the theory's in the lower half of the column. Under-entrainment therefore does not explain C4. *Post hoc* (read after seeing D1, with no-discharge runs added for it): most of the excess is a face-wide upwelling of 1–3 cm s⁻¹ below the interface that also exists without any discharge, which we read as the convective boundary layer of ambient melting by the warm lower layer.
 - *D2 (resolution):* the same single plume at dx = dy = dz = 5 m detaches at {{b_D2_dx5_model}} m against {{b_D2_dx5_theory}} m in theory (|Δz|/H = {{b_D2_dx5_diff}}, against {{b_D2_dx10_diff}} at 10 m; change {{b_D2_delta}}). By the pre-registered rule (a drop larger than 0.05) the C4 failure is attributed to resolution (class c). C4 remains failed at the production resolution.
 
 **Two-plume interaction.** Ambient melting of the whole face is {{b_bg_frac_twolayer}} (two-layer) and {{b_bg_frac_sermilik}} (Sermilik) of the single-plume total, so the plume signal is measured as the excess over a no-discharge background run, R_E = E(x0) / (2 E_single) (signal-to-noise {{b_eps_ratio_twolayer}} and {{b_eps_ratio_sermilik}}).
@@ -223,9 +223,9 @@ The 5 m subset (two-layer; x0 = 0, 20, 80 m and a no-discharge background, all p
 
 ### 4.1 What the three experiments show together
 
-The comparisons in (a) and (b) say that plume theory predicts *where* a plume detaches and *how much* it melts when the model resolves it, but not its width and velocity: the modelled plume is wider and slower than the theory's top hat, by an amount that depends on the mixing closure. In three dimensions even the detachment depth is reproduced only at a resolution of about 5 m; at 10 m the point plume rises to the surface instead of detaching. Any fjord model that resolves plumes at coarser grid spacing, or calibrates a parameterisation against such a model, inherits that bias.
+In two dimensions, plume theory predicts *where* the resolved plume detaches and *how much* it melts (C2, C2″), but not its width and velocity: the modelled plume is wider and slower than the theory's top hat, by an amount that depends on the mixing closure. In three dimensions only the detachment depth was tested against theory, and it is reproduced only at about 5 m; at 10 m the point plume rises to the surface instead of detaching. In this set-up, then, a model that resolves point plumes at 10 m or coarser places detachment too shallow, and so would a parameterisation calibrated against it; we tested one stratification at 5 m.
 
-The two-plume results show no reduction of melting comparable to the laboratory's (about 0.5 in Cenedese & Gatto, 2016a) at either resolution, but the reason changes with resolution. At 10 m, separated plumes behave as independent ones (R_E = {{b_RE_twolayer_sep_range}}) because every plume rises to the surface anyway. At 5 m, where a single plume detaches above the interface (at {{b_D2_dx5_model}} m; the interface is at −100 m) close to the depth theory predicts, two close plumes combine their buoyancy, rise much higher than either alone and melt as much as or more than two isolated plumes (R_E = {{b5_RE_0}}–{{b5_RE_20}}). One possible mechanism, not yet tested, is that the merged plume keeps fast flow against the face over a greater depth. The laboratory set-up differs in scale, source geometry and stratification, so the comparison remains qualitative.
+The two-plume results show no reduction of melting comparable to the laboratory's (about 0.5 in Cenedese & Gatto, 2016a) at either resolution, but the reason changes with resolution. At 10 m, separated plumes behave as independent ones (R_E = {{b_RE_twolayer_sep_range}}) because every plume rises to the surface anyway. At 5 m, where a single plume detaches above the interface (at {{b_D2_dx5_model}} m; the interface is at −100 m) close to the depth theory predicts, two close plumes rise much higher than either alone (detaching at {{b5_zdet_0}} m and {{b5_zdet_20}} m) and melt as much as or more than two isolated plumes (R_E = {{b5_RE_0}}–{{b5_RE_20}}). One possible mechanism, not yet tested, is that the merged plume keeps fast flow against the face over a greater depth. The laboratory set-up differs in scale, source geometry and stratification, so the comparison remains qualitative.
 
 Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA ranks shelf forcing highest by an order of magnitude, yet the shelf delivers almost no net heat to the front. Which forcing "matters most" depends on whether the question is renewal of fjord water or heat for melting.
 
@@ -243,6 +243,7 @@ Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA ranks
 - (b) is resolution-limited at 10 m (§3.2); only one stratification was run at 5 m, and two resolutions do not prove convergence. The 5 m source has a 4× higher inflow velocity than the 10 m source.
 - (c) parameterises the plume and imposes the shelf forcing at the open boundary. The wind pulse (12 h) is close to the inertial period (12.7 h). The heat transport of cases with a net transport depends on T_ref (class c).
 - The open boundary was fixed with a compile-time option, not tuned; it still runs 10–40 % faster than the interior in (c) (class c, declared).
+- The open boundary fixes the depth-mean transport to the discharge, so in (c) no barotropic exchange with the shelf is possible (for example from coastal sea-level set-up by along-shore wind); the shelf forcing is baroclinic only.
 - No tides, sea ice, icebergs or sills; flat bottom; linear equation of state.
 
 ## 5. Conclusions
@@ -252,7 +253,7 @@ Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA ranks
 3. Two-plume interaction depends on resolution: at 5 m, close plumes (x0 ≤ 20 m) melt as much as or more than two isolated plumes (R_E = {{b5_RE_0}}–{{b5_RE_20}}), whereas at 10 m they appeared nearly independent; neither reproduces the laboratory halving. Only three separations and one stratification were run at 5 m.
 4. Ambient melting of the whole face is about {{b_bg_frac_twolayer}} of the total in these short runs, so plume-induced melting must be measured against a no-discharge background.
 5. In an idealised rotating fjord, shelf forcing dominates the volume exchanged while the plume dominates the heat delivered to the front; in this diagnostic the forcings add nearly linearly in heat.
-6. The default MITgcm Stevens open boundary is unstable for these set-ups; the interior-velocity option fixes it, as supported by an independent pyOCEAN run.
+6. MITgcm's default Stevens open boundary diverged in these set-ups; the interior-velocity option removed the instability, and every 3-D production run passes the pre-registered boundary criteria. An independent pyOCEAN run of the shelf forcing, with a different boundary scheme, gives a similar realised amplitude ({{py_pyo_shelf_amp}} m against {{c_amp_shelf_20}} m); its runoff variant missed one outflow criterion narrowly (§3.3).
 
 ## Animations
 
