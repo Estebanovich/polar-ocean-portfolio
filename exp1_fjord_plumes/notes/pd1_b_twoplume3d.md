@@ -457,7 +457,7 @@ Corrida: `/Volumes/LaCie/portfolio_runs/exp1/b_dx5_twolayer_single`. Llegó a 3 
 
 **Perfil de w (máximo en y, i = 0, media 2–3 h), para entender el cambio:**
 - A 10 m, la pluma sigue a 0.35 m/s en z = −15 m y llega a la superficie.
-- A 5 m, w cae de 0.57 m/s (−97.5 m) a 0.11 (−62.5) y a 0.02 (−52.5), y es ~0 encima. Se desprende bajo la interfaz, como predice la teoría.
+- A 5 m, w cae de 0.57 m/s (−97.5 m) a 0.11 (−62.5) y a 0.02 (−52.5), y es ~0 encima. Se desprende por encima de la interfaz (−100 m), cerca de la profundidad que predice la teoría. (Corregido el 2026-11-08: decía «bajo la interfaz».)
 
 **Lo que esto NO dice:**
 - C4 sigue siendo **FALLA** a la resolución de producción (10 m); no se reetiqueta. El valor de 5 m está bajo el umbral, pero C4 se definió para la campaña.

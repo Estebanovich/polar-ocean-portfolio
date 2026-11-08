@@ -349,11 +349,22 @@ def _finish(res: dict, metrics: dict) -> dict:
     return res
 
 
+XU_EXT = "sens_xu2012_36h"
+
+
 def evaluate_study(run_dirs: dict[str, Path], out_dir: Path | None = None) -> dict:
     """Evaluate the study; ``run_dirs`` maps names (conv_dx10, conv_dx5, conv_dx2p5,
     sens_freeslip, sens_xu2012, a_line2d_twolayer_q0.03) to run directories.
     Writes ``pd2_convergence.json`` (default exp1_fjord_plumes/figures)."""
-    metrics = {k: run_metrics(Path(v), require_per_step=(k != REF)) for k, v in run_dirs.items()}
+    ext = run_dirs.get(XU_EXT)
+    metrics = {k: run_metrics(Path(v), require_per_step=(k != REF))
+               for k, v in run_dirs.items() if k != XU_EXT}
+    if ext is not None and not metrics.get("sens_xu2012", {}).get("valid", False):
+        # pre-registered extension (note "Extensión de sens_xu2012"): the 24 h run was not
+        # stationary; the identical 36 h run is evaluated over 24-36 h and replaces it.
+        m = run_metrics(Path(ext), t0=24.0)
+        m["replaces"] = "sens_xu2012 (24 h run not stationary); window 24-36 h"
+        metrics["sens_xu2012"] = m
     res = assemble(metrics)
     out_dir = Path(out_dir or FIG_DIR)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -419,7 +430,7 @@ if __name__ == "__main__":
         m = run_metrics(a.single, t0=a.t0)
         print(json.dumps({k: v for k, v in m.items() if k != "monitor"}, indent=1, default=str))
         raise SystemExit(0)
-    dirs = {k: a.runs_root / k for k in (*CONV, "sens_freeslip", "sens_xu2012", REF)
+    dirs = {k: a.runs_root / k for k in (*CONV, "sens_freeslip", "sens_xu2012", XU_EXT, REF)
             if (a.runs_root / k).exists()}
     r = evaluate_study(dirs, a.out_dir)
     make_figure(r, a.out_dir / "pd2_convergence")

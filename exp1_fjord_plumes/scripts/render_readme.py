@@ -54,6 +54,9 @@ def values() -> dict[str, str]:
             v[f"a_RQ_{tag}"] = f"{r[k]['R_Q']:.3f}"
         v["a_conv_class"] = cv["convergence"]["class"]
         v["a_RQ_ext"] = f"{cv['convergence']['richardson']['R_ext']:.2f}"
+        ref, xu = r["a_line2d_twolayer_q0.03"], r["sens_xu2012"]
+        v["a_RQ_prod"], v["a_b_prod"] = f"{ref['R_Q']:.3f}", f"{ref['b']:.1f}"
+        v["a_RQ_xu"], v["a_b_xu"] = f"{xu['R_Q']:.3f}", f"{xu['b']:.1f}"
     # ---- (b) Figure 2, D1, D2, clean-background excess ---------------------------------------
     f2 = _load("fig2_metrics.json")
     if f2:

@@ -121,36 +121,35 @@
       "dx_mean_0_25m": 5.309135810000001
     },
     "sens_xu2012": {
-      "run": "sens_xu2012",
-      "valid": false,
-      "reasons": [
-        "not stationary (R_Q second half vs first half of (12.0, 24.0) h >= 2 %)"
-      ],
+      "run": "sens_xu2012_36h",
+      "valid": true,
+      "reasons": [],
       "monitor": {
         "valid": true,
         "reasons": [],
         "per_step_verified": true,
         "note": null,
-        "n_cg3d_lines": 28800,
+        "n_cg3d_lines": 43200,
         "cg3d_max": 608,
-        "cg3d_mean": 302.68302083333333,
+        "cg3d_mean": 296.23381944444446,
         "cfl_max": 0.35159719995122
       },
-      "R_Q": 0.7233491009623509,
-      "R_w": 1.137474597104339,
-      "b": 9.706745389388571,
-      "sigma_R_Q": 0.011374054383363776,
-      "sigma_b": 0.3203048519946095,
-      "R_Q_12_18": 0.7325784245240933,
-      "R_Q_18_24": 0.7138569791524558,
-      "stationary": false,
+      "R_Q": 0.7200065988157456,
+      "R_w": 1.1311155338647831,
+      "b": 9.782053811456509,
+      "sigma_R_Q": 0.008553308137524578,
+      "sigma_b": 0.26485391327672436,
+      "R_Q_12_18": 0.7146493163364674,
+      "R_Q_18_24": 0.7231063114581013,
+      "stationary": true,
       "C2_pass": true,
       "C2pp_pass": true,
       "C2p_pass_info": false,
-      "z_detach_diff_over_H": 0.0283094936592895,
-      "melt_ratio": 1.205167458442673,
+      "z_detach_diff_over_H": 0.053830525398548504,
+      "melt_ratio": 1.110991189968238,
       "theory_b_lower_half": 7.548531200250831,
-      "dx_mean_0_25m": 5.309135810000001
+      "dx_mean_0_25m": 5.309135810000001,
+      "replaces": "sens_xu2012 (24 h run not stationary); window 24-36 h"
     },
     "a_line2d_twolayer_q0.03": {
       "run": "a_line2d_twolayer_q0.03",
@@ -246,7 +245,12 @@
       "wall_drag_contributes": false
     },
     "xu2012_closure_joint_with_wall_drag": {
-      "status": "unavailable or invalid",
+      "dR_Q": 0.1732045574844716,
+      "thr_R_Q": 0.03,
+      "R_Q_trend": "sube",
+      "db": -10.218523397384315,
+      "thr_b": 2.5,
+      "b_trend": "baja",
       "run": "sens_xu2012"
     }
   },

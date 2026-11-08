@@ -5,7 +5,7 @@
 
 ## Abstract
 
-Subglacial discharge plumes control submarine melting at tidewater glaciers, but the theory used to parameterise them assumes an isolated plume in a quiescent ambient. We test that theory and two of its extensions with idealised MITgcm simulations. (a) A two-dimensional line plume against a vertical ice face reproduces the detachment depth of line-plume theory in 5 of 6 cases and the face-mean melt rate in 6 of 6 (model/theory 1.00–1.23), but its mean plume velocity is 0.50–0.61 of the theory's top-hat velocity, and this deficit persists at every resolution tested. (b) In three dimensions, two point plumes separated by x0 were simulated in two-layer and continuous stratification. At 10 m resolution the plume reaches the surface instead of detaching at the depth predicted by half-cone plume theory; a 5 m run detaches within 0.036 H of the theory, which attributes the failure to resolution rather than to missing physics (one stratification, two resolutions). The two-plume interaction is also resolution-dependent: at 10 m separated plumes melt almost as two isolated plumes, but at 5 m close plumes (x0 ≤ 20 m) rise higher together and melt as much as, or more than, two isolated plumes (R_E = 0.98–1.20), the opposite of the halving seen in the laboratory. (c) In a 40 km rotating fjord forced by a plume, an along-fjord wind pulse and a shelf pycnocline oscillation, the shelf oscillation dominates the volume exchanged at mid-fjord (8× the plume), while the plume dominates the heat carried toward the glacier. All success criteria were fixed before the runs, failed criteria are reported as failed, and every number below is read from the metrics files in `figures/`.
+Subglacial discharge plumes control submarine melting at tidewater glaciers, but the theory used to parameterise them assumes an isolated plume in a quiescent ambient. We test that theory and two of its extensions with idealised MITgcm simulations. (a) A two-dimensional line plume against a vertical ice face reproduces the detachment depth of line-plume theory in 5 of 6 cases and the face-mean melt rate in 6 of 6 (model/theory 1.00–1.23), but its mean plume velocity is 0.50–0.61 of the theory's top-hat velocity. The deficit does not shrink with resolution, but it depends on the mixing closure. (b) In three dimensions, two point plumes separated by x0 were simulated in two-layer and continuous stratification. At 10 m resolution the plume reaches the surface instead of detaching at the depth predicted by half-cone plume theory; a 5 m run detaches within 0.036 H of the theory, which attributes the failure to resolution rather than to missing physics (one stratification, two resolutions). The two-plume interaction is also resolution-dependent: at 10 m separated plumes melt almost as two isolated plumes, but at 5 m close plumes (x0 ≤ 20 m) rise higher together and melt as much as, or more than, two isolated plumes (R_E = 0.98–1.20), instead of the roughly halved melting seen in the laboratory. (c) In a 40 km rotating fjord forced by a plume, an along-fjord wind pulse and a shelf pycnocline oscillation, the shelf oscillation dominates the volume exchanged at mid-fjord (8× the plume), while the plume dominates the heat carried toward the glacier. All success criteria were fixed before the runs, failed criteria are reported as failed, and every number below is read from the metrics files in `figures/`.
 
 ## 1. Introduction
 
@@ -142,13 +142,19 @@ All 3-D production runs pass. As an independent check of (c), the shelf-forced f
 
 ### 2.6 Pre-registered criteria
 
-| Criterion | Configuration | Definition |
-|---|---|---|
-| C2 | (a) | \|z_detach(model) − z_detach(theory)\| ≤ 0.10 H |
-| C2′ | (a) | mean plume velocity between the plume base and half the theory's rise height, within 25 % of the theory's (model: mean w over the plume width, the width being where w ≥ 10 % of its maximum at that depth) |
-| C2″ | (a) | face-mean melt within a factor of 1.5 of the theory, each side averaged below its own z_detach |
-| C4 | (b) | single plume: \|z_detach(model) − z_detach(theory)\| ≤ 0.10 H, window hours 2–3, both stratifications |
-| Control rule | (c) | a forcing is interpreted only if its mean Q_ex exceeds 3 times the control's |
+| Criterion | Configuration | Definition | Outcome |
+|---|---|---|---|
+| C1 | theory | the plume-theory code passes its analytical tests | passes |
+| C2 | (a) | \|z_detach(model) − z_detach(theory)\| ≤ 0.10 H | 5 of 6 pass |
+| C2′ | (a) | mean plume velocity between the plume base and half the theory's rise height, within 25 % of the theory's (model: mean w over the plume width, the width being where w ≥ 10 % of its maximum at that depth) | fails in every case |
+| C2″ | (a) | face-mean melt within a factor of 1.5 of the theory, each side averaged below its own z_detach | 6 of 6 pass |
+| C3 | (a) | a run split in two at a pickup is bit-identical to the uninterrupted run | passes |
+| C4 | (b) | single plume: \|z_detach(model) − z_detach(theory)\| ≤ 0.15 H, window hours 2–3, both stratifications | fails at 10 m (attributed to resolution, §3.2) |
+| C4′ | (b) | total face melt with merged sources, M(x0 = 0) / (2 M_single), between 0.4 and 0.8 in both stratifications | passes, but only by construction (§3.2): the ambient melting background dominates M |
+| C5 | (c) | the mass source and sink that represent the plume sum to Q0 within 1 % | passes (exact) |
+| C5′ | (c) | T and S stay within the initial and source range for the whole run | all four cases |
+| Control rule | (c) | a forcing is interpreted only if its mean Q_ex exceeds 3 times the control's | every forcing passes |
+| C6 | all | total compute for Experiment 1 ≤ 24 h | exceeded: about 49 h summed over 74 runs, including diagnostic and failed runs; each extension (the resolution studies and the 5 m subset) was approved before it was run |
 
 Further diagnostics (D1, D2, R_E, the realised amplitude) were defined in writing before they were computed. Anything defined after seeing a result is labelled post hoc. The full record, including every failure and how each was followed up, is in `notes/` (in Spanish).
 
@@ -164,7 +170,7 @@ Further diagnostics (D1, D2, R_E, the realised amplitude) were defined in writin
 - **C2″ (melt):** passes in 6 of 6 cases; model/theory = 1.00–1.23.
 - **C2′ (velocity):** fails in all cases (0 of 6 pass); model/theory = 0.50–0.61.
 
-A resolution study at dx = 10, 5 and 2.5 m (`notes/pd2_convergence.md`) gives a velocity ratio R_Q = 0.538, 0.563 and 0.573 (Richardson extrapolation 0.58), and the free-slip and vertical-resolution sensitivity runs change it by less than the pre-set threshold. The deficit is therefore not a resolution artefact (class c ruled out); the post-hoc diagnostics in the Figure 1 caption point to the difference between a resolved near-wall jet and the theory's top-hat profile.
+A resolution study at dx = 10, 5 and 2.5 m (`notes/pd2_convergence.md`) gives a velocity ratio R_Q = 0.538, 0.563 and 0.573 (Richardson extrapolation 0.58), and the free-slip and vertical-resolution sensitivity runs change it by less than the pre-set threshold. The deficit is therefore not a resolution artefact. It does depend on the mixing closure: a Xu et al. (2012)-style closure (no Laplacian horizontal viscosity, a small biharmonic one, applied together with the wall-drag change, so the two cannot be separated) raises R_Q from 0.547 to 0.720 and narrows the plume from 20.0 m to 9.8 m, although C2′ still fails. The post-hoc diagnostics in the Figure 1 caption show that the production plume is two to three times wider than the theory's top hat. One candidate cause, not tested separately, is grid-scale horizontal mixing in the production closure (class b or c).
 
 ### 3.2 (b) Two plumes: the detachment failure is resolution
 
@@ -217,9 +223,9 @@ The 5 m subset (two-layer; x0 = 0, 20, 80 m and a no-discharge background, all p
 
 ### 4.1 What the three experiments show together
 
-The comparisons in (a) and (b) say that plume theory predicts *where* a plume detaches and *how much* it melts when the model resolves it, but not the shape of its velocity profile: the resolved plume is a narrow near-wall jet, not a top-hat. In three dimensions this only holds at a resolution of about 5 m; at 10 m the point plume overshoots the interface. Any fjord model that resolves plumes at coarser grid spacing, or calibrates a parameterisation against such a model, inherits that bias.
+The comparisons in (a) and (b) say that plume theory predicts *where* a plume detaches and *how much* it melts when the model resolves it, but not its width and velocity: the modelled plume is wider and slower than the theory's top hat, by an amount that depends on the mixing closure. In three dimensions even the detachment depth is reproduced only at a resolution of about 5 m; at 10 m the point plume rises to the surface instead of detaching. Any fjord model that resolves plumes at coarser grid spacing, or calibrates a parameterisation against such a model, inherits that bias.
 
-The two-plume results show no reduction of melting comparable to the laboratory's (about 0.5 in Cenedese & Gatto, 2016a) at either resolution, but the reason changes with resolution. At 10 m, separated plumes behave as independent ones (R_E = 0.92–0.98) because every plume overshoots the interface anyway. At 5 m, where a single plume detaches below the interface as theory predicts, two close plumes combine their buoyancy, rise much higher than either alone and melt as much as or more than two isolated plumes (R_E = 0.98–1.20). One possible mechanism, not yet tested, is that the merged plume keeps fast flow against the face over a greater depth. The laboratory set-up differs in scale, source geometry and stratification, so the comparison remains qualitative.
+The two-plume results show no reduction of melting comparable to the laboratory's (about 0.5 in Cenedese & Gatto, 2016a) at either resolution, but the reason changes with resolution. At 10 m, separated plumes behave as independent ones (R_E = 0.92–0.98) because every plume rises to the surface anyway. At 5 m, where a single plume detaches above the interface (at -55.7 m; the interface is at −100 m) close to the depth theory predicts, two close plumes combine their buoyancy, rise much higher than either alone and melt as much as or more than two isolated plumes (R_E = 0.98–1.20). One possible mechanism, not yet tested, is that the merged plume keeps fast flow against the face over a greater depth. The laboratory set-up differs in scale, source geometry and stratification, so the comparison remains qualitative.
 
 Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA ranks shelf forcing highest by an order of magnitude, yet the shelf delivers almost no net heat to the front. Which forcing "matters most" depends on whether the question is renewal of fjord water or heat for melting.
 
@@ -255,7 +261,7 @@ Animated GIFs of the runs are in `figures/`. Colour scales are fixed across fram
 - **(a) line plume:**
   - [two-layer, first 6 h every 5 min](figures/fig1_anim_a_line2d_twolayer_q0.03_anim.gif): a dedicated rerun, bit-identical to the production run at every hour checked (1–6 h);
   - hourly over 48 h: [two-layer](figures/fig1_anim_a_line2d_twolayer_q0.03.gif), [Sermilik-like](figures/fig1_anim_a_line2d_sermilik_q0.03.gif).
-- **(b) two plumes:** [single plume](figures/fig2_anim_b_3d_twolayer_single.gif), [x0 = 0](figures/fig2_anim_b_3d_twolayer_x0_0.gif) and [x0 = 80 m](figures/fig2_anim_b_3d_twolayer_x0_80.gif) in the two-layer ambient, and [x0 = 0, Sermilik-like](figures/fig2_anim_b_3d_sermilik_x0_0.gif). All four are 10 m runs, so the plumes in them overshoot the interface (§3.2).
+- **(b) two plumes:** [single plume](figures/fig2_anim_b_3d_twolayer_single.gif), [x0 = 0](figures/fig2_anim_b_3d_twolayer_x0_0.gif) and [x0 = 80 m](figures/fig2_anim_b_3d_twolayer_x0_80.gif) in the two-layer ambient, and [x0 = 0, Sermilik-like](figures/fig2_anim_b_3d_sermilik_x0_0.gif). All four are 10 m runs, so the plumes in them rise higher than theory predicts (§3.2).
 - **(c) fjord:** the [plume](figures/fig3_anim_c_fjord_plume.gif), [wind](figures/fig3_anim_c_fjord_wind.gif) and [shelf](figures/fig3_anim_c_fjord_shelf.gif) forcings, and [all three together](figures/fig3_anim_c_fjord_all.gif).
 
 ## Reproducing

@@ -287,3 +287,21 @@ def test_metric_windows_shifted_for_extended_run():
     assert w["X"] == (24.0, 36.0)
     assert w["first"] == (24.0, 30.0) and w["second"] == (30.0, 36.0)
     assert w["samples"][-1] == (35.0, 36.0)
+
+
+def test_evaluate_study_uses_36h_extension_when_24h_invalid(tmp_path, monkeypatch):
+    """The pre-registered 36 h extension replaces an invalid sens_xu2012, evaluated from t0 = 24 h."""
+    from pathlib import Path
+    calls = {}
+
+    def fake(run_dir, require_per_step=True, t0=12.0):
+        calls[Path(run_dir).name] = t0
+        return {"run": Path(run_dir).name, "valid": Path(run_dir).name != "sens_xu2012"}
+
+    monkeypatch.setattr(ev, "run_metrics", fake)
+    monkeypatch.setattr(ev, "assemble", lambda m: {"m": m})
+    r = ev.evaluate_study({"sens_xu2012": tmp_path / "sens_xu2012",
+                           "sens_xu2012_36h": tmp_path / "sens_xu2012_36h"}, tmp_path)
+    assert calls["sens_xu2012_36h"] == 24.0
+    assert r["m"]["sens_xu2012"]["run"] == "sens_xu2012_36h"
+    assert "sens_xu2012_36h" not in r["m"]
