@@ -18,3 +18,7 @@ How to run the model, the tests and the analysis: [RUNNING.md](RUNNING.md).
 - [BayIW_Rectan](https://github.com/Estebanovich/BayIW_Rectan)
 - [IWBayMITgcm-postprocessing](https://github.com/Estebanovich/-IWBayMITgcm-postprocessing)
 - [HYCOM-IOA](https://github.com/Estebanovich/HYCOM-IOA)
+
+## License
+
+Code is released under the [MIT License](LICENSE). Text and figures are released under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Satellite imagery in Figure 0 keeps its original terms (NASA Worldview/GIBS; modified Copernicus Sentinel data), as credited in its caption.
