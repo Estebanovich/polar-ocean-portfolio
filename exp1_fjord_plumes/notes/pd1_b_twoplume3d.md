@@ -158,7 +158,7 @@ Un caso marcado **no se descarta automáticamente**: se revisan su serie de η̄
 
 **Resultado de la puerta con Orlanski:** FALLÓ. En `b_3d_twolayer_x0_40` (3 h) η medio llegó a 2.92 m, contra 0.18 m que explicaría la descarga, y entraban ~800 m³/s por la frontera desde 1–1.5 h. Orlanski deja libre la velocidad normal media en profundidad, y en 3D eso se volvió inestable.
 
-**Cambio, aprobado por Esteban:** frontera de Stevens (1990), con u normal media en profundidad prescrita, u_ob = Q0_total / A_ob = 20 / 354000 = 5.65e-5 m/s (commits 5e76391 y siguientes). Se descartó Flather: con c = √(gH) ≈ 54 m/s, dx = 10 m y dt = 2 s, el número de Courant sería ≈ 11, inestable en forma explícita. MITgcm no lo trae.
+**Cambio, aprobado por Esteban:** frontera de Stevens (1990), con u normal media en profundidad prescrita, u_ob = Q0_total / A_ob = 20 / 354000 = 5.65e-5 m/s (commits 60d03fa y siguientes). Se descartó Flather: con c = √(gH) ≈ 54 m/s, dx = 10 m y dt = 2 s, el número de Courant sería ≈ 11, inestable en forma explícita. MITgcm no lo trae.
 
 **Puerta:** se vuelve a correr el mismo caso, 3 h con np = 5.
 - **Criterio sin cambios:** |retained_last_hour| ≤ 0.5.
@@ -197,7 +197,7 @@ Las 14 corridas (b) terminaron OK a las 22:33. Ninguna métrica de derretimiento
 
 ## Hallazgo crítico: la frontera de Stevens genera velocidades espurias (2026-11-05, 23:15)
 
-El análisis de la Task 6 (commit 2d86679) encontró que **4 corridas sermilik divergieron** aunque `run_status` dice OK:
+El análisis de la Task 6 (commit 79f21f3) encontró que **4 corridas sermilik divergieron** aunque `run_status` dice OK:
 - son x0_40, x0_80, x0_160 y x0_320;
 - cg2d da NaN a partir de t ≈ 2.6–2.7 h;
 - los volcados finales son NaN.
@@ -226,7 +226,7 @@ El análisis de la Task 6 (commit 2d86679) encontró que **4 corridas sermilik d
 - El gate de (b) (R32) y la prueba de (c) verificaron η y el transporte de la OB, que son correctos, pero no las velocidades junto a la frontera. Ese es un hueco del diseño del gate.
 
 **Consecuencia.**
-- La ventana pre-registrada de 2–3 h cae en corridas contaminadas. **Los veredictos C4 (FAIL) y C4′ (PASS) de 2d86679 quedan SUSPENDIDOS**: no se reportan como resultado. Tampoco se cambia la ventana post-hoc para salvarlos.
+- La ventana pre-registrada de 2–3 h cae en corridas contaminadas. **Los veredictos C4 (FAIL) y C4′ (PASS) de 79f21f3 quedan SUSPENDIDOS**: no se reportan como resultado. Tampoco se cambia la ventana post-hoc para salvarlos.
 - Hay que arreglar la frontera y volver a correr. Esto es una elección numérica nuestra (clase (a)/(c)) y no física.
 
 ## Diagnóstico de la OB: variantes y criterios, fijados antes de correr (2026-11-06; plan aprobado por Esteban)
@@ -236,7 +236,7 @@ El análisis de la Task 6 (commit 2d86679) encontró que **4 corridas sermilik d
 - **V2:** zona RBCS de T/S en (b), como en (c). Solo se prueba si V1 falla.
 
 **Criterios (todos deben pasar):**
-1. `require_ok` pasa. Desde c5561f8 rechaza NaN o Infinity en el log.
+1. `require_ok` pasa. Desde 890210f rechaza NaN o Infinity en el log.
 2. En cada volcado de UVEL (cada 0.5 h): max|u| en las columnas i = 96–98 ≤ 1.5 × max|u| en el interior, i = 10–89.
 3. |η medio| < 1e-3 m y `obc_E_uVel_Int` = 20 m³/s, con error relativo < 1e-6, en todas las salidas del monitor.
 

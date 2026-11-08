@@ -90,7 +90,7 @@
 
 ## 2026-11-05 — Task 7 Step 4: configuración (c) `c_fjord3d` (compilada, sin correr)
 
-- PD3 aprobado por Esteban, opción (iii). Con la corrección R15 de la teoría (1ae1414) se quitó el reintento de `plume_source_sink`. Nuevo `n_out_levels`: la salida se reparte entre la celda de z_neutral y las de encima.
+- PD3 aprobado por Esteban, opción (iii). Con la corrección R15 de la teoría (80e47cb) se quitó el reintento de `plume_source_sink`. Nuevo `n_out_levels`: la salida se reparte entre la celda de z_neutral y las de encima.
 - `make_case` (c) ya no usa el marcador R10, ahora es `plume_representation = "bpt_sink_source_rbcs"`:
   - addMass en la columna de la cara, repartido en 3 celdas a lo ancho (j = 14–16). Salida en k = 17–18 (z_neutral = −181 m, 3725 m³/s, 3.42 °C / 33.53 psu); arrastre de 3625 m³/s en k ≥ 19.
   - Neto = ρ0·Q0 exacto (C5).
@@ -223,7 +223,7 @@
 - TDD; suite 220 PASS. Build `c_fjord3d` (--mpi) OK. No se corrió MITgcm (campaña (b) en curso).
 
 ## 2026-11-05 — (c) Stevens, ronda 2: la esponja T/S pasa de OBCS a RBCS
-- Defecto crítico (revisión de 78a191d): con Stevens, OBEt/OBEs guardan TENDENCIAS de trazadores (`obcs_calc_stevens.F:744-752`, sumadas en `obcs_apply_ts.F:150-160`), pero la esponja T/S de OBCS las lee como VALORES objetivo (`obcs_sponge.F:545-550`). Esponja T/S apagada; U/V se queda (OBEu/OBEv son velocidades, `obcs_calc_stevens.F:222`, `obcs_sponge.F:136-150`).
+- Defecto crítico (revisión de 176b931): con Stevens, OBEt/OBEs guardan TENDENCIAS de trazadores (`obcs_calc_stevens.F:744-752`, sumadas en `obcs_apply_ts.F:150-160`), pero la esponja T/S de OBCS las lee como VALORES objetivo (`obcs_sponge.F:545-550`). Esponja T/S apagada; U/V se queda (OBEu/OBEv son velocidades, `obcs_calc_stevens.F:222`, `obcs_sponge.F:136-150`).
 - Zona de relajación rehecha con RBCS (Esteban, opción B): `make_case.sponge_zone_mask`, máscara = rbcs_tau (L−isl)/(L τ(isl)), reproduce la esponja no lineal vieja (`obcs_sponge.F:540-565`) con error relativo < 1e-12 frente a una reimplementación independiente. Constantes (10, 600, 21600 s) en `cases.yaml`, compartidas con `data.obcs`.
 - `rbcs_T/S.bin` con nrec = ciclo/período registros (mismos tiempos que OBEt: offset 0, mismo GET_PERIODIC_INTERVAL, `rbcs_fields_load.F:72-76`); celdas de la pluma sin cambio; error si la zona se traslapa con ellas. Guardia: `useStevens*` con `OBCSsponge_Theta/Salt` TRUE levanta ValueError.
 - `required_ob_pickups` acepta .TRUE./.T./T/TRUE/true, ignora `#` y `!`, y falla si el valor no se reconoce.
@@ -244,9 +244,9 @@
 ## 2026-11-07/08 — Exp. 1 (b): subconjunto a 5 m y animación de (a)
 
 - Corridas a 5 m (twolayer): fondo sin descarga (11.3 h de reloj; cg3d ~480 iteraciones/paso frente a ~300 con pluma), x0 = 20, 0 y 80 m (~5.3–6.3 h cada una).
-- x0 = 20: `MPI_Finalize` falló tras la última escritura (OFI sobre utun10 = Tailscale, que se cayó cuando la laptop pasó a batería), así que no salió la línea de fin normal. **R41:** Esteban la aceptó. Se agregó `run_accepted.json`, que `require_ok` respeta solo con esa causa y la corrida completa; `run_status.json` no se tocó (962b7a7).
+- x0 = 20: `MPI_Finalize` falló tras la última escritura (OFI sobre utun10 = Tailscale, que se cayó cuando la laptop pasó a batería), así que no salió la línea de fin normal. **R41:** Esteban la aceptó. Se agregó `run_accepted.json`, que `require_ok` respeta solo con esa causa y la corrida completa; `run_status.json` no se tocó (e6a6d3c).
 - **Criterios OB 1–3: PASAN las cuatro corridas.**
 - **R_E a 5 m:** 0.977 / 1.204 / 0.947 para x0 = 0 / 20 / 80, frente a 0.762 / 0.953 / 0.927 a 10 m. Se cumple la condición fijada de antemano (diferencia > 0.1 en x0 = 0 y 20): la interacción depende de la resolución y la Figura 2 se presenta a 5 m.
 - A 5 m, las plumas cercanas suben casi hasta la superficie (z_despegue −9 y −17 m, frente a −55 m de la pluma única). R_E > 1 en x0 = 20 queda sin explicar. Es estable entre las dos mitades de la ventana (post-hoc).
-- Commits: análisis en `excess_dx5.py` (15135c5); Figura 2 con panel (b) y README (34366cb).
-- Animación de (a): la nueva corrida es idéntica bit a bit a la de producción de 1 a 6 h (diferencia 0.0). GIF cada 5 min y sección «Animations» en el README (41a06e5). 293 tests PASAN.
+- Commits: análisis en `excess_dx5.py` (8d99c50); Figura 2 con panel (b) y README (3a89830).
+- Animación de (a): la nueva corrida es idéntica bit a bit a la de producción de 1 a 6 h (diferencia 0.0). GIF cada 5 min y sección «Animations» en el README (52bd8c7). 293 tests PASAN.
