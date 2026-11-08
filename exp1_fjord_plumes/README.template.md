@@ -32,7 +32,7 @@ As the plume rises it **entrains** (mixes in) ambient water. The classical entra
 
 Fjord and climate models use the theory, directly or as a parameterisation, to estimate submarine melting (Cowton et al., 2015; Slater et al., 2016).
 
-Real glaciers rarely have a single channel. When two channels are close, their plumes can merge and compete for the same ambient water. In laboratory experiments, Cenedese & Gatto (2016a) found that two close sources melt less ice than two isolated plumes. Their results come from a two-layer tank, and the numerical study of Kimura et al. (2014) used an unstratified ocean, so how two plumes interact in a continuously stratified fjord remains open.
+Real glaciers rarely have a single channel. When two channels are close, their plumes can merge and compete for the same ambient water. In a two-layer laboratory tank, Cenedese & Gatto (2016b) showed that melting from a single point source increases with the discharge, and Cenedese & Gatto (2016a) found that two close sources melt less ice than two isolated plumes. Their results come from a two-layer tank, and the numerical study of Kimura et al. (2014) used an unstratified ocean, so how two plumes interact in a continuously stratified fjord remains open.
 
 ### 1.3 Fjord circulation and its forcing
 
@@ -276,10 +276,11 @@ Paths, the Python environment and compute limits are in the repository `RUNNING.
 
 ## References
 
-- Carroll, D., et al. (2015). Modeling turbulent subglacial meltwater plumes. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-15-0033.1
 - Carroll, D., et al. (2017). Subglacial discharge-driven renewal of tidewater glacier fjords. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/2017JC012962
 - Cenedese, C., & Gatto, V. M. (2016a). Impact of two plumes' interaction on submarine melting of tidewater glaciers. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-15-0171.1
+- Cenedese, C., & Gatto, V. M. (2016b). Impact of a localized source of subglacial discharge on the heat flux and submarine melting of a tidewater glacier: A laboratory study. *J. Phys. Oceanogr.*, 46, 3155. https://doi.org/10.1175/JPO-D-16-0123.1
 - Cowton, T., et al. (2015). Modeling the impact of glacial runoff on fjord circulation and submarine melt rate. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/2014JC010324
+- Jackson, R. H., et al. (2014). Externally forced fluctuations in ocean temperature at Greenland glaciers in non-summer months. *Nat. Geosci.* https://doi.org/10.1038/NGEO2186
 - Jackson, R. H., et al. (2018). The dynamics of shelf forcing in Greenlandic fjords. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-18-0057.1
 - Jenkins, A. (2011). Convection-driven melting near the grounding lines of ice shelves and tidewater glaciers. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-11-03.1
 - Kimura, S., et al. (2014). The effect of meltwater plumes on the melting of a vertical glacier face. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-13-0219.1
@@ -287,7 +288,6 @@ Paths, the Python environment and compute limits are in the repository `RUNNING.
 - Sanchez, R., et al. (2024). Relative roles of plume and coastal forcing on exchange flow variability of a glacial fjord. *J. Geophys. Res. Oceans.* https://doi.org/10.1029/2023JC020492
 - Sciascia, R., et al. (2013). Seasonal variability of submarine melt rate and circulation in an East Greenland fjord. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/jgrc.20142
 - Slater, D. A., et al. (2016). Scalings for submarine melting at tidewater glaciers from buoyant plume theory. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-15-0132.1
-- Jackson, R. H., et al. (2014). Externally forced fluctuations in ocean temperature at Greenland glaciers in non-summer months. *Nat. Geosci.* https://doi.org/10.1038/NGEO2186
 - Spall, M. A., et al. (2017). Katabatic wind-driven exchange in fjords. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/2017JC013026
 - Stevens, D. P. (1990). On open boundary conditions for three dimensional primitive equation ocean circulation models. *Geophys. Astrophys. Fluid Dyn.*, 51(1–4), 103–133. https://doi.org/10.1080/03091929008219853
 - Straneo, F., & Cenedese, C. (2015). The dynamics of Greenland's glacial fjords and their role in climate. *Annu. Rev. Mar. Sci.* https://doi.org/10.1146/annurev-marine-010213-135133

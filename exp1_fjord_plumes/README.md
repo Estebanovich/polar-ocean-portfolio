@@ -32,7 +32,7 @@ As the plume rises it **entrains** (mixes in) ambient water. The classical entra
 
 Fjord and climate models use the theory, directly or as a parameterisation, to estimate submarine melting (Cowton et al., 2015; Slater et al., 2016).
 
-Real glaciers rarely have a single channel. When two channels are close, their plumes can merge and compete for the same ambient water. In laboratory experiments, Cenedese & Gatto (2016a) found that two close sources melt less ice than two isolated plumes. Their results come from a two-layer tank, and the numerical study of Kimura et al. (2014) used an unstratified ocean, so how two plumes interact in a continuously stratified fjord remains open.
+Real glaciers rarely have a single channel. When two channels are close, their plumes can merge and compete for the same ambient water. In a two-layer laboratory tank, Cenedese & Gatto (2016b) showed that melting from a single point source increases with the discharge, and Cenedese & Gatto (2016a) found that two close sources melt less ice than two isolated plumes. Their results come from a two-layer tank, and the numerical study of Kimura et al. (2014) used an unstratified ocean, so how two plumes interact in a continuously stratified fjord remains open.
 
 ### 1.3 Fjord circulation and its forcing
 
@@ -174,12 +174,12 @@ A resolution study at dx = 10, 5 and 2.5 m (`notes/pd2_convergence.md`) gives a 
 
 ### 3.2 (b) Two plumes: the detachment failure is resolution
 
-**C4 fails at the production resolution.** At dx = 10 m the single plume rises to -1.9 m (two-layer) and -1.5 m (Sermilik), while half-cone theory detaches at -66.1 m and -57.5 m (|Δz|/H = 0.214 and 0.187).
+**C4 fails at the production resolution.** At dx = 10 m the single plume rises to −1.9 m (two-layer) and −1.5 m (Sermilik), while half-cone theory detaches at −66.1 m and −57.5 m (|Δz|/H = 0.214 and 0.187).
 
 **Diagnosis.** Two pre-registered diagnostics followed:
 
 - *D1 (entrainment):* the upward volume flux next to the face is larger, not smaller, than the theory's in the lower half of the column. Under-entrainment therefore does not explain C4. *Post hoc* (read after seeing D1, with no-discharge runs added for it): most of the excess is a face-wide upwelling of 1–3 cm s⁻¹ below the interface that also exists without any discharge, which we read as the convective boundary layer of ambient melting by the warm lower layer.
-- *D2 (resolution):* the same single plume at dx = dy = dz = 5 m detaches at -55.7 m against -66.4 m in theory (|Δz|/H = 0.036, against 0.214 at 10 m; change -0.179). By the pre-registered rule (a drop larger than 0.05) the C4 failure is attributed to resolution (class c). C4 remains failed at the production resolution.
+- *D2 (resolution):* the same single plume at dx = dy = dz = 5 m detaches at −55.7 m against −66.4 m in theory (|Δz|/H = 0.036, against 0.214 at 10 m; change −0.179). By the pre-registered rule (a drop larger than 0.05) the C4 failure is attributed to resolution (class c). C4 remains failed at the production resolution.
 
 **Two-plume interaction.** Ambient melting of the whole face is 0.93 (two-layer) and 0.91 (Sermilik) of the single-plume total, so the plume signal is measured as the excess over a no-discharge background run, R_E = E(x0) / (2 E_single) (signal-to-noise 568 and 165).
 
@@ -195,7 +195,7 @@ A resolution study at dx = 10, 5 and 2.5 m (`notes/pd2_convergence.md`) gives a 
 
 At 10 m, separated plumes melt almost as two independent plumes (R_E = 0.92–0.98), and only the merged source (x0 = 0) drops to 0.76.
 
-The 5 m subset (two-layer; x0 = 0, 20, 80 m and a no-discharge background, all passing the open-boundary criteria) changes this. Its pre-registered reading was: if R_E at 5 m differs from 10 m by more than 0.1 at any x0, the interaction depends on resolution and Figure 2 is presented at 5 m. It does, at x0 = 0 (+0.21) and x0 = 20 m (+0.25); at x0 = 80 m the change is +0.02. At 5 m the close plumes detach near the surface (z = -9 m and -17 m, against -55 m at x0 = 80 m, where each plume detaches like the single one), and R_E rises to 0.98 and 1.20. The single-plume excess E_single itself changes by -38 % between 10 and 5 m. R_E > 1 at x0 = 20 m but not at x0 = 0 is not explained yet; it is stable to splitting the window into two halves (post hoc, within 0.01).
+The 5 m subset (two-layer; x0 = 0, 20, 80 m and a no-discharge background, all passing the open-boundary criteria) changes this. Its pre-registered reading was: if R_E at 5 m differs from 10 m by more than 0.1 at any x0, the interaction depends on resolution and Figure 2 is presented at 5 m. It does, at x0 = 0 (+0.21) and x0 = 20 m (+0.25); at x0 = 80 m the change is +0.02. At 5 m the close plumes detach near the surface (z = −9 m and −17 m, against −55 m at x0 = 80 m, where each plume detaches like the single one), and R_E rises to 0.98 and 1.20. The single-plume excess E_single itself changes by −38 % between 10 and 5 m. R_E > 1 at x0 = 20 m but not at x0 = 0 is not explained yet; it is stable to splitting the window into two halves (post hoc, within 0.01).
 
 ### 3.3 (c) Shelf forcing moves the most water; the plume delivers the heat
 
@@ -208,16 +208,16 @@ The 5 m subset (two-layer; x0 = 0, 20, 80 m and a no-discharge background, all p
 | control | 94 | — | 1 | ≈ 0 |
 | plume | 4,128 | 5,101 | 44 | 31.1 |
 | wind | 1,994 | 20,167 | 21 | 0.0 |
-| shelf | 34,631 | 67,153 | 370 | -4.8 |
+| shelf | 34,631 | 67,153 | 370 | −4.8 |
 | all | 35,156 | 64,936 | 375 | 27.3 |
 
 - Every forcing exceeds 3× the control, so all are interpreted. The temperature and salinity bounds (C5′) hold in all four cases.
 - The shelf oscillation reaches the glacier undiminished: its realised amplitude is 33.4 m at mid-fjord and 34.4 m 5 km from the ice (1.11 and 1.15 of the 30 m imposed at the mouth).
-- It drives 8 times the plume's exchange, but almost no net heat toward the front over five full periods (-4.8 GW, against 31.1 GW for the plume). Q_ex counts reversible back-and-forth flow as exchange.
+- It drives 8 times the plume's exchange, but almost no net heat toward the front over five full periods (−4.8 GW, against 31.1 GW for the plume). Q_ex counts reversible back-and-forth flow as exchange.
 - With all forcings together the heat transport (27.3 GW) is close to the sum of the separate cases (26.3 GW).
 - The wind is a 12-hour pulse; its 30-day mean dilutes a response that peaks on day 1, so it is not ranked against the continuous forcings.
 
-**Cross-check in pyOCEAN.** The same shelf forcing runs stably for 30 days in pyOCEAN (boundary/interior velocity ≤ 0.51), with a realised amplitude of 29.6 m and a lag of 0.45 d (MITgcm: 33.4 m, 0.14 d). One pre-registered criterion failed: with 100 m³ s⁻¹ of runoff, the outflow averaged over days 20–30 was 97.48 m³ s⁻¹ (-2.5 %, tolerance ±2 %). The window spans 1.67 forcing periods; over the full 30 days the outflow is within 2 %. This diagnosis was made after the fact and does not change the verdict.
+**Cross-check in pyOCEAN.** The same shelf forcing runs stably for 30 days in pyOCEAN (boundary/interior velocity ≤ 0.51), with a realised amplitude of 29.6 m and a lag of 0.45 d (MITgcm: 33.4 m, 0.14 d). One pre-registered criterion failed: with 100 m³ s⁻¹ of runoff, the outflow averaged over days 20–30 was 97.48 m³ s⁻¹ (−2.5 %, tolerance ±2 %). The window spans 1.67 forcing periods; over the full 30 days the outflow is within 2 %. This diagnosis was made after the fact and does not change the verdict.
 
 ## 4. Discussion
 
@@ -225,7 +225,7 @@ The 5 m subset (two-layer; x0 = 0, 20, 80 m and a no-discharge background, all p
 
 In two dimensions, plume theory predicts *where* the resolved plume detaches and *how much* it melts (C2, C2″), but not its width and velocity: the modelled plume is wider and slower than the theory's top hat, by an amount that depends on the mixing closure. In three dimensions only the detachment depth was tested against theory, and it is reproduced only at about 5 m; at 10 m the point plume rises to the surface instead of detaching. In this set-up, then, a model that resolves point plumes at 10 m or coarser places detachment too shallow, and so would a parameterisation calibrated against it; we tested one stratification at 5 m.
 
-The two-plume results show no reduction of melting comparable to the laboratory's (about 0.5 in Cenedese & Gatto, 2016a) at either resolution, but the reason changes with resolution. At 10 m, separated plumes behave as independent ones (R_E = 0.92–0.98) because every plume rises to the surface anyway. At 5 m, where a single plume detaches above the interface (at -55.7 m; the interface is at −100 m) close to the depth theory predicts, two close plumes rise much higher than either alone (detaching at -9 m and -17 m) and melt as much as or more than two isolated plumes (R_E = 0.98–1.20). One possible mechanism, not yet tested, is that the merged plume keeps fast flow against the face over a greater depth. The laboratory set-up differs in scale, source geometry and stratification, so the comparison remains qualitative.
+The two-plume results show no reduction of melting comparable to the laboratory's (about 0.5 in Cenedese & Gatto, 2016a) at either resolution, but the reason changes with resolution. At 10 m, separated plumes behave as independent ones (R_E = 0.92–0.98) because every plume rises to the surface anyway. At 5 m, where a single plume detaches above the interface (at −55.7 m; the interface is at −100 m) close to the depth theory predicts, two close plumes rise much higher than either alone (detaching at −9 m and −17 m) and melt as much as or more than two isolated plumes (R_E = 0.98–1.20). One possible mechanism, not yet tested, is that the merged plume keeps fast flow against the face over a greater depth. The laboratory set-up differs in scale, source geometry and stratification, so the comparison remains qualitative.
 
 Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA ranks shelf forcing highest by an order of magnitude, yet the shelf delivers almost no net heat to the front. Which forcing "matters most" depends on whether the question is renewal of fjord water or heat for melting.
 
@@ -276,10 +276,11 @@ Paths, the Python environment and compute limits are in the repository `RUNNING.
 
 ## References
 
-- Carroll, D., et al. (2015). Modeling turbulent subglacial meltwater plumes. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-15-0033.1
 - Carroll, D., et al. (2017). Subglacial discharge-driven renewal of tidewater glacier fjords. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/2017JC012962
 - Cenedese, C., & Gatto, V. M. (2016a). Impact of two plumes' interaction on submarine melting of tidewater glaciers. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-15-0171.1
+- Cenedese, C., & Gatto, V. M. (2016b). Impact of a localized source of subglacial discharge on the heat flux and submarine melting of a tidewater glacier: A laboratory study. *J. Phys. Oceanogr.*, 46, 3155. https://doi.org/10.1175/JPO-D-16-0123.1
 - Cowton, T., et al. (2015). Modeling the impact of glacial runoff on fjord circulation and submarine melt rate. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/2014JC010324
+- Jackson, R. H., et al. (2014). Externally forced fluctuations in ocean temperature at Greenland glaciers in non-summer months. *Nat. Geosci.* https://doi.org/10.1038/NGEO2186
 - Jackson, R. H., et al. (2018). The dynamics of shelf forcing in Greenlandic fjords. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-18-0057.1
 - Jenkins, A. (2011). Convection-driven melting near the grounding lines of ice shelves and tidewater glaciers. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-11-03.1
 - Kimura, S., et al. (2014). The effect of meltwater plumes on the melting of a vertical glacier face. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-13-0219.1
@@ -287,7 +288,6 @@ Paths, the Python environment and compute limits are in the repository `RUNNING.
 - Sanchez, R., et al. (2024). Relative roles of plume and coastal forcing on exchange flow variability of a glacial fjord. *J. Geophys. Res. Oceans.* https://doi.org/10.1029/2023JC020492
 - Sciascia, R., et al. (2013). Seasonal variability of submarine melt rate and circulation in an East Greenland fjord. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/jgrc.20142
 - Slater, D. A., et al. (2016). Scalings for submarine melting at tidewater glaciers from buoyant plume theory. *J. Phys. Oceanogr.* https://doi.org/10.1175/JPO-D-15-0132.1
-- Jackson, R. H., et al. (2014). Externally forced fluctuations in ocean temperature at Greenland glaciers in non-summer months. *Nat. Geosci.* https://doi.org/10.1038/NGEO2186
 - Spall, M. A., et al. (2017). Katabatic wind-driven exchange in fjords. *J. Geophys. Res. Oceans.* https://doi.org/10.1002/2017JC013026
 - Stevens, D. P. (1990). On open boundary conditions for three dimensional primitive equation ocean circulation models. *Geophys. Astrophys. Fluid Dyn.*, 51(1–4), 103–133. https://doi.org/10.1080/03091929008219853
 - Straneo, F., & Cenedese, C. (2015). The dynamics of Greenland's glacial fjords and their role in climate. *Annu. Rev. Mar. Sci.* https://doi.org/10.1146/annurev-marine-010213-135133

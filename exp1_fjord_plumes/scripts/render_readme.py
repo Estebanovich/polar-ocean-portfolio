@@ -134,7 +134,13 @@ def render(allow_pending: bool) -> str:
     missing = sorted({k for k in re.findall(r"\{\{(\w+)\}\}", text) if k not in v})
     if missing and not allow_pending:
         raise KeyError(f"no value for placeholders: {missing}")
-    return re.sub(r"\{\{(\w+)\}\}", lambda m: v.get(m.group(1), PENDING), text)
+    return re.sub(r"\{\{(\w+)\}\}", lambda m: typographic_minus(v.get(m.group(1), PENDING)), text)
+
+
+def typographic_minus(s: str) -> str:
+    """Hyphen-minus before a digit -> U+2212 minus, as in the hand-written text ("-1.5" -> "−1.5");
+    hyphens inside ranges such as "0.50-0.61" are left alone."""
+    return re.sub(r"(?<![\w.])-(?=\d)", "\u2212", s)
 
 
 if __name__ == "__main__":
