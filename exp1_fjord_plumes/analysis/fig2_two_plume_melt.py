@@ -25,6 +25,7 @@ import numpy as np
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.analysis.plume_diag import (  # noqa: E402
     ambient_far_from_face, face_total_melt, face_w_profile)
 from exp1_fjord_plumes.gendata.make_case import _profile  # noqa: E402
@@ -33,7 +34,7 @@ from exp1_fjord_plumes.theory.plume import point_plume  # noqa: E402
 from pfcommon import style  # noqa: E402
 from pfcommon.runctl import require_ok  # noqa: E402
 
-DEFAULT_ROOT = Path("/Volumes/LaCie/portfolio_runs/exp1")
+DEFAULT_ROOT = EXP1_RUNS
 FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
 DATA = Path(__file__).resolve().parent / "data" / "cenedese_gatto_2016a_fig2.csv"
 STRATS = ("twolayer", "sermilik")

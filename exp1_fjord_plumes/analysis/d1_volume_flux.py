@@ -3,7 +3,8 @@ vs half-cone theory Q_t(z), same ambient as C4 (window-mean far field), window 2
 import sys, glob, json
 from pathlib import Path
 import numpy as np
-sys.path.insert(0, "/Users/estebancruz/Phd_project/portfolio")
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pfcommon.paths import EXP1_RUNS
 from pfcommon.mitgcm_io import read_mds
 from pfcommon.runctl import require_ok
 from exp1_fjord_plumes.analysis.plume_diag import ambient_far_from_face
@@ -11,7 +12,7 @@ from exp1_fjord_plumes.analysis.fig2_two_plume_melt import AMBIENT_X_M
 from exp1_fjord_plumes.theory.plume import point_plume
 from exp1_fjord_plumes.theory.melt import MeltParams
 
-R = Path("/Volumes/LaCie/portfolio_runs/exp1")
+R = EXP1_RUNS
 out = {}
 for s in ("twolayer", "sermilik"):
     run = R / f"b_3d_{s}_single"

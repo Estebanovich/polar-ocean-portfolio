@@ -41,6 +41,15 @@ The pipeline runs `cases.yaml` → `gendata` → MITgcm run → `analysis`; `the
 - **`theory/`** holds the plume models (Jenkins 2011 line plume, Slater et al. 2016 half-cone plume, Morton–Taylor–Turner cone) and the three-equation melt law. The `mitgcm` melt mode reproduces `pkg/icefront/icefront_thermodynamics.F` line by line.
 - **`notes/`** (in Spanish) is the decision record: pre-registered criteria, results and every follow-up.
 
+## Locations
+
+Run output, builds and the MITgcm source default to the paths of the original machine. Override them with environment variables:
+- `EXP1_RUNS`: run-output root;
+- `EXP1_BUILDS`: build root;
+- `MITGCM_ROOT`: MITgcm checkout.
+
+They are defined in `pfcommon/paths.py`. `reproduce.sh` also accepts `RUNS`.
+
 ## Conventions
 
 - **MITgcm I/O:** 64-bit binaries with single-CPU I/O. Output is MDS diagnostics only.

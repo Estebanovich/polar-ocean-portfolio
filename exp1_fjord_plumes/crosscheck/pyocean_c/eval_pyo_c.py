@@ -29,9 +29,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 
 T_MID = 0.5 * (-1.5 + 4.0)          # [degC] (T_PW + T_AW)/2, Sciascia et al. 2013 Table 2 (gendata/profiles.py)
 DAY = 86400.0
@@ -43,7 +47,7 @@ RATIO_MAX = 1.5                     # criterion 3
 FIT_WINDOW = (6.0, 30.0)            # [d] criterion 4
 BAL_WINDOW = (20.0, 30.0)           # [d] criterion 2
 PKG = Path(__file__).resolve().parents[2]
-RUNS = Path("/Volumes/LaCie/portfolio_runs/exp1/crosscheck_pyo")
+RUNS = EXP1_RUNS / Path("crosscheck_pyo")
 
 
 def pycnocline_depth(T: np.ndarray, z: np.ndarray, T_mid: float = T_MID) -> float:

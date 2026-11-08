@@ -2,7 +2,7 @@
 # Usage: build_mitgcm.sh <config_dir> <build_dir> [--mpi]
 # Builds MITgcm with <config_dir>/code as -mods. Source tree is never modified.
 set -euo pipefail
-MITGCM=/Volumes/ESTEBAN_MIT/MITgcm
+MITGCM="${MITGCM_ROOT:-/Volumes/ESTEBAN_MIT/MITgcm}"
 if [ $# -lt 2 ]; then echo "usage: $0 <config_dir> <build_dir> [--mpi]" >&2; exit 1; fi
 CONFIG=$(cd "$1" && pwd)
 mkdir -p "$2"

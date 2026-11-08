@@ -16,12 +16,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.analysis.fig2_two_plume_melt import AMBIENT_X_M, theory_zdetach  # noqa: E402
 from exp1_fjord_plumes.analysis.plume_diag import (  # noqa: E402
     ambient_far_from_face, face_total_melt, face_w_profile)
 from pfcommon.runctl import require_ok  # noqa: E402
 
-R = Path("/Volumes/LaCie/portfolio_runs/exp1")
+R = EXP1_RUNS
 REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "exp1_fjord_plumes" / "figures" / "fig2_excess_dx5.json"
 W, W1 = (2, 3), (1, 2)

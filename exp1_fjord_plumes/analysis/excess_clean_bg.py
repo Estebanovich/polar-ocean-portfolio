@@ -2,11 +2,12 @@
 import sys, glob, json
 from pathlib import Path
 import numpy as np
-sys.path.insert(0, "/Users/estebancruz/Phd_project/portfolio")
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pfcommon.paths import EXP1_RUNS
 from pfcommon.mitgcm_io import read_mds
 from pfcommon.runctl import require_ok
 from exp1_fjord_plumes.analysis.plume_diag import face_total_melt
-R = Path("/Volumes/LaCie/portfolio_runs/exp1"); out = {}
+R = EXP1_RUNS; out = {}
 for s in ("twolayer", "sermilik"):
     bg = R / f"b_bg_{s}_nodischarge"; require_ok(bg)
     Mb, Mb1 = face_total_melt(bg, (2, 3)), face_total_melt(bg, (1, 2))

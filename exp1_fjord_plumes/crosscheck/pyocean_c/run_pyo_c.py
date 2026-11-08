@@ -46,10 +46,11 @@ for _p in (str(PORTFOLIO), str(PYOCEAN)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.gendata import make_case  # noqa: E402
 from exp1_fjord_plumes.crosscheck.pyocean_c.eval_pyo_c import T_MID, pycnocline_depth  # noqa: E402
 
-RUNS = Path("/Volumes/LaCie/portfolio_runs/exp1/crosscheck_pyo")
+RUNS = EXP1_RUNS / Path("crosscheck_pyo")
 CASES = {"pyo_shelf": 0.0, "pyo_shelf_runoff": 100.0}        # runoff Q [m^3 s^-1] (pre-registration)
 MITGCM_ANALOGUE = "c_fjord_shelf"                            # shelf only, shelf_amp = 30 m (cases.yaml)
 DT = 60.0                                                    # [s] = (c) deltaT (cases.yaml c_fjord3d)

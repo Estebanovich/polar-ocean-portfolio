@@ -64,11 +64,12 @@ REPO = PKG.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
+from pfcommon.paths import EXP1_BUILDS, EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.gendata.make_case import (  # noqa: E402
     STAGE2_NAME, is_two_stage, load_cases, make_case)
 
-RUNS_ROOT = Path("/Volumes/LaCie/portfolio_runs/exp1")
-BUILD_ROOT = Path("/Volumes/ESTEBAN_MIT/portfolio_builds/exp1")
+RUNS_ROOT = EXP1_RUNS
+BUILD_ROOT = EXP1_BUILDS
 BUILD_SH = REPO / "scripts" / "build_mitgcm.sh"
 RUN_SH = REPO / "scripts" / "run_mitgcm.sh"
 MAX_NP = 5

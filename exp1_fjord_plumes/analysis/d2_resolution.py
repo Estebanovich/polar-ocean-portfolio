@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.analysis.fig2_two_plume_melt import WIN_MAIN, c4_for  # noqa: E402
 from pfcommon.runctl import require_ok  # noqa: E402
 
@@ -33,5 +34,5 @@ def main(root: Path) -> dict:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--runs-root", type=Path, default=Path("/Volumes/LaCie/portfolio_runs/exp1"))
+    ap.add_argument("--runs-root", type=Path, default=EXP1_RUNS)
     main(ap.parse_args().runs_root)

@@ -18,7 +18,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(dirname "$HERE")"
 PY="${PY:-/opt/anaconda3/envs/pyocean/bin/python}"
-RUNS="${RUNS:-/Volumes/LaCie/portfolio_runs/exp1}"
+RUNS="${RUNS:-/Volumes/LaCie/portfolio_runs/exp1}"; export EXP1_RUNS="$RUNS"
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
 
 QUICK=0; GIFS=0

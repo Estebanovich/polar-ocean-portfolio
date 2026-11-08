@@ -23,12 +23,13 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.analysis.fig1_plume_validation import evaluate  # noqa: E402
 from exp1_fjord_plumes.analysis.plume_diag import plume_profile  # noqa: E402
 from pfcommon.mitgcm_io import read_bin  # noqa: E402
 from pfcommon.runctl import require_ok  # noqa: E402
 
-DEFAULT_ROOT = Path("/Volumes/LaCie/portfolio_runs/exp1")
+DEFAULT_ROOT = EXP1_RUNS
 FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
 
 WINDOW = (12.0, 24.0)

@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.analysis import c_runs  # noqa: E402
 from exp1_fjord_plumes.crosscheck.pyocean_c.eval_pyo_c import pycnocline_depth, sine_fit  # noqa: E402
 from pfcommon.mitgcm_io import read_mds  # noqa: E402
@@ -64,7 +65,7 @@ def main(runs_root: Path) -> dict:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--runs-root", type=Path, default=Path("/Volumes/LaCie/portfolio_runs/exp1"))
+    ap.add_argument("--runs-root", type=Path, default=EXP1_RUNS)
     r = main(ap.parse_args().runs_root)
     for c, v in r["cases"].items():
         for k, f in v.items():

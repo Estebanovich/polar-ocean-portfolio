@@ -26,6 +26,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.analysis.plume_diag import plume_profile  # noqa: E402
 from exp1_fjord_plumes.gendata.make_case import _profile  # noqa: E402
 from exp1_fjord_plumes.theory.melt import MeltParams  # noqa: E402
@@ -33,7 +34,7 @@ from exp1_fjord_plumes.theory.plume import line_plume  # noqa: E402
 from pfcommon import style  # noqa: E402
 from pfcommon.mitgcm_io import read_mds  # noqa: E402
 
-DEFAULT_ROOT = Path("/Volumes/LaCie/portfolio_runs/exp1")
+DEFAULT_ROOT = EXP1_RUNS
 FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
 STRATS = ("twolayer", "sermilik")
 QS = ("0.01", "0.03", "0.1")

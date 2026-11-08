@@ -43,12 +43,13 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.analysis import c_runs  # noqa: E402
 from exp1_fjord_plumes.theory.melt import MeltParams  # noqa: E402
 from pfcommon import style  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 
-DEFAULT_ROOT = Path("/Volumes/LaCie/portfolio_runs/exp1")
+DEFAULT_ROOT = EXP1_RUNS
 FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
 CASES = ("c_fjord_plume", "c_fjord_wind", "c_fjord_shelf", "c_fjord_all")
 LABELS = {"c_fjord_plume": "plume", "c_fjord_wind": "wind", "c_fjord_shelf": "shelf",

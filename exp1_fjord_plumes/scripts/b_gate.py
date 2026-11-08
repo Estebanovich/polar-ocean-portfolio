@@ -38,11 +38,12 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
+from pfcommon.paths import EXP1_RUNS  # noqa: E402
 from exp1_fjord_plumes.analysis.b_checks import RETENTION_MAX, eta_retention  # noqa: E402
 from pfcommon.mitgcm_io import read_mds  # noqa: E402
 from pfcommon.runctl import require_ok  # noqa: E402
 
-REF = Path("/Volumes/LaCie/portfolio_runs/exp1/b_3d_twolayer_x0_40_short30m_dt2")
+REF = EXP1_RUNS / Path("b_3d_twolayer_x0_40_short30m_dt2")
 ITER = 900
 PAIRS = (("icefrontDiag", "icefrontDiag"), ("THETA", "T"), ("SALT", "S"),
          ("UVEL", "U"), ("VVEL", "V"), ("ETAN", "Eta"))
