@@ -124,7 +124,7 @@
       "run": "sens_xu2012",
       "valid": false,
       "reasons": [
-        "not stationary (R_Q(18-24) vs R_Q(12-18) >= 2 %)"
+        "not stationary (R_Q second half vs first half of (12.0, 24.0) h >= 2 %)"
       ],
       "monitor": {
         "valid": true,
