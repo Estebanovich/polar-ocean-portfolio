@@ -248,6 +248,16 @@ Experiment (c) adds a caution about metrics. The exchange flux ½∫|u| dA ranks
 5. In an idealised rotating fjord, shelf forcing dominates the volume exchanged while the plume dominates the heat delivered to the front; in this diagnostic the forcings add nearly linearly in heat.
 6. The default MITgcm Stevens open boundary is unstable for these set-ups; the interior-velocity option fixes it, as supported by an independent pyOCEAN run.
 
+## Animations
+
+Animated GIFs of the runs are in `figures/`. Colour scales are fixed across frames.
+
+- **(a) line plume:**
+  - [two-layer, first 6 h every 5 min](figures/fig1_anim_a_line2d_twolayer_q0.03_anim.gif): a dedicated rerun, bit-identical to the production run at every hour checked (1–6 h);
+  - hourly over 48 h: [two-layer](figures/fig1_anim_a_line2d_twolayer_q0.03.gif), [Sermilik-like](figures/fig1_anim_a_line2d_sermilik_q0.03.gif).
+- **(b) two plumes:** [single plume](figures/fig2_anim_b_3d_twolayer_single.gif), [x0 = 0](figures/fig2_anim_b_3d_twolayer_x0_0.gif) and [x0 = 80 m](figures/fig2_anim_b_3d_twolayer_x0_80.gif) in the two-layer ambient, and [x0 = 0, Sermilik-like](figures/fig2_anim_b_3d_sermilik_x0_0.gif). All four are 10 m runs, so the plumes in them overshoot the interface (§3.2).
+- **(c) fjord:** the [plume](figures/fig3_anim_c_fjord_plume.gif), [wind](figures/fig3_anim_c_fjord_wind.gif) and [shelf](figures/fig3_anim_c_fjord_shelf.gif) forcings, and [all three together](figures/fig3_anim_c_fjord_all.gif).
+
 ## Reproducing
 
 ```bash
