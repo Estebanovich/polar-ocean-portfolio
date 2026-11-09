@@ -281,3 +281,34 @@ def test_run_stages_rejects_stage_end_off_checkpoint(tmp_path):
     inp = _inp(tmp_path, DATA.replace("pChkptFreq = 4000.", "pChkptFreq = 3000."))
     with pytest.raises(ValueError, match="pChkptFreq"):
         cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 3, FakeModel(), "run_mitgcm.sh")
+
+
+@pytest.mark.parametrize("n_stages", [1, 3])
+def test_run_stages_stale_ok_status_with_failing_runner(tmp_path, n_stages):
+    """The runner exits 2 without writing anything (e.g. LaCie not mounted) over a run dir
+    that holds an earlier OK attempt: the case must be FAILED, never the stale OK."""
+    inp = _inp(tmp_path)
+    run = tmp_path / "r"
+    run.mkdir()
+    ok = {"state": "OK", "last_iter": 120 if n_stages == 1 else 40, "n_timesteps": 40, "wall_s": 0}
+    (run / "run_status.json").write_text(json.dumps(ok))
+    calls = []
+
+    def dead_runner(cmd):
+        calls.append(cmd)
+        return 2
+
+    assert cp.run_stages(run, inp, tmp_path / "b", 1, n_stages, dead_runner, "run_mitgcm.sh") == "FAILED"
+    assert len(calls) == 1
+    fin = json.loads((run / "run_status_final.json").read_text())
+    assert fin["state"] == "FAILED" and "code 2" in fin["reason"]
+    assert fin["stages"]["1"] is None                  # the stale status was removed, not read
+    assert not cp.finished_ok(run)
+
+
+def test_run_stages_nonzero_exit_fails_even_with_ok_status(tmp_path):
+    inp = _inp(tmp_path)
+    fake = FakeModel()
+    st = cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 1, lambda c: fake(c) or 1, "run_mitgcm.sh")
+    assert st == "FAILED"
+    assert "code 1" in json.loads((tmp_path / "r" / "run_status_final.json").read_text())["reason"]

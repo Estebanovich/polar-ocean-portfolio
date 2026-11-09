@@ -278,8 +278,10 @@ def run_stages(run_dir: Path, inp: Path, build_dir: Path, np_: int, n_stages: in
     ``pickup*.<iter>.*`` file stage k-1 wrote at its last iteration. Each stem of
     ``pickup_stems`` must be present (``<stem>.<iter:010d>.data`` and ``.meta``). If
     ``data`` sets pChkptFreq, every stage end must fall on a multiple of it, since the
-    permanent pickup is written there. Writes ``run_dir/run_status_final.json``: OK only
-    if every stage is OK and the last iteration is nIter0 + nTimeSteps of the input."""
+    permanent pickup is written there. Before each stage its run_status.json is removed,
+    and a nonzero exit code of the runner makes the case FAILED. Writes
+    ``run_dir/run_status_final.json``: OK only if every stage is OK and the last
+    iteration is nIter0 + nTimeSteps of the input."""
     run_dir, inp = Path(run_dir), Path(inp)
     text = (inp / "data").read_text()
     n0, ntot = nml_int(text, "nIter0"), nml_int(text, "nTimeSteps")
@@ -313,9 +315,15 @@ def run_stages(run_dir: Path, inp: Path, build_dir: Path, np_: int, n_stages: in
                 for f in sorted(prev.glob(f"pickup*.{a:010d}.*")):
                     shutil.copyfile(f, sinp / f.name)                  # content copy
         stages[str(k)] = None
-        sh([run_sh, build_dir, sinp, sdir, np_])
+        # A stale status from an earlier attempt must never be read as this run's result:
+        # run_mitgcm.sh can exit (LaCie not mounted, mkdir/cp failure) before removing it.
+        (sdir / "run_status.json").unlink(missing_ok=True)
+        rc = sh([run_sh, build_dir, sinp, sdir, np_])
         st = _status(sdir)
         stages[str(k)] = st
+        if rc != 0:
+            return _write_final(run_dir, "FAILED", stages, expected,
+                                f"stage {k}: runner exited with code {rc}")
         if not (st and st.get("state") == "OK" and st.get("last_iter") == a + n):
             return _write_final(run_dir, "FAILED", stages, expected,
                                 f"stage {k} not OK or did not reach iteration {a + n}")
