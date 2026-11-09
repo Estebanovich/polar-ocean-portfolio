@@ -37,8 +37,8 @@
  bottomDragQuadratic=${Cd},
 # --- advection: 2nd-order flux limiter (77), not DST3 (33): Yung et al.
 #     2026 attribute spurious water masses in MITgcm to DST3
- tempAdvScheme=77,
- saltAdvScheme=77,
+ tempAdvScheme=${advScheme},
+ saltAdvScheme=${advScheme},
  staggerTimeStep=.TRUE.,
 # --- f plane at 75 S (AD16 sect. 3.1.1)
  f0=${f0},

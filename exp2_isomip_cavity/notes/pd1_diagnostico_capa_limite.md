@@ -1,0 +1,70 @@
+# Diagnóstico post hoc: ¿por qué nuestro ΓT_cal queda por debajo del de los otros MITgcm de ISOMIP+? (ruling R20)
+
+Fecha: 2026-11-09. Aprobado por Esteban (R20). Escrito **antes** de lanzar cualquier corrida de este diagnóstico.
+
+## Estatus
+
+- Este diagnóstico es **post hoc**. **No toca K1, V1 ni ΓT_cal.**
+  - K1 pasa a 2 y 4 km.
+  - V1 falla (ΓT_cal,2km = 0.0099627 < 0.011), con clase (c), según `pd1_calibracion.md` §4.2–4.3.
+  - ΓT_cal,2km = 0.0099627 y ΓT_cal,4km = 0.0094686 quedan fijos.
+  - Ningún resultado de aquí cambia la configuración del ensamble ni la de Ocean1.
+- **Objetivo:** explicar la diferencia. No busca corregirla.
+
+## Pregunta
+
+Nuestro ΓT_cal (≈ 0.0095–0.010, con celdas de 20 m) es menor que el de los otros MITgcm de Y26 a 20 m: MITgcm-JPL 0.0325 y MITgcm-BAS-Coupled 0.0135 (MITgcm-BAS reporta 0.011 en Ocean1). A igual ΓT, nuestro modelo funde más. Qué hacen distinto esas entradas, según Y26:
+- **Advección de trazadores:** DST3 (esquema 33; final L751; preprint L873). Nosotros usamos 77.
+- **Muestreo y reparto de flujos:** "sampling the temperature, salinity, and velocity within a fixed 20 m boundary layer beneath the ice. Melt fluxes are also distributed over a 20 m layer" (final L757–759; preprint L880–881).
+- **Columna mínima:** MITgcm-BAS mantiene 40 m excavando el calado (final L764; preprint L887).
+- **Celdas parciales:** mínimo de 25 % (JPL) y 20 % (BAS, BAS-Coupled) (final L768–769; preprint L889–890). Nosotros usamos 0.20.
+
+## Diseño
+
+- **Corridas:** Ocean0 a 4 km, ΓT = 0.015 (ΓS = ΓT/35), 2 años, dt = 800 s, np = 1. Cada variante tiene **exactamente un cambio** respecto a `cal4_gT0.015`.
+- **Referencia:** `cal4_gT0.015`, ya corrida, con melt profundo de los meses 19–24 = 41.216 m a⁻¹.
+  - Sus entradas binarias son idénticas a las que genera hoy `make_case`.
+  - La única diferencia de namelist es `checkIniTemp=.FALSE.` (R18), sin efecto numérico (`pd1_calibracion.md` §6). Se comprobó con `diff` de las entradas generadas.
+
+| Variante | Caso | Cambio único | Hipótesis |
+|---|---|---|---|
+| (a) | `diag4_adv33` | `tempAdvScheme = saltAdvScheme = PTRACERS_advScheme(1) = 33` (DST3), en lugar de 77 | DST3 es menos difusivo que el limitador de 2.º orden y conserva mejor la capa de agua de deshielo fría y dulce bajo el hielo. Eso aísla la base del agua cálida y baja el melt a igual ΓT. Si el efecto es grande, explica parte del ΓT mayor de las entradas MITgcm de Y26, que usaban 33. |
+| (b) | `diag4_hfac025` | hFacMin = 0.25, en lugar de 0.20 (como MITgcm-JPL). `make_case` reajusta la geometría a las celdas parciales del modelo: 97 columnas cambian de calado y 102 de fondo, ≤ 4 m; 41 221 celdas mojadas contra 41 249 | Con menos celdas superiores muy delgadas (4 m), el promedio de la capa límite de Losch pondera distinto la celda delgada, y cambia el T muestreado. Se espera un efecto pequeño. |
+| (c) | `diag4_bl20` | Capa fija de 20 m para muestrear y repartir flujos | **No se corre.** Ver abajo. |
+
+**Por qué (c) no se corre:** nuestra configuración base ya usa esa capa, y las opciones de MITgcm no ofrecen otra sin código nuevo.
+- `SHELFICEboundaryLayer=.TRUE.` ya está activo (`config/ocean0/input_templates/data.shelfice`). Con él, T, S y u se promedian sobre una capa de espesor drF(kTop) = 20 m bajo el hielo: la celda superior, más la fracción de la siguiente que completa los 20 m.
+  - Original: `pkg/shelfice/shelfice_thermodynamics.F:341-389` (bloque `IF ( SHELFICEBoundaryLayer )`).
+  - Nuestra copia: `config/ocean0/code/shelfice_thermodynamics.F:373-410`. drKp1 = drF(K)(1 − hFacC(K)), acotado por drF(K+1)·hFacC(K+1).
+  - Los flujos se reparten sobre esa misma capa: `pkg/shelfice/shelfice_forcing.F:74-101, 180-206`.
+  - `pkg/shelfice/SHELFICE.h:30-31` la describe como "vertical merging of cells ... for a boundary layer of drF thickness". Con delR = 20 m en todos los niveles, esa capa es de 20 m fijos.
+- Las demás opciones de `shelfice_readparms.F` no definen un espesor distinto:
+  - `SHI_withBL_realFWflux` (`:100, :210-211`) solo actúa con `useRealFreshWaterFlux`, que tenemos en `.FALSE.`;
+  - `SHI_withBL_uStarTopDz` (`:101, :212-213`) solo cambia cómo se promedia u para u* (en los puntos u/v, `shelfice_thermodynamics.F:424-470` de nuestra copia), no el espesor de muestreo ni el de reparto.
+  - No hay ningún parámetro de espesor de capa en `SHELFICE_PARM01` (`shelfice_readparms.F:44-75`).
+- **Consecuencia:** la diferencia "capa fija de 20 m" de Y26 no distingue nuestra configuración de la suya, así que no puede explicar el hueco.
+  - La única diferencia posible está en el detalle: en columnas donde la celda siguiente también es parcial, la capa queda por debajo de 20 m.
+  - Probar otro espesor (p. ej., 40 m o el kTop completo) exigiría código nuevo. Por la regla de R20, no se hace.
+  - `SHI_withBL_uStarTopDz` es un cambio disponible, pero no lo pidió R20 y **no se corre** (no se añaden variantes después de escribir esta nota).
+
+## Lectura
+
+Para cada variante v (con 2 años y N3 OK; si no, se reporta el hueco):
+1. **Cambio del melt profundo** de los meses 19–24 a ΓT = 0.015, relativo a la referencia: Δ = (m_v − 41.216)/41.216.
+2. **ΓT_cal implícito (estimación, no calibración):** ΓT_est = 0.015·(30/m_v)^(1/p), con p = 0.690.
+   - p es la pendiente log–log local medida a 4 km en el tramo [0.0075, 0.015]: ln(41.216/25.541)/ln 2.
+   - Supone que la variante desplaza ln⟨m⟩ sin cambiar la pendiente.
+   - Con la referencia, la fórmula da 0.00947, igual al ΓT_cal,4km calibrado (0.0094686).
+3. **"Explica la diferencia"** si ΓT_est ≥ 0.0135 (el ΓT de MITgcm-BAS-Coupled), es decir, m_v ≤ 32.3 m a⁻¹: una reducción del melt profundo ≥ 21.7 %.
+   - Para llegar al de MITgcm-JPL (0.0325) haría falta m_v ≤ 17.6 m a⁻¹ (−57 %). Se reporta como referencia, no como criterio.
+4. **Informativo:** melt medio de la plataforma, N1, N2, CFL máximo (R17) y sobreenfriamiento (R15) de cada variante.
+
+Si ninguna variante llega a 0.0135, el resultado se reporta como "no explicado por (a) ni (b)". Las demás diferencias citadas en Y26 se dejan anotadas, sin probarlas aquí:
+- convección de Cessi y Young (1996), frente a nuestro `ivdc_kappa` (final L754–756);
+- la excavación de la columna mínima de MITgcm-BAS;
+- la incertidumbre que el propio Y26 reconoce sobre los ΓT de BAS (final L794–812).
+
+## Ejecución
+
+- **Cola:** `exp2_isomip_cavity/scripts/queue_diag_bl.sh`, desacoplada. np = 1, hasta 3 simultáneas (aquí 2), con las mismas reglas de seguridad.
+- **Evaluación:** con `analysis/pd1_calibration_eval.py` (N1–N3, CFL, sobreenfriamiento) y `analysis/calibrate.py --verify` (melt profundo).

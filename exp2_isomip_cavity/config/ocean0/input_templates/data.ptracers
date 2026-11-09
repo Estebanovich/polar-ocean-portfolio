@@ -11,7 +11,7 @@
  PTRACERS_names(1)='meltwater',
  PTRACERS_long_names(1)='meltwater volume fraction',
  PTRACERS_units(1)='1',
- PTRACERS_advScheme(1)=77,
+ PTRACERS_advScheme(1)=${advScheme},
  PTRACERS_diffKh(1)=${diffKh},
  PTRACERS_diffKr(1)=${diffKr},
  PTRACERS_ref(1:${nz},1)=${nz}*0.,
