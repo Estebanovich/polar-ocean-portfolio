@@ -282,3 +282,6 @@
 - Binarios `ocean0_2km` (MPI), `ocean0_4km` y `ocean0_4km_mpi` recompilados.
 - **Anuladas** (se conservan en disco): smoke, `cal2_*`/`cal4_*` (todos los ΓT), `ocean0_2km`, `ocean0_4km`, `tim4m_*`, `diag4_*`. La enmienda de PD2 (ΓT = 0.0075) y la serie R20 estaban condicionadas a la ley errónea: quedan como registro, no se reutilizan. K1, V1, N1–N3 y pd0 no cambian.
 - **Relanzamiento** de la calibración de pd0 K1 desde cero, ΓT ∈ {0.015, 0.03, 0.06} en las dos mallas, con sufijo de corrida `_r21` (`scripts/queue_calibration.sh`). Si 30 m a⁻¹ no queda acotado en una malla, la cola se detiene ahí (PD2), sin extrapolar.
+- **Resultados R21** (cola 08:11–12:28 CST): ΓT_cal = 0.029356 (4 km) y 0.030959 (2 km), acotados con los 3 puntos de pd0. K1 PASA en las dos mallas (30.02 y 30.00 m a⁻¹), V1 PASA (0.030959 ∈ [0.011, 0.2]), N1–N3 PASAN en las 8 corridas, CFL máximo 0.348. Detalle en `notes/pd1_calibracion.md`, «Resultados R21».
+- **Candado:** `melt_law` en `case.json`; `--skip-ok` y `metrics.load_run` rechazan corridas con la ley anulada; sufijo por omisión `_r21`.
+- **Comparación post hoc con MITgcm-JPL** (`notes/pd1_comparacion_jpl.md`): melt profundo 30.00 contra 31.35 m a⁻¹, u\* profundo 0.00365 contra 0.00397 m s⁻¹, correlación de los mapas de melt r = 0.91.

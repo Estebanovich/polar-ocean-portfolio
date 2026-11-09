@@ -65,6 +65,10 @@ U_TIDAL = 0.01             # RMS tidal velocity, m s^-1
 GAMMA_S_OVER_T = 1.0 / 35.0
 SECONDS_PER_YEAR = 365 * 86400.0      # 365-day calendar (context: diagnostics months)
 PA_TO_DBAR = 1.0e-4                   # MITgcm SItodBar (model/src/ini_parms.F)
+# Tag of the u* law the Fortran override implements, written to case.json (cases.yaml
+# melt_law). Runs without it (or with another value) used the void pre-R21 law
+# u*^2 = Cd u^2 + u_tidal^2: run_campaign --skip-ok and metrics.load_run refuse them.
+MELT_LAW = "AD16_eq27_r21"
 
 
 def friction_velocity(vel_sq, cd: float = CD_TOP, u_tidal: float = U_TIDAL):

@@ -37,6 +37,9 @@ configs:
     min_cells: 2             # minimum water column, cells (AD16 sect. 3.1.4)
     s: 1.0
     gammaT: null
+    # R21 provenance tag of the u* law, u*^2 = Cd (u^2 + u_tidal^2) (theory/melt.py MELT_LAW);
+    # --skip-ok and metrics.load_run refuse runs whose case.json lacks it (void law)
+    melt_law: AD16_eq27_r21
     init_profile: ocean0
     restore_profile: ocean0
     deltaT: 400.0            # Task 4 timing: max CFL 0.27 (w, 30 d); notes/pd1_calibracion.md

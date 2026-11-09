@@ -278,6 +278,9 @@ def load_run(run_dir) -> RunData:
     stage_dirs = _stage_dirs(run_dir)
     case = json.loads((run_dir / "case.json").read_text())
     p, actual = case["params"], case.get("actual", {})
+    if p.get("melt_law") != ml.MELT_LAW:                  # R21: void u* law
+        raise RuntimeError(f"{run_dir}: melt_law {p.get('melt_law')!r} != {ml.MELT_LAW!r}: run "
+                           "made with the void pre-R21 u* law (Cd u^2 + u_tidal^2), refused")
     nx, ny, nz = int(p["nx"]), int(p["ny"]), int(p["nz"])
     dt = float(p["deltaT"])
     n0, nts = int(p["nIter0"]), int(p["nTimeSteps"])

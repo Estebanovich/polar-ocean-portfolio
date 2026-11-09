@@ -149,10 +149,28 @@ def test_constants_agree_with_fortran_override_and_cases_yaml():
 
 def test_fortran_ustar_has_cd_multiplying_both_terms():
     """R21: the Fortran override computes u*^2 = Cd (|u|^2 + u_tidal^2) (AD16 Eq. 27, PDF
-    page 15), i.e. the drag coefficient multiplies the sum, not only |u|^2."""
-    src = FORTRAN.read_text()
-    code = "\n".join(ln for ln in src.splitlines() if ln[:1] not in ("C", "c", "!"))
-    flat = re.sub(r"\n\s{5}&", " ", code)                  # join continuation lines
-    flat = re.sub(r"\s+", "", flat)
-    assert ("ustarSq=shiCdragfld(I,J,bi,bj)*(velSq(I,J)+shiUTidal*shiUTidal)" in flat)
-    assert "*velSq(I,J)+shiUTidal*shiUTidal" not in flat
+    page 15), i.e. the drag coefficient multiplies the sum, not only |u|^2. Checked only
+    inside the "#ifdef SHI_ISOMIP_PLUS_MELT" branches (the #else branch is MITgcm's own
+    Holland and Jenkins form, which must stay as it is)."""
+    lines = FORTRAN.read_text().splitlines()
+    branches, cur = [], None
+    for ln in lines:
+        if ln.startswith("#ifdef SHI_ISOMIP_PLUS_MELT"):
+            cur = []
+        elif cur is not None and (ln.startswith("#else /* SHI_ISOMIP_PLUS_MELT")
+                                  or ln.startswith("#endif /* SHI_ISOMIP_PLUS_MELT")):
+            branches.append(cur)
+            cur = None
+        elif cur is not None:
+            cur.append(ln)
+    assert len(branches) == 3                                # declarations, init, u* law
+
+    def flat(block):
+        code = "\n".join(ln for ln in block if ln[:1] not in ("C", "c", "!", "#"))
+        return re.sub(r"\s+", "", re.sub(r"\n\s{5}&", " ", code))   # join continuations
+
+    law = [flat(b) for b in branches if "ustarSq=" in flat(b)]
+    assert len(law) == 1
+    assert law[0].count("ustarSq=") == 1
+    assert "ustarSq=shiCdragfld(I,J,bi,bj)*(velSq(I,J)+shiUTidal*shiUTidal)" in law[0]
+    assert "*velSq(I,J)+shiUTidal*shiUTidal" not in law[0]

@@ -112,3 +112,28 @@ def test_dry_run_lists_cases(capsys):
     assert rc.main(["--config", "ocean0_4km", "--cases", "ens_*", "--dry-run"]) == 0
     out = capsys.readouterr().out.split()
     assert len(out) == 28 and all(n.startswith("ens_") for n in out)
+
+
+def test_skip_ok_never_reuses_a_void_law_run(tmp_path, cfg_root, templates, synth_geom):
+    """R21: an OK run whose case.json has no melt_law (made with the void pre-R21 u* law,
+    Cd u^2 + u_tidal^2) is neither skipped nor overwritten: --skip-ok refuses to start."""
+    ov = {"endTime": 4800.0, "deltaT": 1200.0, "gammaT": 0.03}
+    res, _ = _run(tmp_path, cfg_root, templates, synth_geom, "ocean0_4km", "ocean0_4km",
+                  overrides=ov)
+    assert res == {"ocean0_4km": "OK"}
+    cj = tmp_path / "runs" / "ocean0_4km" / "input" / "case.json"
+    meta = json.loads(cj.read_text())
+    assert meta["params"]["melt_law"] == "AD16_eq27_r21"        # new runs carry the tag
+    del meta["params"]["melt_law"]                              # what a void run looks like
+    cj.write_text(json.dumps(meta))
+    with pytest.raises(RuntimeError, match="void pre-R21"):
+        _run(tmp_path, cfg_root, templates, synth_geom, "ocean0_4km", "ocean0_4km",
+             overrides=ov, skip_ok=True)
+    assert "melt_law" not in json.loads(cj.read_text())["params"]   # left untouched
+
+
+def test_production_run_suffix_defaults_to_r21(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(rc, "run_campaign", lambda *a, **k: seen.update(k) or {})
+    rc.main(["--config", "ocean0_4km", "--cases", "ocean0_4km"])
+    assert rc.DEFAULT_RUN_SUFFIX == "_r21" and seen["run_suffix"] == "_r21"

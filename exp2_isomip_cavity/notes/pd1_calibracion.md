@@ -226,7 +226,7 @@ Desde el 2026-11-09, antes de cualquier corrida nueva, la plantilla `config/ocea
 - El otro uso está en `ini_theta.F:130`: `IF ( checkIniTemp .AND. allowFreezing )`, que recorta θ a −1.9 °C. Ese bloque solo actúa con `allowFreezing = .TRUE.`. Su valor por omisión es `.FALSE.` (`model/src/set_defaults.F:220`), y ninguna plantilla lo cambia; lo comprueba la prueba `test_r18_check_ini_temp_off_without_freezing`.
 - Por eso, en esta configuración, el valor de `checkIniTemp` no altera el estado inicial ni la integración.
 
-**Corridas anteriores:** las 6 primeras de calibración (`cal4_gT{0.015,0.03,0.06}`, `cal2_gT{0.015,0.03,0.06}`), los smokes y el cronometraje corrieron con el valor por omisión (`.TRUE.`). Ninguna tenía θ = 0 (salvo `ens_T0.0_zc400_s1.0_tim10d`, que no arrancó, §5), así que el cambio no tiene efecto físico sobre ellas. Se reutilizan con `--skip-ok`, que compara deltaT, endTime y gammaT.
+**Corridas anteriores:** las 6 primeras de calibración (`cal4_gT{0.015,0.03,0.06}`, `cal2_gT{0.015,0.03,0.06}`), los smokes y el cronometraje corrieron con el valor por omisión (`.TRUE.`). Ninguna tenía θ = 0 (salvo `ens_T0.0_zc400_s1.0_tim10d`, que no arrancó, §5), así que el cambio no tiene efecto físico sobre ellas. Se reutilizan con `--skip-ok`, que compara deltaT, endTime y gammaT (anulado por R21: todas esas corridas usaron la ley errónea de u\* y ya no se reutilizan).
 
 ## Error (a): forma de u\* (R21)
 
@@ -234,7 +234,7 @@ Ruling R21, aprobado por Esteban el 2026-11-09. Clase **(a), error nuestro**. De
 
 **Qué estaba mal.** AD16 Eq. 27 (GMD 9, p. 2485 = p. 15 del PDF, verificada en la página impresa) es u\*² = C_D,top·(u_w² + u_tidal²), con piso u\* = √C_D·u_tidal = 5e-4 m s⁻¹. El modelo calculaba u\*² = Cd·u_w² + u_tidal², con piso 0.01 m s⁻¹. **Origen:** la fórmula del plan se copió de una extracción de texto del PDF que perdió los paréntesis.
 
-**Evidencia.** u\* medio de la región profunda en Ocean0: MITgcm-JPL (`data_external/osf_jpl/Ocean0_yosi_COM_MITgcm_JPL_new.nc`, `frictionVelocity`) **0.0040 m s⁻¹**; el nuestro, **0.0109 m s⁻¹**. Un u\* inflado ~2.7 veces exige un ΓT menor para dar 30 m a⁻¹; es una explicación candidata del ΓT_cal bajo de §4.3 (0.0095–0.0100) y del fallo de V1, que solo la nueva calibración puede confirmar o descartar.
+**Evidencia.** u\* medio de la región profunda (base del hielo < −300 m) en Ocean0: MITgcm-JPL (`data_external/osf_jpl/Ocean0_yosi_COM_MITgcm_JPL_new.nc`, `frictionVelocity`, meses 7–12 de su año) **0.0040 m s⁻¹**; el nuestro, **0.0109 m s⁻¹** (corrida anulada `ocean0_2km`, ΓT = 0.0099627, media ponderada por área de `SHIuStar` mensual en los meses 19–24; a 4 km, `ocean0_4km`, 0.0109 también). Un u\* inflado ~2.7 veces exige un ΓT menor para dar 30 m a⁻¹; es una explicación candidata del ΓT_cal bajo de §4.3 (0.0095–0.0100) y del fallo de V1, que solo la nueva calibración puede confirmar o descartar.
 
 **Corridas ANULADAS** (se conservan en disco, en `/Volumes/LaCie/portfolio_runs/exp2/`, solo como registro histórico; ningún resultado suyo se reutiliza):
 
@@ -258,4 +258,48 @@ Los cronometrajes cortos del ensamble (`ens_*_tim10d`) también usaron la ley er
 - **Si 30 m a⁻¹ no queda acotado** en una malla, la cola se detiene para esa malla (sin verificación, sin extrapolar) y se va a PD2. Las corridas de muestra de la otra malla siguen, porque son las de pd0 de todos modos.
 - **Manejo de las corridas anuladas:** las nuevas corridas llevan el sufijo de directorio **`_r21`** (`cal4_gT0.015_r21`, …, `ocean0_4km_r21`, `ocean0_2km_r21`; iteración: `<caso>_r21_iter2`). Las anuladas se quedan donde están, sin tocar: `--skip-ok` solo mira el directorio con sufijo, así que nunca las recoge, y `calibrate.py` recibe explícitamente los directorios `_r21`. No se movieron a `void_r21/`: el sufijo basta para aislarlas y evita copiar y borrar ~14 GB en el exFAT (copia y verificación sin beneficio). Los resultados nuevos van a `figures/calibration_<res>_r21.json` y `figures/verify_<res>_r21.json` (los JSON anulados se conservan); los logs, a `logs/r21/`. `pd1_calibration_eval.py` evalúa por omisión los directorios `_r21` y la muestra de pd0.
 - **Cola:** `scripts/queue_calibration.sh`, lanzada con nohup; PID, log y resultados se anotan en la sección siguiente cuando termine.
+- **Candado contra corridas anuladas (después de la revisión).** `cases.yaml` lleva `melt_law: AD16_eq27_r21` en la configuración base, que `make_case` escribe en `case.json`. `run_campaign.py --skip-ok` compara además `melt_law`: una corrida OK sin esa clave (ley anulada) no se salta ni se sobrescribe; la campaña se niega a arrancar. `metrics.load_run` rechaza cualquier corrida cuyo `melt_law` no sea el vigente, así que ningún análisis (calibración, ensamble, Ocean1) puede leer una corrida anulada. El sufijo por omisión de `run_campaign.py` es ahora `_r21`, y `calibrate.py` escribe por omisión `figures/*_<res>_r21.json`. A las 8 corridas `_r21` (hechas en el commit 4c5a655 justo antes del candado) se les añadió `melt_law` en `case.json` y `input/case.json` después de comprobar que su commit es 4c5a655 y que su ejecutable es byte a byte el binario R21 (sha256 `f69062d2…` a 2 km, `4ddad51a…` a 4 km); la clave `melt_law_backfill` lo registra.
+
+## Resultados R21
+
+Cola `scripts/queue_calibration.sh`, PID 13965, 2026-11-09 08:11–12:28 CST, commit 4c5a655. Log en `…/exp2/logs/r21/queue_calibration_r21.log`. Evaluación mecánica contra pd0: `analysis/pd1_calibration_eval.py` (por omisión, corridas `_r21`) → `figures/pd1_calibration_eval_r21.json`; calibración en `figures/calibration_{4km,2km}_r21.json` y verificación en `figures/verify_{4km,2km}_r21.json`. Todas las corridas se leyeron con `metrics.load_run` (`require_ok` y el candado de `melt_law`).
+
+**Calibración (3 puntos de pd0 por malla).** 30 m a⁻¹ queda acotado en las dos mallas, sin enmienda.
+
+| Malla | Tramo que acota | ΓT_cal (bruto) | ΓT_cal (usado, 5 cifras) |
+|---|---|---|---|
+| 4 km | [0.015, 0.03] | 0.029355867 | **0.029356** |
+| 2 km | [0.03, 0.06] | 0.030959375 | **0.030959** |
+
+**Corridas** (melt de los meses 19–24, m a⁻¹; CFL máximo de los 2 años con el monitor diario, 731 líneas):
+
+| Corrida | ΓT | Melt profundo | Melt plataforma | N1 | N2 | N3 | CFL u / v / w (R17) |
+|---|---|---|---|---|---|---|---|
+| cal4_gT0.015_r21 | 0.015 | 14.160 | 5.424 | 0.0076 ✓ | 6.3e-8 ✓ | ✓ | 0.072 / 0.059 / 0.127 |
+| cal4_gT0.03_r21 | 0.03 | 30.737 | 10.409 | 0.0045 ✓ | 4.1e-8 ✓ | ✓ | 0.107 / 0.077 / 0.212 |
+| cal4_gT0.06_r21 | 0.06 | 53.922 | 16.580 | 0.0032 ✓ | 8.5e-8 ✓ | ✓ | 0.161 / 0.100 / 0.304 |
+| **ocean0_4km_r21** (verificación) | 0.029356 | **30.023** | 10.186 | 0.0002 ✓ | 4.3e-8 ✓ | ✓ | 0.106 / 0.075 / 0.208 |
+| cal2_gT0.015_r21 | 0.015 | 12.988 | 5.033 | 0.0112 ✓ | 3.1e-7 ✓ | ✓ | 0.098 / 0.081 / 0.140 |
+| cal2_gT0.03_r21 | 0.03 | 29.239 | 9.960 | 0.0094 ✓ | 8.5e-7 ✓ | ✓ | 0.135 / 0.098 / 0.216 |
+| cal2_gT0.06_r21 | 0.06 | 51.502 | 15.846 | 0.0022 ✓ | 3.9e-6 ✓ | ✓ | 0.209 / 0.125 / 0.348 |
+| **ocean0_2km_r21** (verificación) | 0.030959 | **30.002** | 10.191 | 0.0083 ✓ | 1.2e-6 ✓ | ✓ | 0.137 / 0.098 / 0.220 |
+
+W_hf coincide con w en todas. **Ningún CFL supera 0.5** (R17); el mayor es 0.348, en w de `cal2_gT0.06_r21`.
+
+**Veredictos (pd0, sin cambios en los criterios):**
+- **K1, 4 km: PASA.** Melt profundo 30.02 m a⁻¹, dentro de [28, 32].
+- **K1, 2 km: PASA.** Melt profundo 30.00 m a⁻¹, dentro de [28, 32]. No hizo falta la iteración adicional.
+- **V1: PASA.** ΓT_cal,2km = 0.030959, dentro de [0.011, 0.2]. Informativo: queda dentro del rango de los modelos z de Y26 (0.0135–0.0325) y cerca del de MITgcm-JPL (0.0325).
+- **N1–N3: PASAN en las 8 corridas.** N1 máximo 0.0112 (< 0.03); N2 máximo 3.9e-6 (< 0.01); N3 sin fallos.
+- ΓT_cal,2km = 0.030959 queda fijo para Ocean0 y Ocean1 a 2 km, y ΓT_cal,4km = 0.029356 para el ensamble (pd0 K1). Sustituyen a los valores anulados de §4.3.
+
+**Sobreenfriamiento (R15, estado final de las verificaciones; no es criterio).**
+- 4 km: 109 de 41 249 celdas mojadas bajo T_f(S, p) local; mínimo −0.149 °C; 7 por más de 0.1 °C. Ninguna en las filas de pared; las 109 son celdas superiores de columna (80 delgadas, hFacC < 0.5, entre ellas las 7 de < −0.1 °C); 48 tienen vecino lateral seco. La más fría está en k = 11 (z = −230 m), hFacC = 0.2.
+- 2 km: 184 de 164 922 celdas; mínimo −0.115 °C; 5 por más de 0.1 °C. Ninguna en las filas de pared; todas son celdas superiores (127 delgadas); 48 con vecino lateral seco. La más fría, en k = 9 (z = −190 m), hFacC = 0.49.
+
+**Prueba de resolución (pd0, descriptiva, sin umbral).** 4 km contra 2 km, cada una con su ΓT_cal, meses 19–24:
+- melt medio de la plataforma: 10.186 contra 10.191 m a⁻¹ (−0.05 %); no hay bandera de pd0 (> 25 %);
+- máximo de la overturning: 0.1845 contra 0.1851 Sv (−0.3 %);
+- máximo de |ψ_bt| en la cavidad: 0.584 contra 0.260 Sv (+125 %, 2.2 veces). Es la misma observación de §4.3 (allí 2.3 veces) y sigue pendiente la revisión del ruido de escala de malla en U a 4 km antes de usar ψ_bt del ensamble;
+- correlación espacial de los mapas de melt (2 km promediado 2 × 2 sobre la malla de 4 km): r = 0.915, en 707 celdas.
 

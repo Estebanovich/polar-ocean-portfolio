@@ -108,7 +108,7 @@ def make_run(root: Path, nrec: int = 24, shi=None, dyn=None, *, stages: int = 1,
               "nIter0": 0, "nTimeSteps": nrec, "tauRelax": 8640.0, "Cd": 2.5e-3,
               "u_tidal": 0.01, "gammaT": 0.03, "rho_ref": 1027.51, "gravity": 9.81,
               "init_profile": "ocean0", "restore_profile": "ocean0", "case": "synthetic",
-              "config": "synthetic"}
+              "config": "synthetic", "melt_law": ml.MELT_LAW}
     actual = {"grounding_line_x_m": 999e3, "grounding_line_depth_m": 1.0,
               "deepest_wet_ice_base_depth_m": 572.1674970323206, "Tbot": 1.0, "z_c": 360.0,
               "d": 720.0, "s": 1.0}
@@ -553,7 +553,7 @@ def test_ustar_check_floor_is_sqrt_cd_times_u_tidal(tmp_path):
 
 def test_ustar_check_detects_ustar_below_jensen_bound(tmp_path):
     shelf = shelf_mask()
-    us = np.where(shelf, 0.0101, 0.0)                   # far below sqrt(Cd u^2 + ut^2)
+    us = np.where(shelf, 0.0101, 0.0)       # far below sqrt(Cd (u^2 + ut^2)) = 0.0150 m/s
     rd = mt.load_run(make_run(tmp_path / "r", nrec=1, hfac=_all_wet(),
                               shi=lambda k: {"SHIuStar": us, "SHIgammT": 0.03 * us},
                               dyn=lambda k: {"UVEL": 0.3}))
@@ -657,3 +657,13 @@ def test_isomip_summary_writes_metrics_json(tmp_path):
     assert js["mean_melt_shelf"]["units"] == "m a-1 (freshwater, positive = melting)"
     assert js["N2"]["value"] == pytest.approx(out["N2"]["value"])
     assert js["N2"]["value"] < 1e-12
+
+
+def test_load_run_refuses_void_law_run(tmp_path):
+    """R21: a run without melt_law in case.json used the void u* law and is refused."""
+    root = make_run(tmp_path / "r", nrec=1)
+    meta = json.loads((root / "case.json").read_text())
+    del meta["params"]["melt_law"]
+    (root / "case.json").write_text(json.dumps(meta))
+    with pytest.raises(RuntimeError, match="void pre-R21"):
+        mt.load_run(root)

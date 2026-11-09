@@ -1,0 +1,79 @@
+{
+  "label": "POST HOC (Esteban's request 2026-11-09); not a pd0 criterion",
+  "ours": {
+    "run": "/Volumes/LaCie/portfolio_runs/exp2/ocean0_2km_r21",
+    "records_1based": [
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "gammaT": 0.030959,
+    "shelf": {
+      "n_cells": 2689,
+      "melt_m_per_a": 10.190988405718063,
+      "ustar_m_s": 0.002536758966728012,
+      "thermal_driving_degC": 0.3261400285433153
+    },
+    "deep300": {
+      "n_cells": 618,
+      "melt_m_per_a": 30.00246484594071,
+      "ustar_m_s": 0.0036533741611343845,
+      "thermal_driving_degC": 0.7985427558255742
+    }
+  },
+  "jpl": {
+    "file": "Ocean0_yosi_COM_MITgcm_JPL_new.nc",
+    "records_1based": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "gammaT": 0.0325,
+    "shelf": {
+      "n_cells": 3170,
+      "melt_m_per_a": 10.327805215368548,
+      "ustar_m_s": 0.0028193319717654225,
+      "thermal_driving_degC": 0.25927702473706526
+    },
+    "deep300": {
+      "n_cells": 687,
+      "melt_m_per_a": 31.34912167336045,
+      "ustar_m_s": 0.0039658707122927125,
+      "thermal_driving_degC": 0.7028102920594462
+    }
+  },
+  "rel_diff_ours_vs_jpl": {
+    "shelf": {
+      "melt_m_per_a": -0.013247423513264103,
+      "ustar_m_s": -0.10022693597890413,
+      "thermal_driving_degC": 0.25788248640255074
+    },
+    "deep300": {
+      "melt_m_per_a": -0.04295676419426092,
+      "ustar_m_s": -0.07879645450612038,
+      "thermal_driving_degC": 0.13621380456111845
+    }
+  },
+  "gammaT_ratio_ours_over_jpl": 0.9525846153846154,
+  "melt_map_correlation": {
+    "r_either_shelf_zero_off": 0.9105924826217338,
+    "n_cells_either": 3170,
+    "r_both_shelf": 0.9384237600612909,
+    "n_cells_both": 2689,
+    "n_shelf_only_ours": 0,
+    "n_shelf_only_jpl": 481,
+    "grid": "identical 2 km cell centres (JPL x, y == our XC, YC); our row y = 81 km (wall) dropped"
+  },
+  "definitions": {
+    "thermal_driving_ours": "-<SHIfwFlx> L / (rhoConst cw <SHIgammT>) (AD16 Eq. 24, kappa_i = 0): gammaT-weighted Tw - Tb",
+    "thermal_driving_jpl": "thermalDriving: Tw - T_zd (AD16 output spec), Tw over a 20 m layer below the draft",
+    "ustar_jpl": "u from a 20 m layer and the 4 horizontal neighbours, no-normal-flow velocities at vertical ice faces excluded (summary PDF)",
+    "ustar_ours": "SHELFICEboundaryLayer: top cell plus the part of the next one that completes one cell thickness (metrics.boundary_layer_velocity_sq)"
+  }
+}

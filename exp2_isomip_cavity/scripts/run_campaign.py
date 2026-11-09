@@ -25,10 +25,14 @@ stage k restarts from stage k-1's last pickup, inputs and pickups copied, never 
 Every case gets ``run_status_final.json``.
 
 ``--skip-ok`` does not rerun a case whose run directory is already OK, provided its
-recorded deltaT, endTime and gammaT equal the requested ones (otherwise the campaign
-refuses to start); the build is skipped when it is up to date. ``--set KEY=VALUE``
+recorded deltaT, endTime, gammaT and melt_law equal the requested ones (otherwise the
+campaign refuses to start: an OK run made with the void pre-R21 u* law, which has no
+melt_law in its case.json, is never reused nor overwritten); the build is skipped when it is up to date. ``--set KEY=VALUE``
 overrides a numeric case parameter (e.g. ``gammaT`` before calibration); ``--end-time``
 overrides endTime. The exit code is 1 if any case is not OK.
+
+``--run-suffix`` defaults to ``_r21`` (R21): every Exp. 2 production run directory carries
+it, so the void runs without suffix are never a target. An explicit suffix replaces it.
 """
 from __future__ import annotations
 
@@ -52,7 +56,8 @@ from exp2_isomip_cavity.gendata.make_case import load_cases, make_case  # noqa: 
 BUILD_SH = REPO / "scripts" / "build_mitgcm.sh"
 RUN_SH = REPO / "scripts" / "run_mitgcm.sh"
 THREAD_ENV = {"OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "VECLIB_MAXIMUM_THREADS": "1"}
-SKIP_KEYS = ("deltaT", "endTime", "gammaT")   # must match for --skip-ok to reuse an OK run
+SKIP_KEYS = ("deltaT", "endTime", "gammaT", "melt_law")   # must match for --skip-ok reuse
+DEFAULT_RUN_SUFFIX = "_r21"          # R21: production run directories (see docstring)
 
 
 def _sh(cmd: list) -> int:
@@ -98,8 +103,10 @@ def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1
             bad = [f"{k}: run has {have.get(k)}, requested {want[k]}" for k in SKIP_KEYS
                    if have.get(k) != want[k]]
             if bad:
+                void = " (no melt_law: void pre-R21 u* law, R21)" if not have.get("melt_law") else ""
                 raise RuntimeError(f"--skip-ok: {run_dirs[n]} is OK but was run with other "
-                                   "parameters (" + "; ".join(bad) + "); move it away first")
+                                   "parameters (" + "; ".join(bad) + f"){void}; move it away "
+                                   "first")
             done.add(n)
     todo = [n for n in names if n not in done]
 
@@ -144,14 +151,15 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-concurrent", type=int, default=1)
     ap.add_argument("--stages", type=int, default=1, help="chained restart stages per case")
     ap.add_argument("--end-time", type=float, default=None, help="override endTime [s]")
-    ap.add_argument("--run-suffix", default="", help="appended to each run directory name")
+    ap.add_argument("--run-suffix", default=DEFAULT_RUN_SUFFIX,
+                    help="appended to each run directory name (default _r21, R21)")
     ap.add_argument("--runs-root", type=Path, default=EXP2_RUNS)
     ap.add_argument("--build-root", type=Path, default=EXP2_BUILDS)
     ap.add_argument("--set", action="append", default=[], metavar="KEY=VALUE",
                     help="override a numeric case parameter (repeatable)")
     ap.add_argument("--dry-run", action="store_true", help="list the cases and exit")
     ap.add_argument("--skip-ok", action="store_true",
-                    help="do not rerun cases already OK (same deltaT/endTime/gammaT)")
+                    help="do not rerun cases already OK (same deltaT/endTime/gammaT/melt_law)")
     a = ap.parse_args(argv)
     if a.dry_run:
         print("\n".join(cp.select_cases(load_cases()["cases"], a.config, a.cases)))
