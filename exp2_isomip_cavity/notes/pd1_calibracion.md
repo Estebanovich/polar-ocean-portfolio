@@ -203,7 +203,10 @@ En todas las corridas, W_hf coincide con w. **Ningún CFL supera 0.5** (R17); el
 | Correlación espacial del melt (mapa de 2 km promediado 2×2 a 4 km; 707 celdas con plataforma en alguno de los dos) | — | — | r = 0.968 |
 
 - La diferencia de melt de la plataforma (0.5 %) está por debajo del 25 %, así que no hay bandera de pd0.
-- **Observación descriptiva** (sin umbral; no se interpreta aquí): el máximo de |ψ_bt| en la cavidad (y > 50 km, x < 640 km) es 2.3 veces mayor a 4 km. El melt y la overturning, en cambio, casi coinciden. Se revisará en la Task 4b/5 antes de usar ψ_bt del ensamble. Puede ser un máximo localizado (p. ej., junto a la pared norte) sensible a la malla.
+- **Observación descriptiva** (sin umbral; no se interpreta aquí): el máximo de |ψ_bt| en la cavidad (y > 50 km, x < 640 km) es 2.3 veces mayor a 4 km. El melt y la overturning, en cambio, casi coinciden. Hechos (revisión de código, comprobados con `metrics.barotropic_streamfunction`):
+  - el máximo a 4 km está en y = 52 km, x = 608 km, dentro de un giro amplio 2–3 veces más intenso que a 2 km; a 2 km, el máximo está en y = 64 km, x = 592 km;
+  - el revisor señala un zigzag de escala de malla cerca de y ≈ 52–60 km. En el perfil de ψ_bt a x = 608 km se ve además un escalón no monótono en y ≈ 68–72 km (0.142 → 0.191 Sv).
+  - **Antes de usar ψ_bt del ensamble** (4 km), hay que revisar el ruido de escala de malla en U a 4 km. No se atribuye causa aquí.
 
 ## 5. Hallazgo aparte (no afecta a la calibración)
 

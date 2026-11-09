@@ -69,6 +69,25 @@ Si ninguna variante llega a 0.0135, el resultado se reporta como "no explicado p
 - **Cola:** `exp2_isomip_cavity/scripts/queue_diag_bl.sh`, desacoplada. np = 1, hasta 3 simultáneas (aquí 2), con las mismas reglas de seguridad.
 - **Evaluación:** con `analysis/pd1_calibration_eval.py` (N1–N3, CFL, sobreenfriamiento) y `analysis/calibrate.py --verify` (melt profundo).
 
+## Variante (d): `SHI_withBL_uStarTopDz` (adición post hoc, aprobada por Esteban el 2026-11-09; escrita a las 06:59 CST, antes de correrla)
+
+- **Cambio único** frente a `cal4_gT0.015`: `SHI_withBL_uStarTopDz=.TRUE.` en `data.shelfice`, nada más. El `diff` de las entradas generadas solo muestra esa línea (y los comentarios con el nombre del caso). Caso `diag4_ustartopdz`, Ocean0 a 4 km, ΓT = 0.015, 2 años, np = 1.
+- **El cambio sí llega a nuestro u\*.** Lo comprobé antes de correr, en `config/ocean0/code/shelfice_thermodynamics.F`, que es la copia que enlazan `ocean0_2km` y `ocean0_4km`:
+  1. El bloque de la capa límite (`IF ( SHELFICEBoundaryLayer )`, :373–421) deja velSq = u² + v² de las velocidades promediadas en el centro de la celda (:417).
+  2. Después, el bloque `IF ( SHI_withBL_uStarTopDz )` (:424–481) vuelve a calcular uLoc y vLoc. Primero promedia en la vertical, en los puntos U/V, sobre la capa drF (:438–448 para U, y su análogo para V). Luego promedia en la horizontal y **reescribe velSq** (:476–478).
+  3. El u\* de ISOMIP+ usa esa velSq: `ustarSq = shiCdragfld·velSq + shiUTidal²` (:509–510), y después γT = ΓT·u\* y γS = ΓS·u\*.
+  4. El bloque es idéntico al del original (`pkg/shelfice/shelfice_thermodynamics.F:392`, comprobado con `diff`).
+  5. La opción se activa porque `SHELFICEboundaryLayer` y `SHELFICEuseGammaFrict` están en `.TRUE.` (`pkg/shelfice/shelfice_readparms.F:212-213`), y porque `SHI_ALLOW_GAMMAFRICT` está definido.
+
+  Por tanto, la opción no es nula en nuestra modificación. T y S muestreados no cambian; solo cambia el |u| que entra en u\*.
+- **Hipótesis:** el orden del promedio, primero en la vertical en las caras U/V y luego en la horizontal, frente a primero en la horizontal en el centro, cambia u\* donde la base del hielo tiene escalones (kTop distinto entre columnas vecinas, celdas parciales en las caras). Eso cambia γT y el melt a igual ΓT. **El signo del efecto no se conoce a priori.**
+- **Lectura:** la misma regla de arriba, ya fijada:
+  - Δ del melt profundo de los meses 19–24 frente a 41.2156 m a⁻¹;
+  - ΓT_est = 0.015·(30/m)^(1/0.690), etiquetado como estimación;
+  - "explica la diferencia" si ΓT_est ≥ 0.0135, es decir, m ≤ 32.3 m a⁻¹.
+- **Informativo:** melt de la plataforma, N1, N2, CFL (R17) y sobreenfriamiento (R15).
+- **Cola:** `scripts/queue_diag_bl.sh`, relanzada. `--skip-ok` salta las dos variantes ya hechas.
+
 ## Resultado (post hoc; cola 2026-11-09 03:21–03:48 CST, commit e898d77)
 
 Las dos variantes terminaron OK, con N3 aplicado por `metrics.load_run`. Lectura mecánica según la regla de arriba: p = 0.690, referencia 41.2156 m a⁻¹, umbral ΓT_est ≥ 0.0135. Valores en `figures/diag_bl_<caso>.json`.

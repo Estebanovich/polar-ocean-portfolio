@@ -45,6 +45,7 @@ configs:
     template_config: ocean0  # namelists in config/ocean0/input_templates (both resolutions)
     hFacMin: 0.2             # partial cells, as MITgcm-BAS in ISOMIP+ (notes/pd1_config.md)
     advScheme: 77            # T, S and tracer advection: 2nd-order flux limiter (not DST3 = 33)
+    shiUStarTopDz: ".FALSE."  # SHI_withBL_uStarTopDz (pkg/shelfice); .TRUE. only in diag4_ustartopdz
     pChkptFreq: 31536000.0   # permanent pickup every year (plus one at the end of each run)
     chkptFreq: 2628000.0     # rolling pickup every month
     monitorFreq: 86400.0
@@ -78,6 +79,8 @@ cases:
   # exactly one change each against cal4_gT0.015. Not calibration, not validation.
   diag4_adv33: {config: ocean0_4km, gammaT: 0.015, advScheme: 33}      # DST3, as Y26 MITgcm
   diag4_hfac025: {config: ocean0_4km, gammaT: 0.015, hFacMin: 0.25}    # as MITgcm-JPL
+  # (d), post hoc addition approved by Esteban 2026-11-09: u* from U/V averaged at the faces
+  diag4_ustartopdz: {config: ocean0_4km, gammaT: 0.015, shiUStarTopDz: ".TRUE."}
   # Task 4 timing: 4 km Ocean0 on 5 MPI ranks (compared with 5 concurrent serial runs)
   tim4m_gT0.03: {config: ocean0_4km_mpi, gammaT: 0.03}
 ensemble:
