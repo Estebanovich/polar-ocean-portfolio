@@ -69,6 +69,10 @@ cases:
   cal4_gT0.015: {config: ocean0_4km, gammaT: 0.015}
   cal4_gT0.03: {config: ocean0_4km, gammaT: 0.03}
   cal4_gT0.06: {config: ocean0_4km, gammaT: 0.06}
+  # PD2 sampling amendment (Esteban, 2026-11-09; notes/pd1_calibracion.md): 30 m/yr was not
+  # bracketed by 0.015-0.06 at either resolution, so 0.0075 is added at both
+  cal2_gT0.0075: {config: ocean0_2km, gammaT: 0.0075}
+  cal4_gT0.0075: {config: ocean0_4km, gammaT: 0.0075}
   # Task 4 timing: 4 km Ocean0 on 5 MPI ranks (compared with 5 concurrent serial runs)
   tim4m_gT0.03: {config: ocean0_4km_mpi, gammaT: 0.03}
 ensemble:

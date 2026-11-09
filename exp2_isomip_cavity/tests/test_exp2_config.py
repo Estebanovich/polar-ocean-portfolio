@@ -270,3 +270,15 @@ def test_wet_first_column_is_refused():
     b, d, w = geo.close_lateral_boundaries(np.where([[0, 1, 1]] * 2, bed, 0.0), np.where([[0, 1, 1]] * 2, 0.0, 0.0),
                                            np.array([[False, True, True]] * 2))
     assert b.shape == (3, 3) and not w[-1].any() and (b[-1] == 0).all() and (d[-1] == 0).all()
+
+
+def test_r18_check_ini_temp_off_without_freezing(rendered):
+    """R18: T = 0 exactly (ramp, Tbot = 0.0) must not stop the model. checkIniTemp only
+    stops the run (model/src/ini_theta.F:110-119); it alters theta only together with
+    allowFreezing (ini_theta.F:130), which must stay at its .FALSE. default."""
+    out, _ = rendered
+    d = (out / "data").read_text()
+    code = "\n".join(l for l in d.splitlines() if not l.lstrip().startswith("#"))
+    parm05 = re.search(r"&PARM05(.*?)\n &", code, re.DOTALL).group(1)
+    assert re.search(r"^\s*checkIniTemp\s*=\s*\.FALSE\.", parm05, re.MULTILINE)
+    assert not re.search(r"allowFreezing", code, re.IGNORECASE)

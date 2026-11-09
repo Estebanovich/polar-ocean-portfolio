@@ -198,3 +198,28 @@ def test_cli_writes_json_and_prints(tmp_path, capsys):
     assert printed == f"{d['gammaT_cal']:.5g}"
     assert float(printed) == d["gammaT_cal"]
     assert d["gammaT_cal"] == pytest.approx(d["gammaT_cal_raw"], rel=1e-4)
+
+
+# ---- verification run (queue: decides whether pd0 allows the one extra iteration) ---------
+
+@pytest.mark.parametrize("m,rc", [(29.0, 0), (33.0, 4)])
+def test_verify_mode_exit_code_and_json(tmp_path, m, rc):
+    r = melt_run(tmp_path / "ver", 0.009, m)
+    out = tmp_path / "ver.json"
+    assert cal.main(["--verify", "--res", "4km", "--out", str(out), str(r)]) == rc
+    d = json.loads(out.read_text())
+    assert d["K1"]["pass"] is (rc == 0)
+    assert d["K1"]["deep_melt_last6_m_per_a"] == pytest.approx(m, rel=1e-12)
+    assert d["point"]["gammaT"] == 0.009
+
+
+def test_verify_mode_refuses_failed_run(tmp_path):
+    r = melt_run(tmp_path / "ver", 0.009, 29.0, status="FAILED")
+    with pytest.raises(RuntimeError):
+        cal.main(["--verify", "--res", "4km", "--out", str(tmp_path / "v.json"), str(r)])
+
+
+def test_verify_mode_takes_one_run(tmp_path):
+    runs = power_law_runs(tmp_path)[:2]
+    with pytest.raises(SystemExit):
+        cal.main(["--verify", "--res", "4km"] + [str(r) for r in runs])

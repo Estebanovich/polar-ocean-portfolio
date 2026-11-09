@@ -101,6 +101,10 @@
  &
 
  &PARM05
+# R18: T = 0 exactly is a valid initial value (ramp profile with Tbot = 0.0). The check
+# only stops the run (model/src/ini_theta.F:110-119); with allowFreezing = .FALSE.
+# (default, model/src/set_defaults.F:220) it changes nothing else (ini_theta.F:130).
+ checkIniTemp=.FALSE.,
  bathyFile='bathy.bin',
  hydrogThetaFile='T.init.bin',
  hydrogSaltFile='S.init.bin',

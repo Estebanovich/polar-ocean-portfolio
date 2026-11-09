@@ -11,7 +11,8 @@ from exp2_isomip_cavity.gendata import make_case as mc
 from exp2_isomip_cavity.gendata import profiles as pr
 from pfcommon.mitgcm_io import read_bin
 
-CAL = ["cal2_gT0.015", "cal2_gT0.03", "cal2_gT0.06", "cal4_gT0.015", "cal4_gT0.03", "cal4_gT0.06"]
+CAL = ["cal2_gT0.015", "cal2_gT0.03", "cal2_gT0.06", "cal4_gT0.015", "cal4_gT0.03", "cal4_gT0.06",
+       "cal2_gT0.0075", "cal4_gT0.0075"]   # 0.0075: PD2 sampling amendment (2026-11-09)
 
 
 def _make(name, tmp_path, synth_geom, templates, **kw):

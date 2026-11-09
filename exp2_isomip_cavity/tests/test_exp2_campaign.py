@@ -71,11 +71,13 @@ def test_concurrency_rules_enforced(tmp_path, cfg_root, templates, synth_geom):
 def test_campaign_builds_once_and_runs_all(tmp_path, cfg_root, templates, synth_geom):
     res, sh = _run(tmp_path, cfg_root, templates, synth_geom, "ocean0_4km", "cal4_*", mc=3,
                    overrides={"endTime": 4800.0, "deltaT": 1200.0})
-    assert res == {"cal4_gT0.015": "OK", "cal4_gT0.03": "OK", "cal4_gT0.06": "OK"}
+    # four calibration cases since the PD2 sampling amendment (0.0075 added, 2026-11-09)
+    assert res == {"cal4_gT0.015": "OK", "cal4_gT0.03": "OK", "cal4_gT0.06": "OK",
+                   "cal4_gT0.0075": "OK"}
     kinds = [Path(c[0]).name for c in sh.calls]
     assert kinds.count("build_mitgcm.sh") == 1 and kinds[0] == "build_mitgcm.sh"
     assert "--mpi" not in sh.calls[0]
-    assert kinds.count("run_mitgcm.sh") == 3
+    assert kinds.count("run_mitgcm.sh") == 4
     for n in res:
         fin = json.loads((tmp_path / "runs" / n / "run_status_final.json").read_text())
         assert fin["state"] == "OK" and fin["last_iter"] == 4

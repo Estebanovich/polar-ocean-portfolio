@@ -48,7 +48,9 @@ Todas con hilos = 1, `pgrep -fl mpirun` vacío antes y después, y ΓT = 0.03 (e
 
 ## 3. Costo del Exp. 2 contra B1
 
-Horas de pared con los s/paso medidos (2 km, 0.02040 s/paso a 400 s: 0.894 h por corrida de 2 años; 4 km, ver §1):
+### 3.1 Estimación con el s/paso de 30 días
+
+Estimación previa a la cola (2026-11-08). **Supuesto:** el costo a 2 km usa el s/paso de la corrida de 30 días (0.02040 s/paso a 400 s, es decir 0.894 h por corrida de 2 años). Para 4 km ver §1.
 
 | Bloque | Corridas | Arreglo | Horas |
 |---|---|---|---|
@@ -65,15 +67,75 @@ Horas de pared con los s/paso medidos (2 km, 0.02040 s/paso a 400 s: 0.894 h por
 
 **Arreglo de la calibración a 4 km:** np = 1, 3 simultáneas, y la verificación `ocean0_4km` también serie. np = 1 es el arreglo de mayor rendimiento medido (§1). Con solo 3 corridas, np = 5 una tras otra terminaría ≈ 0.1 h antes (3 × 0.136 h = 0.41 h contra ≈ 0.53 h), y la verificación sola ≈ 0.3 h antes. Se prefiere np = 1 porque así la calibración, la verificación y el ensamble usan el mismo binario. La verificación `ocean0_4km` es además la referencia del ensamble. La diferencia (≤ 0.5 h) no afecta a B1.
 
-## 4. Calibración K1 (pendiente: cola en marcha)
+### 3.2 Corrección con las corridas de 2 años (ruling de la revisión de código)
 
-- Cola: `exp2_isomip_cavity/scripts/queue_calibration.sh` (ver `task-4-report`).
-- Procedimiento: `analysis/calibrate.py` aplica pd0 K1 de forma mecánica:
-  - lee cada corrida con `metrics.load_run`, que aplica `require_ok` (N3);
-  - calcula el melt profundo (< −300 m) de los registros 19–24;
-  - interpola ln⟨m⟩ contra ln ΓT, lineal por tramos, hacia 30 m a⁻¹, sin extrapolar;
-  - escribe `figures/calibration_<res>.json`.
-- Resultados, K1, V1, N1–N3 y estadística de sobreenfriamiento (R15): se rellenan al terminar la cola.
+Tiempos de pared medidos de las primeras corridas de calibración (`MAIN LOOP`, todas OK):
+
+| Corrida | Arreglo | Pared (s) | s/paso |
+|---|---|---|---|
+| `cal2_gT0.015` | np = 5 | 3181.2 | 0.02017 |
+| `cal2_gT0.03` | np = 5 | 3180.2 | 0.02017 |
+| `cal2_gT0.06` | np = 5 | 3198.9 | 0.02029 |
+| `cal4_gT0.015`, `0.03`, `0.06` | np = 1 × 3 simultáneas | 1530.1 / 1532.1 / 1531.5 | 0.01942 |
+
+- **2 km:** 0.885 h por corrida de 2 años, 1 % menos que lo estimado con 30 días (0.894 h).
+- **4 km:** la tanda de 3 tarda 0.425 h. La cota de §3.1 (0.53 h) era conservadora.
+
+**Total corregido**, ya con la enmienda de §4.2 (2 corridas más de 2 años en cada malla):
+
+| Bloque | Horas |
+|---|---|
+| Gastado: smokes de la Task 2 y cronometraje | 0.30 |
+| Gastado: tanda `cal4` (3 corridas) | 0.43 |
+| Gastado: `cal2` (3 × 0.885) | 2.66 |
+| `cal4_gT0.0075` + verificación `ocean0_4km` (serie, solas, ≤ 0.425 c/u) | ≤ 0.85 |
+| `cal2_gT0.0075` + verificación `ocean0_2km` (2 × 0.885) | 1.77 |
+| Ocean1, 2 km (10 × 0.885; 4 etapas de 2.21 h) + prueba de reinicio | 8.85 + ≤ 0.25 |
+| Ensamble 4 km (estimación de §3.1, conservadora) | 3.56 |
+| **Total** | **≈ 18.7 h ≤ 32 h (B1 se cumple)** |
+
+Con la iteración adicional de K1 en las dos mallas (+0.885 + 0.425 h), el total sería ≈ 20.0 h, también dentro de B1.
+
+## 4. Calibración K1
+
+### 4.1 Primera cola (3 puntos): NOT_BRACKETED → PD2
+
+La cola `scripts/queue_calibration.sh` corrió del 2026-11-08 20:40 al 23:46 CST, en el commit 3c3a568. Logs en `…/exp2/logs/queue1/`. Las 6 corridas terminaron OK, y `calibrate.py` las leyó con `require_ok`: N3 pasa en todas.
+
+| Malla | ΓT | ⟨m⟩ profundo, meses 19–24 (m a⁻¹) | ⟨m⟩ plataforma (m a⁻¹) | N1 |
+|---|---|---|---|---|
+| 4 km | 0.015 | 41.216 | 13.595 | 0.0014 |
+| 4 km | 0.03 | 60.187 | 18.327 | 0.0021 |
+| 4 km | 0.06 | 78.899 | 22.806 | 0.0026 |
+| 2 km | 0.015 | 39.910 | 13.208 | 0.0056 |
+| 2 km | 0.03 | 57.574 | 17.465 | 0.0097 |
+| 2 km | 0.06 | 74.680 | 21.761 | 0.0025 |
+
+- **Resultado mecánico de K1:** el objetivo de 30 m a⁻¹ **no queda acotado** a ninguna resolución, porque el melt mínimo muestreado es 41.2 (4 km) y 39.9 (2 km). pd0 prohíbe extrapolar, así que `calibrate.py` devolvió NOT_BRACKETED (código 3) y la cola no lanzó verificaciones. Esto fue a PD2.
+- **Registro:** `figures/calibration_{4km,2km}_3pt.json`.
+- **Extrapolación log–log informativa** con los dos primeros puntos. No es la calibración ni sustituye a ninguna corrida:
+  - 4 km: pendiente 0.546, ΓT ≈ 0.0084;
+  - 2 km: pendiente 0.529, ΓT ≈ 0.0087.
+
+  Las dos caen por debajo del límite inferior de V1 (0.011).
+
+### 4.2 Enmienda del muestreo (aprobada por Esteban, 2026-11-09, PD2)
+
+- **Muestreo:** se añade ΓT = 0.0075, con ΓS = ΓT/35, a las dos resoluciones (casos `cal2_gT0.0075` y `cal4_gT0.0075` en `cases.yaml`). El conjunto queda en {0.0075, 0.015, 0.03, 0.06}.
+- **Criterios:** K1 (30 ± 2 m a⁻¹, melt profundo de los meses 19–24) y V1 (0.011 ≤ ΓT_cal,2km ≤ 0.2) **no se redefinen**. `pd0_preregistro.md` no se edita.
+- **Procedimiento:** por lo demás es el de pd0.
+  - Interpolación de ln⟨m⟩ contra ln ΓT, lineal por tramos, en el tramo que acota 30 m a⁻¹, sin extrapolar.
+  - Una corrida de verificación.
+  - Como máximo, una iteración más, con todos los puntos (los 4 muestreos y la verificación).
+  - Si sigue fallando, se vuelve a PD2.
+  - Si 0.0075 tampoco acota los 30 m a⁻¹, el resultado vuelve a ser NOT_BRACKETED y PD2.
+- **Si ΓT_cal,2km < 0.011:** V1 se reporta como **FAIL** y se clasifica como **(c), elección numérica**.
+  - Motivo: el modelo es de nivel z con celdas superiores de 20 m (capa límite de Losch de una celda).
+  - Gwyther et al. (2020, *Ocean Modelling* 147:101569; `literatura/Gwyther_2020 - Vertical Processes and Resolution Impact Ice Shelf Basal Melting.md`, L30–31) concluyen: "Z-coordinate models, which generally have coarser vertical resolution in ice shelf cavities, may simulate higher melt rates compared to terrain-following coordinate models". En L34 añaden que los modelos coinciden "when the effective vertical resolution adjacent to the ice shelf base is similar".
+  - Un melt mayor a igual ΓT exige un ΓT_cal menor.
+  - V1 no se redefine. Esta clasificación solo explica el fallo.
+- **Cola:** `scripts/queue_calibration.sh`, ampliada y relanzada (ver `task-4-report`). Corre las dos corridas de 0.0075, `calibrate.py` con los 4 puntos de cada malla y las verificaciones `ocean0_4km` / `ocean0_2km` con `--set gammaT=<ΓT_cal>`. Luego evalúa K1 de la verificación (`calibrate.py --verify`, 28 ≤ ⟨m⟩ ≤ 32). La iteración adicional (`calibration_<res>_iter2.json`, corrida `<caso>_iter2`) solo se lanza si K1 falla, como permite pd0.
+- **Pendiente:** resultados, K1, V1, N1–N3, sobreenfriamiento (R15) y CFL máximos de 2 años (R17). Se rellenan al terminar la cola.
 
 ## 5. Hallazgo aparte (no afecta a la calibración)
 
@@ -81,5 +143,16 @@ Horas de pared con los s/paso medidos (2 km, 0.02040 s/paso a 400 s: 0.894 h por
 - Con Tbot = 0.0, el perfil rampa da T = 0 exactamente bajo z_c + d/2, y MITgcm lo toma como un campo sin inicializar.
 - Afecta a los 3 casos del ensamble con Tbot = 0.0 (z_c = 250, 400, 550).
 - No afecta a Ocean0 ni a Ocean1.
-- Solución probable, que queda para decisión antes del ensamble (Task 5): `checkIniTemp=.FALSE.` en PARM05. Es solo una comprobación, sin efecto numérico.
+- Resuelto por el ruling R18 (§6).
 - Esta corrida fallida no entra en el cronometraje: la tanda de 5 se repitió con los casos s = 0.8.
+
+## 6. Ruling R18: `checkIniTemp=.FALSE.`
+
+Desde el 2026-11-09, antes de cualquier corrida nueva, la plantilla `config/ocean0/input_templates/data` (PARM05, la única con ese grupo) lleva `checkIniTemp=.FALSE.`. Fuente: `/Volumes/ESTEBAN_MIT/MITgcm`, solo lectura.
+
+**Por qué no cambia la solución:**
+- En `model/src/ini_theta.F:110-119`, `checkIniTemp` solo decide qué pasa cuando hay puntos mojados con θ = 0 exactamente. Con `.TRUE.` detiene la corrida (`STOP 'ABNORMAL END: S/R INI_THETA'`); con `.FALSE.` escribe un aviso (`:120-125`). θ no se modifica en ningún caso.
+- El otro uso está en `ini_theta.F:130`: `IF ( checkIniTemp .AND. allowFreezing )`, que recorta θ a −1.9 °C. Ese bloque solo actúa con `allowFreezing = .TRUE.`. Su valor por omisión es `.FALSE.` (`model/src/set_defaults.F:220`), y ninguna plantilla lo cambia; lo comprueba la prueba `test_r18_check_ini_temp_off_without_freezing`.
+- Por eso, en esta configuración, el valor de `checkIniTemp` no altera el estado inicial ni la integración.
+
+**Corridas anteriores:** las 6 primeras de calibración (`cal4_gT{0.015,0.03,0.06}`, `cal2_gT{0.015,0.03,0.06}`), los smokes y el cronometraje corrieron con el valor por omisión (`.TRUE.`). Ninguna tenía θ = 0 (salvo `ens_T0.0_zc400_s1.0_tim10d`, que no arrancó, §5), así que el cambio no tiene efecto físico sobre ellas. Se reutilizan con `--skip-ok`, que compara deltaT, endTime y gammaT.

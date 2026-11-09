@@ -4,6 +4,7 @@ r"""K1 calibration of the ISOMIP+ heat-exchange coefficient Gamma_T (Exp. 2, Tas
 Usage::
 
     calibrate.py --res 2km|4km [--target 30] [--out figures/calibration_<res>.json] RUN_DIR...
+    calibrate.py --verify --res 2km|4km [--out figures/verify_<res>.json] RUN_DIR
 
 The binding rule is pd0 K1 (``notes/pd0_preregistro.md``), after AD16 sect. 3.2.1, Eq. 37:
 
@@ -179,7 +180,20 @@ def main(argv=None) -> int:
     ap.add_argument("--target", type=float, default=TARGET_M_PER_A)
     ap.add_argument("--out", type=Path, default=None,
                     help="JSON report (default figures/calibration_<res>.json)")
+    ap.add_argument("--verify", action="store_true",
+                    help="K1 verdict of ONE verification run (exit 0 pass, 4 fail)")
     a = ap.parse_args(argv)
+    if a.verify:
+        if len(a.run_dirs) != 1:
+            ap.error("--verify takes exactly one run directory")
+        pt = calibration_point(a.run_dirs[0])          # require_ok (N3) first
+        rep = {"resolution": a.res, "point": pt,
+               "K1": k1_verdict(pt["deep_melt_last6_m_per_a"], a.target)}
+        out = a.out or REPO / "exp2_isomip_cavity" / "figures" / f"verify_{a.res}.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(rep, indent=2, default=float) + "\n")
+        print(f"{pt['deep_melt_last6_m_per_a']:.4f}")
+        return 0 if rep["K1"]["pass"] else 4
     rep = {"resolution": a.res, **calibrate(a.run_dirs, a.target)}
     out = a.out or REPO / "exp2_isomip_cavity" / "figures" / f"calibration_{a.res}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
