@@ -102,6 +102,14 @@ def evaluate(rd: Path) -> dict:
     res["hfac_check"] = {"max_abs_diff": float(np.abs(h_py - hfac).max())}
 
     # ---- S2 (N2): tracer budget
+    # This smoke check assumes ONE averaging record (the 30-day mean) and multiplies it by
+    # the run length; multi-record runs must use analysis/metrics.py::tracer_budget, which
+    # integrates every record (deferred Task 2 finding).
+    for kind in ("shiDiag", "dynDiag"):
+        n_rec = len(list(rd.glob(f"{kind}.[0-9]*.meta")))
+        if n_rec != 1:
+            raise RuntimeError(f"{rd}: pd1_smoke_check needs exactly one {kind} record, found "
+                               f"{n_rec}; use analysis/metrics.py for multi-record runs")
     shi_mean, _ = _fields(rd / "shiDiag")
     dyn_mean, _ = _fields(rd / "dynDiag")
     fw_mean = shi_mean["SHIfwFlx"][-1] if shi_mean["SHIfwFlx"].ndim == 3 else shi_mean["SHIfwFlx"]

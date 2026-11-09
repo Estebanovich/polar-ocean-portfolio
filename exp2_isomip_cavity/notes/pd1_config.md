@@ -208,3 +208,49 @@ Todas en `/Volumes/LaCie/portfolio_runs/exp2/`.
 - **Hallazgo aparte** (preocupación, no criterio): 1589 celdas están por debajo del punto de fusión local, Tf(S, p), con un mínimo de −0.31 °C, y 290 de ellas por más de 0.1 °C.
   - La más fría es una celda superior delgada (hFacC = 0.2, 4 m) a 496 m: T = −2.52 frente a Tf = −2.21.
   - Hipótesis, por verificar: con la capa límite de Losch, el melt se calcula con T promediado sobre 20 m (la celda delgada más 16 m de la siguiente) y el enfriamiento se reparte por igual. La celda delgada puede quedar sobreenfriada mientras el promedio sigue sobre el punto de fusión. Además, el agua que asciende por la base pierde presión. El modelo no tiene frazil.
+
+## S3 — diagnóstico post hoc (línea de Gade)
+
+**Post hoc** (decisión R10 del controlador, Task 3). No es un criterio preregistrado y **no cambia el veredicto: S3 sigue FALLANDO.** Implementación: `analysis/metrics.py::gade_line_check`; se corre con `metrics.py <run_dir> --gade [--record K]`.
+
+### Forma que se prueba (verificada contra AD16 Eq. 24–30 y el código del modelo)
+
+- **Sal:** `SHIForcS = (γS − q/ρ0)(Sb − Sw)`, con q = SHIfwFlx (`config/ocean0/code/shelfice_thermodynamics.F`, rama conservativa, líneas 700–724). Con la Eq. 26, γS(Sb − Sw) = q·Sb/ρ0, así que SHIForcS = q·Sw/ρ0 = −(ρfw/ρ0)·m·Sw. Es la Eq. 30 de AD16.
+- **Calor** (κi = 0): `SHIForcT = (γT − q/ρ0)(Tb − Tw)`. Con la Eq. 24, γT(Tb − Tw) = q·L/(ρ0·cw), así que SHIForcT = −(ρfw/ρ0)·m·(Tw − T_eff), con T_eff = Tb − L/cw ≈ Tf − 84 °C. Es la Eq. 29 de AD16 y la temperatura efectiva del agua de deshielo de Gade (1979) con κi = 0 [verificar: Gade 1979 no está en la biblioteca local].
+- **Trazador:** la fuente es m = −q/ρfw, repartida con los mismos pesos (`shelfice_forcing_mwtr.F`).
+- **Resultado,** a primer orden en C, con r = ρfw/ρ0 = 0.9732:
+  - S_mix = (1 − r·C)·S_amb;
+  - T_mix = (1 − r·C)·T_amb + r·C·T_eff;
+  - T_eff se toma con el punto de fusión de AD16 (Eq. 25) a la profundidad de la celda.
+
+  La forma del controlador (r = 1, la línea de mezcla de un flujo de volumen) se reporta al lado: difiere en menos de 3 % de C·(T_amb − T_eff).
+- **Celdas evaluadas:** las mojadas con T o S fuera del rango del perfil inicial ± 0.1, es decir T ∉ [−2.0, 1.1] o S ∉ [33.7, 34.8].
+- **Tolerancias:** |ΔT| ≤ 0.05 °C y |ΔS| ≤ 0.05.
+
+### Resultados en el smoke (`cal2_gT0.03_smoke30d`)
+
+| Estado | Celdas fuera de rango | Ambiente local (R10), r = ρfw/ρ0 | Ambiente local, r = 1 | Ambiente inferido de S (extensión) |
+|---|---|---|---|---|
+| Final (it. 12 960) | 5001 (C de 0.0055 a 0.034, mediana 0.017) | 252 (5.0 %) dentro de la tolerancia; \|ΔT\| p50/p95 = 0.59/1.42 °C, peor +1.57 °C; \|ΔS\| p50 = 0.18 | 263 (5.3 %) | 4970 (99.4 %); \|ΔT\| p50/p95/p99 = 0.010/0.030/0.046 °C, peor 0.074 °C |
+| Media de 30 días | 2205 | 484 (21.9 %); peor ΔT +1.08 °C | 537 (24.4 %) | 2205 (100 %); \|ΔT\| p50/p95 = 0.005/0.021 °C, peor 0.045 °C |
+
+### Lectura
+
+- **La forma de R10 falla en el 95 % de las celdas.** Supone que el agua ambiente viene de la misma profundidad que la celda, y no es así:
+  - el 78 % de estas celdas está bajo el hielo;
+  - en el 81 %, el residuo es ΔT > 0, es decir, la celda es más cálida y salada que la mezcla con el ambiente local.
+
+  El agua con deshielo sube a lo largo de la base del hielo desde capas más profundas, más cálidas y saladas.
+- **Extensión post hoc** (más allá de R10, etiquetada así en el código):
+  - se invierte la sal, S_amb = S/(1 − r·C), y se busca la profundidad z0 del perfil donde S_a(z0) = S_amb;
+  - luego se predice T a partir de T_a(z0).
+
+  En Ocean0 (y en la rampa), T_a y S_a son lineales en la misma r(z), así que el conjunto T–S del ambiente es un segmento recto, y cualquier mezcla de aguas ambiente de varias profundidades cae sobre él. La prueba es exacta a primer orden en C.
+  - La profundidad de origen mediana es z0 ≈ −359 m, contra −190 m de la celda.
+  - Con esta forma, el 99.4 % (estado final) y el 100 % (media de 30 días) de las celdas fuera de rango están sobre la línea de mezcla con agua de deshielo, a ≤ 0.05 °C.
+- **Clasificación de la desviación de S3:** (b)/(c), como en la sección 7. El agua fuera de rango es mezcla de agua ambiente (de otra profundidad) con agua de deshielo de flujo virtual, en las proporciones que da el trazador. No apunta a un error nuestro.
+  - Quedan 31 celdas (0.6 %) del estado final con 0.05 < |ΔT| ≤ 0.074 °C. Su origen no se ha investigado; candidatos: términos de segundo orden en C, y T_eff evaluada a la profundidad de la celda y no en el sitio de fusión.
+
+### Hallazgo aparte (para el controlador; no es parte de S3)
+
+Durante la Task 3 se vio que el dominio del smoke es **periódico en y**: hFacS(j = 0) = 1 y |V| en la cara y = 0/80 km llega a 0.18 m s⁻¹ en la media de 30 días. AD16 (L1578) pide paredes laterales en y = 0 y 80 km. No se corrigió aquí, porque está fuera del alcance de la Task 3.
