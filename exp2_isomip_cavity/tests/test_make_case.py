@@ -67,7 +67,7 @@ def test_latin_hypercube_deterministic_and_stratified():
 
 # ---- generated input ----------------------------------------------------------------
 
-@pytest.mark.parametrize("name,nx,ny", [("cal2_gT0.03", 240, 40), ("cal4_gT0.03", 120, 20)])
+@pytest.mark.parametrize("name,nx,ny", [("cal2_gT0.03", 240, 41), ("cal4_gT0.03", 120, 21)])
 def test_make_case_writes_inputs(tmp_path, synth_geom, templates, name, nx, ny):
     out, meta = _make(name, tmp_path, synth_geom, templates)
     for f in ("bathy.bin", "icetopo.bin", "shelficeLoadAnomaly.bin"):
@@ -92,7 +92,7 @@ def test_case_json_records_actual_parameters(tmp_path, synth_geom, templates):
     assert a["s"] == 1.0 and a["gammaT"] == 0.03 and a["gammaS"] == pytest.approx(0.03 / 35)
     assert a["Tbot"] == 1.0 and a["z_c"] == 360.0 and a["d"] == 720.0
     assert a["bed_source"] == "GFZ Ocean1_input_geom_v1.01.nc bedrockTopography"
-    wet = read_bin(out / "bathy.bin", (40, 240)) < 0
+    wet = read_bin(out / "bathy.bin", (41, 240)) < 0
     assert a["n_wet_columns"] == int(wet.sum())
     assert a["n_wet_cells"] > a["n_wet_columns"]
     assert 100.0 < a["grounding_line_depth_m"] < 720.0
@@ -109,29 +109,30 @@ def test_geometry_files_match_geometry_module(tmp_path, synth_geom, templates):
     b2, d2, wet = geo.apply_scale_and_mask(bed, draft, 1.0, np.full(36, 20.0), xc_m=xc, floating=fl,
                                            hfac_min=meta["params"]["hFacMin"])
     assert meta["actual"]["geometry_snapped_to_hfac"] and meta["params"]["hFacMin"] == 0.2
-    np.testing.assert_array_equal(read_bin(out / "bathy.bin", (20, 120)), b2)
-    np.testing.assert_array_equal(read_bin(out / "icetopo.bin", (20, 120)), d2)
+    np.testing.assert_array_equal(read_bin(out / "bathy.bin", (21, 120))[:20], b2)
+    np.testing.assert_array_equal(read_bin(out / "icetopo.bin", (21, 120))[:20], d2)
+    assert not read_bin(out / "bathy.bin", (21, 120))[20].any()           # land row (R12)
     T, S = pr.ocean0(-(np.arange(36) + 0.5) * 20.0)
     pf = pr.load_anomaly(T, S, np.full(36, 20.0))
-    np.testing.assert_allclose(read_bin(out / "shelficeLoadAnomaly.bin", (20, 120)),
+    np.testing.assert_allclose(read_bin(out / "shelficeLoadAnomaly.bin", (21, 120))[:20],
                                np.where(wet, pr.load_anomaly_at_draft(pf, np.full(36, 20.0), d2), 0.0))
 
 
 def test_rbcs_mask_linear_ramp(tmp_path, synth_geom, templates):
     # AD16 Eq. 20: gamma = gamma0 max(0, (x - 790 km) / 10 km), at cell centres
     out, meta = _make("cal2_gT0.03", tmp_path, synth_geom, templates)
-    m = read_bin(out / "rbcs_mask.bin", (36, 40, 240))
+    m = read_bin(out / "rbcs_mask.bin", (36, 41, 240))
     xc, _ = mc.grid_centres(2.0)
     np.testing.assert_allclose(m[0, 0], np.clip((xc - 790e3) / 10e3, 0, None))
-    assert np.all(m == m[:1, :1, :])
+    assert np.all(m[:, :40] == m[:1, :1, :]) and not m[:, 40].any()     # land row (R12) is 0
     assert meta["params"]["tauRelax"] == pytest.approx(8640.0)   # 0.1 day: gamma0 = 10 day^-1
 
 
 def test_ocean1_cold_initial_warm_restoring(tmp_path, synth_geom, templates):
     out, meta = _make("ocean1_2km", tmp_path, synth_geom, templates, overrides={"gammaT": 0.03})
     z = -(np.arange(36) + 0.5) * 20.0
-    Ti, Si = read_bin(out / "T.init.bin", (36, 40, 240)), read_bin(out / "S.init.bin", (36, 40, 240))
-    Tr, Sr = read_bin(out / "T.restore.bin", (36, 40, 240)), read_bin(out / "S.restore.bin", (36, 40, 240))
+    Ti, Si = read_bin(out / "T.init.bin", (36, 41, 240)), read_bin(out / "S.init.bin", (36, 41, 240))
+    Tr, Sr = read_bin(out / "T.restore.bin", (36, 41, 240)), read_bin(out / "S.restore.bin", (36, 41, 240))
     np.testing.assert_allclose(Ti[:, 5, 5], pr.cold(z)[0]); np.testing.assert_allclose(Si[:, 5, 5], pr.cold(z)[1])
     np.testing.assert_allclose(Tr[:, 5, 5], pr.ocean0(z)[0]); np.testing.assert_allclose(Sr[:, 5, 5], pr.ocean0(z)[1])
     assert meta["params"]["endTime"] == pytest.approx(20 * 365 * 86400.0)
@@ -144,12 +145,12 @@ def test_ensemble_case_ramp_and_scale(tmp_path, synth_geom, templates):
     out, meta = _make(name, tmp_path, synth_geom, templates, overrides={"gammaT": 0.03})
     c = spec["cases"][name]
     z = -(np.arange(36) + 0.5) * 20.0
-    T = read_bin(out / "T.init.bin", (36, 20, 120))
+    T = read_bin(out / "T.init.bin", (36, 21, 120))
     np.testing.assert_allclose(T[:, 3, 3], pr.ramp(z, c["Tbot"], c["z_c"], d=300.0)[0])
     assert meta["actual"]["s"] == 1.2 and meta["actual"]["Tbot"] == c["Tbot"]
     ref, _ = _make("cal4_gT0.03", tmp_path, synth_geom, templates)
-    n12 = int((read_bin(out / "bathy.bin", (20, 120)) < 0).sum())
-    n10 = int((read_bin(ref / "bathy.bin", (20, 120)) < 0).sum())
+    n12 = int((read_bin(out / "bathy.bin", (21, 120)) < 0).sum())
+    n10 = int((read_bin(ref / "bathy.bin", (21, 120)) < 0).sum())
     assert n12 <= n10
 
 

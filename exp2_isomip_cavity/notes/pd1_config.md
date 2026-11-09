@@ -107,6 +107,26 @@ Hay un `code/` común (`config/ocean0/code`) y un directorio por resolución con
 - **Hallazgo diferido de la Task 1** (`_connected` trataba cualquier fracción > 0 como abierta): una columna conectada solo por una lámina menor que hFacMin/2 queda ahora seca, en vez de convertirse en un lago aislado en el modelo. Prueba: `test_sliver_connection_is_rounded_away`.
 - **Caras:** `useMin4hFacEdges` da hFacW = min(hFacC) (`ini_masks_etc.F:243-262`), que es lo que supone la prueba de conectividad.
 
+### Fronteras laterales cerradas (ruling R12, fix round 1)
+
+- **Defecto (lo detectó la Task 3):** el dominio cartesiano de MITgcm es periódico en x y en y. MPI se configura periódico en las dos direcciones (`eesupp/src/ini_procs.F:123-125`), y las caras toman el mínimo de los hFacC vecinos a través del halo periódico (`model/src/ini_masks_etc.F:251-262, 402`).
+  - En las entradas del smoke original, la fila y = 0 estaba conectada con la fila y = 78–80 km: 3689 caras con hFacS > 0 (máximo 1.0), y |V| de hasta 0.18 m s⁻¹ a través de la cara y = 0/80 km.
+  - AD16 §3.1.4 pide paredes sin deslizamiento en todas las fronteras laterales.
+- **Solución en y:** una fila de tierra al norte, en y = 80–82 km (`geometry.close_lateral_boundaries`, llamada desde `make_case`).
+  - El enlace periódico entre la última fila y la primera cruza tierra, así que hFacS = 0 en la cara y = 0 y en la cara y = 80 km.
+  - El dominio mojado conserva sus 0–80 km y los mismos centros de celda: ygOrigin = 0 y las filas 0…ny−1 no cambian.
+  - Ny del modelo pasa a 41 (2 km) y 21 (4 km); `case.json` guarda `ny` (modelo), `ny_wet_domain` y `land_rows`. La máscara rbcs vale 0 en la fila de tierra.
+  - SIZE.h: sNy = 41 o 21. El reparto np = 5 sigue siendo en x (sNx = 48 o 24), así que no cambia.
+- **Solución en x:** no se añade una columna, porque Nx = 241 o 121 no se divide entre 5. La primera columna (x = 320–322 km, bajo hielo apoyado en ISOMIP+) tiene que estar seca en todos los niveles; con eso, hFacW = 0 en la cara de enlace x = 800 ↔ 320 km.
+  - `make_case` **rechaza** (ValueError) una geometría con la primera columna mojada; no la seca en silencio.
+  - En la geometría real ya lo estaba, a 2 y 4 km: el enlace en x nunca estuvo abierto (0 caras).
+- **Pruebas sobre entradas generadas** (`mitgcm_hfac` + `geometry.mitgcm_hfac_faces`, con la periodicidad del modelo), en `tests/test_exp2_config.py`:
+  - hFacS = 0 en las dos caras de frontera en y;
+  - hFacW = 0 en la cara de enlace en x;
+  - ninguna celda mojada es vecina de otra a través de una costura periódica;
+  - el dominio mojado no cambia;
+  - una primera columna mojada se rechaza.
+
 ### Tiempo y pickups
 
 - Se usan nIter0 y nTimeSteps (sin endTime ni startTime).
@@ -180,7 +200,9 @@ Todas en `/Volumes/LaCie/portfolio_runs/exp2/`.
 3. **Corrida 2** (`cal2_gT0.03_smoke30d`): la que se evalúa. Instantáneas a los 0, 10 y 20 días.
    - Evaluación: `exp2_isomip_cavity/analysis/pd1_smoke_check.py`. Resultado completo en `pd1_smoke_check.json`, en el directorio de la corrida.
 
-### Veredictos (corrida 2)
+**Las corridas 1 y 2 (`cal2_gT0.03_smoke30d_run1_mixedsnap`, `cal2_gT0.03_smoke30d`) quedan ANULADAS por el defecto de y periódica (R12; ver §3).** Se conservan en disco. Sus veredictos, abajo, son solo históricos. Los veredictos vigentes son los de la corrida 3 (`cal2_gT0.03_smoke30d_walls`, §7b).
+
+### Veredictos (corrida 2, ANULADA)
 
 | Criterio | Resultado | Valor |
 |---|---|---|
@@ -254,3 +276,27 @@ Todas en `/Volumes/LaCie/portfolio_runs/exp2/`.
 ### Hallazgo aparte (para el controlador; no es parte de S3)
 
 Durante la Task 3 se vio que el dominio del smoke es **periódico en y**: hFacS(j = 0) = 1 y |V| en la cara y = 0/80 km llega a 0.18 m s⁻¹ en la media de 30 días. AD16 (L1578) pide paredes laterales en y = 0 y 80 km. No se corrigió aquí, porque está fuera del alcance de la Task 3.
+
+## 7b. Smoke con paredes cerradas (R12): corrida 3, `cal2_gT0.03_smoke30d_walls` (VIGENTE)
+
+- **Configuración:** la misma que la corrida 2 (`cal2_gT0.03`, 2 km, np = 5, dt = 200 s, 30 días, `--set snapFreq=-864000`), con la fila de tierra en y = 80 km y Ny = 41. Binarios recompilados. Criterios S1–S5 **sin cambios** (§6).
+- **Paredes, en la salida del modelo:**
+  - hFacS = 0 en las caras y = 0 y y = 80 km, y hFacW = 0 en la cara de enlace en x (`hFacS.data`, `hFacW.data`);
+  - **máx. \|V\| en las caras de frontera en y = 0** (estado final y media de 30 días), y máx. \|U\| en el enlace en x = 0;
+  - en la corrida anulada, \|V\| en y = 0 llegaba a 0.41 m s⁻¹ en el estado final.
+- **hFacC** del modelo = `geometry.mitgcm_hfac` (diferencia máxima 0.0).
+
+| Criterio | Resultado | Valor |
+|---|---|---|
+| S1 (N3) | **PASA** | OK; 12 960/12 960; sin NaN |
+| S2 (N2) | **PASA** | error relativo 2.3e-6. Inventario 1.528e10 m³, fuente 1.753e10 m³, sumidero rbcs 2.25e9 m³ (con paredes, el agua de deshielo ya llega a la esponja en 30 días). `metrics.tracer_budget_residual` da 1.07e-6. Sin factor r*: 6.9e-5 (informativo) |
+| S3 | **FALLA** | final: T ∈ [−2.51, 0.96] y S ∈ [33.36, 34.69] (límites [−2.0, 1.1] y [33.7, 34.8]). Media de 30 días: T ≥ −2.40, S ≥ 33.41. Instantáneas de 10 y 20 días: T ≥ −2.50, S ≥ 33.36 |
+| S4 | **PASA** | ⟨m⟩ de plataforma = 19.8 m a⁻¹. Informativo: melt profundo = 57.8 m a⁻¹ (primer mes) |
+| S5 | **PASA** | 10 días: 2337 celdas, error máximo 0.33 %, mediana 1.7e-5. 20 días: 2122 celdas, máximo 0.39 %, mediana 1.4e-5 |
+
+**Informativo:**
+- Tiempo: 0.0196 s/paso (254 s); 2 años ≈ 1.72 h.
+- S3 falla en 3957 celdas, todas con agua de deshielo (C ≥ 0.0088, mediana 0.019).
+- `metrics.ustar_check` (registro 0): PASA. u* ≥ u_tidal; γT = ΓT·u* con error 1.3e-14; cota de Jensen con razón mínima 1.00002.
+- `metrics.gade_line_check` (*post hoc*, R10): 2328 celdas fuera de rango en la media de 30 días; r = 0.97; solo el 18 % queda dentro de ±0.05 de una mezcla con el perfil ambiental local. El ambiente local no es el agua de origen de parcelas advectadas.
+- **Sobreenfriamiento:** 1592 celdas bajo el Tf(S, p) local, con mínimo −0.49 °C, y 1002 de ellas por más de 0.1 °C. Es más que en la corrida anulada (−0.31 °C y 290 celdas). Sigue como preocupación para el controlador.

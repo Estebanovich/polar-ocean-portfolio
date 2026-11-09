@@ -6,7 +6,9 @@ namelist templates and writes ``case.json`` with the *actual* parameters. It ret
 case.json content.
 
 Grid: x 320-800 km, y 0-80 km (AD16 sect. 3.1.1), cells of dx_km (2 or 4 km), 36 levels of
-20 m. Binary files, written under FIXED names that templates reference literally:
+20 m. The model grid adds one land row at y = 80-82 km (ruling R12) so the periodic y link of
+MITgcm's Cartesian domain crosses land; ``ny`` in the parameters is the model value (41 at
+2 km, 21 at 4 km), ``ny_wet_domain`` the ISOMIP+ value. The first column must be dry. Binary files, written under FIXED names that templates reference literally:
 
   bathy.bin                (ny, nx)      bed [m], 0 on land
                                          (draft' = s draft on floating columns only, R9)
@@ -228,15 +230,24 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     Tr, Sr, Tbot, z_c, d = _profile(p["restore_profile"], zc, p)
     pf = pr.load_anomaly(Ti, Si, dzv, rho_const=p["rho_ref"], g=p["gravity"])
     pload = np.where(wet, pr.load_anomaly_at_draft(pf, dzv, icetopo), 0.0)
-    shape3 = (nz, ny, nx)
+    # ruling R12: close the periodic seams of the MITgcm domain (geometry.close_lateral_
+    # boundaries): one land row at y = 80-82 km, first column (x = 320 km) required dry.
+    # The model grid has ny + 1 rows; the wet domain keeps its ny rows and cell centres.
+    bathy_m, icetopo_m, wet_m = geo.close_lateral_boundaries(bathy, icetopo, wet)
+    pload_m = np.concatenate([pload, np.zeros((1, nx))])
+    ny_m = ny + 1
+    p.update(ny=ny_m, ny_wet_domain=ny, land_rows=[ny])
+    shape3 = (nz, ny_m, nx)
     ramp = np.clip((xc - p["x_restore0_m"]) / (p["x_restore1_m"] - p["x_restore0_m"]), 0.0, None)
+    rmask = np.broadcast_to(ramp[None, None, :], shape3).copy()          # AD16 Eq. 20
+    rmask[:, ny:, :] = 0.0                                                # land row
     bins = {
-        "bathy.bin": bathy, "icetopo.bin": icetopo, "shelficeLoadAnomaly.bin": pload,
+        "bathy.bin": bathy_m, "icetopo.bin": icetopo_m, "shelficeLoadAnomaly.bin": pload_m,
         "T.init.bin": np.broadcast_to(Ti[:, None, None], shape3),
         "S.init.bin": np.broadcast_to(Si[:, None, None], shape3),
         "T.restore.bin": np.broadcast_to(Tr[:, None, None], shape3),
         "S.restore.bin": np.broadcast_to(Sr[:, None, None], shape3),
-        "rbcs_mask.bin": np.broadcast_to(ramp[None, None, :], shape3),   # AD16 Eq. 20
+        "rbcs_mask.bin": rmask,
     }
     assert set(bins) == set(BINS)
 

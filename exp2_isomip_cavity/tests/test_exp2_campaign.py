@@ -40,7 +40,7 @@ class Shell:
 @pytest.fixture
 def cfg_root(tmp_path):
     root = tmp_path / "config"
-    for cfg, nx, ny in (("ocean0_2km", 240, 40), ("ocean0_4km", 120, 20)):
+    for cfg, nx, ny in (("ocean0_2km", 240, 41), ("ocean0_4km", 120, 21)):
         (root / cfg / "code").mkdir(parents=True)
         (root / cfg / "code" / "SIZE.h").write_text(SIZE.format(nx=nx, ny=ny))
     return root
@@ -100,7 +100,7 @@ def test_campaign_stages_and_skip_ok(tmp_path, cfg_root, templates, synth_geom):
 
 def test_mpi_build_for_np5(tmp_path, cfg_root, templates, synth_geom):
     (cfg_root / "ocean0_4km" / "code" / "SIZE.h").write_text(
-        SIZE.format(nx=24, ny=20).replace("nPx =   1", "nPx =   5"))
+        SIZE.format(nx=24, ny=21).replace("nPx =   1", "nPx =   5"))
     res, sh = _run(tmp_path, cfg_root, templates, synth_geom, "ocean0_4km", "cal4_gT0.03",
                    np_=5, mc=1, overrides={"endTime": 4800.0, "deltaT": 1200.0})
     assert res == {"cal4_gT0.03": "OK"} and "--mpi" in sh.calls[0]

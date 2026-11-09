@@ -6,8 +6,9 @@ C    !DESCRIPTION: \bv
 C     *==========================================================*
 C     | SIZE.h Declare size of underlying computational grid.
 C     | Exp. 2 ocean0_2km: ISOMIP+ cavity (AD16 sect. 3.1.1), x 320-800 km,
-C     | y 0-80 km at 2 km: Nx = 240, Ny = 40; Nr = 36 levels of
-C     | 20 m (cases.yaml). MPI, 5 ranks split in x: sNx = 240/5 = 48.
+C     | y 0-80 km at 2 km: Nx = 240, Ny = 41 = 40 wet-domain rows
+C     | + 1 land row at y = 80 km (ruling R12: closes the periodic y
+C     | link); Nr = 36 levels of 20 m (cases.yaml). MPI, 5 ranks split in x: sNx = 240/5 = 48.
 C     | run_campaign.py checks case.json (nx, ny, nz) against this
 C     | file, and np against nPx*nPy, before running.
 C     | All other code/ files are shared links to ../../ocean0/code.
@@ -39,7 +40,7 @@ C     Nr  :: Number of points in vertical direction.
       INTEGER Nr
       PARAMETER (
      &           sNx =  48,
-     &           sNy =  40,
+     &           sNy =  41,
      &           OLx =   3,
      &           OLy =   3,
      &           nSx =   1,

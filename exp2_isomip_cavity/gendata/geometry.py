@@ -191,6 +191,35 @@ def mitgcm_hfac(bathy: np.ndarray, draft: np.ndarray, dz: np.ndarray, hfac_min: 
     return h, r_low, ro_surf
 
 
+def mitgcm_hfac_faces(hfac: np.ndarray):
+    """(hFacW, hFacS) from hFacC (nz, ny, nx) as MITgcm with useMin4hFacEdges: the minimum of
+    the two adjacent hFacC (model/src/ini_masks_etc.F:251-262), across the periodic seams of
+    the Cartesian domain (periodic in x and y, eesupp/src/ini_procs.F:123-125; halo exchange
+    of the faces at ini_masks_etc.F:402). hFacW[..., i] is the face between columns i-1 and
+    i (i = 0: the x-periodic link); hFacS[:, j] between rows j-1 and j (j = 0: y link)."""
+    h = np.asarray(hfac, float)
+    return (np.minimum(h, np.roll(h, 1, axis=2)), np.minimum(h, np.roll(h, 1, axis=1)))
+
+
+def close_lateral_boundaries(bathy: np.ndarray, draft: np.ndarray, wet: np.ndarray):
+    """Close the periodic seams of the MITgcm domain (ruling R12; AD16 sect. 3.1.4 asks for
+    walls on all lateral boundaries).
+
+    - y: one land row is appended at the north end (y = 80-82 km), so the periodic link
+      between the last and the first row crosses land and the wet domain keeps its 0-80 km
+      cell centres (ygOrigin = 0 unchanged). Model Ny = ny + 1.
+    - x: the first column (x = 320-322 km, under grounded ice in ISOMIP+) must already be
+      dry at every level, which closes the x link (x = 800 km <-> 320 km); a wet first
+      column raises ValueError instead of being dried silently.
+    Returns (bathy, draft, wet) with the land row appended."""
+    wet = np.asarray(wet, bool)
+    if wet[:, 0].any():
+        raise ValueError("the first column (x = 320 km) is wet: the x-periodic link of the "
+                         "MITgcm domain would connect it to x = 800 km")
+    pad = lambda a, v: np.concatenate([np.asarray(a), np.full((1,) + np.shape(a)[1:], v, dtype=np.asarray(a).dtype)])
+    return pad(bathy, 0.0), pad(draft, 0.0), pad(wet, False)
+
+
 def _connected(frac: np.ndarray, wet: np.ndarray, seeds: np.ndarray) -> np.ndarray:
     """Wet columns reachable from ``seeds`` through 4-neighbours that share at least one
     level with open water in both columns. With useMin4hFacEdges, MITgcm opens a face at

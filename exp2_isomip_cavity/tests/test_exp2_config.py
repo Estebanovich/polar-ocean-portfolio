@@ -15,9 +15,9 @@ PKG = Path(__file__).resolve().parents[1]
 CFG = PKG / "config"
 SHARED = CFG / "ocean0" / "code"
 LAYOUT = {  # config: (sNx, sNy, nPx, Nx, Ny)
-    "ocean0_2km": (48, 40, 5, 240, 40),
-    "ocean0_4km": (120, 20, 1, 120, 20),
-    "ocean0_4km_mpi": (24, 20, 5, 120, 20),
+    "ocean0_2km": (48, 41, 5, 240, 41),
+    "ocean0_4km": (120, 21, 1, 120, 21),
+    "ocean0_4km_mpi": (24, 21, 5, 120, 21),
 }
 
 
@@ -45,7 +45,7 @@ def test_grid_matches_cases_yaml():
     for cfg in ("ocean0_2km", "ocean0_4km"):
         xc, yc = mc.grid_centres(spec["configs"][cfg]["dx_km"])
         _, _, _, Nx, Ny = LAYOUT[cfg]
-        assert (xc.size, yc.size) == (Nx, Ny)
+        assert (xc.size, yc.size + 1) == (Nx, Ny)     # + land row (R12)
 
 
 def test_fortran_changes_are_marked():
@@ -209,3 +209,64 @@ def test_smoke_check_boundary_layer_mean():
     assert out[0, 0] == pytest.approx((1.0 * 6.0 + 2.0 * 14.0) / 20.0, rel=1e-15)
     assert out[0, 1] == pytest.approx((1.0 * 10.0 - 3.0 * 4.0) / 14.0, rel=1e-15)
     assert sc.boundary_layer_mean(f, h, ktop, 20.0, clip0=True)[0, 1] == pytest.approx(10.0 / 14.0)
+
+
+# ---- R12: closed lateral boundaries (AD16 sect. 3.1.4: walls on all lateral sides) -------
+# MITgcm's Cartesian domain is periodic in x and y (eesupp/src/ini_procs.F:123-125); faces use
+# hFacW/S = min of the two adjacent hFacC (useMin4hFacEdges, model/src/ini_masks_etc.F:251-262),
+# with the periodic halo (ini_masks_etc.F:402). Checked on generated input, not model output.
+
+def _model_hfac(out, meta):
+    from pfcommon.mitgcm_io import read_bin
+    from exp2_isomip_cavity.gendata import geometry as geo
+    ny, nx, nz = meta["params"]["ny"], meta["params"]["nx"], meta["params"]["nz"]
+    b = read_bin(out / "bathy.bin", (ny, nx))
+    d = read_bin(out / "icetopo.bin", (ny, nx))
+    h = geo.mitgcm_hfac(b, d, np.full(nz, meta["params"]["dz"]), meta["params"]["hFacMin"])[0]
+    return (h,) + geo.mitgcm_hfac_faces(h)
+
+
+@pytest.mark.parametrize("case", ["cal2_gT0.03", "cal4_gT0.03"])
+def test_lateral_boundaries_are_closed(tmp_path, synth_geom, case):
+    from exp2_testdata import REAL_GEOM
+    for geom in [synth_geom] + ([REAL_GEOM] if REAL_GEOM.exists() else []):
+        out = tmp_path / f"{case}_{Path(geom).stem}"
+        meta = mc.make_case(case, out, geom_path=geom)
+        h, hW, hS = _model_hfac(out, meta)
+        ny = meta["params"]["ny"]
+        assert not hS[:, 0, :].any(), "y = 0 face (periodic link to the last row) is open"
+        assert not hS[:, ny - 1, :].any(), "y = 80 km face is open"
+        assert not hW[:, :, 0].any(), "x-periodic link face (x = 320 km) is open"
+        # no wet cell adjacent across a periodic seam
+        assert not ((h[:, 0, :] > 0) & (h[:, -1, :] > 0)).any()
+        assert not ((h[:, -1, :] > 0)).any()                  # land row y = 80-82 km
+        assert not ((h[:, :, 0] > 0) & (h[:, :, -1] > 0)).any()
+        assert not (h[:, :, 0] > 0).any()                     # x = 320-322 km column dry
+        # the ISOMIP+ wet domain is unchanged: rows 0..ny-2 on the same centres
+        assert meta["params"]["ny_wet_domain"] == ny - 1
+        assert int((h.sum(axis=0) > 0).sum()) == meta["actual"]["n_wet_columns"]
+        d = (out / "data").read_text()
+        assert _nml(d, "ygOrigin") == "0." and f"delY={ny}*" in d.replace(" ", "")
+
+
+def test_mitgcm_hfac_faces_periodic():
+    from exp2_isomip_cavity.gendata import geometry as geo
+    h = np.zeros((1, 3, 4))
+    h[0, 0, :] = 1.0                       # row 0 wet; row 2 wet only at i = 3
+    h[0, 2, 3] = 0.5
+    hW, hS = geo.mitgcm_hfac_faces(h)
+    assert hS[0, 0, 3] == 0.5 and hS[0, 0, 0] == 0.0          # wraps to row 2
+    assert hW[0, 0, 0] == 1.0                                  # wraps to column 3
+    assert hW[0, 2, 3] == 0.0 and hS[0, 1, 0] == 0.0
+
+
+def test_wet_first_column_is_refused():
+    from exp2_isomip_cavity.gendata import geometry as geo
+    bed = np.full((2, 3), -300.0)
+    draft = np.zeros((2, 3))
+    with pytest.raises(ValueError, match="x-periodic"):
+        geo.close_lateral_boundaries(bed, draft, np.ones((2, 3), bool))
+    draft[:, 0] = -300.0
+    b, d, w = geo.close_lateral_boundaries(np.where([[0, 1, 1]] * 2, bed, 0.0), np.where([[0, 1, 1]] * 2, 0.0, 0.0),
+                                           np.array([[False, True, True]] * 2))
+    assert b.shape == (3, 3) and not w[-1].any() and (b[-1] == 0).all() and (d[-1] == 0).all()
