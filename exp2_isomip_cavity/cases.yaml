@@ -46,6 +46,7 @@ configs:
     hFacMin: 0.2             # partial cells, as MITgcm-BAS in ISOMIP+ (notes/pd1_config.md)
     advScheme: 77            # T, S and tracer advection: 2nd-order flux limiter (not DST3 = 33)
     shiUStarTopDz: ".FALSE."  # SHI_withBL_uStarTopDz (pkg/shelfice); .TRUE. only in diag4_ustartopdz
+    cAdjFreq: 0.0            # convective adjustment off; convection by ivdc_kappa (AD16 Table 4)
     pChkptFreq: 31536000.0   # permanent pickup every year (plus one at the end of each run)
     chkptFreq: 2628000.0     # rolling pickup every month
     monitorFreq: 86400.0
@@ -81,6 +82,9 @@ cases:
   diag4_hfac025: {config: ocean0_4km, gammaT: 0.015, hFacMin: 0.25}    # as MITgcm-JPL
   # (d), post hoc addition approved by Esteban 2026-11-09: u* from U/V averaged at the faces
   diag4_ustartopdz: {config: ocean0_4km, gammaT: 0.015, shiUStarTopDz: ".TRUE."}
+  # (e), post hoc addition approved by Esteban 2026-11-09: convective adjustment every step
+  # instead of ivdc_kappa (one scheme swap; MITgcm refuses both at once, ini_parms.F:1107-1113)
+  diag4_convadj: {config: ocean0_4km, gammaT: 0.015, cAdjFreq: -1.0, ivdc_kappa: 0.0}
   # Task 4 timing: 4 km Ocean0 on 5 MPI ranks (compared with 5 concurrent serial runs)
   tim4m_gT0.03: {config: ocean0_4km_mpi, gammaT: 0.03}
 ensemble:

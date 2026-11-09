@@ -77,6 +77,9 @@
  nTimeSteps=${nTimeSteps},
  deltaT=${deltaT},
  abEps=0.1,
+# convective adjustment (model/src/convective_adjustment.F); 0 = off (the COM uses
+# ivdc_kappa instead). < 0 = every time step (model/src/ini_parms.F:1104-1106).
+ cAdjFreq=${cAdjFreq},
  momDissip_In_AB=.FALSE.,
  pChkptFreq=${pChkptFreq},
  chkptFreq=${chkptFreq},

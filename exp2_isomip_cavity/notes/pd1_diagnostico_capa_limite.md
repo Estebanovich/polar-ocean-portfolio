@@ -120,3 +120,54 @@ Las dos variantes terminaron OK, con N3 aplicado por `metrics.load_run`. Lectura
   2. La columna mínima de 40 m con calado excavado de MITgcm-BAS (Y26 final L764). La nuestra seca las columnas de menos de 2 celdas.
   3. Otros, ya anotados arriba: la convección de Cessi y Young (Y26 final L754–756) y la incertidumbre sobre los ΓT de BAS.
 - No se lanzan más corridas (R20, cerrado).
+
+### Resultado de la variante (d) (post hoc; cola 2026-11-09 07:00–07:22 CST, commit 0c88938)
+
+`diag4_ustartopdz` terminó OK, con N3 aplicado por `metrics.load_run`. Lectura mecánica con la misma regla:
+
+| Variante | Caso | Melt profundo, meses 19–24 (m a⁻¹) | Δ frente a 41.2156 | ΓT_est (estimación) | ¿Explica la diferencia (≥ 0.0135)? |
+|---|---|---|---|---|---|
+| (d) `SHI_withBL_uStarTopDz` | `diag4_ustartopdz` | 43.0419 | **+4.4 %** | **0.0089** | **NO** |
+
+- Informativo: melt de la plataforma 13.995 m a⁻¹; N1 = 0.0039; N2 = 4.8e-8; CFL máximo 0.264; sobreenfriamiento en el estado final de 289 celdas, con mínimo −0.325 °C (ΓT = 0.015).
+- El signo resultó **positivo**: el promedio en las caras da un u\* mayor y más melt, así que el ΓT_cal implícito **baja**. Esta variante aleja nuestro modelo de los otros MITgcm en lugar de acercarlo.
+- Archivo: `figures/diag_bl_diag4_ustartopdz.json`.
+
+## Cota (no es una corrida): columna mínima de 40 m con calado excavado (MITgcm-BAS, Y26 final L764)
+
+**Post hoc; es una cota, no se corre.**
+
+- **Qué cambiaría:** MITgcm-BAS mantiene mojadas, con 40 m de columna, las columnas flotantes que nosotros secamos por tener menos de 2 celdas (`gendata/geometry.py::apply_scale_and_mask`, `min_cells = 2`).
+- **Conteo** con las funciones de gendata: `load_bed`, `load_draft` y `load_floating` (regla de la mayoría flotante, R9) sobre el archivo GFZ, promediado por bloques; luego `apply_scale_and_mask` con hFacMin = 0.2. Los números coinciden con los del controlador:
+
+  | Malla | Columnas flotantes profundas (calado < −300 m) | Con columna de agua < 40 m | Mojadas en nuestro modelo |
+  |---|---|---|---|
+  | 4 km | 172 | **14 (8.1 %)**, de 9.6 a 39.8 m, todas secas | 158 |
+  | 2 km | 682 | **64 (9.4 %)**, de 4.3 a 38.1 m, todas secas | 618 |
+
+- **Cota del efecto sobre K1** a 4 km:
+  - Si MITgcm-BAS las mantuviera mojadas, la media profunda incluiría 14 columnas más de igual área. Con melt **cero** en ellas, la media bajaría como máximo 14/172 = **8.1 %**.
+  - Para explicar la diferencia hace falta una bajada del 21.7 % (41.2 → 32.3 m a⁻¹). La cota no alcanza.
+- **Signo probable: el contrario.** Son columnas junto a la línea de apoyo, donde el melt es alto, así que incluirlas tiende a **subir** la media profunda.
+- **Excavar** el calado ≤ 40 m sube la base, y el punto de fusión se calienta solo λ₃·ρ₀g·40 m = 7.53e-8 × 1027.51 × 9.81 × 40 ≈ **0.030 °C**. Es un cambio menor de la temperatura de forzamiento.
+- **Conclusión de la cota:** este candidato **no puede explicar** la diferencia por sí solo.
+
+## Variante (e): ajuste convectivo en lugar de `ivdc_kappa` (adición post hoc, aprobada por Esteban el 2026-11-09; escrita a las 07:27 CST, antes de correrla)
+
+- **Cambio único**, conceptualmente un cambio de esquema: `cAdjFreq = -1` y `ivdc_kappa = 0` (caso `diag4_convadj`, Ocean0 a 4 km, ΓT = 0.015, 2 años, np = 1).
+  - El `diff` de las entradas generadas frente a `cal4_gT0.015` solo muestra esas dos líneas de `data` (y los comentarios con el nombre del caso). Los binarios son idénticos.
+  - La plantilla ahora escribe `cAdjFreq=0.0` en la base, que es el valor por omisión (`model/src/set_defaults.F:327`), así que la base no cambia.
+  - MITgcm prohíbe tener activos los dos esquemas a la vez: `model/src/ini_parms.F:1107-1113` da error si `ivdc_kappa ≠ 0` y `cAdjFreq ≠ 0`.
+- **Sin recompilar:** `INCLUDE_CONVECT_CALL` está definido en `config/ocean0/code/CPP_OPTIONS.h:66`. La llamada está en `model/src/tracers_correction_step.F:114-119` (`IF ( .NOT. useOPPS .AND. cAdjFreq .NE. 0. )`).
+- **Cada paso:** `cAdjFreq < 0` se convierte en `cAdjFreq = deltaTClock` (`model/src/ini_parms.F:1104-1106`). `convective_adjustment.F:67` actúa cuando `DIFFERENT_MULTIPLE(cAdjFreq, myTime, deltaTClock)`, es decir, en cada paso.
+- **Qué rutina es, dicho con honestidad:** es el ajuste convectivo estándar de MITgcm (`model/src/convective_adjustment.F` y `convective_weights.F`).
+  - En cada interfaz k = 2…Nr, en un solo barrido descendente por llamada, si el par de celdas adyacentes es estáticamente inestable lo mezcla por completo y conserva el volumen. Los pesos son A = d₂/(d₁+d₂) y B = d₁/(d₁+d₂), con d = hFacC·drF (`convective_weights.F`, bloque `IF … ( rhok − rhokm1 )…`). T, S y los trazadores pasivos se mezclan igual (`PTRACERS_CONVECT`).
+  - El código no cita a Cessi y Young (1996). Y26 (final L754–757) describe el esquema de las entradas MITgcm como "the convection scheme of Cessi and Young (1996), which instantaneously mixes the unstable density gradients, and is applied every time step".
+  - Cessi y Young (1996) aparece en Y26 (L2270) como "Some unexpected consequences of the …". Por el título, parece un análisis de este tipo de ajuste convectivo más que un esquema distinto **[verificar: el artículo no está en `literatura/`]**.
+  - Supongo que "Cessi y Young (1996)" en Y26 se refiere a este mismo ajuste estándar; no tengo una implementación distinta para comparar.
+- **Hipótesis:** el efecto es **pequeño**.
+  - La capa de agua de deshielo bajo el hielo es estable (dulce y fría sobre agua más salada), así que ni `ivdc_kappa` ni el ajuste convectivo actúan en ella.
+  - Donde sí hay inestabilidad, los dos esquemas mezclan en tiempos parecidos: con ivdc_kappa = 0.1 m² s⁻¹ y dz = 20 m, dz²/κ ≈ 4000 s ≈ 5 pasos de 800 s (≈ 10 pasos de 400 s), frente a 1 paso del ajuste.
+  - El signo no se fija a priori.
+- **Lectura:** la misma regla. Δ del melt profundo de los meses 19–24 frente a 41.2156; ΓT_est = 0.015·(30/m)^(1/0.690), como estimación; "explica la diferencia" si ΓT_est ≥ 0.0135, es decir, m ≤ 32.3 m a⁻¹. Informativo: melt de la plataforma, N1, N2, CFL (R17), sobreenfriamiento (R15) y el diagnóstico `CONVADJ` si está en la lista (no lo está; no se añade).
+- **Cola:** `scripts/queue_diag_bl.sh`, relanzada. `--skip-ok` salta (a), (b) y (d).

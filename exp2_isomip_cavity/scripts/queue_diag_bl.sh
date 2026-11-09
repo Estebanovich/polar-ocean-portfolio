@@ -2,7 +2,8 @@
 # Exp. 2, ruling R20: detached queue for the POST HOC boundary-layer diagnostic
 # (notes/pd1_diagnostico_capa_limite.md). Ocean0 4 km, GammaT = 0.015, 2 years, one change
 # per case against cal4_gT0.015: diag4_adv33 (DST3), diag4_hfac025 (hFacMin 0.25) and, added
-# post hoc on 2026-11-09, diag4_ustartopdz (SHI_withBL_uStarTopDz). Re-runnable: cases already
+# post hoc on 2026-11-09, diag4_ustartopdz (SHI_withBL_uStarTopDz) and diag4_convadj (convective
+# adjustment every step instead of ivdc_kappa). Re-runnable: cases already
 # OK are skipped (--skip-ok). Variant
 # (c) is not run (already the baseline; any other layer needs new code). Does not touch
 # K1, V1 or GammaT_cal.
@@ -42,7 +43,7 @@ step() {   # step <name> <command...>: run, log to $LOGS/d_<name>.log, report rc
 
 step runs "$PY" "$RC" --config ocean0_4km --cases 'diag4_*' --np 1 --max-concurrent 3 --skip-ok
 # deep melt of the last 6 months of each case (the K1 helper; exit 4 only means "not 28-32")
-for c in cal4_gT0.015 diag4_adv33 diag4_hfac025 diag4_ustartopdz; do
+for c in cal4_gT0.015 diag4_adv33 diag4_hfac025 diag4_ustartopdz diag4_convadj; do
   step "melt_$c" "$PY" "$CAL" --verify --res 4km --out "$FIG/diag_bl_$c.json" "$RUNS/$c"
   say "$c deep melt (months 19-24): $(tail -1 "$LOGS/d_melt_$c.log")"
 done
