@@ -193,9 +193,14 @@ def test_h1_ignores_test_split_and_geometry_runs(tmp_path):
     assert r["n_runs"] == 5 and r["power_law"]["n"] == pytest.approx(1.6, abs=1e-10)
 
 
-def test_h1_requires_an_explicit_melt_key(tmp_path):
-    with pytest.raises(TypeError):
-        en.h1_verdicts({})                                   # no default mask (pd0 silent)
+def test_h1_default_key_is_whole_shelf_r22(tmp_path):
+    """R22 (2026-11-09, before any ensemble output): H1 <m> = whole-shelf mean melt;
+    the deep (< -300 m) fit is secondary, not a criterion."""
+    specs = build_core(tmp_path, lambda T, z: 2.0 * (T - TF_GL) ** 1.6)
+    tab = en.collect(tmp_path, cases=specs)
+    v = en.h1_verdicts(tab)
+    assert v["melt_key"] == "mean_melt_shelf" and v["role"] == "criterion"
+    assert en.H1_MELT_KEY == "mean_melt_shelf"
     with pytest.raises(ValueError):
         en.h1_verdicts({"case": []}, melt_key="mean_melt")
 

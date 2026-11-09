@@ -3,12 +3,14 @@ r"""Figure 2 of Exp. 2: melt sensitivity of the 4 km ensemble, and the pd0 H1 ve
 
 Usage::
 
-    fig2_melt_sensitivity.py --melt-key {mean_melt_shelf,mean_melt_deep300}
+    fig2_melt_sensitivity.py [--melt-key {mean_melt_shelf,mean_melt_deep300}]
                              [--table figures/ensemble_table.json | --runs-root R --run-suffix _r21]
                              [--out-dir exp2_isomip_cavity/figures]
 
-``--melt-key`` has no default: pd0 H1 writes "<m>" without naming the mask, so the mask is
-an explicit choice recorded in the output (fig2_h1.json, key H1.melt_key).
+The H1 verdict (fig2_h1.json, key H1) always uses the whole-shelf mean melt (ruling R22,
+2026-11-09, before any ensemble output was evaluated; pd0 addendum). The deep (< -300 m)
+fit is written as H1_secondary_deep300, labelled secondary. ``--melt-key`` (default
+mean_melt_shelf) only selects the <m> plotted in the panels.
 
 Panels (last 6 months, records 19-24, of every run):
 
@@ -160,15 +162,19 @@ def make_figure(table: dict, h1: dict, out_stem: Path, cap: str) -> dict:
     return {"paths": [str(p) for p in paths], "plotted": plotted}
 
 
-def run(table: dict, out_dir: Path, *, melt_key: str, resolution: dict | None = None) -> dict:
+def run(table: dict, out_dir: Path, *, melt_key: str = en.H1_MELT_KEY,
+        resolution: dict | None = None) -> dict:
     out_dir = Path(out_dir)
-    h1 = en.h1_verdicts(table, melt_key=melt_key)
+    h1 = en.h1_verdicts(table)                                     # criterion (R22)
+    sec = en.h1_verdicts(table, melt_key="mean_melt_deep300")      # secondary
     cap = caption(resolution)
-    fig = make_figure(table, h1, out_dir / "fig2_melt_sensitivity", cap)
-    out = {"H1": h1, "N1_N3": en.n_summary(table), "caption": cap,
-           "panel_c_label": "descriptive",
-           "melt_key_note": "pd0 H1 writes <m> without naming the mask; melt_key is the "
-                            "explicit choice used here",
+    shown = h1 if melt_key == en.H1_MELT_KEY else sec
+    fig = make_figure(table, shown, out_dir / "fig2_melt_sensitivity", cap)
+    out = {"H1": h1, "H1_secondary_deep300": sec, "N1_N3": en.n_summary(table),
+           "caption": cap, "panel_c_label": "descriptive", "plotted_melt_key": melt_key,
+           "melt_key_note": "R22 (2026-11-09 16:39 CST, before any ensemble output was "
+                            "evaluated; pd0 addendum): H1 <m> = whole-shelf mean melt; the "
+                            "deep (< -300 m) fit is secondary, not a criterion",
            "window": "last 6 months, records 19-24 (pd0)", "figure": fig["paths"]}
     (out_dir / "fig2_h1.json").write_text(json.dumps(out, indent=2) + "\n")
     return {**out, "plotted": fig["plotted"]}
@@ -176,7 +182,8 @@ def run(table: dict, out_dir: Path, *, melt_key: str, resolution: dict | None = 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Exp. 2 Figure 2 and pd0 H1")
-    ap.add_argument("--melt-key", required=True, choices=en.MELT_KEYS)
+    ap.add_argument("--melt-key", default=en.H1_MELT_KEY, choices=en.MELT_KEYS,
+                    help="<m> plotted in the panels (the H1 verdict is always whole-shelf)")
     ap.add_argument("--table", type=Path, default=None, help="ensemble table JSON")
     ap.add_argument("--runs-root", type=Path, default=en.DEFAULT_RUNS)
     ap.add_argument("--run-suffix", default="_r21")

@@ -27,8 +27,9 @@ H1 (pd0 "H1"), per z_c in {250, 400, 550} over the 5 core runs (group factorial,
      ln(Tbot - T_f,GL)), pass if 1.3 <= n <= 2.0; T_f,GL = metrics.freezing_point_gl
      (AD16 Eq. 25, Table 4; Sbot = 34.7, pressure of the deepest wet ice base);
   H1 passes at a z_c iff 1 and 2 pass. A z_c with any gap is NOT_EVALUABLE.
-  pd0 writes "<m>" without naming the mask, so ``h1_verdicts`` has no default for it: the
-  caller must pass ``melt_key`` ('mean_melt_shelf' or 'mean_melt_deep300') explicitly.
+  <m> is the WHOLE-SHELF mean melt (ruling R22, 2026-11-09 16:39 CST, before any ensemble
+  output was evaluated; addendum at the end of pd0). The deep (< -300 m) fit is reported as
+  secondary, never as a criterion.
 
 H2 (pd0 "H2"), per z_c over the same 5 core runs: D_out = -z_out (``metrics.outflow_depth``,
 tracer-transport-weighted depth of u C > 0 at x_front); pass if Spearman
@@ -58,6 +59,7 @@ H1_N_RANGE = (1.3, 2.0)                      # pd0 H1.2
 H2_RHO_MAX = -0.9                            # pd0 H2
 N1_MAX, N2_MAX = 0.03, 0.01                  # pd0 N1, N2
 MELT_KEYS = ("mean_melt_shelf", "mean_melt_deep300")
+H1_MELT_KEY = "mean_melt_shelf"              # R22 / pd0 addendum: H1 <m> = whole-shelf mean
 RHO_DECIMALS = 12        # Spearman rho is rounded to 1e-12 before the pd0 comparison: with
                          # n = 5 and no ties rho is a multiple of 0.1 (e.g. exactly -0.9),
                          # which floating point can land a few ulp on either side of
@@ -248,8 +250,9 @@ def _quality(rs: list[dict]) -> dict:
             "N2_fail": [r["case"] for r in rs if r["N2_pass"] is False]}
 
 
-def h1_verdicts(table: dict, *, melt_key: str) -> dict:
-    """pd0 H1, per z_c (see module doc). ``melt_key`` is required (pd0 does not name it)."""
+def h1_verdicts(table: dict, *, melt_key: str = H1_MELT_KEY) -> dict:
+    """pd0 H1, per z_c (see module doc). The criterion uses H1_MELT_KEY (R22); any other
+    key gives the same fits labelled 'secondary (not a criterion)'."""
     if melt_key not in MELT_KEYS:
         raise ValueError(f"melt_key must be one of {MELT_KEYS}, not {melt_key!r}")
     per, tfs = {}, []
@@ -276,6 +279,8 @@ def h1_verdicts(table: dict, *, melt_key: str) -> dict:
                     "melt": m, "quadratic": q, "power_law": p, "T_f_GL_degC": tf,
                     "quality": _quality(rs)}
     return {"hypothesis": "H1", "melt_key": melt_key,
+            "role": "criterion" if melt_key == H1_MELT_KEY else
+                    "secondary (not a criterion; R22: H1 <m> is the whole-shelf mean)",
             "rule": "pd0 H1: per z_c, 5 core runs (4 km, s = 1, Tbot -0.5..1.5, last 6 months); "
                     "quadratic R^2 >= 0.98 AND power-law n in [1.3, 2.0] "
                     "(m = k (Tbot - T_f,GL)^n, log-log fit)",

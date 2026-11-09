@@ -57,7 +57,7 @@ def synth_table(gap=None):
 
 def test_fig2_writes_png_pdf_json_and_roles(tmp_path):
     tab = synth_table(gap="ens_T0.5_zc250_s1.0")
-    res = f2.run(tab, tmp_path, melt_key="mean_melt_shelf",
+    res = f2.run(tab, tmp_path,
                  resolution={"shelf_mean_melt": {"rel_diff_4_vs_2": -0.0005}})
     for ext in ("png", "pdf"):
         assert (tmp_path / f"fig2_melt_sensitivity.{ext}").stat().st_size > 0
@@ -88,18 +88,16 @@ def test_fig2_writes_png_pdf_json_and_roles(tmp_path):
     assert all("T2.0" not in c for c in p["c"]["1.0"])
 
 
-def test_fig2_requires_melt_key(tmp_path):
-    with pytest.raises(SystemExit):
-        f2.main(["--table", str(tmp_path / "t.json"), "--out-dir", str(tmp_path)])
-
-
-def test_fig2_cli_from_table(tmp_path):
+def test_fig2_default_is_shelf_and_deep_is_secondary(tmp_path):
+    """R22: the H1 verdict uses mean_melt_shelf; the deep300 fit is written as secondary."""
     p = en.write_table(synth_table(), tmp_path / "t.json")
-    assert f2.main(["--table", str(p), "--out-dir", str(tmp_path),
-                    "--melt-key", "mean_melt_deep300"]) == 0
+    assert f2.main(["--table", str(p), "--out-dir", str(tmp_path)]) == 0
     js = json.loads((tmp_path / "fig2_h1.json").read_text())
-    assert js["H1"]["melt_key"] == "mean_melt_deep300"
-    assert all(v["verdict"] == "PASS" for v in js["H1"]["per_z_c"].values())
+    assert js["H1"]["melt_key"] == "mean_melt_shelf" and js["H1"]["role"] == "criterion"
+    sec = js["H1_secondary_deep300"]
+    assert sec["melt_key"] == "mean_melt_deep300" and sec["role"].startswith("secondary")
+    assert all(v["verdict"] == "PASS" for v in sec["per_z_c"].values())
+    assert "R22" in js["melt_key_note"]
 
 
 # ---- Fig. 3 ---------------------------------------------------------------------------------
