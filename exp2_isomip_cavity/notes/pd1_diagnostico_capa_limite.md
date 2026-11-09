@@ -68,3 +68,36 @@ Si ninguna variante llega a 0.0135, el resultado se reporta como "no explicado p
 
 - **Cola:** `exp2_isomip_cavity/scripts/queue_diag_bl.sh`, desacoplada. np = 1, hasta 3 simultáneas (aquí 2), con las mismas reglas de seguridad.
 - **Evaluación:** con `analysis/pd1_calibration_eval.py` (N1–N3, CFL, sobreenfriamiento) y `analysis/calibrate.py --verify` (melt profundo).
+
+## Resultado (post hoc; cola 2026-11-09 03:21–03:48 CST, commit e898d77)
+
+Las dos variantes terminaron OK, con N3 aplicado por `metrics.load_run`. Lectura mecánica según la regla de arriba: p = 0.690, referencia 41.2156 m a⁻¹, umbral ΓT_est ≥ 0.0135. Valores en `figures/diag_bl_<caso>.json`.
+
+| Variante | Caso | Melt profundo, meses 19–24 (m a⁻¹) | Δ frente a la referencia | ΓT_est (estimación) | ¿Explica la diferencia (≥ 0.0135)? |
+|---|---|---|---|---|---|
+| referencia | `cal4_gT0.015` | 41.2156 | — | 0.00947 | — |
+| (a) DST3 (33) | `diag4_adv33` | 39.4782 | **−4.2 %** | **0.0101** | **NO** |
+| (b) hFacMin 0.25 | `diag4_hfac025` | 41.1641 | **−0.12 %** | **0.0095** | **NO** |
+| (c) capa fija de 20 m | — | no se corrió (ya es la base) | — | — | no aplica |
+
+- **Informativo:**
+
+  | Caso | Melt de la plataforma (m a⁻¹) | N1 | N2 | CFL máx. (R17) | Sobreenfriamiento (estado final, ΓT = 0.015) |
+  |---|---|---|---|---|---|
+  | `cal4_gT0.015` | 13.595 | 0.0014 | 4.4e-8 | 0.262 | — |
+  | `diag4_adv33` | 13.233 | 0.0031 | 5.6e-8 | 0.284 | 262 celdas, mín −0.354 °C |
+  | `diag4_hfac025` | 13.640 | 0.0045 | 5.1e-8 | 0.257 | 257 celdas, mín −0.300 °C |
+
+  Las salidas de código 4 de `--verify` son esperadas: K1 no se aplica a estas corridas.
+- **Conclusión mecánica:** ninguna de las dos variantes probadas explica la diferencia. DST3 baja el melt profundo un 4 %, y el ΓT_cal implícito sube ≈ 6 % (0.0095 → 0.0101). hFacMin = 0.25 no lo cambia de forma apreciable. Queda **"no explicado por (a) ni (b)"**.
+
+### Contexto (no es veredicto)
+
+- El ΓT corregido de MITgcm-BAS en Ocean1 es **0.011**: "MITgcm-BAS used 0.011 in the Ocean1 experiment and 0.036 in the Ocean2 experiment (Table 2)" (Y26 final, L806–807).
+- Por tanto, nuestro ΓT_cal,2km = 0.00996 queda **≈ 10 % por debajo del de MITgcm-BAS** (0.00996/0.011 = 0.91) y **≈ 3× por debajo del de MITgcm-JPL** (0.0325/0.00996 = 3.3).
+- **El propio Y26 no pudo verificar** qué coeficientes usaron los experimentos de MITgcm-BAS: "Due to a lack of model data traceability during the intervening years, we are unable to verify which transfer coefficients these experiments used" (Y26 final, L807–809).
+- **Candidatos restantes, no probados:**
+  1. `SHI_withBL_uStarTopDz`: u promediado en los puntos u/v de la capa límite, para u* (`shelfice_readparms.F:101, :212-213`).
+  2. La columna mínima de 40 m con calado excavado de MITgcm-BAS (Y26 final L764). La nuestra seca las columnas de menos de 2 celdas.
+  3. Otros, ya anotados arriba: la convección de Cessi y Young (Y26 final L754–756) y la incertidumbre sobre los ΓT de BAS.
+- No se lanzan más corridas (R20, cerrado).
