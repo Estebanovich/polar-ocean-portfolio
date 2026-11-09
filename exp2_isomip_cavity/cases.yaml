@@ -9,8 +9,9 @@
 #           gammaS = gammaT / 35 is derived. null = not calibrated yet (make_case refuses).
 # ensemble: expanded by make_case.load_cases into cases ens_T{Tbot}_zc{z_c}_s{s}
 #   (the Latin hypercube is generated from the seed, never written by hand).
-# deltaT is provisional: the timed short run of each resolution sets it (Task 2), and it
-# is then the same for every run of that resolution.
+# deltaT is set by the Task 4 timing runs (notes/pd1_calibracion.md: largest dt of the
+# doubling sequence from 200 s whose 30-day max CFL is <= 0.5) and is then the same for every
+# run of that resolution.
 configs:
   ocean0_2km: &base
     dx_km: 2.0
@@ -38,7 +39,7 @@ configs:
     gammaT: null
     init_profile: ocean0
     restore_profile: ocean0
-    deltaT: 200.0            # provisional (Task 2 timed run)
+    deltaT: 400.0            # Task 4 timing: max CFL 0.27 (w, 30 d); notes/pd1_calibracion.md
     endTime: 63072000.0      # 2 years of 365 days
     pickup_stems: [pickup, pickup_ptracers]   # no pickup_shelfice: SHELFICEMassStepping off
     template_config: ocean0  # namelists in config/ocean0/input_templates (both resolutions)
@@ -47,10 +48,12 @@ configs:
     chkptFreq: 2628000.0     # rolling pickup every month
     monitorFreq: 86400.0
     snapFreq: -31536000.0    # snapshot stream (snapDiag) every year, < 0 = instantaneous
-  ocean0_4km:
+  ocean0_4km: &base4
     <<: *base
     dx_km: 4.0
-    deltaT: 400.0            # provisional (Task 2 timed run)
+    deltaT: 800.0            # Task 4 timing: max CFL 0.32 (w, 30 d); notes/pd1_calibracion.md
+  ocean0_4km_mpi:            # the same 4 km physics on 5 MPI ranks (Task 4 timing)
+    <<: *base4
 cases:
   ocean0_2km: {config: ocean0_2km}
   ocean1_2km:                # AD16 Table 2: COLD initial state, WARM restoring, 20 years
@@ -66,6 +69,8 @@ cases:
   cal4_gT0.015: {config: ocean0_4km, gammaT: 0.015}
   cal4_gT0.03: {config: ocean0_4km, gammaT: 0.03}
   cal4_gT0.06: {config: ocean0_4km, gammaT: 0.06}
+  # Task 4 timing: 4 km Ocean0 on 5 MPI ranks (compared with 5 concurrent serial runs)
+  tim4m_gT0.03: {config: ocean0_4km_mpi, gammaT: 0.03}
 ensemble:
   config: ocean0_4km
   reference: ocean0_4km
