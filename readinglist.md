@@ -58,6 +58,8 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ✅ ✔ | Gwyther et al. (2020). Vertical processes and resolution impact ice shelf basal melting: a multi-model study. *Ocean Modelling* 147:101569 | https://doi.org/10.1016/j.ocemod.2020.101569 |
 | ✅ ✔ | Scott et al. (2023). Towards a fully unstructured ocean model for ice shelf cavity environments (compara con MITgcm en Ocean0). *Ocean Modelling* 182:102178 | https://doi.org/10.1016/j.ocemod.2023.102178 |
 | ✅ ✔ | Cornford & Asay-Davis (2016). Geometría ISOMIP+ (`Ocean1_input_geom_v1.01.nc`), GFZ Data Services (dato, no artículo) | https://doi.org/10.5880/PIK.2016.002 |
+| ✅ | Cessi & Young (1996). Some unexpected consequences of the interaction between convective adjustment and horizontal diffusion. *Physica D* 98:287–300 (el "esquema" convectivo que Y26 atribuye a los MITgcm; diagnóstico R20) | https://doi.org/10.1016/0167-2789(96)00118-2 |
+| ✅ | Cessi (1996). Grid-scale instability of convective-adjustment schemes. *J. Mar. Res.* 54:407–420 (contexto del zigzag de ψ_bt a 4 km) | https://doi.org/10.1357/0022240963213529 |
 
 ## Exp. 3 — Emulador de ML del derretimiento (Purkey, Jourdain/Burgard)
 

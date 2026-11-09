@@ -163,11 +163,42 @@ Las dos variantes terminaron OK, con N3 aplicado por `metrics.load_run`. Lectura
 - **Qué rutina es, dicho con honestidad:** es el ajuste convectivo estándar de MITgcm (`model/src/convective_adjustment.F` y `convective_weights.F`).
   - En cada interfaz k = 2…Nr, en un solo barrido descendente por llamada, si el par de celdas adyacentes es estáticamente inestable lo mezcla por completo y conserva el volumen. Los pesos son A = d₂/(d₁+d₂) y B = d₁/(d₁+d₂), con d = hFacC·drF (`convective_weights.F`, bloque `IF … ( rhok − rhokm1 )…`). T, S y los trazadores pasivos se mezclan igual (`PTRACERS_CONVECT`).
   - El código no cita a Cessi y Young (1996). Y26 (final L754–757) describe el esquema de las entradas MITgcm como "the convection scheme of Cessi and Young (1996), which instantaneously mixes the unstable density gradients, and is applied every time step".
-  - Cessi y Young (1996) aparece en Y26 (L2270) como "Some unexpected consequences of the …". Por el título, parece un análisis de este tipo de ajuste convectivo más que un esquema distinto **[verificar: el artículo no está en `literatura/`]**.
-  - Supongo que "Cessi y Young (1996)" en Y26 se refiere a este mismo ajuste estándar; no tengo una implementación distinta para comparar.
+  - **Resuelto** (añadido el 2026-11-09, ya con el artículo en `literatura/`): Cessi y Young (1996, *Physica D* 98:287–300, doi:10.1016/0167-2789(96)00118-2) analizan cómo interactúa el ajuste convectivo instantáneo con la difusión horizontal. No definen un algoritmo concreto: "There are different implementations of CA algorithms" (`literatura/Cessi_Young_1996 - … .md`, L37–38).
+  - El ajuste instantáneo por pares de MITgcm pertenece a esa clase. La frase de Y26 "convection scheme of Cessi and Young (1996)" es, por tanto, una atribución imprecisa, y lo que probamos es el ajuste estándar de MITgcm.
+  - Contexto, sin relación con este veredicto: Cessi (1996, *J. Mar. Res.* 54:407–420, doi:10.1357/0022240963213529) muestra que el ajuste convectivo instantáneo genera por sí solo estructura de escala de malla: "not a computational instability, but an intrinsic property of instantaneous convective adjustment schemes" (`literatura/Cessi_1996 - … .md`, L42–50 y L86–88). Solo se cita como contexto para el zigzag de ψ_bt a 4 km (`pd1_calibracion.md` §4.3). Nuestras corridas de producción usan difusividad implícita (`ivdc_kappa`), no ajuste convectivo, así que ese mecanismo no se les aplica tal cual.
 - **Hipótesis:** el efecto es **pequeño**.
   - La capa de agua de deshielo bajo el hielo es estable (dulce y fría sobre agua más salada), así que ni `ivdc_kappa` ni el ajuste convectivo actúan en ella.
   - Donde sí hay inestabilidad, los dos esquemas mezclan en tiempos parecidos: con ivdc_kappa = 0.1 m² s⁻¹ y dz = 20 m, dz²/κ ≈ 4000 s ≈ 5 pasos de 800 s (≈ 10 pasos de 400 s), frente a 1 paso del ajuste.
   - El signo no se fija a priori.
 - **Lectura:** la misma regla. Δ del melt profundo de los meses 19–24 frente a 41.2156; ΓT_est = 0.015·(30/m)^(1/0.690), como estimación; "explica la diferencia" si ΓT_est ≥ 0.0135, es decir, m ≤ 32.3 m a⁻¹. Informativo: melt de la plataforma, N1, N2, CFL (R17), sobreenfriamiento (R15) y el diagnóstico `CONVADJ` si está en la lista (no lo está; no se añade).
 - **Cola:** `scripts/queue_diag_bl.sh`, relanzada. `--skip-ok` salta (a), (b) y (d).
+
+### Resultado de la variante (e) (post hoc; cola 2026-11-09 07:28–07:51 CST, commit 33b0d42)
+
+`diag4_convadj` terminó OK, con N3 aplicado por `metrics.load_run`. El log confirma `cAdjFreq = 800 s`, es decir, cada paso.
+
+| Variante | Caso | Melt profundo, meses 19–24 (m a⁻¹) | Δ frente a 41.2156 | ΓT_est (estimación) | ¿Explica la diferencia (≥ 0.0135)? |
+|---|---|---|---|---|---|
+| (e) ajuste convectivo en cada paso | `diag4_convadj` | 41.1916 | **−0.06 %** | **0.0095** | **NO** |
+
+- Informativo: melt de la plataforma 13.578 m a⁻¹; N1 = 0.0019; N2 = 4.4e-8; CFL máximo 0.260; sobreenfriamiento en el estado final de 278 celdas, con mínimo −0.356 °C (ΓT = 0.015).
+- Se cumple la hipótesis previa de un efecto pequeño.
+
+## Resumen de cierre (post hoc; no cambia ningún veredicto)
+
+| Candidato | Δ del melt profundo a ΓT = 0.015 | ΓT_est | ¿Explica la diferencia? |
+|---|---|---|---|
+| (a) advección DST3 (33) | −4.2 % | 0.0101 | NO |
+| (b) hFacMin = 0.25 | −0.12 % | 0.0095 | NO |
+| (c) capa fija de 20 m | — (ya es la base) | — | no aplica |
+| (d) `SHI_withBL_uStarTopDz` | +4.4 % | 0.0089 | NO |
+| (e) ajuste convectivo en lugar de `ivdc_kappa` | −0.06 % | 0.0095 | NO |
+| Columna mínima de 40 m con calado excavado (cota, sin corrida) | como máximo −8.1 %, con signo probable contrario | — | NO |
+
+- **Ninguno** de los candidatos explica la diferencia: (a), (b), (d), (e) ni la cota de la columna mínima. Cada diferencia documentada entre nuestra configuración y las de los MITgcm de Y26 mueve el melt profundo como mucho unos pocos por ciento, y en los dos sentidos.
+- **Frente a MITgcm-BAS**, la diferencia que queda (nuestro 0.00996 contra su 0.011 corregido, ≈ 10 %) es comparable a la incertidumbre que el propio Y26 declara sobre los coeficientes reportados de las entradas MITgcm:
+  - los ΓT de BAS y BAS-Coupled "were initially reported as 0.019 and 0.021" y luego se infirieron 0.011 y 0.0135 (Y26 final, L794–807);
+  - "we are unable to verify which transfer coefficients these experiments used" (L807–809);
+  - "it is hence possible that the experimental protocol was not completely followed" (L809).
+- **Frente a MITgcm-JPL** (0.0325, ≈ 3×), la diferencia sigue sin explicar con estos candidatos.
+- **Veredictos sin cambios:** K1 PASA (2 y 4 km), V1 FALLA (c), ΓT_cal fijo. Este diagnóstico es post hoc y se cierra aquí: no se lanzan más corridas.
