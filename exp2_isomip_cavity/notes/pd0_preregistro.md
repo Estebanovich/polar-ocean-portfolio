@@ -94,3 +94,12 @@ Ocean0 a 2 km contra 4 km, cada uno con su ΓT_cal: se reportan las diferencias 
 ## Lo que queda fuera
 
 - **La correlación de patrón contra la media multi-modelo,** que era V3 en la primera versión del plan. Los datos de los modelos se publicaron en OSF (Y26 L2102–2107, Tabla 3; MITgcm-JPL de Nakayama: doi:10.17605/OSF.IO/QNA89), pero no se han descargado. Si se descargan después, cualquier comparación con ellos se etiqueta **post hoc**.
+
+## Aclaración previa a los datos (R22, 2026-11-09 16:39 CST)
+
+Decisión de Esteban, tomada **antes de evaluar cualquier salida del ensamble** (la cola de producción empezó a las 16:07 CST; no se había leído ni evaluado ninguna salida de las corridas `ens_*`, solo su estado de ejecución). Es un agregado: el texto de arriba no cambia.
+
+- **⟨m⟩ de H1 = melt medio de toda la plataforma** (ponderado por área, "Plataforma" de las definiciones comunes; `mean_melt_shelf`). Razones: es la métrica de H08, el plan dice "derretimiento medio" y es la definición de ⟨m⟩ de N1.
+- **El ajuste con el melt profundo** (base < −300 m) se calcula y se reporta **como secundario**, con esa etiqueta. No es criterio.
+- **Corridas del núcleo que fallan N1 o N2:** se quedan en el ajuste de H1 y H2 y se señalan en el veredicto. Solo una corrida que falla N3 (o que falta) es un hueco; con un hueco, ese z_c queda "no evaluable", sin imputar.
+- **Figura 3(c):** el mapa del trazador integrado en la vertical es el del caso Tbot = 1.5 °C, z_c = 400 m.
