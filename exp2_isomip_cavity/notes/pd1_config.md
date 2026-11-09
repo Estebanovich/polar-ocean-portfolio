@@ -249,33 +249,43 @@ Todas en `/Volumes/LaCie/portfolio_runs/exp2/`.
 - **Celdas evaluadas:** las mojadas con T o S fuera del rango del perfil inicial ± 0.1, es decir T ∉ [−2.0, 1.1] o S ∉ [33.7, 34.8].
 - **Tolerancias:** |ΔT| ≤ 0.05 °C y |ΔS| ≤ 0.05.
 
-### Resultados en el smoke (`cal2_gT0.03_smoke30d`)
+### Resultados en el smoke con paredes (`cal2_gT0.03_smoke30d_walls`, corrida 3, VIGENTE)
 
 | Estado | Celdas fuera de rango | Ambiente local (R10), r = ρfw/ρ0 | Ambiente local, r = 1 | Ambiente inferido de S (extensión) |
 |---|---|---|---|---|
-| Final (it. 12 960) | 5001 (C de 0.0055 a 0.034, mediana 0.017) | 252 (5.0 %) dentro de la tolerancia; \|ΔT\| p50/p95 = 0.59/1.42 °C, peor +1.57 °C; \|ΔS\| p50 = 0.18 | 263 (5.3 %) | 4970 (99.4 %); \|ΔT\| p50/p95/p99 = 0.010/0.030/0.046 °C, peor 0.074 °C |
-| Media de 30 días | 2205 | 484 (21.9 %); peor ΔT +1.08 °C | 537 (24.4 %) | 2205 (100 %); \|ΔT\| p50/p95 = 0.005/0.021 °C, peor 0.045 °C |
+| Final (it. 12 960) | 3957 (C de 0.0088 a 0.034, mediana 0.019) | 199 (5.0 %) dentro de la tolerancia; \|ΔT\| p50/p95 = 0.55/1.58 °C, peor +1.74 °C; \|ΔS\| p50 = 0.17, peor 0.54 | 83 (2.1 %) | 3907 (98.7 %); \|ΔT\| p50/p95/p99 = 0.008/0.030/0.052 °C, peor 0.076 °C |
+| Media de 30 días | 2328 | 422 (18.1 %); peor ΔT +1.45 °C | 124 (5.3 %) | 2328 (100 %); \|ΔT\| p50/p95/p99 = 0.003/0.022/0.035 °C, peor 0.047 °C |
 
-### Lectura
+En todos los casos, S_amb = S/(1 − r·C) cae dentro del rango del perfil.
 
-- **La forma de R10 falla en el 95 % de las celdas.** Supone que el agua ambiente viene de la misma profundidad que la celda, y no es así:
-  - el 78 % de estas celdas está bajo el hielo;
-  - en el 81 %, el residuo es ΔT > 0, es decir, la celda es más cálida y salada que la mezcla con el ambiente local.
+**Corrida anulada** (`cal2_gT0.03_smoke30d`, periódica en y; solo como registro):
+
+| Estado | Fuera de rango | Ambiente local, r = ρfw/ρ0 | r = 1 | Ambiente inferido |
+|---|---|---|---|---|
+| Final | 5001 | 252 (5.0 %) | 263 (5.3 %) | 4970 (99.4 %), peor 0.074 °C |
+| Media de 30 días | 2205 | 484 (21.9 %) | 537 (24.4 %) | 2205 (100 %), peor 0.045 °C |
+
+### Lectura (corrida 3)
+
+- **La forma de R10 falla en el 95 % de las celdas del estado final.** Supone que el agua ambiente viene de la misma profundidad que la celda, y no es así:
+  - el 77 % de estas celdas está bajo el hielo;
+  - en el 99 %, el residuo es ΔT > 0, es decir, la celda es más cálida y salada que la mezcla con el ambiente local.
 
   El agua con deshielo sube a lo largo de la base del hielo desde capas más profundas, más cálidas y saladas.
+- **r = ρfw/ρ0 ajusta mejor que r = 1** (199 contra 83 celdas en el estado final), como corresponde a la forma de flujo virtual del modelo.
 - **Extensión post hoc** (más allá de R10, etiquetada así en el código):
   - se invierte la sal, S_amb = S/(1 − r·C), y se busca la profundidad z0 del perfil donde S_a(z0) = S_amb;
   - luego se predice T a partir de T_a(z0).
 
   En Ocean0 (y en la rampa), T_a y S_a son lineales en la misma r(z), así que el conjunto T–S del ambiente es un segmento recto, y cualquier mezcla de aguas ambiente de varias profundidades cae sobre él. La prueba es exacta a primer orden en C.
-  - La profundidad de origen mediana es z0 ≈ −359 m, contra −190 m de la celda.
-  - Con esta forma, el 99.4 % (estado final) y el 100 % (media de 30 días) de las celdas fuera de rango están sobre la línea de mezcla con agua de deshielo, a ≤ 0.05 °C.
-- **Clasificación de la desviación de S3:** (b)/(c), como en la sección 7. El agua fuera de rango es mezcla de agua ambiente (de otra profundidad) con agua de deshielo de flujo virtual, en las proporciones que da el trazador. No apunta a un error nuestro.
-  - Quedan 31 celdas (0.6 %) del estado final con 0.05 < |ΔT| ≤ 0.074 °C. Su origen no se ha investigado; candidatos: términos de segundo orden en C, y T_eff evaluada a la profundidad de la celda y no en el sitio de fusión.
+  - La profundidad de origen mediana es z0 ≈ −392 m, contra −190 m de la celda. En el 99 % de las celdas el origen es más profundo que la celda.
+  - Con esta forma, el 98.7 % (estado final) y el 100 % (media de 30 días) de las celdas fuera de rango están sobre la línea de mezcla con agua de deshielo, a ≤ 0.05 °C.
+- **Clasificación de la desviación de S3:** (b)/(c), como en la sección 7. **El veredicto no cambia: S3 FALLA.** El agua fuera de rango es mezcla de agua ambiente (de otra profundidad) con agua de deshielo de flujo virtual, en las proporciones que da el trazador. No apunta a un error nuestro.
+  - Quedan 50 celdas (1.3 %) del estado final con 0.05 < |ΔT| ≤ 0.076 °C. Su origen no se ha investigado; candidatos: términos de segundo orden en C, T_eff evaluada a la profundidad de la celda y no en el sitio de fusión, y el sobreenfriamiento de §7b.
 
-### Hallazgo aparte (para el controlador; no es parte de S3)
+### Hallazgo aparte (resuelto)
 
-Durante la Task 3 se vio que el dominio del smoke es **periódico en y**: hFacS(j = 0) = 1 y |V| en la cara y = 0/80 km llega a 0.18 m s⁻¹ en la media de 30 días. AD16 (L1578) pide paredes laterales en y = 0 y 80 km. No se corrigió aquí, porque está fuera del alcance de la Task 3.
+En la Task 3 se vio que el dominio de la corrida 2 era periódico en y: hFacS(j = 0) = 1 y |V| en la cara y = 0/80 km llegaba a 0.18 m s⁻¹ en la media de 30 días. Se corrigió en la Task 2 (R12: fila de tierra en y = 80 km, corrida 3, §7b). Las cifras de la corrida 2 quedan anuladas.
 
 ## 7b. Smoke con paredes cerradas (R12): corrida 3, `cal2_gT0.03_smoke30d_walls` (VIGENTE)
 

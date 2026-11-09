@@ -298,17 +298,48 @@ def test_psi_regions_and_circulation_strength(tmp_path):
     yg = DY * np.arange(NY + 1)
     xg = X0 + DX * np.arange(NX)
     sel = (yg[:, None] > 50e3) & (xg[None, :] < 640e3)
-    assert mt.psi_bt_max(rd, [0], "cavity") == pytest.approx(psi[sel].max(), rel=1e-13)
+    assert mt.psi_bt_max(rd, [0], "cavity") == pytest.approx(np.abs(psi[sel]).max(), rel=1e-13)
     assert mt.psi_bt_max(rd, [0], "cavity") == pytest.approx(jet, rel=1e-13)
     front = (xg > 630e3) & (xg < 650e3)
     assert front.sum() == 1                     # only XG = 640 km
-    assert mt.psi_bt_max(rd, [0], "front") == pytest.approx(psi[:, front].max(), rel=1e-13)
+    assert mt.psi_bt_max(rd, [0], "front") == pytest.approx(np.abs(psi[:, front]).max(), rel=1e-13)
     with pytest.raises(ValueError):
         mt.psi_bt_max(rd, [0], "everywhere")
     cs0 = mt.circulation_strength(rd, 0, kind="bt")
     assert cs0 == pytest.approx(jet, rel=1e-12)     # the x = 650 km jet is excluded
     assert mt.circulation_strength(rd, 1, kind="bt") == pytest.approx(2 * jet, rel=1e-12)
     assert mt.circulation_strength(rd, 0, kind="moc") >= 0
+
+
+def test_r13_psi_bt_max_is_absolute_for_reversed_jet(tmp_path):
+    """Ruling R13: an eastward (positive-U) jet gives psi <= 0 everywhere, so the signed
+    maximum is 0, but V2c/V2d must read max |psi| = the jet transport."""
+    U = np.zeros((NZ, NY, NX))
+    U[:, 2, :] = +0.1
+    rd = mt.load_run(make_run(tmp_path / "r", nrec=1, hfac=_all_wet(),
+                              draft=np.zeros((NY, NX)), dyn=lambda k: {"UVEL": U}))
+    psi = mt.barotropic_streamfunction(rd, [0])
+    jet = 0.1 * NZ * DZ * DY / 1e6
+    assert psi.max() == 0.0 and psi.min() == pytest.approx(-jet, rel=1e-13)
+    assert mt.psi_bt_max(rd, [0], "cavity") == pytest.approx(jet, rel=1e-13)
+    assert mt.psi_bt_max(rd, [0], "front") == pytest.approx(jet, rel=1e-13)
+
+
+def test_land_row_adds_nothing_to_psi_or_masks(tmp_path):
+    """A dry northern row (the Task 2 walls fix) carries no transport: psi in it equals the
+    value at its southern edge, and it holds no shelf or x_front cell."""
+    hfac = _all_wet()
+    hfac[:, -1, :] = 0.0
+    U = np.zeros((NZ, NY, NX))
+    U[:, 1, :] = -0.1
+    U[:, -1, :] = 5.0                            # garbage velocity on land: masked by hFacW
+    draft = default_geometry()[0]
+    rd = mt.load_run(make_run(tmp_path / "r", nrec=1, hfac=hfac, draft=draft,
+                              dyn=lambda k: {"UVEL": U}))
+    psi = mt.barotropic_streamfunction(rd, [0])
+    np.testing.assert_array_equal(psi[-1], psi[-2])
+    assert not rd.shelf[-1].any()
+    assert mt.x_front_index(rd)[-1] == -1
 
 
 # ---- N2: tracer budget -------------------------------------------------------------------

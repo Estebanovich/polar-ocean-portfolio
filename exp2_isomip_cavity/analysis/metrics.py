@@ -400,9 +400,11 @@ def _corner_y(rd: RunData) -> np.ndarray:
 
 
 def psi_bt_max(rd: RunData, records, region: str) -> float:
-    """Maximum of the time-mean barotropic psi [Sv] over a pd0 region: 'cavity' = V2c,
-    y > 50 km and x < 640 km (Y26 L1118); 'front' = V2d, 630 < x < 650 km (Y26 L1155).
-    Positive psi is the clockwise cavity circulation of Y26 L1116 with AD16's sign."""
+    """max |psi_bt| [Sv] of the time-mean barotropic streamfunction over a pd0 region:
+    'cavity' = V2c, y > 50 km and x < 640 km (Y26 L1118); 'front' = V2d, 630 < x < 650 km
+    (Y26 L1155). Ruling R13: the absolute value, so that the result does not depend on the
+    gyre's sense of rotation or on the sign convention. Regions are selected by corner
+    coordinates (XG, y); land rows carry no transport (hFacW = 0), so they add no extremum."""
     psi = barotropic_streamfunction(rd, records)
     x = rd.xg[0][None, :]
     y = _corner_y(rd)[:, None]
@@ -414,7 +416,7 @@ def psi_bt_max(rd: RunData, records, region: str) -> float:
         raise ValueError(f"region must be 'cavity' or 'front', not {region!r}")
     if not sel.any():
         raise ValueError(f"region {region!r} selects no psi points")
-    return float(psi[sel].max())
+    return float(np.abs(psi[sel]).max())
 
 
 def overturning_max(rd: RunData, records) -> float:
