@@ -17,7 +17,7 @@ How to run the model, the tests and the analysis: [RUNNING.md](RUNNING.md).
 - [canyon_mx](https://github.com/Estebanovich/canyon_mx)
 - [BayIW_Rectan](https://github.com/Estebanovich/BayIW_Rectan)
 - [IWBayMITgcm-postprocessing](https://github.com/Estebanovich/-IWBayMITgcm-postprocessing)
-- [HYCOM-IOA](https://github.com/Estebanovich/HYCOM-IOA)
+
 
 ## License
 
