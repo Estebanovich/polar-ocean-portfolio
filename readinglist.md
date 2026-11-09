@@ -54,6 +54,10 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ✅ ✔ | Rintoul et al. (2016). Ocean heat drives rapid basal melt of the Totten Ice Shelf. *Science Advances* (abierto) | https://doi.org/10.1126/sciadv.1601610 |
 | ✅ ★ | Plaza ARIES de Sheehan: descripción del proyecto (guárdala como PDF) | https://aries-dtp.ac.uk/studentships/sheehan/ |
 | | Un artículo reciente de modelado MITgcm de Nakayama: elige uno en su página | https://sites.google.com/view/umi-nakayama |
+| ✅ ★ ✔ | Yung, Asay-Davis et al. (2026). Results of the second Ice Shelf–Ocean Model Intercomparison Project (ISOMIP+). *The Cryosphere* 20:2053 (abierto; con suplemento). Valida Ocean1; incluye MITgcm-JPL de Nakayama | https://doi.org/10.5194/tc-20-2053-2026 |
+| ✅ ✔ | Gwyther et al. (2020). Vertical processes and resolution impact ice shelf basal melting: a multi-model study. *Ocean Modelling* 147:101569 | https://doi.org/10.1016/j.ocemod.2020.101569 |
+| ✅ ✔ | Scott et al. (2023). Towards a fully unstructured ocean model for ice shelf cavity environments (compara con MITgcm en Ocean0). *Ocean Modelling* 182:102178 | https://doi.org/10.1016/j.ocemod.2023.102178 |
+| ✅ ✔ | Cornford & Asay-Davis (2016). Geometría ISOMIP+ (`Ocean1_input_geom_v1.01.nc`), GFZ Data Services (dato, no artículo) | https://doi.org/10.5880/PIK.2016.002 |
 
 ## Exp. 3 — Emulador de ML del derretimiento (Purkey, Jourdain/Burgard)
 
