@@ -155,6 +155,42 @@ def cell_fractions(bathy: np.ndarray, draft: np.ndarray, dz: np.ndarray) -> np.n
     return np.clip(top - bot, 0.0, None) / dz[:, None, None]
 
 
+def mitgcm_hfac(bathy: np.ndarray, draft: np.ndarray, dz: np.ndarray, hfac_min: float,
+                hfac_min_dr: float = 0.0):
+    """MITgcm's partial-cell factors and effective boundaries for bed ``bathy`` and ice
+    draft ``draft`` (2-D, m, <= 0), line by line as model/src/ini_masks_etc.F:105-195:
+
+    1. against the bed: h = clip((rF(k) - R_low) / drF(k), 0, 1); h = 0 if
+       h < hFacMnSz / 2 or R_low >= Ro_surf, else max(h, hFacMnSz), with
+       hFacMnSz = max(hFacMin, min(hFacMinDr / drF(k), 1)) (lines 105-122);
+       R_low = rF(1) - sum(drF h) (lines 124-142);
+    2. against the ice draft: h = max(h - max((rF(k) - Ro_surf) / drF(k), 0), 0), then the
+       same minimum rule (lines 144-164); Ro_surf = R_low + sum(drF h) (lines 166-195).
+
+    Returns (hFacC (nz, ny, nx), R_low, Ro_surf); R_low and Ro_surf are the bed and ice
+    base the model actually uses (pkg/shelfice reads R_shelfIce from the draft and
+    ini_masks_etc.F rewrites Ro_surf)."""
+    dz = np.asarray(dz, float)
+    r_low0 = np.asarray(bathy, float)
+    ro_surf0 = np.asarray(draft, float)
+    rF = np.concatenate([[0.0], -np.cumsum(dz)])
+    recip = 1.0 / dz
+    nz = dz.size
+    h = np.zeros((nz,) + r_low0.shape)
+    for k in range(nz):
+        mn = max(hfac_min, min(hfac_min_dr * recip[k], 1.0))
+        hl = np.minimum(np.maximum((rF[k] - r_low0) * recip[k], 0.0), 1.0)
+        h[k] = np.where((hl < mn * 0.5) | (r_low0 >= ro_surf0), 0.0, np.maximum(hl, mn))
+    r_low = rF[0] - np.sum(dz[:, None, None] * h, axis=0)
+    for k in range(nz):
+        mn = max(hfac_min, min(hfac_min_dr * recip[k], 1.0))
+        hl = h[k] - np.maximum((rF[k] - ro_surf0) * recip[k], 0.0)
+        hl = np.maximum(hl, 0.0)
+        h[k] = np.where(hl < mn * 0.5, 0.0, np.maximum(hl, mn))
+    ro_surf = r_low + np.sum(dz[:, None, None] * h, axis=0)
+    return h, r_low, ro_surf
+
+
 def _connected(frac: np.ndarray, wet: np.ndarray, seeds: np.ndarray) -> np.ndarray:
     """Wet columns reachable from ``seeds`` through 4-neighbours that share at least one
     level with open water in both columns. With useMin4hFacEdges, MITgcm opens a face at
@@ -180,7 +216,8 @@ def _connected(frac: np.ndarray, wet: np.ndarray, seeds: np.ndarray) -> np.ndarr
 
 def apply_scale_and_mask(bathy: np.ndarray, draft: np.ndarray, s: float, dz: np.ndarray,
                          min_cells: int = 2, xc_m: np.ndarray | None = None,
-                         x_connect_m: float = 790e3, floating: np.ndarray | None = None):
+                         x_connect_m: float = 790e3, floating: np.ndarray | None = None,
+                         hfac_min: float | None = None):
     """Scale the draft of floating ice, enforce the minimum water column and remove wet
     regions not connected to the open ocean (Review Focus 2).
 
@@ -192,6 +229,14 @@ def apply_scale_and_mask(bathy: np.ndarray, draft: np.ndarray, s: float, dz: np.
       Thinner columns become land, as grounded ice.
     - Only wet columns connected to a wet column with x >= ``x_connect_m`` (the
       restoring zone, AD16 Eq. 20) are kept. Without ``xc_m`` the last column is used.
+    - With ``hfac_min`` (the namelist hFacMin), the open fractions are MITgcm's own
+      partial cells (``mitgcm_hfac``, model/src/ini_masks_etc.F:105-195), not the exact
+      ones: a sliver below hFacMin/2 is closed, as in the model, so a column connected
+      only through such a sliver is not counted as connected (it would be a lake in the
+      model). The returned bed and draft of wet columns are then snapped to the model's
+      effective R_low / Ro_surf, so MITgcm's rounding leaves them unchanged and the load
+      anomaly is evaluated at the ice base the model uses. Without ``hfac_min`` the exact
+      fractions are used (reference behaviour).
     Dry columns get bed = draft = 0. Returns (bathy, draft, wet).
     """
     bathy = np.asarray(bathy, float)
@@ -201,7 +246,10 @@ def apply_scale_and_mask(bathy: np.ndarray, draft: np.ndarray, s: float, dz: np.
             raise ValueError("apply_scale_and_mask: s != 1 needs the floating-ice mask")
         floating = np.zeros(draft.shape, dtype=bool)
     draft_s = np.where(floating, s * draft, draft)
-    frac = cell_fractions(bathy, draft_s, dz)
+    if hfac_min is None:
+        frac = cell_fractions(bathy, draft_s, dz)
+    else:
+        frac, bathy, draft_s = mitgcm_hfac(bathy, draft_s, dz, hfac_min)
     wet = frac.sum(axis=0) >= min_cells - 1e-9
     seeds = np.zeros_like(wet)
     if xc_m is None:

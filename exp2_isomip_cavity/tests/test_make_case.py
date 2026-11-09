@@ -106,7 +106,9 @@ def test_geometry_files_match_geometry_module(tmp_path, synth_geom, templates):
     xc, yc = mc.grid_centres(4.0)
     bed, draft = geo.load_bed(str(synth_geom), xc, yc), geo.load_draft(str(synth_geom), xc, yc)
     fl = geo.load_floating(str(synth_geom), xc, yc)
-    b2, d2, wet = geo.apply_scale_and_mask(bed, draft, 1.0, np.full(36, 20.0), xc_m=xc, floating=fl)
+    b2, d2, wet = geo.apply_scale_and_mask(bed, draft, 1.0, np.full(36, 20.0), xc_m=xc, floating=fl,
+                                           hfac_min=meta["params"]["hFacMin"])
+    assert meta["actual"]["geometry_snapped_to_hfac"] and meta["params"]["hFacMin"] == 0.2
     np.testing.assert_array_equal(read_bin(out / "bathy.bin", (20, 120)), b2)
     np.testing.assert_array_equal(read_bin(out / "icetopo.bin", (20, 120)), d2)
     T, S = pr.ocean0(-(np.arange(36) + 0.5) * 20.0)
@@ -177,5 +179,6 @@ def test_nonintegral_step_count_rejected(tmp_path, synth_geom, templates):
 
 def test_default_template_dir_is_config(tmp_path, synth_geom, monkeypatch):
     monkeypatch.setattr(mc, "PKG", tmp_path / "pkg")
-    with pytest.raises(FileNotFoundError, match="config/ocean0_2km/input_templates"):
+    # both resolutions share config/ocean0/input_templates (cases.yaml template_config)
+    with pytest.raises(FileNotFoundError, match="config/ocean0/input_templates"):
         mc.make_case("cal2_gT0.03", tmp_path / "x", geom_path=synth_geom)

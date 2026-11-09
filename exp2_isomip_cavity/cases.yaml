@@ -40,7 +40,13 @@ configs:
     restore_profile: ocean0
     deltaT: 200.0            # provisional (Task 2 timed run)
     endTime: 63072000.0      # 2 years of 365 days
-    pickup_stems: [pickup, pickup_ptracers]
+    pickup_stems: [pickup, pickup_ptracers]   # no pickup_shelfice: SHELFICEMassStepping off
+    template_config: ocean0  # namelists in config/ocean0/input_templates (both resolutions)
+    hFacMin: 0.2             # partial cells, as MITgcm-BAS in ISOMIP+ (notes/pd1_config.md)
+    pChkptFreq: 31536000.0   # permanent pickup every year (plus one at the end of each run)
+    chkptFreq: 2628000.0     # rolling pickup every month
+    monitorFreq: 86400.0
+    snapFreq: -31536000.0    # snapshot stream (snapDiag) every year, < 0 = instantaneous
   ocean0_4km:
     <<: *base
     dx_km: 4.0

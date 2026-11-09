@@ -15,7 +15,8 @@ happens once, before the first run.
 
 Resource rules (global constraints): either up to 5 serial runs at a time (``--np 1
 --max-concurrent K``, K <= 5) or one run on 5 MPI ranks (``--np 5``, K = 1); anything else
-is refused. The campaign refuses to start while any MPI launcher or model process runs
+is refused, and np must equal nPx * nPy of the config's SIZE.h. The campaign refuses to
+start while any MPI launcher or model process runs
 (matched by process name), and fails if one is left behind at the end. SIZE.h (Nx, Ny, Nr)
 is checked against every generated grid, and the run disk must have room for all inputs.
 
@@ -83,6 +84,7 @@ def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1
         raise RuntimeError("another MPI / model process is running, refusing to start: "
                            + " | ".join(busy))
     cfg_dir = Path(config_root or PKG / "config") / config
+    cp.check_np(cfg_dir / "code" / "SIZE.h", np_)
     build_dir = Path(build_root) / config
     run_dirs = {n: Path(runs_root) / f"{n}{run_suffix}" for n in names}
 

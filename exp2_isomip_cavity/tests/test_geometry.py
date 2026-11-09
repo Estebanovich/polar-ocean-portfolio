@@ -237,3 +237,76 @@ def test_thinner_draft_does_not_move_grounding_line(synth_geom, dx_km):
         np.testing.assert_array_equal(dry_ice_1, dry_ice_08)
         newly_wet = r08[2] & ~r1[2]
         assert np.all(fl[newly_wet])
+
+
+# ---- MITgcm partial-cell rounding (hFacMin), Task 2 ------------------------------
+# model/src/ini_masks_etc.F:105-195: a fraction below hFacMin/2 closes the cell, one in
+# [hFacMin/2, hFacMin) is rounded up to hFacMin; first against the bed, then the ice draft.
+
+HFMIN = 0.2
+
+
+def test_mitgcm_hfac_rounding_rules():
+    # one column per case; bed / draft chosen so one cell is a sliver
+    bed = np.array([[-101.0, -103.0, -105.0, -300.0, -300.0]])
+    draft = np.array([[0.0, 0.0, 0.0, -219.0, -217.0]])
+    h, r_low, ro_surf = geo.mitgcm_hfac(bed, draft, DZ, HFMIN)
+    # bed slivers in level 5 (100-120 m): 0.05 -> 0, 0.15 -> 0.2, 0.25 kept
+    np.testing.assert_allclose(h[5, 0, :3], [0.0, 0.2, 0.25])
+    np.testing.assert_allclose(r_low[0, :3], [-100.0, -104.0, -105.0])
+    # draft slivers in level 10 (200-220 m): 0.05 -> 0, 0.15 -> 0.2
+    np.testing.assert_allclose(h[10, 0, 3:], [0.0, 0.2])
+    np.testing.assert_allclose(ro_surf[0, 3:], [-220.0, -216.0])
+    np.testing.assert_allclose(h[:5, 0, 0], 1.0)
+    assert np.all(h[11:15, 0, 3:] == 1.0) and np.all(h[:10, 0, 3:] == 0.0)
+
+
+def test_mitgcm_hfac_land_and_grounded_columns_are_closed():
+    bed = np.array([[0.0, -400.0]])
+    draft = np.array([[0.0, -400.0]])
+    h, r_low, ro_surf = geo.mitgcm_hfac(bed, draft, DZ, HFMIN)
+    assert not h.any()
+
+
+def test_sliver_connection_is_rounded_away():
+    # column 0 (cavity, 400-201 m) meets columns 1-2 (open, 201-0 m) only in level 10
+    # (200-220 m), where columns 1-2 have a 1 m (0.05) sliver: open for exact fractions,
+    # closed by MITgcm (0.05 < hFacMin/2), so column 0 would be an isolated lake.
+    bed = np.array([[-400.0, -201.0, -201.0]])
+    draft = np.array([[-201.0, 0.0, 0.0]])
+    assert geo.apply_scale_and_mask(bed, draft, 1.0, DZ)[2].tolist() == [[True, True, True]]
+    b2, d2, wet = geo.apply_scale_and_mask(bed, draft, 1.0, DZ, hfac_min=HFMIN)
+    assert wet.tolist() == [[False, True, True]]
+    assert b2[0, 0] == 0.0 and d2[0, 0] == 0.0
+
+
+def test_sliver_above_half_hfacmin_stays_connected():
+    # 3 m (0.15) sliver: rounded up to hFacMin, the face stays open
+    bed = np.array([[-400.0, -203.0, -203.0]])
+    draft = np.array([[-201.0, 0.0, 0.0]])
+    b2, d2, wet = geo.apply_scale_and_mask(bed, draft, 1.0, DZ, hfac_min=HFMIN)
+    assert wet.all()
+    np.testing.assert_allclose(b2[0, 1:], -204.0)        # snapped to 200 + 0.2 x 20 m
+
+
+@pytest.mark.parametrize("dx_km", [2, 4])
+@pytest.mark.parametrize("s", [0.8, 1.0, 1.2])
+def test_snapped_geometry_is_a_fixed_point_of_mitgcm_rounding(synth_geom, dx_km, s):
+    """The written bed / draft are already on the hFac rules: MITgcm's rounding leaves
+    them (and hence R_shelfIce, the load anomaly position) unchanged."""
+    for path in _paths(synth_geom):
+        xc, yc = grid(dx_km)
+        bed, draft = geo.load_bed(path, xc, yc), geo.load_draft(path, xc, yc)
+        fl = geo.load_floating(path, xc, yc)
+        b2, d2, wet = geo.apply_scale_and_mask(bed, draft, s, DZ, xc_m=xc, floating=fl,
+                                               hfac_min=HFMIN)
+        h, r_low, ro_surf = geo.mitgcm_hfac(b2, d2, DZ, HFMIN)
+        np.testing.assert_array_equal(r_low[wet], b2[wet])
+        np.testing.assert_array_equal(ro_surf[wet], d2[wet])
+        assert not h[:, ~wet].any()
+        assert np.all(h.sum(axis=0)[wet] >= 2 - 1e-9)
+        vals = h[h > 0]
+        assert vals.min() >= HFMIN - 1e-12 and vals.max() <= 1.0
+        # connectivity with the model's own faces (useMin4hFacEdges: hFacW = min hFacC)
+        lab, n = ndimage.label(wet)
+        assert geo._connected(h, wet, np.broadcast_to(xc[None, :] >= 790e3, wet.shape)).sum() == wet.sum()

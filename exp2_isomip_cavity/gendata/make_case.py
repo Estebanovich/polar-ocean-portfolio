@@ -11,6 +11,8 @@ Grid: x 320-800 km, y 0-80 km (AD16 sect. 3.1.1), cells of dx_km (2 or 4 km), 36
   bathy.bin                (ny, nx)      bed [m], 0 on land
                                          (draft' = s draft on floating columns only, R9)
   icetopo.bin              (ny, nx)      ice draft [m], 0 on land and open ocean
+                                         (both snapped to MITgcm's partial cells when
+                                         the case has hFacMin, so the model keeps them)
   shelficeLoadAnomaly.bin  (ny, nx)      pressure-load anomaly [Pa] (profiles.load_anomaly)
   T.init.bin S.init.bin    (nz, ny, nx)  initial state, horizontally uniform
   T.restore.bin S.restore.bin (nz, ny, nx) restoring targets (AD16 Eq. 18-19)
@@ -209,11 +211,17 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
     bed = geo.load_bed(str(gpath), xc, yc)
     draft = geo.load_draft(str(gpath), xc, yc)
     floating = geo.load_floating(str(gpath), xc, yc)
+    # Task 2: minimum column and connectivity on MITgcm's own partial cells (hFacMin),
+    # bed and draft snapped to them (geometry.mitgcm_hfac, model/src/ini_masks_etc.F:105-195)
+    hfac_min = p.get("hFacMin")
     bathy, icetopo, wet = geo.apply_scale_and_mask(bed, draft, p["s"], dzv,
                                                    min_cells=p["min_cells"], xc_m=xc,
                                                    x_connect_m=p["x_restore0_m"],
-                                                   floating=floating)
-    frac = geo.cell_fractions(bathy, icetopo, dzv) * wet[None]
+                                                   floating=floating, hfac_min=hfac_min)
+    if hfac_min is None:
+        frac = geo.cell_fractions(bathy, icetopo, dzv) * wet[None]
+    else:
+        frac = geo.mitgcm_hfac(bathy, icetopo, dzv, hfac_min)[0] * wet[None]
 
     # ---- profiles, load anomaly, restoring
     Ti, Si, *_ = _profile(p["init_profile"], zc, p)
@@ -262,6 +270,8 @@ def make_case(name: str, out_dir: Path, template_dir: Path | None = None,
         "deepest_wet_ice_base_depth_m": (float(-icetopo[wet & (icetopo < 0)].min())
                                          if (wet & (icetopo < 0)).any() else None),
         "n_floating_columns": int(floating.sum()),
+        "hFacMin": hfac_min,
+        "geometry_snapped_to_hfac": hfac_min is not None,
         "floating_rule": "strict majority of 1 km floatingMask sub-cells; s scales only these (R9)",
         "bed_source": BED_SOURCE, "draft_source": DRAFT_SOURCE,
         "geom_file": gpath.name, "geom_sha256": _sha256(gpath),

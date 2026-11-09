@@ -122,6 +122,15 @@ def _size_param(text: str, name: str) -> int:
     return int(m.group(1))
 
 
+def check_np(size_h: Path, np_: int) -> None:
+    """Raise RuntimeError unless the MPI rank count ``np_`` equals nPx * nPy of SIZE.h
+    (a mismatch makes the model stop at start-up, or silently run serial tiles)."""
+    t = Path(size_h).read_text()
+    n = _size_param(t, "nPx") * _size_param(t, "nPy")
+    if n != np_:
+        raise RuntimeError(f"{size_h}: nPx * nPy = {n}, but the campaign asks for np = {np_}")
+
+
 def check_size(case_dir: Path, size_h: Path) -> None:
     """Raise RuntimeError unless SIZE.h (sNx nSx nPx, sNy nSy nPy, Nr) matches case.json."""
     p = json.loads((Path(case_dir) / "case.json").read_text())["params"]

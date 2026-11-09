@@ -1,0 +1,25 @@
+# ====================================================================
+# Exp. 2 (ISOMIP+) -- case ${case}: sponge restoring, AD16 Eq. 18-20.
+# gamma(x) = max(0, (x - 790 km)/10 km) / tauRelax (rbcs_mask.bin), so
+# 10 day^-1 at x = 800 km with tauRelax = 0.1 day.
+# T and S relax to the restoring profile; the meltwater tracer to 0
+# (no relaxPtracerFile: RBC_ptracers = 0, pkg/rbcs/rbcs_init_varia.F:72).
+# ====================================================================
+ &RBCS_PARM01
+ useRBCtemp=.TRUE.,
+ useRBCsalt=.TRUE.,
+ useRBCptracers=.TRUE.,
+ tauRelaxT=${tauRelax},
+ tauRelaxS=${tauRelax},
+ relaxMaskFile(1)='rbcs_mask.bin',
+ relaxMaskFile(2)='rbcs_mask.bin',
+ relaxMaskFile(3)='rbcs_mask.bin',
+ relaxTFile='T.restore.bin',
+ relaxSFile='S.restore.bin',
+ rbcsForcingPeriod=0.,
+ &
+
+ &RBCS_PARM02
+ useRBCpTrNum(1)=.TRUE.,
+ tauRelaxPTR(1)=${tauRelax},
+ &

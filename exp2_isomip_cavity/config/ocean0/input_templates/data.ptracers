@@ -1,0 +1,18 @@
+# ====================================================================
+# Exp. 2 (ISOMIP+) -- case ${case}: meltwater tracer TRAC01 = meltwater
+# volume fraction. Source: virtual, -SHIfwFlx/rho_fw under the ice
+# (config/ocean0/code/shelfice_forcing_mwtr.F); sink: rbcs to 0 in the
+# sponge (data.rbcs). Starts at 0 everywhere; same advection and
+# mixing as T and S.
+# ====================================================================
+ &PTRACERS_PARM01
+ PTRACERS_numInUse=1,
+ PTRACERS_Iter0=0,
+ PTRACERS_names(1)='meltwater',
+ PTRACERS_long_names(1)='meltwater volume fraction',
+ PTRACERS_units(1)='1',
+ PTRACERS_advScheme(1)=77,
+ PTRACERS_diffKh(1)=${diffKh},
+ PTRACERS_diffKr(1)=${diffKr},
+ PTRACERS_ref(1:${nz},1)=${nz}*0.,
+ &

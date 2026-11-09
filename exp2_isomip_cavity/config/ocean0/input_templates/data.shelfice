@@ -1,0 +1,37 @@
+# ====================================================================
+# Exp. 2 (ISOMIP+) -- case ${case}: pkg/shelfice with the AD16
+# sect. 3.1.8 melt law (config/ocean0/code/shelfice_thermodynamics.F,
+# CPP option SHI_ISOMIP_PLUS_MELT; Python twin theory/melt.py).
+# ====================================================================
+ &SHELFICE_PARM01
+# geometry: draft snapped to the hFac rules by gendata; load anomaly
+# integrated from the initial profile with the linear EOS (profiles.py)
+ SHELFICEtopoFile='icetopo.bin',
+ SHELFICEloadAnomalyFile='shelficeLoadAnomaly.bin',
+ SHELFICEMassStepping=.FALSE.,
+# three-equation branch, Jenkins et al. 2001 conservative form for the
+# virtual heat and salt fluxes (AD16 Eq. 29-30)
+ useISOMIPTD=.FALSE.,
+ SHELFICEconserve=.TRUE.,
+# perfectly insulating ice: kappa_i = 0 (AD16 Table 4), no
+# advective-diffusive heat flux into the ice (AD16 sect. 3.1.8)
+ SHELFICEkappa=0.,
+ SHELFICEadvDiffHeatFlux=.FALSE.,
+ SHELFICElatentHeat=3.34E5,
+# Losch (2008) boundary layer: T, S, u sampled over, and fluxes spread
+# over, one cell thickness below the ice (also forces
+# SHELFICE_oldCalcUStar, shelfice_readparms.F:207-208)
+ SHELFICEboundaryLayer=.TRUE.,
+ SHI_withBL_realFWflux=.FALSE.,
+ SHI_withBL_uStarTopDz=.FALSE.,
+# gammaT = GammaT u*, gammaS = GammaS u*, u*^2 = Cd |u|^2 + u_tidal^2
+# (AD16 Eq. 24-27): needs SHELFICEuseGammaFrict; the transfer
+# coefficients are then nondimensional (Gamma_T, Gamma_S = Gamma_T/35)
+ SHELFICEuseGammaFrict=.TRUE.,
+ SHELFICEheatTransCoeff=${gammaT},
+ SHELFICEsaltTransCoeff=${gammaS},
+ shiCdrag=${Cd},
+# top drag: quadratic, Cd = 2.5e-3, free slip (AD16 Table 4)
+ SHELFICEDragQuadratic=${Cd},
+ no_slip_shelfice=.FALSE.,
+ &
