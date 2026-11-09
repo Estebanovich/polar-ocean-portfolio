@@ -7,6 +7,10 @@
 #   s: ice-draft scale factor (draft' = s draft, before the minimum water column)
 #   gammaT: nondimensional heat-transfer coefficient (AD16 Table 4, "model specific");
 #           gammaS = gammaT / 35 is derived. null = not calibrated yet (make_case refuses).
+#           Calibrated values (pd0 K1, R21 relaunch, approved at PD1a 2026-11-09):
+#           2 km 0.030959 (figures/calibration_2km_r21.json, verify_2km_r21.json) for Ocean0
+#           and Ocean1 at 2 km; 4 km 0.029356 (figures/calibration_4km_r21.json,
+#           verify_4km_r21.json) for ocean0_4km and the ensemble. Not to be touched again.
 # ensemble: expanded by make_case.load_cases into cases ens_T{Tbot}_zc{z_c}_s{s}
 #   (the Latin hypercube is generated from the seed, never written by hand).
 # deltaT is set by the Task 4 timing runs (notes/pd1_calibracion.md: largest dt of the
@@ -36,7 +40,7 @@ configs:
     tauRelax: 8640.0         # 0.1 day: gamma0 = 10 day^-1 at x = 800 km (AD16 sect. 3.1.3)
     min_cells: 2             # minimum water column, cells (AD16 sect. 3.1.4)
     s: 1.0
-    gammaT: null
+    gammaT: 0.030959         # GammaT_cal,2km (pd0 K1, figures/calibration_2km_r21.json)
     # R21 provenance tag of the u* law, u*^2 = Cd (u^2 + u_tidal^2) (theory/melt.py MELT_LAW);
     # --skip-ok and metrics.load_run refuse runs whose case.json lacks it (void law)
     melt_law: AD16_eq27_r21
@@ -57,6 +61,7 @@ configs:
   ocean0_4km: &base4
     <<: *base
     dx_km: 4.0
+    gammaT: 0.029356         # GammaT_cal,4km (pd0 K1, figures/calibration_4km_r21.json)
     deltaT: 800.0            # Task 4 timing: max CFL 0.32 (w, 30 d); notes/pd1_calibracion.md
   ocean0_4km_mpi:            # the same 4 km physics on 5 MPI ranks (Task 4 timing)
     <<: *base4

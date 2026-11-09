@@ -78,6 +78,10 @@ def evaluate(rd: Path) -> dict:
         res["S1"] = {"pass": False, "reason": str(e)}
         return res
     st = run_status(rd)
+    # Historical smoke checker: it reads case.json directly, NOT through metrics.load_run, so
+    # the R21 melt_law guard does not apply here. Every smoke run it was written for used the
+    # void pre-R21 u* law (notes/pd1_config.md, "Error (a): forma de u* (R21)"); do not use
+    # its output for anything but that record.
     meta = json.loads((rd / "case.json").read_text())
     p = meta["params"]
     nx, ny, nz, dz = p["nx"], p["ny"], p["nz"], float(p["dz"])

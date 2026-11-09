@@ -285,3 +285,4 @@
 - **Resultados R21** (cola 08:11–12:28 CST): ΓT_cal = 0.029356 (4 km) y 0.030959 (2 km), acotados con los 3 puntos de pd0. K1 PASA en las dos mallas (30.02 y 30.00 m a⁻¹), V1 PASA (0.030959 ∈ [0.011, 0.2]), N1–N3 PASAN en las 8 corridas, CFL máximo 0.348. Detalle en `notes/pd1_calibracion.md`, «Resultados R21».
 - **Candado:** `melt_law` en `case.json`; `--skip-ok` y `metrics.load_run` rechazan corridas con la ley anulada; sufijo por omisión `_r21`.
 - **Comparación post hoc con MITgcm-JPL** (`notes/pd1_comparacion_jpl.md`): melt profundo 30.00 contra 31.35 m a⁻¹, u\* profundo 0.00365 contra 0.00397 m s⁻¹, correlación de los mapas de melt r = 0.91.
+- **Producción (PD1a aprobada):** ΓT_cal en `cases.yaml` (4 km 0.029356 para el ensamble y `ocean0_4km`; 2 km 0.030959 para Ocean0 y Ocean1); `binary_sha256` en `case.json` al correr; `scripts/queue_production.sh` (ensamble de 28 casos, N1–N3, luego Ocean1 en 4 etapas de 5 años) lanzada.

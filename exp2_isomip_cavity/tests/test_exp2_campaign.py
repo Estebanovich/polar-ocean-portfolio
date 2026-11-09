@@ -23,6 +23,10 @@ class Shell:
 
     def __call__(self, cmd):
         self.calls.append([str(c) for c in cmd])
+        if Path(cmd[0]).name == "build_mitgcm.sh":           # fake build: an executable file
+            from pfcommon.campaign import EXE_NAME
+            Path(cmd[2]).mkdir(parents=True, exist_ok=True)
+            (Path(cmd[2]) / EXE_NAME).write_bytes(b"fake binary " + str(cmd[1]).encode())
         if Path(cmd[0]).name == "run_mitgcm.sh":
             from pfcommon.campaign import nml_int
             inp, run = Path(cmd[2]), Path(cmd[3])
@@ -137,3 +141,18 @@ def test_production_run_suffix_defaults_to_r21(monkeypatch):
     monkeypatch.setattr(rc, "run_campaign", lambda *a, **k: seen.update(k) or {})
     rc.main(["--config", "ocean0_4km", "--cases", "ocean0_4km"])
     assert rc.DEFAULT_RUN_SUFFIX == "_r21" and seen["run_suffix"] == "_r21"
+
+
+def test_binary_sha256_recorded_at_run_time(tmp_path, cfg_root, templates, synth_geom):
+    """Provenance: every run's input/case.json carries the sha256 of the executable of
+    the build it ran with, written by the campaign runner before the run starts."""
+    import hashlib
+    from pfcommon.campaign import EXE_NAME
+    res, sh = _run(tmp_path, cfg_root, templates, synth_geom, "ocean0_4km", "cal4_gT0.03",
+                   overrides={"endTime": 4800.0, "deltaT": 1200.0})
+    assert res == {"cal4_gT0.03": "OK"}
+    exe = tmp_path / "builds" / "ocean0_4km" / EXE_NAME
+    meta = json.loads((tmp_path / "runs" / "cal4_gT0.03" / "input" / "case.json").read_text())
+    assert meta["binary_sha256"] == hashlib.sha256(exe.read_bytes()).hexdigest()
+    assert meta["binary_path"] == str(exe) and meta["binary_recorded_at"]
+    assert meta["params"]["melt_law"] == "AD16_eq27_r21"

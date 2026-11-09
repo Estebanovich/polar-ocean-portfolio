@@ -156,9 +156,34 @@ def test_ensemble_case_ramp_and_scale(tmp_path, synth_geom, templates):
 
 
 def test_uncalibrated_gamma_refused(tmp_path, synth_geom, templates):
+    import yaml
+    spec = yaml.safe_load(mc.CASES_FILE.read_text())
+    spec["configs"]["ocean0_2km"]["gammaT"] = None
+    cf = tmp_path / "cases.yaml"
+    cf.write_text(yaml.safe_dump(spec))
     with pytest.raises(ValueError, match="gammaT"):
-        _make("ocean0_2km", tmp_path, synth_geom, templates)
+        _make("ocean0_2km", tmp_path, synth_geom, templates, cases_file=cf)
     assert not (tmp_path / "ocean0_2km").exists()
+
+
+def test_calibrated_gammas_in_registry():
+    """PD1a (2026-11-09): GammaT_cal of the R21 calibration, written in cases.yaml; the
+    calibration and diagnostic cases keep their own values."""
+    cases = mc.load_cases()
+    spec = cases
+
+    def merged(n):
+        c = spec["cases"][n]
+        return {**spec["configs"][c["config"]], **c}
+
+    ens = [n for n in spec["cases"] if n.startswith("ens_")]
+    assert len(ens) == 28
+    for n in ens + ["ocean0_4km"]:
+        assert merged(n)["gammaT"] == 0.029356 and merged(n)["melt_law"] == "AD16_eq27_r21"
+    for n in ("ocean0_2km", "ocean1_2km"):
+        assert merged(n)["gammaT"] == 0.030959
+    for g in ("0.015", "0.03", "0.06", "0.0075"):
+        assert merged(f"cal2_gT{g}")["gammaT"] == float(g) == merged(f"cal4_gT{g}")["gammaT"]
 
 
 def test_unknown_placeholder_raises(tmp_path, synth_geom, templates):

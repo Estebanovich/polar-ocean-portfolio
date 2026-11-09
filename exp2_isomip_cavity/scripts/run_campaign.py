@@ -31,12 +31,19 @@ melt_law in its case.json, is never reused nor overwritten); the build is skippe
 overrides a numeric case parameter (e.g. ``gammaT`` before calibration); ``--end-time``
 overrides endTime. The exit code is 1 if any case is not OK.
 
+Provenance: when a case starts, the sha256 of the build's executable (the file
+run_mitgcm.sh copies into the run directory) is written to the case's ``input/case.json``
+as ``binary_sha256`` (with ``binary_path`` and ``binary_recorded_at``), so the run's
+``case.json`` carries the exact binary it ran with.
+
 ``--run-suffix`` defaults to ``_r21`` (R21): every Exp. 2 production run directory carries
 it, so the void runs without suffix are never a target. An explicit suffix replaces it.
 """
 from __future__ import annotations
 
 import argparse
+import datetime
+import hashlib
 import json
 import os
 import subprocess
@@ -63,6 +70,21 @@ DEFAULT_RUN_SUFFIX = "_r21"          # R21: production run directories (see docs
 def _sh(cmd: list) -> int:
     env = {**os.environ, **THREAD_ENV}
     return subprocess.run([str(c) for c in cmd], env=env).returncode
+
+
+def record_binary(inp: Path, build_dir: Path) -> str:
+    """Write the sha256 of the build's executable into ``inp/case.json`` (run-time
+    provenance, before the runner copies the binary and the inputs). Returns the hash."""
+    exe = Path(build_dir) / cp.EXE_NAME
+    if not exe.is_file():
+        raise RuntimeError(f"no executable in {build_dir}")
+    sha = hashlib.sha256(exe.read_bytes()).hexdigest()
+    cj = Path(inp) / "case.json"
+    meta = json.loads(cj.read_text())
+    meta.update(binary_sha256=sha, binary_path=str(exe),
+                binary_recorded_at=datetime.datetime.now().isoformat(timespec="seconds"))
+    cj.write_text(json.dumps(meta, indent=2, default=float))
+    return sha
 
 
 def _requested(spec: dict, name: str, overrides: dict | None) -> dict:
@@ -127,6 +149,7 @@ def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1
     pickup_stems = tuple(spec["configs"][config].get("pickup_stems", ["pickup"]))
 
     def run_one(n: str) -> str:
+        record_binary(inputs[n], build_dir)
         print(f"[run_campaign] {n}: running in {run_dirs[n]} ({n_stages} stage(s))", flush=True)
         st = cp.run_stages(run_dirs[n], inputs[n], build_dir, np_, n_stages, sh, RUN_SH,
                            pickup_stems=pickup_stems)

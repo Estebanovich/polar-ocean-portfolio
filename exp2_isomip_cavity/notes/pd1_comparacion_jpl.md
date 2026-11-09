@@ -39,7 +39,7 @@ Fecha: 2026-11-09. **Post hoc**, a pedido de Esteban; no es un criterio de pd0 y
 
 ## Diferencias de definición y de configuración
 
-- **Thermal driving.** La de JPL es la variable `thermalDriving` de AD16: T_w − T_zd, con T_w promediada sobre una capa de 20 m bajo el calado. No tenemos diagnóstico de T_w ni de T_b, así que la nuestra se invierte del balance de calor AD16 Eq. 24 con κ_i = 0 (exacto en nuestro código): T_w − T_b = −⟨SHIfwFlx⟩·L / (ρ_ref·c_w·⟨SHIgammT⟩), con medias mensuales. Es la media de T_w − T_b ponderada por γT, no la media simple. Como el melt crece donde γT es grande, esta ponderación puede sesgar nuestra cifra hacia arriba frente a la de JPL; no se cuantifica aquí.
+- **Thermal driving.** La de JPL es la variable `thermalDriving` de AD16: T_w − T_zd, con T_w promediada sobre una capa de 20 m bajo el calado. No tenemos diagnóstico de T_w ni de T_b, así que la nuestra se invierte del balance de calor AD16 Eq. 24 con κ_i = 0 (exacto en nuestro código): T_w − T_b = −⟨SHIfwFlx⟩·L / (ρ_ref·c_w·⟨SHIgammT⟩), con medias mensuales. Es la media de T_w − T_b ponderada por γT, no la media simple. La diferencia entre las dos definiciones depende de la covarianza temporal y espacial de γT y T_w − T_b, cuyo signo no conocemos; no se cuantifica aquí, y la comparación de thermal driving vale solo como orden de magnitud.
 - **Velocidad de u\*.** JPL promedia u sobre una capa de 20 m y los 4 vecinos horizontales, y excluye las velocidades sin flujo normal en las caras verticales del hielo (toma los 20 m desde el fondo de la capa límite). Nosotros usamos `SHELFICEboundaryLayer`: la celda superior más la parte de la siguiente que completa el espesor de una celda (20 m), con u y v llevados al centro de la celda (`metrics.boundary_layer_velocity_sq`).
 - **Configuración** (resumen PDF de JPL contra la nuestra):
   - advección: JPL usa DST de 3.er orden con limitador (33); nosotros, el limitador de 2.º orden (77);
@@ -47,5 +47,6 @@ Fecha: 2026-11-09. **Post hoc**, a pedido de Esteban; no es un criterio de pd0 y
   - celdas parciales: JPL usa hFacMin = 0.25; nosotros, 0.2;
   - JPL: MITgcm checkpoint 66o, con el código de la plataforma modificado y no publicado; flujos de sal virtuales; topografía interpolada linealmente a 2 km.
 - **Duración.** JPL entregó un año de Ocean0; nosotros corremos 2 años (pd0). Los meses 7–12 de JPL y los 19–24 nuestros no son la misma fase de ajuste.
+- **Meses.** Los registros de JPL son meses de calendario (`time` = 0, 31, 59, … días: meses de 28–31 días), así que sus registros 7–12 cubren 184 días (julio–diciembre). Los nuestros son meses fijos de 2 628 000 s (30.42 días, pd0), así que nuestros 6 meses cubren 182.5 días. Las medias de JPL sobre la ventana se toman sin ponderar por la duración de cada mes (los meses de 30 y 31 días difieren en ~3 %).
 
 (La serie R20, que probó 33, hFacMin = 0.25 y ajuste convectivo de uno en uno, está anulada por R21 y no se usa aquí.)
