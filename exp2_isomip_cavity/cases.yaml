@@ -1,0 +1,80 @@
+# Exp. 2 case registry (ISOMIP+ ice-shelf cavity), read by gendata/make_case.py.
+# References: Asay-Davis et al. (2016) = AD16. Units: m, s, degC, PSU, kg m^-3.
+# configs: base parameters per MITgcm configuration (key = config/<cfg>/ directory).
+# cases: one entry per run; keys override the config values.
+#   init_profile / restore_profile: ocean0 (WARM, AD16 Eq. 21-22, Table 6) | cold (Table 5)
+#                                   | ramp (ensemble family; Tbot, z_c, d)
+#   s: ice-draft scale factor (draft' = s draft, before the minimum water column)
+#   gammaT: nondimensional heat-transfer coefficient (AD16 Table 4, "model specific");
+#           gammaS = gammaT / 35 is derived. null = not calibrated yet (make_case refuses).
+# ensemble: expanded by make_case.load_cases into cases ens_T{Tbot}_zc{z_c}_s{s}
+#   (the Latin hypercube is generated from the seed, never written by hand).
+# deltaT is provisional: the timed short run of each resolution sets it (Task 2), and it
+# is then the same for every run of that resolution.
+configs:
+  ocean0_2km: &base
+    dx_km: 2.0
+    nz: 36
+    dz: 20.0                 # 36 x 20 m levels, 0-720 m (AD16 sect. 3.1.4)
+    lat_deg: -75.0           # f plane at 75 S (AD16 sect. 3.1.1)
+    rho_ref: 1027.51         # linear EOS, AD16 Eq. 23 and Table 4
+    tRef: -1.0
+    sRef: 34.2
+    tAlpha: 3.733e-5
+    sBeta: 7.843e-4
+    gravity: 9.81
+    viscAh: 6.0              # AD16 Table 4
+    diffKh: 1.0
+    viscAr: 1.0e-3
+    diffKr: 5.0e-5
+    ivdc_kappa: 0.1
+    Cd: 2.5e-3
+    u_tidal: 0.01
+    x_restore0_m: 790000.0   # restoring zone, AD16 Eq. 20
+    x_restore1_m: 800000.0
+    tauRelax: 8640.0         # 0.1 day: gamma0 = 10 day^-1 at x = 800 km (AD16 sect. 3.1.3)
+    min_cells: 2             # minimum water column, cells (AD16 sect. 3.1.4)
+    s: 1.0
+    gammaT: null
+    init_profile: ocean0
+    restore_profile: ocean0
+    deltaT: 200.0            # provisional (Task 2 timed run)
+    endTime: 63072000.0      # 2 years of 365 days
+    pickup_stems: [pickup, pickup_ptracers]
+  ocean0_4km:
+    <<: *base
+    dx_km: 4.0
+    deltaT: 400.0            # provisional (Task 2 timed run)
+cases:
+  ocean0_2km: {config: ocean0_2km}
+  ocean1_2km:                # AD16 Table 2: COLD initial state, WARM restoring, 20 years
+    config: ocean0_2km
+    init_profile: cold
+    restore_profile: ocean0
+    endTime: 630720000.0
+  ocean0_4km: {config: ocean0_4km, ensemble_group: reference}
+  # Gamma_T calibration (AD16 sect. 3.2.1), Ocean0 at each resolution
+  cal2_gT0.015: {config: ocean0_2km, gammaT: 0.015}
+  cal2_gT0.03: {config: ocean0_2km, gammaT: 0.03}
+  cal2_gT0.06: {config: ocean0_2km, gammaT: 0.06}
+  cal4_gT0.015: {config: ocean0_4km, gammaT: 0.015}
+  cal4_gT0.03: {config: ocean0_4km, gammaT: 0.03}
+  cal4_gT0.06: {config: ocean0_4km, gammaT: 0.06}
+ensemble:
+  config: ocean0_4km
+  reference: ocean0_4km
+  d: 300.0                   # ramp thickness, m
+  factorial:
+    Tbot: [-0.5, 0.0, 0.5, 1.0, 1.5]
+    z_c: [250.0, 400.0, 550.0]
+    s: 1.0
+  geometry:                  # Latin hypercube in (Tbot, z_c) for each s
+    s: [0.8, 1.2]
+    n_per_s: 5
+    seed: 20261108
+    Tbot_range: [-0.5, 1.5]
+    z_c_range: [250.0, 550.0]
+  extrapolation:             # Exp. 3 test only
+    Tbot: [2.0]
+    z_c: [250.0, 400.0, 550.0]
+    s: 1.0
