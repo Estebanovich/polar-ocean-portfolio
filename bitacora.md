@@ -273,3 +273,12 @@
   - Jackson 2018: lo que llaman simplificación es la condición en la boca; 30 m es «típico de Sermilik» y su control usa 14 m.
   - Carroll (viento) y Sanchez (Sermilik, la pluma duplica el intercambio) quedan separados.
 - `.gitignore` sin entradas del asistente en todo el historial (reescrito; las entradas se movieron a `.git/info/exclude`). Las referencias de commits en las notas están actualizadas.
+
+## 2026-11-09 — Exp. 2: error (a) en la forma de u\* (R21) y relanzamiento de la calibración
+
+- **Error (a), nuestro:** AD16 Eq. 27, verificada en la página del PDF (GMD 9, p. 2485 = p. 15 del PDF), es u\*² = Cd·(u_w² + u_tidal²), con piso √Cd·u_tidal = 5e-4 m s⁻¹. Implementamos Cd·u_w² + u_tidal² (piso 0.01 m s⁻¹). La fórmula del plan venía de una extracción de texto sin paréntesis.
+- **Evidencia:** u\* medio profundo de MITgcm-JPL en Ocean0 = 0.0040 m s⁻¹; el nuestro, 0.0109 m s⁻¹.
+- **Corrección con TDD:** prueba con anclas a mano (5.0e-4 y 7.0711e-4 m s⁻¹) que falla antes y pasa después; `melt.py`, override de Fortran (mínimo, marcado, con cita de la página), `metrics.ustar_check` (piso √Cd·u_tidal) y sus pruebas; prueba nueva que exige que Cd multiplique a los dos términos en el Fortran. Suite completa: 496 pasan.
+- Binarios `ocean0_2km` (MPI), `ocean0_4km` y `ocean0_4km_mpi` recompilados.
+- **Anuladas** (se conservan en disco): smoke, `cal2_*`/`cal4_*` (todos los ΓT), `ocean0_2km`, `ocean0_4km`, `tim4m_*`, `diag4_*`. La enmienda de PD2 (ΓT = 0.0075) y la serie R20 estaban condicionadas a la ley errónea: quedan como registro, no se reutilizan. K1, V1, N1–N3 y pd0 no cambian.
+- **Relanzamiento** de la calibración de pd0 K1 desde cero, ΓT ∈ {0.015, 0.03, 0.06} en las dos mallas, con sufijo de corrida `_r21` (`scripts/queue_calibration.sh`). Si 30 m a⁻¹ no queda acotado en una malla, la cola se detiene ahí (PD2), sin extrapolar.

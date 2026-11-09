@@ -23,7 +23,7 @@ C     following Holland and Jenkins, JPO, 1999
 
 C     ISOMIP+ (Exp. 2): AD16 sect. 3.1.8 melt law in the Exp. 2 copy of
 C     shelfice_thermodynamics.F (constant GammaT with gammaT = GammaT u*,
-C     u*^2 = Cd |u|^2 + u_tidal^2, AD16 liquidus, no SW_TEMP); needs
+C     u*^2 = Cd (|u|^2 + u_tidal^2), AD16 liquidus, no SW_TEMP); needs
 C     SHI_ALLOW_GAMMAFRICT and SHELFICEuseGammaFrict = .TRUE.
 #define SHI_ISOMIP_PLUS_MELT
 

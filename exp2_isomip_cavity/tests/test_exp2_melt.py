@@ -107,9 +107,15 @@ def test_vectorised_matches_scalar():
 
 
 def test_ustar_ad16_eq27():
-    # u*^2 = Cd u_w^2 + u_tidal^2 (AD16 Eq. 27); at rest u* = u_tidal
-    assert ml.friction_velocity(0.0) == pytest.approx(0.01, rel=1e-15)
-    assert ml.friction_velocity(0.2 ** 2) == pytest.approx(np.sqrt(2.5e-3 * 0.04 + 1e-4), rel=1e-15)
+    """u*^2 = Cd (u_w^2 + u_tidal^2), AD16 Eq. 27 as printed on PDF page 15 (ruling R21):
+    Cd multiplies both terms, so at rest u* = sqrt(Cd) u_tidal, not u_tidal. Anchors computed
+    by hand with Cd = 2.5e-3, u_tidal = 0.01 m/s."""
+    # at rest: sqrt(2.5e-3 * 1e-4) = sqrt(2.5e-7) = 5.0e-4 m/s
+    assert ml.friction_velocity(0.0) == pytest.approx(5.0e-4, rel=1e-12)
+    # |u_w| = 0.01 m/s: sqrt(2.5e-3 * (1e-4 + 1e-4)) = sqrt(5.0e-7) = 7.0711e-4 m/s
+    assert ml.friction_velocity(0.01 ** 2) == pytest.approx(7.0711e-4, rel=1e-4)
+    # |u_w| = 0.2 m/s: sqrt(2.5e-3 * (0.04 + 1e-4)) = sqrt(1.0025e-4) = 1.00125e-2 m/s
+    assert ml.friction_velocity(0.2 ** 2) == pytest.approx(1.00125e-2, rel=1e-5)
 
 
 def test_mitgcm_freshwater_flux_sign_and_units():
@@ -139,3 +145,14 @@ def test_constants_agree_with_fortran_override_and_cases_yaml():
     assert par("shiLam3dBar") == pytest.approx(ml.LAMBDA3 * 1e4, rel=1e-13)
     cfg = yaml.safe_load((PKG / "cases.yaml").read_text())["configs"]["ocean0_2km"]
     assert cfg["u_tidal"] == ml.U_TIDAL and cfg["Cd"] == ml.CD_TOP
+
+
+def test_fortran_ustar_has_cd_multiplying_both_terms():
+    """R21: the Fortran override computes u*^2 = Cd (|u|^2 + u_tidal^2) (AD16 Eq. 27, PDF
+    page 15), i.e. the drag coefficient multiplies the sum, not only |u|^2."""
+    src = FORTRAN.read_text()
+    code = "\n".join(ln for ln in src.splitlines() if ln[:1] not in ("C", "c", "!"))
+    flat = re.sub(r"\n\s{5}&", " ", code)                  # join continuation lines
+    flat = re.sub(r"\s+", "", flat)
+    assert ("ustarSq=shiCdragfld(I,J,bi,bj)*(velSq(I,J)+shiUTidal*shiUTidal)" in flat)
+    assert "*velSq(I,J)+shiUTidal*shiUTidal" not in flat

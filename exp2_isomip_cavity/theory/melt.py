@@ -6,12 +6,16 @@ Table 4 constants ("COM" melt parameterisation; Jenkins et al. 2010)::
     rho_fw m L     = -rho_sw cw u* GT (Tb - Tw)       heat     [W m^-2]        (AD16 Eq. 24)
     Tb             = lam1 Sb + lam2 + lam3 pb         liquidus [degC]          (AD16 Eq. 25)
     rho_fw m Sb    = -rho_sw u* GS (Sb - Sw)          salt     [PSU kg m^-2 s^-1] (Eq. 26)
-    u*^2           = Cd u_w^2 + u_tidal^2             friction velocity [m^2 s^-2] (Eq. 27)
+    u*^2           = Cd (u_w^2 + u_tidal^2)           friction velocity [m^2 s^-2] (Eq. 27)
 
 ``rho_fw m`` is the meltwater mass flux [kg m^-2 s^-1], positive = melting; Tw, Sw are the
 boundary-layer *potential* temperature and salinity (AD16's liquidus is the potential
 freezing point, so no conversion to in situ temperature is made); the ice is perfectly
 insulating (kappa_i = 0, AD16 Table 4). GS = GT / 35 (AD16 Table 4).
+
+Eq. 27 is taken from the AD16 PDF (p. 15): Cd multiplies both terms, so the floor is
+u* = sqrt(Cd) u_tidal = 5e-4 m s^-1 at rest (ruling R21; a text extraction had lost the
+parentheses and the first implementation used Cd u_w^2 + u_tidal^2).
 
 How the Exp. 2 MITgcm code computes it
 --------------------------------------
@@ -32,7 +36,7 @@ SHELFICEadvDiffHeatFlux = F (dFac = 0) and SHELFICEkappa = 0, which makes eps3 =
 
 with the ISOMIP+ changes: a0 = lam1, c0 = lam2, b = lam3 in degC/dbar (pLoc is in dbar,
 ``pLoc = shelficeMass g SItodBar``, original line 289); no SW_TEMP conversion (original
-line 459); gammaT = GT u*, gammaS = GS u*, u*^2 = Cd |u|^2 + u_tidal^2 (replacing the
+line 459); gammaT = GT u*, gammaS = GS u*, u*^2 = Cd (|u|^2 + u_tidal^2) (replacing the
 Holland and Jenkins 1999 form of original lines 470-493).
 
 Sign and units of the MITgcm diagnostic ``SHIfwFlx`` (``shelfice_thermodynamics.F:660``
@@ -64,8 +68,9 @@ PA_TO_DBAR = 1.0e-4                   # MITgcm SItodBar (model/src/ini_parms.F)
 
 
 def friction_velocity(vel_sq, cd: float = CD_TOP, u_tidal: float = U_TIDAL):
-    """u* = sqrt(Cd |u|^2 + u_tidal^2) [m s^-1] (AD16 Eq. 27); ``vel_sq`` = |u_w|^2 [m^2 s^-2]."""
-    return np.sqrt(cd * np.asarray(vel_sq, dtype=float) + u_tidal ** 2)
+    """u* = sqrt(Cd (|u|^2 + u_tidal^2)) [m s^-1] (AD16 Eq. 27, PDF p. 15); ``vel_sq`` =
+    |u_w|^2 [m^2 s^-2]. At rest u* = sqrt(Cd) u_tidal = 5e-4 m s^-1."""
+    return np.sqrt(cd * (np.asarray(vel_sq, dtype=float) + u_tidal ** 2))
 
 
 def three_equation(T, S, p, ustar, gammaT, gammaS=None, *, rho_sw: float = RHO_SW,

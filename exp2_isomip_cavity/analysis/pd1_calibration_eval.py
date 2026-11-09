@@ -3,11 +3,13 @@ r"""PD1a evaluation of the Gamma_T calibration runs (Exp. 2, Task 4 phase A).
 
 Usage::
 
-    pd1_calibration_eval.py --runs-root /Volumes/LaCie/portfolio_runs/exp2 \
-        [--out exp2_isomip_cavity/figures/pd1_calibration_eval.json]
+    pd1_calibration_eval.py --runs-root /Volumes/LaCie/portfolio_runs/exp2 [--run-suffix _r21] \
+        [--out exp2_isomip_cavity/figures/pd1_calibration_eval_r21.json]
 
-Mechanical against ``notes/pd0_preregistro.md`` (K1, V1, N1-N3, resolution test) and the PD2
-sampling amendment (``notes/pd1_calibracion.md`` sect. 4.2). Also the controller rulings:
+Mechanical against ``notes/pd0_preregistro.md`` (K1, V1, N1-N3, resolution test), on the
+runs of the R21 relaunch (run-directory suffix ``_r21``, pd0 sample Gamma_T in {0.015, 0.03,
+0.06}; the runs without suffix and the PD2 amendment 0.0075 used the wrong u* law and are void,
+``notes/pd1_calibracion.md``). Also the controller rulings:
 
 * R15 (supercooling, not a criterion): cells of the end state with T < T_f(S, p), with the
   AD16 liquidus T_f = lam1 S + lam2 + lam3 p (AD16 Eq. 25, Table 4) and p = rho0 g |z_c| at
@@ -51,7 +53,7 @@ CFL_MAX = 0.5                    # Task 4 brief: advection / internal waves
 SHELF_DIFF_FLAG = 0.25           # pd0 resolution test
 THIN_HFAC = 0.5                  # R15: thin top cells
 CFL_KEYS = ("advcfl_uvel_max", "advcfl_vvel_max", "advcfl_wvel_max", "advcfl_W_hf_max")
-GAMMAS = ("0.0075", "0.015", "0.03", "0.06")
+GAMMAS = ("0.015", "0.03", "0.06")   # pd0 K1 sample (R21 relaunch)
 
 
 # ---- R17: CFL maxima ---------------------------------------------------------------------
@@ -201,14 +203,18 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="PD1a evaluation of the calibration runs")
     ap.add_argument("--runs-root", type=Path, default=Path("/Volumes/LaCie/portfolio_runs/exp2"))
     ap.add_argument("--out", type=Path,
-                    default=REPO / "exp2_isomip_cavity" / "figures" / "pd1_calibration_eval.json")
+                    default=REPO / "exp2_isomip_cavity" / "figures" / "pd1_calibration_eval_r21.json")
+    ap.add_argument("--run-suffix", default="_r21",
+                    help="run-directory suffix of the evaluated runs (R21 relaunch)")
     a = ap.parse_args(argv)
+    sfx = a.run_suffix
     res = {"runs": {}, "K1": {}, "V1": None}
     rds = {}
     for res_lbl, pre, ver in (("4km", "cal4", "ocean0_4km"), ("2km", "cal2", "ocean0_2km")):
         for g in GAMMAS:
-            name = f"{pre}_gT{g}"
+            name = f"{pre}_gT{g}{sfx}"
             res["runs"][name], _ = evaluate_run(a.runs_root / name)
+        ver = f"{ver}{sfx}"
         res["runs"][ver], rds[res_lbl] = evaluate_run(a.runs_root / ver, supercool=True)
         res["K1"][res_lbl] = {**cal.k1_verdict(res["runs"][ver]["deep_melt_last6"]),
                               "gammaT_cal": res["runs"][ver]["gammaT"],
@@ -216,8 +222,7 @@ def main(argv=None) -> int:
     g2 = res["K1"]["2km"]["gammaT_cal"]
     v1 = V1_RANGE[0] <= g2 <= V1_RANGE[1]
     res["V1"] = {"gammaT_cal_2km": g2, "range": list(V1_RANGE), "pass": v1,
-                 "class": None if v1 else "(c) numerical choice (PD2 amendment, "
-                 "notes/pd1_calibracion.md 4.2: z-level, 20 m top cells; Gwyther 2020 L30-31)"}
+                 "class": None if v1 else "FAIL: to be classified (a)-(d) at PD1, not here"}
     res["resolution_test"] = resolution_test(rds["2km"], rds["4km"])
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(res, indent=2, default=float) + "\n")

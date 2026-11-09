@@ -24,7 +24,7 @@
  SHELFICEboundaryLayer=.TRUE.,
  SHI_withBL_realFWflux=.FALSE.,
  SHI_withBL_uStarTopDz=${shiUStarTopDz},
-# gammaT = GammaT u*, gammaS = GammaS u*, u*^2 = Cd |u|^2 + u_tidal^2
+# gammaT = GammaT u*, gammaS = GammaS u*, u*^2 = Cd (|u|^2 + u_tidal^2)
 # (AD16 Eq. 24-27): needs SHELFICEuseGammaFrict; the transfer
 # coefficients are then nondimensional (Gamma_T, Gamma_S = Gamma_T/35)
  SHELFICEuseGammaFrict=.TRUE.,

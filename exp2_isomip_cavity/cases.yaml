@@ -57,6 +57,9 @@ configs:
     deltaT: 800.0            # Task 4 timing: max CFL 0.32 (w, 30 d); notes/pd1_calibracion.md
   ocean0_4km_mpi:            # the same 4 km physics on 5 MPI ranks (Task 4 timing)
     <<: *base4
+# R21 (2026-11-09): every run made before R21 (run directories without suffix) used the wrong
+# u* law (Cd u^2 + u_tidal^2 instead of AD16 Eq. 27, Cd (u^2 + u_tidal^2)) and is VOID; the
+# relaunch (scripts/queue_calibration.sh) writes its runs with the suffix _r21.
 cases:
   ocean0_2km: {config: ocean0_2km}
   ocean1_2km:                # AD16 Table 2: COLD initial state, WARM restoring, 20 years
@@ -73,11 +76,13 @@ cases:
   cal4_gT0.03: {config: ocean0_4km, gammaT: 0.03}
   cal4_gT0.06: {config: ocean0_4km, gammaT: 0.06}
   # PD2 sampling amendment (Esteban, 2026-11-09; notes/pd1_calibracion.md): 30 m/yr was not
-  # bracketed by 0.015-0.06 at either resolution, so 0.0075 is added at both
+  # bracketed by 0.015-0.06 at either resolution, so 0.0075 is added at both.
+  # VOID under R21 (conditional on the wrong u* law): kept as a record, not run again.
   cal2_gT0.0075: {config: ocean0_2km, gammaT: 0.0075}
   cal4_gT0.0075: {config: ocean0_4km, gammaT: 0.0075}
   # R20 post hoc diagnostic (notes/pd1_diagnostico_capa_limite.md): Ocean0 4 km, GammaT 0.015,
   # exactly one change each against cal4_gT0.015. Not calibration, not validation.
+  # VOID under R21 (whole series ran with the wrong u* law): kept as a record, not run again.
   diag4_adv33: {config: ocean0_4km, gammaT: 0.015, advScheme: 33}      # DST3, as Y26 MITgcm
   diag4_hfac025: {config: ocean0_4km, gammaT: 0.015, hFacMin: 0.25}    # as MITgcm-JPL
   # (d), post hoc addition approved by Esteban 2026-11-09: u* from U/V averaged at the faces
@@ -85,7 +90,8 @@ cases:
   # (e), post hoc addition approved by Esteban 2026-11-09: convective adjustment every step
   # instead of ivdc_kappa (one scheme swap; MITgcm refuses both at once, ini_parms.F:1107-1113)
   diag4_convadj: {config: ocean0_4km, gammaT: 0.015, cAdjFreq: -1.0, ivdc_kappa: 0.0}
-  # Task 4 timing: 4 km Ocean0 on 5 MPI ranks (compared with 5 concurrent serial runs)
+  # Task 4 timing: 4 km Ocean0 on 5 MPI ranks (compared with 5 concurrent serial runs).
+  # Run VOID under R21 (timing only; the measured cost still holds).
   tim4m_gT0.03: {config: ocean0_4km_mpi, gammaT: 0.03}
 ensemble:
   config: ocean0_4km

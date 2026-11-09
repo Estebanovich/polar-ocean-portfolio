@@ -611,13 +611,13 @@ def boundary_layer_velocity_sq(rd: RunData, U: np.ndarray, V: np.ndarray) -> np.
 
 
 def ustar_check(rd: RunData, record: int, rtol: float = 1e-3) -> dict:
-    """Consistency of the friction velocity with AD16 Eq. 27, u*^2 = Cd |u_BL|^2 + u_tidal^2,
-    on the shelf, for one monthly record:
+    """Consistency of the friction velocity with AD16 Eq. 27 (PDF p. 15, ruling R21),
+    u*^2 = Cd (|u_BL|^2 + u_tidal^2), on the shelf, for one monthly record:
 
-    * floor: <SHIuStar> >= u_tidal (exact: every instantaneous u* >= u_tidal);
+    * floor: <SHIuStar> >= sqrt(Cd) u_tidal (exact: every instantaneous u* >= sqrt(Cd) u_tidal);
     * gammT identity: <SHIgammT> = Gamma_T <SHIuStar> (exact, linear in u*);
     * Jensen bound: u* is a convex function of the (linear) boundary-layer velocity, so
-      <u*> >= sqrt(Cd |BL(<u>)|^2 + u_tidal^2) with <u> the monthly-mean UVEL/VVEL; checked
+      <u*> >= sqrt(Cd (|BL(<u>)|^2 + u_tidal^2)) with <u> the monthly-mean UVEL/VVEL; checked
       to ``rtol`` (static hFac; the model's r*-weighted hFac differ by O(eta/H)).
 
     The equality itself cannot be checked: the diagnostics have no boundary-layer U/V
@@ -627,18 +627,20 @@ def ustar_check(rd: RunData, record: int, rtol: float = 1e-3) -> dict:
     sh = rd.shelf
     us = rd.field(_SHI, "SHIuStar", record)
     gm = rd.field(_SHI, "SHIgammT", record)
-    floor_ok = bool(us[sh].min() >= ut * (1 - 1e-12))
+    floor = np.sqrt(cd) * ut                                        # AD16 Eq. 27, |u| = 0
+    floor_ok = bool(us[sh].min() >= floor * (1 - 1e-12))
     den = np.where(us[sh] > 0, gT * us[sh], 1.0)
     rel_g = np.where(us[sh] > 0, np.abs(gm[sh] - gT * us[sh]) / den, np.inf)
     g_ok = bool(rel_g.max() < 1e-10)
     vsq = boundary_layer_velocity_sq(rd, rd.field(_DYN, "UVEL", record),
                                      rd.field(_DYN, "VVEL", record))
-    bound = np.sqrt(cd * vsq + ut * ut)
+    bound = np.sqrt(cd * (vsq + ut * ut))
     ratio = us[sh] / bound[sh]
     j_ok = bool(ratio.min() >= 1 - rtol)
     return {"pass": floor_ok and g_ok and j_ok, "record": int(record),
             "n_shelf_columns": int(sh.sum()),
-            "floor": {"pass": floor_ok, "min_ustar_m_s": float(us[sh].min()), "u_tidal": ut},
+            "floor": {"pass": floor_ok, "min_ustar_m_s": float(us[sh].min()), "u_tidal": ut,
+                      "floor_m_s": float(floor)},
             "gammT_identity": {"pass": g_ok, "max_rel_err": float(rel_g.max())},
             "jensen_bound": {"pass": j_ok, "rtol": rtol, "min_ratio": float(ratio.min()),
                              "median_ratio": float(np.median(ratio)),

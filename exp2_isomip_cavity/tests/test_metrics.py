@@ -519,7 +519,7 @@ def test_ustar_check_consistent_fields_pass(tmp_path):
     """Constant velocity: the monthly mean of u* equals u*(mean u) and the check passes."""
     shelf = shelf_mask()
     u = 0.1
-    us = np.where(shelf, np.sqrt(2.5e-3 * u ** 2 + 0.01 ** 2), 0.0)
+    us = np.where(shelf, np.sqrt(2.5e-3 * (u ** 2 + 0.01 ** 2)), 0.0)    # AD16 Eq. 27 (R21)
     rd = mt.load_run(make_run(tmp_path / "r", nrec=2, hfac=_all_wet(),
                               shi=lambda k: {"SHIuStar": us, "SHIgammT": 0.03 * us},
                               dyn=lambda k: {"UVEL": u}))
@@ -532,11 +532,23 @@ def test_ustar_check_consistent_fields_pass(tmp_path):
 
 def test_ustar_check_detects_floor_violation(tmp_path):
     shelf = shelf_mask()
-    us = np.where(shelf, 0.005, 0.0)                    # below u_tidal = 0.01
+    us = np.where(shelf, 4.0e-4, 0.0)       # below sqrt(Cd) u_tidal = 5.0e-4 m/s (AD16 Eq. 27)
     rd = mt.load_run(make_run(tmp_path / "r", nrec=1,
                               shi=lambda k: {"SHIuStar": us, "SHIgammT": 0.03 * us}))
     res = mt.ustar_check(rd, 0)
     assert not res["floor"]["pass"] and not res["pass"]
+    assert res["floor"]["floor_m_s"] == pytest.approx(5.0e-4, rel=1e-12)
+
+
+def test_ustar_check_floor_is_sqrt_cd_times_u_tidal(tmp_path):
+    """R21: the floor of u*^2 = Cd (|u|^2 + u_tidal^2) is sqrt(Cd) u_tidal = 5.0e-4 m/s, so
+    u* = 0.005 m/s (below u_tidal, the old wrong floor) passes the floor test."""
+    shelf = shelf_mask()
+    us = np.where(shelf, 0.005, 0.0)
+    rd = mt.load_run(make_run(tmp_path / "r", nrec=1,
+                              shi=lambda k: {"SHIuStar": us, "SHIgammT": 0.03 * us}))
+    res = mt.ustar_check(rd, 0)
+    assert res["floor"]["pass"]
 
 
 def test_ustar_check_detects_ustar_below_jensen_bound(tmp_path):

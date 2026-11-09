@@ -44,7 +44,7 @@ Las copias empiezan diciendo de qué archivo son copia, y cada cambio está marc
 
 | Archivo | Origen | Cambio |
 |---|---|---|
-| `shelfice_thermodynamics.F` | `pkg/shelfice/` | Bajo `#ifdef SHI_ISOMIP_PLUS_MELT`: (1) a0, c0, b = λ1, λ2, λ3 [°C/dbar] (constantes `PARAMETER` shiLam1/2/3dBar); (2) no se llama a `SW_TEMP`; (3) u*² = Cd·\|u\|² + u_tidal² (shiUTidal = 0.01 m s⁻¹), γT = `SHELFICEheatTransCoeff`·u* y γS = `SHELFICEsaltTransCoeff`·u*, en lugar de la forma HJ99. Requiere `SHELFICEuseGammaFrict=.TRUE.` (las rutas de \|u\| y de `SHIuStar` están dentro de ese bloque). |
+| `shelfice_thermodynamics.F` | `pkg/shelfice/` | Bajo `#ifdef SHI_ISOMIP_PLUS_MELT`: (1) a0, c0, b = λ1, λ2, λ3 [°C/dbar] (constantes `PARAMETER` shiLam1/2/3dBar); (2) no se llama a `SW_TEMP`; (3) u*² = Cd·(\|u\|² + u_tidal²) (shiUTidal = 0.01 m s⁻¹; corregido en R21, ver la sección «Error (a): forma de u\* (R21)»), γT = `SHELFICEheatTransCoeff`·u* y γS = `SHELFICEsaltTransCoeff`·u*, en lugar de la forma HJ99. Requiere `SHELFICEuseGammaFrict=.TRUE.` (las rutas de \|u\| y de `SHIuStar` están dentro de ese bloque). |
 | `SHELFICE_OPTIONS.h` | `pkg/shelfice/` | `#define SHI_ISOMIP_PLUS_MELT` |
 | `ptracers_apply_forcing.F` | `pkg/ptracers/` | Llama a `SHELFICE_FORCING_MWTR` para el trazador 1. |
 | `shelfice_forcing_mwtr.F` | nuevo | Fuente del trazador F_C = −SHIfwFlx/ρfw [m s⁻¹], repartida en la vertical con los mismos pesos que `SHELFICE_FORCING_S` (`pkg/shelfice/shelfice_forcing.F:180-206`). |
@@ -310,3 +310,32 @@ En la Task 3 se vio que el dominio de la corrida 2 era periódico en y: hFacS(j 
 - `metrics.ustar_check` (registro 0): PASA. u* ≥ u_tidal; γT = ΓT·u* con error 1.3e-14; cota de Jensen con razón mínima 1.00002.
 - `metrics.gade_line_check` (*post hoc*, R10): 2328 celdas fuera de rango en la media de 30 días; r = 0.97; solo el 18 % queda dentro de ±0.05 de una mezcla con el perfil ambiental local. El ambiente local no es el agua de origen de parcelas advectadas.
 - **Sobreenfriamiento:** 1592 celdas bajo el Tf(S, p) local, con mínimo −0.49 °C, y 1002 de ellas por más de 0.1 °C. Es más que en la corrida anulada (−0.31 °C y 290 celdas). Sigue como preocupación para el controlador.
+
+## Error (a): forma de u\* (R21)
+
+Ruling R21, aprobado por Esteban el 2026-11-09. Clase **(a), error nuestro**.
+
+**Qué estaba mal.** AD16 Eq. 27, verificada en la página del PDF (Asay-Davis et al. 2016, GMD 9, p. 2485 = p. 15 del PDF, `literatura/AsayDavis_2016*.pdf`), es
+
+u\*² = C_D,top·(u_w² + u_tidal²), con C_D,top = 2.5e-3 y u_tidal = 0.01 m s⁻¹,
+
+así que en reposo u\* = √C_D·u_tidal = 5e-4 m s⁻¹. Implementamos u\*² = Cd·u_w² + u_tidal², que pone el piso en u\* = 0.01 m s⁻¹ (20 veces mayor). Estaba en `config/ocean0/code/shelfice_thermodynamics.F` (código, :509–510, y el comentario de cabecera), en `SHELFICE_OPTIONS.h` y `data.shelfice` (comentarios), en `theory/melt.py` (`friction_velocity` y docstring) y en `analysis/metrics.py` (`ustar_check`, cuyo piso u\* ≥ u_tidal también estaba mal).
+
+**Origen.** La fórmula del plan se copió de una extracción de texto del PDF (`literatura/*.md`); la conversión perdió los paréntesis grandes de la ecuación (también `pdftotext` los pierde). Nadie la comparó con la página impresa hasta R21.
+
+**Evidencia.** La salida Ocean0 de MITgcm-JPL (`data_external/osf_jpl/Ocean0_yosi_COM_MITgcm_JPL_new.nc`, variable `frictionVelocity`) tiene un u\* medio de **0.0040 m s⁻¹** en la región profunda; el nuestro era **0.0109 m s⁻¹**, por encima incluso de nuestro piso erróneo de 0.01. Con la forma de AD16, u\* = 0.004 corresponde a |u| ≈ 0.08 m s⁻¹, plausible; con la nuestra sería imposible.
+
+**Corrección** (commit de R21): `ustarSq = shiCdragfld·(velSq + shiUTidal²)` en el override de Fortran (mínimo, dentro de `#ifdef SHI_ISOMIP_PLUS_MELT`, con comentario que cita la página del PDF); `melt.friction_velocity` = √(Cd·(|u|² + u_tidal²)); `metrics.ustar_check` usa el piso √Cd·u_tidal y la cota de Jensen √(Cd·(|BL(⟨u⟩)|² + u_tidal²)). TDD: la prueba con anclas calculadas a mano (u\*(0) = 5.0e-4 m s⁻¹; u\*(|u| = 0.01) = 7.0711e-4 m s⁻¹) falló con el código anterior y pasa con el nuevo; otra prueba exige que en el Fortran Cd multiplique a los dos términos. Se recompilaron los binarios `ocean0_2km` (MPI, np = 5) y `ocean0_4km` (serie, np = 1), que son los que usa la calibración. `ocean0_4km_mpi` ya no hace falta (solo lo usaba el cronometraje `tim4m_*`); se recompiló igual para no dejar en disco un binario con la ley errónea.
+
+**Corridas ANULADAS** (se conservan en disco, en `/Volumes/LaCie/portfolio_runs/exp2/`, solo como registro histórico; ningún resultado suyo se reutiliza):
+
+- los smoke: `cal2_gT0.03_smoke30d`, `cal2_gT0.03_smoke30d_run1_mixedsnap`, `cal2_gT0.03_smoke30d_walls` (y `cal2_gT0.03_tim30d_dt400`);
+- toda la calibración: `cal2_gT{0.0075,0.015,0.03,0.06}` y `cal4_gT{0.0075,0.015,0.03,0.06}` (todos los ΓT);
+- las verificaciones `ocean0_2km` y `ocean0_4km`;
+- el cronometraje `tim4m_*` (los costos medidos siguen valiendo como costo por paso: el cambio no altera el número de operaciones);
+- la serie diagnóstica R20, `diag4_*` (`diag4_adv33`, `diag4_hfac025`, `diag4_ustartopdz`, `diag4_convadj`).
+
+Los cronometrajes cortos del ensamble (`ens_*_tim10d`) también usaron la ley errónea; solo servían para medir costo y tampoco se reutilizan.
+
+Los veredictos de los smoke de §7 y §7b (S1–S5, `ustar_check`, línea de Gade, sobreenfriamiento) quedan como registro de la configuración anterior. **No cambian** K1, V1, N1–N3 ni ningún criterio de pd0 (`pd0_preregistro.md` no se edita).
+

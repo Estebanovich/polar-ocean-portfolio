@@ -227,3 +227,35 @@ Desde el 2026-11-09, antes de cualquier corrida nueva, la plantilla `config/ocea
 - Por eso, en esta configuración, el valor de `checkIniTemp` no altera el estado inicial ni la integración.
 
 **Corridas anteriores:** las 6 primeras de calibración (`cal4_gT{0.015,0.03,0.06}`, `cal2_gT{0.015,0.03,0.06}`), los smokes y el cronometraje corrieron con el valor por omisión (`.TRUE.`). Ninguna tenía θ = 0 (salvo `ens_T0.0_zc400_s1.0_tim10d`, que no arrancó, §5), así que el cambio no tiene efecto físico sobre ellas. Se reutilizan con `--skip-ok`, que compara deltaT, endTime y gammaT.
+
+## Error (a): forma de u\* (R21)
+
+Ruling R21, aprobado por Esteban el 2026-11-09. Clase **(a), error nuestro**. Detalle en `pd1_config.md`, sección «Error (a): forma de u\* (R21)».
+
+**Qué estaba mal.** AD16 Eq. 27 (GMD 9, p. 2485 = p. 15 del PDF, verificada en la página impresa) es u\*² = C_D,top·(u_w² + u_tidal²), con piso u\* = √C_D·u_tidal = 5e-4 m s⁻¹. El modelo calculaba u\*² = Cd·u_w² + u_tidal², con piso 0.01 m s⁻¹. **Origen:** la fórmula del plan se copió de una extracción de texto del PDF que perdió los paréntesis.
+
+**Evidencia.** u\* medio de la región profunda en Ocean0: MITgcm-JPL (`data_external/osf_jpl/Ocean0_yosi_COM_MITgcm_JPL_new.nc`, `frictionVelocity`) **0.0040 m s⁻¹**; el nuestro, **0.0109 m s⁻¹**. Un u\* inflado ~2.7 veces exige un ΓT menor para dar 30 m a⁻¹; es una explicación candidata del ΓT_cal bajo de §4.3 (0.0095–0.0100) y del fallo de V1, que solo la nueva calibración puede confirmar o descartar.
+
+**Corridas ANULADAS** (se conservan en disco, en `/Volumes/LaCie/portfolio_runs/exp2/`, solo como registro histórico; ningún resultado suyo se reutiliza):
+
+- los smoke: `cal2_gT0.03_smoke30d`, `cal2_gT0.03_smoke30d_run1_mixedsnap`, `cal2_gT0.03_smoke30d_walls` (y `cal2_gT0.03_tim30d_dt400`);
+- toda la calibración: `cal2_gT{0.0075,0.015,0.03,0.06}` y `cal4_gT{0.0075,0.015,0.03,0.06}` (todos los ΓT);
+- las verificaciones `ocean0_2km` y `ocean0_4km`;
+- el cronometraje `tim4m_*` (los costos medidos siguen valiendo como costo por paso: el cambio no altera el número de operaciones);
+- la serie diagnóstica R20, `diag4_*` (`diag4_adv33`, `diag4_hfac025`, `diag4_ustartopdz`, `diag4_convadj`).
+
+Los cronometrajes cortos del ensamble (`ens_*_tim10d`) también usaron la ley errónea; solo servían para medir costo y tampoco se reutilizan.
+
+**Condicionado a la ley errónea:**
+- la **enmienda de PD2** (§4.2, ΓT = 0.0075 en las dos mallas) y todo §4.1–§4.3 (ΓT_cal,4km = 0.0094686, ΓT_cal,2km = 0.0099627, K1 PASA, V1 FALLA con clase (c)). Se conservan como registro y **no se reutilizan**: la enmienda no se aplica de forma automática a la nueva calibración;
+- la **serie diagnóstica R20** (`pd1_diagnostico_capa_limite.md`), anulada completa.
+
+**Lo que no cambia:** K1, V1, N1–N3 y todos los criterios de pd0 siguen tal como están pre-registrados (`pd0_preregistro.md` no se edita). El paso de tiempo de §2 (dt = 400 s a 2 km, 800 s a 4 km) y los costos por paso de §1 y §3 se mantienen: el cambio no altera el costo de un paso; el CFL de las nuevas corridas se vuelve a revisar (R17).
+
+### Relanzamiento de la calibración (desde cero, procedimiento de pd0 K1)
+
+- **Muestra:** solo ΓT ∈ {0.015, 0.03, 0.06}, ΓS = ΓT/35, a 2 km y a 4 km. Luego `calibrate.py` (interpolación log–log, sin extrapolación), una corrida de verificación por malla y, solo si K1 falla, la única iteración adicional con los 4 puntos.
+- **Si 30 m a⁻¹ no queda acotado** en una malla, la cola se detiene para esa malla (sin verificación, sin extrapolar) y se va a PD2. Las corridas de muestra de la otra malla siguen, porque son las de pd0 de todos modos.
+- **Manejo de las corridas anuladas:** las nuevas corridas llevan el sufijo de directorio **`_r21`** (`cal4_gT0.015_r21`, …, `ocean0_4km_r21`, `ocean0_2km_r21`; iteración: `<caso>_r21_iter2`). Las anuladas se quedan donde están, sin tocar: `--skip-ok` solo mira el directorio con sufijo, así que nunca las recoge, y `calibrate.py` recibe explícitamente los directorios `_r21`. No se movieron a `void_r21/`: el sufijo basta para aislarlas y evita copiar y borrar ~14 GB en el exFAT (copia y verificación sin beneficio). Los resultados nuevos van a `figures/calibration_<res>_r21.json` y `figures/verify_<res>_r21.json` (los JSON anulados se conservan); los logs, a `logs/r21/`. `pd1_calibration_eval.py` evalúa por omisión los directorios `_r21` y la muestra de pd0.
+- **Cola:** `scripts/queue_calibration.sh`, lanzada con nohup; PID, log y resultados se anotan en la sección siguiente cuando termine.
+

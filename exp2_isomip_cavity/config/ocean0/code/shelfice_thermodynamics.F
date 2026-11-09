@@ -30,7 +30,8 @@ C     |  2. no potential -> in situ conversion (AD16: potential
 C     |     freezing point, so SW_TEMP is not called)
 C     |  3. gammaT = GammaT u*, gammaS = GammaS u* with constant
 C     |     nondimensional GammaT/S = SHELFICEheat/saltTransCoeff and
-C     |     u*^2 = Cd |u|^2 + u_tidal^2 (AD16 Eq. 24, 26, 27), in place
+C     |     u*^2 = Cd (|u|^2 + u_tidal^2) (AD16 Eq. 24, 26, 27;
+C     |     Eq. 27 checked on the PDF, p. 15), in place
 C     |     of the Holland and Jenkins (1999) form.
 C     | Python twin: exp2_isomip_cavity/theory/melt.py.
 C     *=============================================================*
@@ -504,10 +505,12 @@ C--   to the surface
            K = kTopC(I,J,bi,bj)
            IF ( K .NE. 0 .AND. pLoc(I,J) .GT. 0. _d 0 ) THEN
 #ifdef SHI_ISOMIP_PLUS_MELT
-C     ISOMIP+ (Exp. 2): u*^2 = Cd |u|^2 + u_tidal^2 (AD16 Eq. 27);
+C     ISOMIP+ (Exp. 2): u*^2 = Cd (|u|^2 + u_tidal^2) [m^2/s^2]
+C     (AD16 Eq. 27, as printed on the PDF, p. 15: Cd multiplies both
+C     terms, floor u* = sqrt(Cd) u_tidal = 5e-4 m/s; ruling R21);
 C     gammaT = GammaT u*, gammaS = GammaS u* (AD16 Eq. 24, 26)
-            ustarSq = shiCdragfld(I,J,bi,bj) * velSq(I,J)
-     &              + shiUTidal * shiUTidal
+            ustarSq = shiCdragfld(I,J,bi,bj)
+     &              * ( velSq(I,J) + shiUTidal * shiUTidal )
             ustar   = SQRT(ustarSq)
 #ifdef ALLOW_DIAGNOSTICS
             uStarDiag(I,J,bi,bj) = ustar

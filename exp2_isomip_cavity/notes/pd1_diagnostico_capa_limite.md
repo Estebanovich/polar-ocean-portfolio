@@ -1,5 +1,7 @@
 # Diagnóstico post hoc: ¿por qué nuestro ΓT_cal queda por debajo del de los otros MITgcm de ISOMIP+? (ruling R20)
 
+> **ANULADA bajo R21 (2026-11-09).** Toda la serie (`cal4_gT0.015` como referencia y `diag4_adv33`, `diag4_hfac025`, `diag4_ustartopdz`, `diag4_convadj`) corrió con la forma errónea de u\* (Cd·|u|² + u_tidal² en lugar de AD16 Eq. 27, Cd·(|u|² + u_tidal²)). Se conserva solo como registro histórico; ninguna conclusión suya se reutiliza. Ver `pd1_config.md`, sección «Error (a): forma de u\* (R21)».
+
 Fecha: 2026-11-09. Aprobado por Esteban (R20). Escrito **antes** de lanzar cualquier corrida de este diagnóstico.
 
 ## Estatus
