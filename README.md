@@ -13,7 +13,7 @@ How to run the model, the tests and the analysis: [RUNNING.md](RUNNING.md).
 
 ## Previous work
 
-- **[pyOCEAN](https://github.com/Estebanovich/pyOCEAN)**: a regional and coastal ocean model I am writing from scratch in Python (NumPy + Numba). It has z\*, σ and HYCOM-style hybrid vertical coordinates and ports of the MOM6, CROCO and CVMix closures (GLS, KPP, Jackson shear mixing, bottom-boundary-layer mixing). It is checked against MOM6, MITgcm and CROCO in standard benchmarks, and against tide gauges, satellite SST and gliders in a regional run of the Mid-Atlantic Bight. Below is the DOME dense overflow (Legg et al. 2006), the kind of flow that carries dense shelf water into the abyss: without shear mixing (left) the plume stays too dense, with it (middle) it entrains like MITgcm (right).
+- **[pyOCEAN](https://github.com/Estebanovich/pyOCEAN)** ([model manual](https://estebanovich.github.io/pyOCEAN/)): a regional and coastal ocean model I am writing from scratch in Python (NumPy + Numba). It has z\*, σ and HYCOM-style hybrid vertical coordinates and ports of the MOM6, CROCO and CVMix closures (GLS, KPP, Jackson shear mixing, bottom-boundary-layer mixing). It is checked against MOM6, MITgcm and CROCO in standard benchmarks, and against tide gauges, satellite SST and gliders in a regional run of the Mid-Atlantic Bight. Below is the DOME dense overflow (Legg et al. 2006), the kind of flow that carries dense shelf water into the abyss: without shear mixing (left) the plume stays too dense, with it (middle) it entrains like MITgcm (right).
 
   <img src="https://raw.githubusercontent.com/Estebanovich/pyOCEAN/52c035c/docs/media/dome_overflow.gif" width="90%" alt="DOME overflow bottom dye in pyOCEAN without and with shear mixing, against MITgcm">
 
