@@ -364,3 +364,14 @@
 - **§1 reescrita al estilo de artículo** (sin subsecciones): lo que está en juego (Rignot et al. 2013; Holland et al. 2008) → el CDW y la termoclina (De Rydt 2014, Rintoul 2016, Nakayama 2023, Jenkins 2018, Park 2024) → recorrido de la Figura 0c (procesos 1–6) → lo conocido y el hueco en sensibilidad (Holland 2008, Favier 2019, Burgard 2022, De Rydt 2014, Hattermann 2014) y en el destino del agua de deshielo (Sheehan 2023) → ISOMIP+ y Figura 0d (proceso 7) → "aquí" con H1 y H2 neutrales. Se quitó la cita a la página ARIES; §1.2 → §1 en dos referencias cruzadas. Cinco referencias nuevas (Consensus, verificadas en el resumen o en `literatura/`); todos los resultados de las búsquedas van a `readinglist.md`.
 - **Figura 0a:** los puntos de Pine Island y Thwaites coinciden con las entradas US-ACAN del SCAR Composite Gazetteer (placenames.aq); se rotula la segunda zona de agua abierta como Amundsen Sea Polynya (73.0–74.2° S, 110–118° O, al norte del Dotson; Jenkins et al. 2018).
 - **Figura 0d:** el rótulo de la pared y = 80 km apunta ahora a la cara de la pared en el océano abierto; el hielo apoyado se dibuja recortado a 200 m sobre el nivel del mar (encuadre de cámara sin cambio), anotado en la figura y en el pie.
+
+## 2026-11-10 (noche, 3) — Merge del Exp. 2, correos y revisión de literatura del Exp. 3
+
+- **Merge del Exp. 2 en `main` y push** (ab87c33), con la aprobación de Esteban (PD3). Se verificó que el link `tree/main/exp2_isomip_cavity` responde.
+- **Correos a Nakayama y Sheehan** actualizados con el Exp. 2, fuera del repo. Sheehan et al. (2023) se leyó completo: la frase citada está en sus *Key Points*. Esteban enviará los correos después del Exp. 3.
+- **Revisión de literatura del Exp. 3** (`exp3_melt_emulator/notes/rev_literatura.md`): 11 búsquedas en Consensus, ~153 artículos únicos, 30 citados.
+- **Hallazgo principal:** DeepMelt-GL (Ockenden et al. 2026) ya publicó el ensamble de redes como indicador de confianza y la sensibilidad fuera de la distribución de entrenamiento. El Exp. 3 lo reproduce y lo cita, no lo reclama.
+- **Aporte propuesto:**
+  - la cuadrática local frente a la no local en un caso donde la cuadrática falla de forma conocida (H1 del Exp. 2);
+  - una comparación con líneas base simples: regresión lineal, proceso gaussiano y las dos cuadráticas, siguiendo a Lütjens et al. 2024 y a Myren & Lawrence 2021.
+- `readinglist.md` con 18 entradas nuevas en la sección del Exp. 3.

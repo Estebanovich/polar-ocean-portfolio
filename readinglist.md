@@ -134,6 +134,7 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ⬜ | Lambert et al. (2023). Modelling Antarctic ice shelf basal melt patterns using LADDIE v1.0. *The Cryosphere* 17:3203 | https://doi.org/10.5194/tc-17-3203-2023 |
 | ⬜ | Olbers & Hellmer (2010). A box model of circulation and melting in ice shelf caverns. *Ocean Dyn.* (melt cuadrático para T pequeña y lineal para T grande) | https://doi.org/10.1007/s10236-009-0252-z |
 | ⬜ | Mathiot & Jourdain (2023). Southern Ocean warming and Antarctic ice shelf melting in conditions plausible by late 23rd century. *Ocean Sci.* 19:1595 | https://doi.org/10.5194/os-19-1595-2023 |
+| ⬜ | Ross et al. (2023). Benchmarking of machine learning ocean subgrid parameterizations in an idealized model. *JAMES* (las redes con restricciones físicas generalizan mal a regímenes nuevos) | https://doi.org/10.1029/2022MS003258 |
 
 ## Exp. 4 — BayIW ártico (MacKinnon, Maksym)
 
