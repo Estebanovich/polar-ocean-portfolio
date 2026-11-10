@@ -1,0 +1,131 @@
+{
+  "H2": {
+    "hypothesis": "H2",
+    "rule": "pd0 H2: per z_c, 5 core runs (4 km, s = 1, last 6 months); Spearman rho(Tbot, D_out) <= -0.9, D_out = -z_out at x_front (u C > 0)",
+    "rho_rounding": "rho rounded to 12 decimals before the comparison",
+    "per_z_c": {
+      "250": {
+        "verdict": "PASS",
+        "rho": -1.0,
+        "n_runs": 5,
+        "cases": [
+          "ens_T-0.5_zc250_s1.0",
+          "ens_T0.0_zc250_s1.0",
+          "ens_T0.5_zc250_s1.0",
+          "ens_T1.0_zc250_s1.0",
+          "ens_T1.5_zc250_s1.0"
+        ],
+        "Tbot": [
+          -0.5,
+          0.0,
+          0.5,
+          1.0,
+          1.5
+        ],
+        "D_out": [
+          250.62601656457232,
+          199.33804845600415,
+          141.80332496654125,
+          127.88300635884787,
+          117.63315840342648
+        ],
+        "quality": {
+          "N1_fail": [
+            "ens_T-0.5_zc250_s1.0"
+          ],
+          "N2_fail": []
+        }
+      },
+      "400": {
+        "verdict": "PASS",
+        "rho": -1.0,
+        "n_runs": 5,
+        "cases": [
+          "ens_T-0.5_zc400_s1.0",
+          "ens_T0.0_zc400_s1.0",
+          "ens_T0.5_zc400_s1.0",
+          "ens_T1.0_zc400_s1.0",
+          "ens_T1.5_zc400_s1.0"
+        ],
+        "Tbot": [
+          -0.5,
+          0.0,
+          0.5,
+          1.0,
+          1.5
+        ],
+        "D_out": [
+          374.1889694367721,
+          322.37311107312985,
+          181.18171867362747,
+          133.3811523829947,
+          102.5959571661795
+        ],
+        "quality": {
+          "N1_fail": [],
+          "N2_fail": []
+        }
+      },
+      "550": {
+        "verdict": "PASS",
+        "rho": -1.0,
+        "n_runs": 5,
+        "cases": [
+          "ens_T-0.5_zc550_s1.0",
+          "ens_T0.0_zc550_s1.0",
+          "ens_T0.5_zc550_s1.0",
+          "ens_T1.0_zc550_s1.0",
+          "ens_T1.5_zc550_s1.0"
+        ],
+        "Tbot": [
+          -0.5,
+          0.0,
+          0.5,
+          1.0,
+          1.5
+        ],
+        "D_out": [
+          460.414639865623,
+          334.4855811463522,
+          113.72888600766677,
+          97.44674773317134,
+          90.7260821978146
+        ],
+        "quality": {
+          "N1_fail": [
+            "ens_T-0.5_zc550_s1.0",
+            "ens_T1.5_zc550_s1.0"
+          ],
+          "N2_fail": []
+        }
+      }
+    }
+  },
+  "N1_N3": {
+    "n_members": 29,
+    "gaps": {},
+    "N1_fail": [
+      "ens_T-0.5_zc250_s1.0",
+      "ens_T-0.5_zc550_s1.0",
+      "ens_T1.5_zc550_s1.0",
+      "ens_T-0.42_zc402_s0.8",
+      "ens_T-0.39_zc503_s1.2"
+    ],
+    "N2_fail": [],
+    "N1_max": 0.08765500288417354,
+    "N2_max_abs": 3.0748388368454016e-07
+  },
+  "caption": "Ensemble at 4 km horizontal resolution; last 6 months (records 19-24) of each 2-year run. C = meltwater volume fraction (passive tracer, source -SHIfwFlx/rho_fw at the ice base, restored to 0 at x > 790 km). D_out = depth of the outgoing (u C > 0) tracer transport at x_front, transport weighted (pd0 H2). Open markers: Tbot = 2.0, Exp. 3 test data, not used in H2.",
+  "window": "last 6 months, records 19-24 (pd0)",
+  "panels": {
+    "a": [
+      "ens_T-0.5_zc400_s1.0",
+      "ens_T1.5_zc400_s1.0"
+    ],
+    "c": "ens_T1.5_zc400_s1.0"
+  },
+  "figure": [
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig3_meltwater_export.png",
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig3_meltwater_export.pdf"
+  ]
+}

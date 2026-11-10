@@ -8,6 +8,10 @@ Idealized, reproducible MITgcm experiments on polar ocean processes (ice–ocean
    - a 2-D line plume validated against plume theory with the same melt law;
    - two interacting 3-D point plumes in a stratified ambient, compared with laboratory experiments;
    - a rotating fjord forced separately by a plume, wind and the shelf.
+2. **[An ISOMIP+ ice-shelf cavity: melt sensitivity to warm deep water and the destination of meltwater](exp2_isomip_cavity/README.md)**. Three parts:
+   - the ISOMIP+ protocol, calibrated as prescribed and checked against the published results and the MITgcm-JPL output: melt and barotropic circulation in range, cavity overturning below the pre-registered range;
+   - a 28-run ensemble at 4 km varying the deep-water temperature, the thermocline depth and the ice draft: the melt is a near-exact quadratic in temperature but steeper than the pre-registered power law (that hypothesis fails), and the meltwater leaves the cavity at shallower depths as the deep water warms (that hypothesis holds);
+   - the ensemble exported as the training and test data of a melt emulator (Experiment 3, not yet built).
 
 How to run the model, the tests and the analysis: [RUNNING.md](RUNNING.md).
 

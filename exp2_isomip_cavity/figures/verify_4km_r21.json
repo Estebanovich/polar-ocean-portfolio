@@ -1,0 +1,26 @@
+{
+  "resolution": "4km",
+  "point": {
+    "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/ocean0_4km_r21",
+    "case": "ocean0_4km",
+    "gammaT": 0.029356,
+    "gammaS": 0.0008387428571428572,
+    "dx_km": 4.0,
+    "deltaT": 800.0,
+    "init_profile": "ocean0",
+    "restore_profile": "ocean0",
+    "s": 1.0,
+    "deep_melt_last6_m_per_a": 30.02281749487971,
+    "shelf_melt_last6_m_per_a": 10.18596712376924,
+    "N1_drift": 0.000243737652425891,
+    "N3": "PASS"
+  },
+  "K1": {
+    "deep_melt_last6_m_per_a": 30.02281749487971,
+    "range": [
+      28.0,
+      32.0
+    ],
+    "pass": true
+  }
+}

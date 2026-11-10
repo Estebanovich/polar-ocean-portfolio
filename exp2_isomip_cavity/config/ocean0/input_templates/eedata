@@ -1,0 +1,5 @@
+# Exp. 2 (ISOMIP+) -- case ${case}: one thread per process
+ &EEPARMS
+ nTx=1,
+ nTy=1,
+ &

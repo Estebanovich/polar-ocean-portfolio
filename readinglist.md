@@ -54,6 +54,58 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ✅ ✔ | Rintoul et al. (2016). Ocean heat drives rapid basal melt of the Totten Ice Shelf. *Science Advances* (abierto) | https://doi.org/10.1126/sciadv.1601610 |
 | ✅ ★ | Plaza ARIES de Sheehan: descripción del proyecto (guárdala como PDF) | https://aries-dtp.ac.uk/studentships/sheehan/ |
 | | Un artículo reciente de modelado MITgcm de Nakayama: elige uno en su página | https://sites.google.com/view/umi-nakayama |
+| ✅ ★ ✔ | Yung, Asay-Davis et al. (2026). Results of the second Ice Shelf–Ocean Model Intercomparison Project (ISOMIP+). *The Cryosphere* 20:2053 (abierto; con suplemento). Valida Ocean1; incluye MITgcm-JPL de Nakayama | https://doi.org/10.5194/tc-20-2053-2026 |
+| ✅ ✔ | Gwyther et al. (2020). Vertical processes and resolution impact ice shelf basal melting: a multi-model study. *Ocean Modelling* 147:101569 | https://doi.org/10.1016/j.ocemod.2020.101569 |
+| ✅ ✔ | Scott et al. (2023). Towards a fully unstructured ocean model for ice shelf cavity environments (compara con MITgcm en Ocean0). *Ocean Modelling* 182:102178 | https://doi.org/10.1016/j.ocemod.2023.102178 |
+| ✅ ✔ | Cornford & Asay-Davis (2016). Geometría ISOMIP+ (`Ocean1_input_geom_v1.01.nc`), GFZ Data Services (dato, no artículo) | https://doi.org/10.5880/PIK.2016.002 |
+| ✅ | Cessi & Young (1996). Some unexpected consequences of the interaction between convective adjustment and horizontal diffusion. *Physica D* 98:287–300 (el "esquema" convectivo que Y26 atribuye a los MITgcm; diagnóstico R20) | https://doi.org/10.1016/0167-2789(96)00118-2 |
+| ✅ | Cessi (1996). Grid-scale instability of convective-adjustment schemes. *J. Mar. Res.* 54:407–420 (contexto del zigzag de ψ_bt a 4 km) | https://doi.org/10.1357/0022240963213529 |
+| | **Revisión 2026-11-10: sensibilidad del melt (H1) y overturning de la cavidad (V2b/V3)** | |
+| ✅ ★ | Jenkins et al. (2018). West Antarctic Ice Sheet retreat in the Amundsen Sea driven by decadal oceanic variability. *Nat. Geosci.* 11:733–738 (melt ∝ T² con T media de sección; termoclina) | https://doi.org/10.1038/s41561-018-0207-4 |
+| ✅ ★ | De Rydt et al. (2014). Geometric and oceanographic controls on melting beneath Pine Island Glacier. *JGR Oceans* 119 (MITgcm; subir la picnoclina → respuesta lineal por área expuesta) | https://doi.org/10.1002/2013JC009513 |
+| ✅ ★ | Hattermann et al. (2014). Eddy-resolving simulations of the Fimbul Ice Shelf cavity circulation. *Ocean Modelling* 82:28–44 (hipsometría: el área por profundidad modula la respuesta) | https://doi.org/10.1016/j.ocemod.2014.07.004 |
+| ✅ ★ | Favier et al. (2019). Assessment of sub-shelf melting parameterisations using NEMO–Elmer/Ice. *GMD* 12:2255–2283 (cuadrática; local × no local; Warm3 termoclina) | https://doi.org/10.5194/gmd-12-2255-2019 |
+| ✅ ★ | Burgard et al. (2022). An assessment of basal melt parameterisations for Antarctic ice shelves. *TC* 16:4931–4975 (tiene corrigendum ⬜) | https://doi.org/10.5194/tc-16-4931-2022 |
+| ✅ | Holland (2017). The transient response of ice shelf melting to ocean change. *JPO* 47:2101–2114 (respuesta de equilibrio cuadrática) | https://doi.org/10.1175/JPO-D-17-0071.1 |
+| ✅ | Steiger et al. (2022). The dynamics of a barotropic current impinging on an ice front. *JPO* (la viscosidad de baja resolución rompe la restricción de PV; ψ_bt a 4 km) | https://doi.org/10.1175/jpo-d-21-0312.1 |
+| ⬜ ★ | Jourdain et al. (2017). Ocean circulation and sea-ice thinning induced by melting ice shelves in the Amundsen Sea. *JGR Oceans* 122 (escala overturning–melt; calibrar el melt no fija u* y TF por separado) | https://doi.org/10.1002/2016JC012509 |
+| ⬜ | Jourdain et al. (2020). A protocol for calculating basal melt rates in the ISMIP6 Antarctic ice sheet projections. *TC* 14:3111–3134 (cuadrática local/no local) | https://doi.org/10.5194/tc-14-3111-2020 |
+| ⬜ | Lambert & Burgard (2025). *TC* 19:2495 (calentamiento bajo 500 m; respuesta fuertemente no lineal) | https://doi.org/10.5194/tc-19-2495-2025 |
+| ⬜ | Little, Gnanadesikan & Oppenheimer (2009). How ice shelf morphology controls basal melting. *JGR* 114:C12007 [verificar afirmación subcuadrática] | https://doi.org/10.1029/2008JC005197 |
+| ⬜ | Gwyther et al. (2016). *Ann. Glaciol.* (las mareas reducen la sensibilidad a la temperatura) | https://doi.org/10.1017/aog.2016.31 |
+| ⬜ | Lazeroms et al. (2018). *TC* 12:49–70 (parametrización de pluma) | https://doi.org/10.5194/tc-12-49-2018 |
+| ⬜ | Lazeroms et al. (2019). *JPO* 49:917–939 | https://doi.org/10.1175/JPO-D-18-0131.1 |
+| ⬜ | Reese et al. (2018). PICO. *TC* 12:1969–1985 | https://doi.org/10.5194/tc-12-1969-2018 |
+| ⬜ | Pelle et al. (2019). PICOP. *TC* 13:1043–1049 | https://doi.org/10.5194/tc-13-1043-2019 |
+| ⬜ | Rosevear, Gayen & Galton-Fenzi (2022). Regimes and transitions in the basal melting of Antarctic ice shelves. *JPO* (respuesta muy no lineal; estratificación; ficha verificada en Consensus, PDF pendiente) | https://doi.org/10.1175/JPO-D-21-0317.1 |
+| ⬜ | Yung, Rosevear et al. (2025). Stratified suppression of turbulence in an ice shelf basal melt parameterisation. *TC* 19:5827 (ficha verificada en Consensus, PDF pendiente) | https://doi.org/10.5194/tc-19-5827-2025 |
+| ⬜ | Gade (1979). Melting of ice in sea water: a primitive model with application to the Antarctic ice shelf and icebergs. *JPO* 9:189–198 (línea de mezcla de Gade; diagnóstico S3; ficha verificada en Consensus, PDF pendiente) | https://doi.org/10.1175/1520-0485(1979)009<0189:MOIISW>2.0.CO;2 |
+| ⬜ | Dutrieux et al. (2014). *Science* 343:174–178 (termoclina y melt de Pine Island) | https://doi.org/10.1126/science.1244341 |
+| ⬜ | Sergienko, Goldberg & Little (2013). *JGR Earth Surf.* (sensibilidad a la profundidad de la termoclina) | https://doi.org/10.1002/jgrf.20054 |
+| ⬜ | Kimura et al. (2017). *JGR Oceans* (control por termoclina; respuesta asimétrica) | https://doi.org/10.1002/2017JC012926 |
+| ⬜ | Olbers & Hellmer (2010). *Ocean Dyn.* (modelo de caja: cuadrático → lineal) | https://doi.org/10.1007/s10236-009-0252-z |
+| ⬜ | Grosfeld et al. (1997). Thermohaline circulation and interaction between ice shelf cavities and the adjacent open ocean. *JGR* (f/H en el frente) | https://doi.org/10.1029/97JC00891 |
+| ⬜ | Zhou & Hattermann (2020). Modeling ice shelf cavities in FVCOM. *Ocean Modelling* 146:101536 | https://doi.org/10.1016/j.ocemod.2019.101536 |
+| ⬜ | Naughten et al. (2018). Intercomparison MetROMS-iceshelf vs FESOM 1.4. *GMD* 11:1257 | https://doi.org/10.5194/gmd-11-1257-2018 |
+| ⬜ | Donat-Magnin et al. (2017). *JGR Oceans* (circulación inducida por melt amplificada por interfaz profunda) | https://doi.org/10.1002/2017JC013059 |
+| ⬜ | Jenkins (2016). A simple model of the ice shelf–ocean boundary layer and current. *JPO* [verificar DOI] | https://doi.org/10.1175/JPO-D-15-0194.1 |
+| ⬜ | Goldberg et al. (2012a). Investigation of land ice-ocean interaction with a fully coupled ice-ocean model. *JGR* [verificar DOI] | https://doi.org/10.1029/2011JF002246 |
+| | **Búsqueda Consensus 2026-11-10 (introducción de Exp. 2): todos los resultados** | |
+| ⬜ ✔ | Rignot, Jacobs et al. (2013). Ice-shelf melting around Antarctica. *Science* (citado en §1: el derretimiento basal es la mayor ablación; la mitad del agua de deshielo viene de 10 plataformas cálidas, 8 % del área; verificado en el resumen) | https://doi.org/10.1126/science.1235798 |
+| ⬜ ✔ | Depoorter et al. (2013). Calving fluxes and basal melt rates of Antarctic ice shelves. *Nature* | https://doi.org/10.1038/nature12567 |
+| ⬜ ✔ | Davison et al. (2023). Annual mass budget of Antarctic ice shelves from 1997 to 2021. *Science Advances* | https://doi.org/10.1126/sciadv.adi0186 |
+| ⬜ ✔ | Schodlok, Menemenlis & Rignot (2016). Ice shelf basal melt rates around Antarctica from simulations and observations. *JGR Oceans* 121:1085–1109 (ECCO2 con cavidades; resolución vertical) | https://doi.org/10.1002/2015JC011117 |
+| ⬜ ✔ | De Rydt & Naughten (2024). Geometric amplification and suppression of ice-shelf basal melt in West Antarctica. *TC* 18:1863 | https://doi.org/10.5194/tc-18-1863-2024 |
+| ⬜ ✔ | Jacobs, Jenkins et al. (2011). Stronger ocean circulation and increased melting under Pine Island Glacier ice shelf. *Nat. Geosci.* (no citado en el README) | https://doi.org/10.1038/ngeo1188 |
+| ⬜ ★ ✔ | Park, Nakayama & Nam (2024). Amundsen Sea circulation controls bottom upwelling and Antarctic Pine Island and Thwaites ice shelf melting. *Nat. Commun.* (citado en §1: la profundidad de la termoclina en el frente se correlaciona con el melt; coautor Nakayama) | https://doi.org/10.1038/s41467-024-47084-z |
+| ⬜ ✔ | Dotto et al. (2022). Ocean variability beneath Thwaites Eastern Ice Shelf driven by the Pine Island Bay Gyre strength. *Nat. Commun.* (agua de deshielo de Pine Island entra a la cavidad de Thwaites) | https://doi.org/10.1038/s41467-022-35499-5 |
+| ⬜ ✔ | Joughin et al. (2021). Ocean-induced melt volume directly paces ice loss from Pine Island Glacier. *Science Advances* | https://doi.org/10.1126/sciadv.abi5738 |
+| ⬜ ✔ | Lowery, Holland et al. (2026). Drivers of basal melt variability for Pine Island Glacier Ice Shelf: ocean forcing versus geometric feedback. *GRL* | https://doi.org/10.1029/2025gl121404 |
+| ⬜ ★ ✔ | Sheehan, Heywood et al. (2023). Sources and pathways of glacial meltwater in the Bellingshausen Sea, Antarctica. *GRL* 50:e2023GL102785 (citado en §1: destino del agua de deshielo; verificado en el resumen) | https://doi.org/10.1029/2023GL102785 |
+| ⬜ ✔ | Sheehan, Heywood et al. (2021). Sources and transport of glacial meltwater in the Bellingshausen Sea (resumen EGU, no artículo) | https://doi.org/10.5194/egusphere-egu21-2746 |
+| ⬜ ✔ | Flexas, Thompson et al. (2024). Pathways of inter-basin exchange from the Bellingshausen Sea to the Amundsen Sea. *JGR Oceans* | https://doi.org/10.1029/2023jc020080 |
+| ⬜ ✔ | Ruan, Speer et al. (2021). Ice-shelf meltwater overturning in the Bellingshausen Sea. *JGR Oceans* | https://doi.org/10.1029/2020jc016957 |
+| ⬜ ✔ | Schulze Chretien, Thompson et al. (2021). The shelf circulation of the Bellingshausen Sea. *JGR Oceans* | https://doi.org/10.1029/2020jc016871 |
 
 ## Exp. 3 — Emulador de ML del derretimiento (Purkey, Jourdain/Burgard)
 

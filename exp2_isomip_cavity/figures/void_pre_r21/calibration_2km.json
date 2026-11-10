@@ -1,0 +1,168 @@
+{
+  "resolution": "2km",
+  "rule": "pd0 K1 (AD16 sect. 3.2.1, Eq. 37): deep (< -300 m) Ocean0 melt, last 6 months (records 19-24), piecewise-linear ln<m> vs ln GammaT, no extrapolation",
+  "target_m_per_a": 30.0,
+  "k1_range": [
+    28.0,
+    32.0
+  ],
+  "dx_km": 2.0,
+  "deltaT": 400.0,
+  "points": [
+    {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.0075",
+      "case": "cal2_gT0.0075",
+      "gammaT": 0.0075,
+      "gammaS": 0.00021428571428571427,
+      "dx_km": 2.0,
+      "deltaT": 400.0,
+      "init_profile": "ocean0",
+      "restore_profile": "ocean0",
+      "s": 1.0,
+      "deep_melt_last6_m_per_a": 24.609691538865103,
+      "shelf_melt_last6_m_per_a": 9.104442612601636,
+      "N1_drift": 0.009990508825591207,
+      "N3": "PASS"
+    },
+    {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.015",
+      "case": "cal2_gT0.015",
+      "gammaT": 0.015,
+      "gammaS": 0.00042857142857142855,
+      "dx_km": 2.0,
+      "deltaT": 400.0,
+      "init_profile": "ocean0",
+      "restore_profile": "ocean0",
+      "s": 1.0,
+      "deep_melt_last6_m_per_a": 39.90958874243249,
+      "shelf_melt_last6_m_per_a": 13.208453667008474,
+      "N1_drift": 0.005642769421563212,
+      "N3": "PASS"
+    },
+    {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.03",
+      "case": "cal2_gT0.03",
+      "gammaT": 0.03,
+      "gammaS": 0.0008571428571428571,
+      "dx_km": 2.0,
+      "deltaT": 400.0,
+      "init_profile": "ocean0",
+      "restore_profile": "ocean0",
+      "s": 1.0,
+      "deep_melt_last6_m_per_a": 57.573969473424064,
+      "shelf_melt_last6_m_per_a": 17.465019803389,
+      "N1_drift": 0.009727036814875802,
+      "N3": "PASS"
+    },
+    {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.06",
+      "case": "cal2_gT0.06",
+      "gammaT": 0.06,
+      "gammaS": 0.0017142857142857142,
+      "dx_km": 2.0,
+      "deltaT": 400.0,
+      "init_profile": "ocean0",
+      "restore_profile": "ocean0",
+      "s": 1.0,
+      "deep_melt_last6_m_per_a": 74.67969627463684,
+      "shelf_melt_last6_m_per_a": 21.760557950061184,
+      "N1_drift": 0.002450831639772106,
+      "N3": "PASS"
+    }
+  ],
+  "status": "OK",
+  "gammaT_cal_raw": 0.009962740502771211,
+  "gammaT_cal": 0.0099627,
+  "gammaS_cal": 0.00028464857142857143,
+  "segment": [
+    0.0075,
+    0.015
+  ],
+  "message": "GammaT_cal from the bracketing segment; verify with one run (K1)",
+  "evaluation": {
+    "source": "analysis/pd1_calibration_eval.py (figures/pd1_calibration_eval.json)",
+    "K1": {
+      "deep_melt_last6_m_per_a": 30.407893860136618,
+      "range": [
+        28.0,
+        32.0
+      ],
+      "pass": true,
+      "gammaT_cal": 0.0099627,
+      "verification_run": "ocean0_2km"
+    },
+    "V1": {
+      "gammaT_cal_2km": 0.0099627,
+      "range": [
+        0.011,
+        0.2
+      ],
+      "pass": false,
+      "class": "(c) numerical choice (PD2 amendment, notes/pd1_calibracion.md 4.2: z-level, 20 m top cells; Gwyther 2020 L30-31)"
+    },
+    "N": {
+      "cal2_gT0.0075": {
+        "N1": {
+          "value": 0.009990508825591207,
+          "pass": true
+        },
+        "N2": {
+          "value": 1.100441472929819e-06,
+          "pass": true
+        },
+        "N3": true
+      },
+      "cal2_gT0.015": {
+        "N1": {
+          "value": 0.005642769421563212,
+          "pass": true
+        },
+        "N2": {
+          "value": 1.3835883531712952e-06,
+          "pass": true
+        },
+        "N3": true
+      },
+      "cal2_gT0.03": {
+        "N1": {
+          "value": 0.009727036814875802,
+          "pass": true
+        },
+        "N2": {
+          "value": 4.009239818340506e-06,
+          "pass": true
+        },
+        "N3": true
+      },
+      "cal2_gT0.06": {
+        "N1": {
+          "value": 0.002450831639772106,
+          "pass": true
+        },
+        "N2": {
+          "value": 4.639236300412453e-06,
+          "pass": true
+        },
+        "N3": true
+      },
+      "ocean0_2km": {
+        "N1": {
+          "value": 0.009755681490474203,
+          "pass": true
+        },
+        "N2": {
+          "value": 1.3398766526050724e-06,
+          "pass": true
+        },
+        "N3": true
+      }
+    },
+    "R17_cfl_max": {
+      "cal2_gT0.0075": 0.19214712586518,
+      "cal2_gT0.015": 0.28794183973344,
+      "cal2_gT0.03": 0.36216593334013,
+      "cal2_gT0.06": 0.4141547741924,
+      "ocean0_2km": 0.22776570656974
+    }
+  }
+}

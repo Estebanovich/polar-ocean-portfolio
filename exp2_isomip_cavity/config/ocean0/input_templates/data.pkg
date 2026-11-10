@@ -1,0 +1,7 @@
+# Exp. 2 (ISOMIP+) -- case ${case}
+ &PACKAGES
+ useShelfIce=.TRUE.,
+ usePTRACERS=.TRUE.,
+ useRBCS=.TRUE.,
+ useDiagnostics=.TRUE.,
+ &

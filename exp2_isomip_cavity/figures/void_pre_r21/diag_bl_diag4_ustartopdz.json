@@ -1,0 +1,26 @@
+{
+  "resolution": "4km",
+  "point": {
+    "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/diag4_ustartopdz",
+    "case": "diag4_ustartopdz",
+    "gammaT": 0.015,
+    "gammaS": 0.00042857142857142855,
+    "dx_km": 4.0,
+    "deltaT": 800.0,
+    "init_profile": "ocean0",
+    "restore_profile": "ocean0",
+    "s": 1.0,
+    "deep_melt_last6_m_per_a": 43.041872939363614,
+    "shelf_melt_last6_m_per_a": 13.994645356228181,
+    "N1_drift": 0.0038803996806315135,
+    "N3": "PASS"
+  },
+  "K1": {
+    "deep_melt_last6_m_per_a": 43.041872939363614,
+    "range": [
+      28.0,
+      32.0
+    ],
+    "pass": false
+  }
+}

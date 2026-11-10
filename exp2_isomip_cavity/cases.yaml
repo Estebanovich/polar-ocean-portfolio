@@ -1,0 +1,131 @@
+# Exp. 2 case registry (ISOMIP+ ice-shelf cavity), read by gendata/make_case.py.
+# References: Asay-Davis et al. (2016) = AD16. Units: m, s, degC, PSU, kg m^-3.
+# configs: base parameters per MITgcm configuration (key = config/<cfg>/ directory).
+# cases: one entry per run; keys override the config values.
+#   init_profile / restore_profile: ocean0 (WARM, AD16 Eq. 21-22, Table 6) | cold (Table 5)
+#                                   | ramp (ensemble family; Tbot, z_c, d)
+#   s: ice-draft scale factor (draft' = s draft, before the minimum water column)
+#   gammaT: nondimensional heat-transfer coefficient (AD16 Table 4, "model specific");
+#           gammaS = gammaT / 35 is derived. null = not calibrated yet (make_case refuses).
+#           Calibrated values (pd0 K1, R21 relaunch, approved at PD1a 2026-11-09):
+#           2 km 0.030959 (figures/calibration_2km_r21.json, verify_2km_r21.json) for Ocean0
+#           and Ocean1 at 2 km; 4 km 0.029356 (figures/calibration_4km_r21.json,
+#           verify_4km_r21.json) for ocean0_4km and the ensemble. Not to be touched again.
+# ensemble: expanded by make_case.load_cases into cases ens_T{Tbot}_zc{z_c}_s{s}
+#   (the Latin hypercube is generated from the seed, never written by hand).
+# deltaT is set by the Task 4 timing runs (notes/pd1_calibracion.md: largest dt of the
+# doubling sequence from 200 s whose 30-day max CFL is <= 0.5) and is then the same for every
+# run of that resolution.
+configs:
+  ocean0_2km: &base
+    dx_km: 2.0
+    nz: 36
+    dz: 20.0                 # 36 x 20 m levels, 0-720 m (AD16 sect. 3.1.4)
+    lat_deg: -75.0           # f plane at 75 S (AD16 sect. 3.1.1)
+    rho_ref: 1027.51         # linear EOS, AD16 Eq. 23 and Table 4
+    tRef: -1.0
+    sRef: 34.2
+    tAlpha: 3.733e-5
+    sBeta: 7.843e-4
+    gravity: 9.81
+    viscAh: 6.0              # AD16 Table 4
+    diffKh: 1.0
+    viscAr: 1.0e-3
+    diffKr: 5.0e-5
+    ivdc_kappa: 0.1
+    Cd: 2.5e-3
+    u_tidal: 0.01
+    x_restore0_m: 790000.0   # restoring zone, AD16 Eq. 20
+    x_restore1_m: 800000.0
+    tauRelax: 8640.0         # 0.1 day: gamma0 = 10 day^-1 at x = 800 km (AD16 sect. 3.1.3)
+    min_cells: 2             # minimum water column, cells (AD16 sect. 3.1.4)
+    s: 1.0
+    gammaT: 0.030959         # GammaT_cal,2km (pd0 K1, figures/calibration_2km_r21.json)
+    # R21 provenance tag of the u* law, u*^2 = Cd (u^2 + u_tidal^2) (theory/melt.py MELT_LAW);
+    # --skip-ok and metrics.load_run refuse runs whose case.json lacks it (void law)
+    melt_law: AD16_eq27_r21
+    init_profile: ocean0
+    restore_profile: ocean0
+    deltaT: 400.0            # Task 4 timing: max CFL 0.27 (w, 30 d); notes/pd1_calibracion.md
+    endTime: 63072000.0      # 2 years of 365 days
+    pickup_stems: [pickup, pickup_ptracers]   # no pickup_shelfice: SHELFICEMassStepping off
+    template_config: ocean0  # namelists in config/ocean0/input_templates (both resolutions)
+    hFacMin: 0.2             # partial cells, as MITgcm-BAS in ISOMIP+ (notes/pd1_config.md)
+    advScheme: 77            # T, S and tracer advection: 2nd-order flux limiter (not DST3 = 33)
+    shiUStarTopDz: ".FALSE."  # SHI_withBL_uStarTopDz (pkg/shelfice); .TRUE. only in diag4_ustartopdz
+    cAdjFreq: 0.0            # convective adjustment off; convection by ivdc_kappa (AD16 Table 4)
+    pChkptFreq: 31536000.0   # permanent pickup every year (plus one at the end of each run)
+    chkptFreq: 2628000.0     # rolling pickup every month
+    monitorFreq: 86400.0
+    snapFreq: -31536000.0    # snapshot stream (snapDiag) every year, < 0 = instantaneous
+  ocean0_4km: &base4
+    <<: *base
+    dx_km: 4.0
+    gammaT: 0.029356         # GammaT_cal,4km (pd0 K1, figures/calibration_4km_r21.json)
+    deltaT: 800.0            # Task 4 timing: max CFL 0.32 (w, 30 d); notes/pd1_calibracion.md
+  ocean0_4km_mpi:            # the same 4 km physics on 5 MPI ranks (Task 4 timing)
+    <<: *base4
+# R21 (2026-11-09): every run made before R21 (run directories without suffix) used the wrong
+# u* law (Cd u^2 + u_tidal^2 instead of AD16 Eq. 27, Cd (u^2 + u_tidal^2)) and is VOID; the
+# relaunch (scripts/queue_calibration.sh) writes its runs with the suffix _r21.
+cases:
+  ocean0_2km: {config: ocean0_2km}
+  ocean1_2km:                # AD16 Table 2: COLD initial state, WARM restoring, 20 years
+    config: ocean0_2km
+    init_profile: cold
+    restore_profile: ocean0
+    endTime: 630720000.0
+  ocean0_4km: {config: ocean0_4km, ensemble_group: reference}
+  # Gamma_T calibration (AD16 sect. 3.2.1), Ocean0 at each resolution
+  cal2_gT0.015: {config: ocean0_2km, gammaT: 0.015}
+  cal2_gT0.03: {config: ocean0_2km, gammaT: 0.03}
+  cal2_gT0.06: {config: ocean0_2km, gammaT: 0.06}
+  cal4_gT0.015: {config: ocean0_4km, gammaT: 0.015}
+  cal4_gT0.03: {config: ocean0_4km, gammaT: 0.03}
+  cal4_gT0.06: {config: ocean0_4km, gammaT: 0.06}
+  # PD2 sampling amendment (Esteban, 2026-11-09; notes/pd1_calibracion.md): 30 m/yr was not
+  # bracketed by 0.015-0.06 at either resolution, so 0.0075 is added at both.
+  # VOID under R21 (conditional on the wrong u* law): kept as a record, not run again.
+  cal2_gT0.0075: {config: ocean0_2km, gammaT: 0.0075}
+  cal4_gT0.0075: {config: ocean0_4km, gammaT: 0.0075}
+  # R20 post hoc diagnostic (notes/pd1_diagnostico_capa_limite.md): Ocean0 4 km, GammaT 0.015,
+  # exactly one change each against cal4_gT0.015. Not calibration, not validation.
+  # VOID under R21 (whole series ran with the wrong u* law): kept as a record, not run again.
+  diag4_adv33: {config: ocean0_4km, gammaT: 0.015, advScheme: 33}      # DST3, as Y26 MITgcm
+  diag4_hfac025: {config: ocean0_4km, gammaT: 0.015, hFacMin: 0.25}    # as MITgcm-JPL
+  # (d), post hoc addition approved by Esteban 2026-11-09: u* from U/V averaged at the faces
+  diag4_ustartopdz: {config: ocean0_4km, gammaT: 0.015, shiUStarTopDz: ".TRUE."}
+  # (e), post hoc addition approved by Esteban 2026-11-09: convective adjustment every step
+  # instead of ivdc_kappa (one scheme swap; MITgcm refuses both at once, ini_parms.F:1107-1113)
+  diag4_convadj: {config: ocean0_4km, gammaT: 0.015, cAdjFreq: -1.0, ivdc_kappa: 0.0}
+  # Task 4 timing: 4 km Ocean0 on 5 MPI ranks (compared with 5 concurrent serial runs).
+  # Run VOID under R21 (timing only; the measured cost still holds).
+  tim4m_gT0.03: {config: ocean0_4km_mpi, gammaT: 0.03}
+  # R24 post hoc (Esteban, 2026-11-10; notes/pd2_ensamble.md): exposure test of H1's n > 2.
+  # "Holland 2008-like" ramp: -1.9 degC / S0 above 100 m, linear 100-200 m, Tbot / Sbot below
+  # 200 m (Holland et al. 2008 sect. 3a: deep water uniform below 200 m). Same 4 km config,
+  # GammaT_cal,4km, length and melt_law as the ensemble core; NOT ensemble members (no
+  # ensemble_group), so they never enter H1/H2 or the 29-member N-check.
+  hol_T-0.5: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: -0.5, z_c: 150.0, d: 100.0, s: 1.0}
+  hol_T0.0: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: 0.0, z_c: 150.0, d: 100.0, s: 1.0}
+  hol_T0.5: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: 0.5, z_c: 150.0, d: 100.0, s: 1.0}
+  hol_T1.0: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: 1.0, z_c: 150.0, d: 100.0, s: 1.0}
+  hol_T1.5: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: 1.5, z_c: 150.0, d: 100.0, s: 1.0}
+ensemble:
+  config: ocean0_4km
+  reference: ocean0_4km
+  d: 300.0                   # ramp thickness, m
+  factorial:
+    Tbot: [-0.5, 0.0, 0.5, 1.0, 1.5]
+    z_c: [250.0, 400.0, 550.0]
+    s: 1.0
+  geometry:                  # Latin hypercube in (Tbot, z_c) for each s
+    s: [0.8, 1.2]
+    n_per_s: 5
+    seed: 20261108
+    Tbot_range: [-0.5, 1.5]
+    z_c_range: [250.0, 550.0]
+  extrapolation:             # Exp. 3 test only
+    Tbot: [2.0]
+    z_c: [250.0, 400.0, 550.0]
+    s: 1.0

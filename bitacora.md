@@ -251,6 +251,14 @@
 - Commits: análisis en `excess_dx5.py` (0d24952); Figura 2 con panel (b) y README (7127d06).
 - Animación de (a): la nueva corrida es idéntica bit a bit a la de producción de 1 a 6 h (diferencia 0.0). GIF cada 5 min y sección «Animations» en el README (92f033f). 293 tests PASAN.
 
+## 2026-11-08 — Exp. 2: preregistro, configuración, smoke y primera calibración (Tasks 0–4a)
+
+- **PD0:** criterios K1, V1, V2a–d, V3, N1–N4, H1 y H2 fijados en `notes/pd0_preregistro.md` antes de cualquier corrida.
+- **Tasks 1–3:** geometría desde el archivo GFZ para fondo y base del hielo (R7, regla de mayoría flotante R9), columna mínima de 2 celdas y conectividad; ley de fusión AD16 en `code/` (override de `shelfice_thermodynamics.F`), trazador de deshielo con fuente virtual, librería de métricas (`analysis/metrics.py`) con `require_ok`.
+- **Smoke de 30 días:** S1, S2, S4, S5 pasan; **S3 FALLA** (T y S fuera del rango inicial; diagnóstico post hoc con la línea de Gade, R10). La revisión encontró que el dominio era periódico en y (R12): fila de tierra al norte y smoke repetido con paredes.
+- **Task 4a:** cronometraje y dt por CFL (400 s a 2 km, 800 s a 4 km; R17); `checkIniTemp=.FALSE.` (R18). Primera cola de calibración (20:40–23:46 CST): 30 m a⁻¹ no quedó acotado con ΓT ∈ {0.015, 0.03, 0.06} → PD2.
+- Todo esto corrió con la forma errónea de u\* y quedó **anulado** al día siguiente (R21); se conserva como registro.
+
 ## 2026-11-08 (tarde): correcciones de la revisión final (PD4)
 
 - **Bloqueantes:**
@@ -273,3 +281,86 @@
   - Jackson 2018: lo que llaman simplificación es la condición en la boca; 30 m es «típico de Sermilik» y su control usa 14 m.
   - Carroll (viento) y Sanchez (Sermilik, la pluma duplica el intercambio) quedan separados.
 - `.gitignore` sin entradas del asistente en todo el historial (reescrito; las entradas se movieron a `.git/info/exclude`). Las referencias de commits en las notas están actualizadas.
+
+## 2026-11-09 (madrugada) — Exp. 2: calibración ampliada y serie diagnóstica R20 (anuladas por R21)
+
+- **Enmienda de PD2 (R19):** se añadió ΓT = 0.0075. Segunda cola (00:41–03:13 CST): ΓT_cal = 0.0094686 (4 km) y 0.0099627 (2 km); K1 pasaba y V1 fallaba (< 0.011).
+- **R20:** serie diagnóstica post hoc a 4 km (advección 33, hFacMin 0.25, `SHI_withBL_uStarTopDz`, ajuste convectivo), una opción por corrida, para explicar el ΓT_cal bajo. Ninguna lo explicó.
+- Hacia las 08:05 CST se encontró el error de u\* (siguiente entrada): la calibración, la enmienda y la serie R20 quedaron anuladas.
+
+## 2026-11-09 — Exp. 2: error (a) en la forma de u\* (R21) y relanzamiento de la calibración
+
+- **Error (a), nuestro:** AD16 Eq. 27, verificada en la página del PDF (GMD 9, p. 2485 = p. 15 del PDF), es u\*² = Cd·(u_w² + u_tidal²), con piso √Cd·u_tidal = 5e-4 m s⁻¹. Implementamos Cd·u_w² + u_tidal² (piso 0.01 m s⁻¹). La fórmula del plan venía de una extracción de texto sin paréntesis.
+- **Evidencia:** u\* medio profundo de MITgcm-JPL en Ocean0 = 0.0040 m s⁻¹; el nuestro, 0.0109 m s⁻¹.
+- **Corrección con TDD:** prueba con anclas a mano (5.0e-4 y 7.0711e-4 m s⁻¹) que falla antes y pasa después; `melt.py`, override de Fortran (mínimo, marcado, con cita de la página), `metrics.ustar_check` (piso √Cd·u_tidal) y sus pruebas; prueba nueva que exige que Cd multiplique a los dos términos en el Fortran. Suite completa: 496 pasan.
+- Binarios `ocean0_2km` (MPI), `ocean0_4km` y `ocean0_4km_mpi` recompilados.
+- **Anuladas** (se conservan en disco): smoke, `cal2_*`/`cal4_*` (todos los ΓT), `ocean0_2km`, `ocean0_4km`, `tim4m_*`, `diag4_*`. La enmienda de PD2 (ΓT = 0.0075) y la serie R20 estaban condicionadas a la ley errónea: quedan como registro, no se reutilizan. K1, V1, N1–N3 y pd0 no cambian.
+- **Relanzamiento** de la calibración de pd0 K1 desde cero, ΓT ∈ {0.015, 0.03, 0.06} en las dos mallas, con sufijo de corrida `_r21` (`scripts/queue_calibration.sh`). Si 30 m a⁻¹ no queda acotado en una malla, la cola se detiene ahí (PD2), sin extrapolar.
+- **Resultados R21** (cola 08:11–12:28 CST): ΓT_cal = 0.029356 (4 km) y 0.030959 (2 km), acotados con los 3 puntos de pd0. K1 PASA en las dos mallas (30.02 y 30.00 m a⁻¹), V1 PASA (0.030959 ∈ [0.011, 0.2]), N1–N3 PASAN en las 8 corridas, CFL máximo 0.348. Detalle en `notes/pd1_calibracion.md`, «Resultados R21».
+- **Candado:** `melt_law` en `case.json`; `--skip-ok` y `metrics.load_run` rechazan corridas con la ley anulada; sufijo por omisión `_r21`.
+- **Comparación post hoc con MITgcm-JPL** (`notes/pd1_comparacion_jpl.md`): melt profundo 30.00 contra 31.35 m a⁻¹, u\* profundo 0.00365 contra 0.00397 m s⁻¹, correlación de los mapas de melt r = 0.91.
+- **Producción (PD1a aprobada):** ΓT_cal en `cases.yaml` (4 km 0.029356 para el ensamble y `ocean0_4km`; 2 km 0.030959 para Ocean0 y Ocean1); `binary_sha256` en `case.json` al correr; `scripts/queue_production.sh` (ensamble de 28 casos, N1–N3, luego Ocean1 en 4 etapas de 5 años) lanzada.
+
+## 2026-11-09 (noche) — Exp. 2: ensamble a 4 km, evaluación de H1 y H2 (Tasks 5 y 6)
+
+- Cola de producción (desde las 16:07 CST, con `caffeinate` desde las 20:10 tras ver pausas por reposo del Mac): ensamble de 28 corridas y referencia; fin a las 22:03 CST. Aclaración R22 (⟨m⟩ de H1 = melt de toda la plataforma) subida a las 16:41, antes de leer ninguna salida.
+- **N1–N3** (`ensemble_n_check.json`, 22:04:40): N3 y N2 pasan en las 29 corridas; N1 falla en 5 (casos fríos o de termoclina profunda), que se quedan en los ajustes y se señalan.
+- **H1 FALLA** en los tres z_c: R² de la cuadrática ≥ 0.9995, pero n = 2.43, 2.78 y 2.70 > 2.0. **H2 PASA** en los tres z_c (ρ = −1). Figuras 2 y 3, y GIF del trazador (commit 8cc4547, 22:15 CST).
+- Ocean1 a 2 km arrancó a las 22:04 (fin el 2026-11-10, 06:45).
+
+## 2026-11-10 — Exp. 2: Ocean1 a 2 km, Figura 1 y comparación post hoc con JPL (Task 4 fase B)
+
+- `ocean1_2km_r21` terminó (20 años, 4 etapas, 06:45 CST). Cargado con `metrics.load_run`: 240 registros contiguos, costuras de etapa sin huecos.
+- **pd0, año 20:** V2a PASA (10.34 m a⁻¹), **V2b FALLA** (overturning 0.185 Sv < 0.20), V2c PASA (0.258 Sv), V2d PASA (0.492 Sv), V3 barotrópica PASA, **V3 overturning FALLA**, N1 (0.11 %), N2 (1.3e-6) y N3 PASAN. CFL máx. 0.23. V2b y V3 overturning van a PD2; clasificación pendiente. Detalle en `notes/pd1_ocean1.md`.
+- Figura 1 (`analysis/fig1_ocean0_validation.py`, `figures/fig1_ocean.{png,pdf,json}`). El pie no usa el acuerdo de melt 2 contra 4 km como evidencia independiente.
+- Comparación post hoc con MITgcm-JPL Ocean1: melt profundo 30.37 contra 31.55 m a⁻¹, u\* profundo 0.00371 contra 0.00396 m s⁻¹, overturning 0.185 contra 0.203 Sv, r de los mapas = 0.91.
+- **PD2 (Esteban, 2026-11-10):**
+  - V2b sigue como FALLA pre-registrada (0.185 Sv en la cavidad). Se añade una fila **post hoc** con la definición de Y26 (máximo en todo el dominio): 0.222 Sv, dentro de 0.20–0.25; JPL 0.234. Error (a) nuestro al operacionalizar el criterio: x < 640 km es de la Fig. 13.
+  - V3 overturning: FALLA marginal, sin clase (4.9 % bajo la banda extendida, 1.8 % bajo la fijada en el anclaje de 10).
+  - Figura 1 regenerada, con los tramos extrapolados de la banda rayados.
+
+## 2026-11-10 — Exp. 2: análisis post hoc de H1 (R23, R24) y predictores cuadráticos
+
+- **Contexto:** H1 FALLA en los tres z_c (n = 2.43, 2.78 y 2.70 > 2.0; la cuadrática ajusta con R² ≥ 0.9995) y H2 PASA (ρ = −1). Todo lo de abajo es **post hoc**; el veredicto preregistrado de H1 no cambia. Detalle en `notes/pd2_ensamble.md`.
+- **R23**, forzamiento en la base (`analysis/h1_posthoc_tf.py`, `figures/fig2_posthoc_tf.*`):
+  - Con el forzamiento a priori TF_eff, n dentro de cada z_c sale aún más alto: 2.36, 3.44 y 6.49.
+  - En el conjunto, n = 1.55 con R² = 0.85.
+  - Con T_w − T_b diagnosticado, n ≈ 1.45, pero esa medida es en parte circular.
+- **Predictores cuadráticos** de Favier 2019 (Ec. 4 y 5) y Burgard 2022 (Ec. 14 y 18) (`figures/fig2_posthoc_quad.*`):
+  - El no local es idéntico a TF_eff².
+  - El local da q = 1.18–1.83 dentro de cada z_c, y 1.02 en el conjunto. Esta última pendiente mezcla la variación entre z_c y no se toma como evidencia.
+- **R24**, prueba de exposición con perfil tipo Holland 2008 (z_c = 150 m, d = 100 m):
+  - La predicción y la regla se subieron antes de correr (874205e, 11:00:55).
+  - Se corrieron 5 casos `hol_T*` a 4 km, de 11:01 a 11:34, con `caffeinate`. N1–N3 pasan.
+  - n = 2.16 (LOO 2.11–2.19): **no apoya**, según la regla.
+  - Solo ~50 % de la base queda por debajo de 200 m.
+  - Dentro de `hol`, n contra TF_eff = 1.98 y q local = 0.99 (`figures/fig2_posthoc_r24.*`).
+
+## 2026-11-10 — Exp. 2, Task 7: exportación para el Exp. 3, README, reproducibilidad
+
+- **Exportación para el Exp. 3** (`analysis/export_exp3.py`, TDD en `tests/test_export.py`: forma, NaN en celdas secas, exclusión de las corridas que fallan N3 o faltan, partición, N1, perfiles, escritura reproducible byte a byte). Archivo fuera del repo: `/Volumes/LaCie/portfolio_runs/exp2/exp3_dataset.npz`, 29 corridas (26 de entrenamiento, 3 de prueba con Tbot = 2.0), 0 excluidas, 5 marcadas por N1; sha256 `3d2eceb1…`. N1 y melt coinciden exactamente con `ensemble_table.json`. Esquema en `notes/exp3_dataset.md`.
+- **README del Exp. 2** en estructura IMRaD, en inglés, renderizado desde `README.template.md` con `scripts/render_readme.py` (mismo mecanismo `{{name}}` del Exp. 1, con su propio `values()`). Todos los números salen de `figures/*.json`; la única excepción es el u\* de 0.0109 m s⁻¹ de la corrida anulada, citado de `pd1_config.md` y señalado así en el texto. Tabla de criterios con resultado: V2b FALLA (con la fila post hoc), V3 overturning FALLA marginal, H1 FALLA, H2 PASA, 5 fallos de N1. `render_readme.py --check` pasa; pruebas en `tests/test_exp2_render_readme.py`; suite completa: 569 pasan.
+- **Registros anulados:** los JSON anteriores a R21 (`calibration_*`, `*_3pt`, `verify_*`, `pd1_calibration_eval.json`, `diag_bl_*`) pasaron con `git mv` a `figures/void_pre_r21/`, con un README. El renderizador se niega a leerlos. Rutas actualizadas en `pd1_calibracion.md` y `pd1_diagnostico_capa_limite.md`.
+- **`reproduce.sh`:** `--quick` regenera calibración, evaluación, comparación con JPL, Figuras 1–3, análisis post hoc, la exportación y el README; `--gifs` añade la animación; el modo completo lanza las colas en su orden (calibración → producción → R24) con `caffeinate`. Con `SOURCE_DATE_EPOCH=0` (valor por omisión), dos `--quick` seguidos dan archivos idénticos (shasum de 27 archivos y del .npz). Frente a lo ya subido, solo cambian los PDF, y solo en su fecha de creación; JSON, PNG, GIF y README salen idénticos.
+- README principal y `RUNNING.md` con el Exp. 2 (rutas `EXP2_RUNS`/`EXP2_BUILDS`, colas, `reproduce.sh`).
+
+## 2026-11-10 (tarde) — Exp. 2: ronda final de correcciones antes del merge y prueba de reinicio (R25)
+
+- **R25, reinicio bit a bit de Ocean1** (expectativa subida antes de correr, ad882cd): 2 meses a 2 km, np = 5, continua contra 2 etapas de 1 mes con pickup. Un primer intento quedó FAILED por la regla del runner (monitor diario que no cae en el último paso; el modelo terminó bien); repetido con monitor mensual. **Idéntico bit a bit** (máx. |dif| = 0.0 en pickup, trazador y estados finales), con el ejecutable de producción.
+- **V3 barotrópica:** se reporta como PASA marginal (2.3 % dentro de la banda extendida, 4.5 % con la banda en el ancla), simétrica con la FALLA marginal de la overturning; `fig1_ocean.json` da ahora el margen interior y la fila post hoc de V2b usa `inside_range`.
+- **Rutas:** los scripts de análisis toman `EXP2_RUNS` de `pfcommon.paths`; `jpl_compare.py --runs-root`; prueba nueva. `RUNNING.md` aclara que las colas fijan la ruta de LaCie.
+- **README:** R9 declarado (s escala solo el hielo flotante; el borde mojado se mueve por la columna mínima), menos repeticiones de Holland 2008, §3.4 más corto, referencias de Rosevear 2022, Yung 2025 y Gade 1979 verificadas en Consensus (ficha bibliográfica; también en `readinglist.md`), frases matizadas (N1, sobreenfriamiento, Gade en la corrida anulada).
+- Notas: §7b de `pd1_config.md` marcado como anulado por R21; lectura de R24 en `pd2_ensamble.md` suavizada. `.gitignore` con `*.nc`, `*.log`, `*.npz`. Entradas de la bitácora del 2026-11-08 y de la noche del 2026-11-09 completadas.
+
+## 2026-11-10 (noche) — Exp. 2: Figura 0 (contexto, esquema de procesos, geometría)
+
+- **(a)–(b) satélite:** MODIS Terra (GIBS, 1 dic 2025) del embayment del mar de Amundsen con localizador Blue Marble y el dominio ISOMIP+ a la misma escala (contorno leído del archivo de geometría); Landsat 9 C2 L2 (USGS, dominio público, vía Planetary Computer) de la plataforma de Pine Island, reproyectado a una estereográfica polar girada para que el hielo fluya a la derecha, como en el esquema. `figures/src/fetch_sat.py` documenta URL, escena, fecha y licencia.
+- **(c) esquema VectorCraft** con texturas (grano, texturizer, roughen, zigzag), procesos 1–6 numerados y recuadro de la capa límite con las Ec. 24–27 de AD16; z_c y Tbot marcados como parámetros de diseño. Los dos regímenes de salida del agua de deshielo (Holland et al. 2008, §4) se dibujan como posibilidades.
+- **(d) render Blender** de la geometría real (borrador y lecho, VE ×100, mitad cercana recortada por la línea central, simétrica a < 8 m), anotado con VectorCraft en puntos proyectados desde la cámara; proceso 7 (celda ciclónica intensificada en y > 50 km, Yung et al. 2026) y recuadro de los perfiles rampa. Error propio encontrado y corregido: la matriz de la cámara no se actualizaba antes de proyectar las etiquetas.
+- Ninguna figura muestra resultados del modelo. README con la Figura 0 y nota de reproducción; `reproduce.sh` la redibuja solo con `VECTORCRAFT_CLI` (y `BLENDER` para d). PDF recomprimido con Ghostscript (solo las imágenes) para quedar bajo 1 MB; el SVG ya no se escribe.
+
+## 2026-11-10 (noche, 2) — Exp. 2: introducción reescrita y correcciones de la Figura 0
+
+- **§1 reescrita al estilo de artículo** (sin subsecciones): lo que está en juego (Rignot et al. 2013; Holland et al. 2008) → el CDW y la termoclina (De Rydt 2014, Rintoul 2016, Nakayama 2023, Jenkins 2018, Park 2024) → recorrido de la Figura 0c (procesos 1–6) → lo conocido y el hueco en sensibilidad (Holland 2008, Favier 2019, Burgard 2022, De Rydt 2014, Hattermann 2014) y en el destino del agua de deshielo (Sheehan 2023) → ISOMIP+ y Figura 0d (proceso 7) → "aquí" con H1 y H2 neutrales. Se quitó la cita a la página ARIES; §1.2 → §1 en dos referencias cruzadas. Cinco referencias nuevas (Consensus, verificadas en el resumen o en `literatura/`); todos los resultados de las búsquedas van a `readinglist.md`.
+- **Figura 0a:** los puntos de Pine Island y Thwaites coinciden con las entradas US-ACAN del SCAR Composite Gazetteer (placenames.aq); se rotula la segunda zona de agua abierta como Amundsen Sea Polynya (73.0–74.2° S, 110–118° O, al norte del Dotson; Jenkins et al. 2018).
+- **Figura 0d:** el rótulo de la pared y = 80 km apunta ahora a la cara de la pared en el océano abierto; el hielo apoyado se dibuja recortado a 200 m sobre el nivel del mar (encuadre de cámara sin cambio), anotado en la figura y en el pie.

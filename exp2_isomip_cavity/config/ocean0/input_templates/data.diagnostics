@@ -1,0 +1,56 @@
+# ====================================================================
+# Exp. 2 (ISOMIP+) -- case ${case}: diagnostics (MDS, no MNC).
+# Months of a 365-day calendar: frequency = 2628000 s. dumpAtLast also
+# writes the partial average at the end of a run that does not end on a
+# month boundary (e.g. a 30-day smoke run); a run (or restart stage)
+# ending on a month boundary gets no extra record.
+# Sign conventions (pkg/shelfice/shelfice_init_fixed.F:249-262,
+# shelfice_thermodynamics.F:645-712):
+#   SHIfwFlx [kg/m^2/s] = -rho_fw m: NEGATIVE = melting
+#   SHIhtFlx [W/m^2] upward heat flux into the ice
+#   SHIuStar [m/s] u* including u_tidal; SHIgammT/S [m/s] = Gamma u*
+# ====================================================================
+ &DIAGNOSTICS_LIST
+ dumpAtLast=.TRUE.,
+# 1. monthly means, 2-D: ice-shelf fluxes and sea-surface height
+  fields(1:10,1) = 'SHIfwFlx','SHIhtFlx','SHIuStar','SHIgammT',
+                   'SHIgammS','SHIForcT','SHIForcS','SHI_TauX',
+                   'SHI_TauY','ETAN    ',
+   fileName(1) = 'shiDiag',
+  frequency(1) = 2628000.,
+# 2. monthly means, 3-D (all levels): state, meltwater tracer and its
+#    zonal transport (UTRAC01 = u C hFacW, Task 3 outflow depth H2)
+  fields(1:7,2)  = 'UVEL    ','VVEL    ','WVEL    ','THETA   ',
+                   'SALT    ','TRAC01  ','UTRAC01 ',
+   fileName(2) = 'dynDiag',
+  frequency(2) = 2628000.,
+# 3. + 6. snapshots (instantaneous, same time step) for the melt-law check
+#    against theory/melt.py; snapFreq < 0 (cases.yaml). 2-D and 3-D fields
+#    are in separate lists: a list takes the levels of its first field, so
+#    a mixed list keeps only level 1 of the 3-D fields. timePhase = 0: the
+#    snapshot default phase is -frequency/2 (diagnostics_readparms.F:295).
+  fields(1:4,3)  = 'SHIfwFlx','SHIuStar','SHIgammT','ETAN    ',
+   fileName(3) = 'snapDiag',
+  frequency(3) = ${snapFreq},
+  timePhase(3) = 0.,
+  fields(1:3,6)  = 'THETA   ','SALT    ','TRAC01  ',
+   fileName(6) = 'snap3D',
+  frequency(6) = ${snapFreq},
+  timePhase(6) = 0.,
+# 4. fast series, 5-day means: melt and a few levels (90, 290, 490 m)
+  fields(1:3,4)  = 'SHIfwFlx','SHIuStar','ETAN    ',
+   fileName(4) = 'shiFast',
+  frequency(4) = 432000.,
+  fields(1:5,5)  = 'THETA   ','SALT    ','UVEL    ','VVEL    ',
+                   'TRAC01  ',
+   levels(1:3,5) = 5., 15., 25.,
+   fileName(5) = 'fewLev',
+  frequency(5) = 432000.,
+ &
+
+# daily global statistics (text, dynStDiag.0000000000.txt)
+ &DIAG_STATIS_PARMS
+ stat_fields(1:4,1) = 'ETAN    ','THETA   ','SALT    ','TRAC01  ',
+  stat_fName(1) = 'dynStDiag',
+   stat_freq(1) = 86400.,
+ &
