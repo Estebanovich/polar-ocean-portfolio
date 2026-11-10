@@ -34,7 +34,8 @@ Quantities (time means over the window, then area means):
   mean that JPL's thermalDriving is (if they averaged it per time step);
 * circulation (both models, time-mean fields of the window): max |psi_bt| in the cavity
   (y > 50 km, x < 640 km) and near the front (630 < x < 650 km), max |psi(x, z)| for
-  x < 640 km, and max - min of each for x < 640 km. Ours at cell corners
+  x < 640 km and over the whole domain (Y26 L1099-1109 / Fig. 8 definition of the
+  0.20-0.25 Sv overturning maximum), and max - min of each for x < 640 km. Ours at cell corners
   (metrics.barotropic_streamfunction / overturning_streamfunction); JPL's
   barotropicStreamfunction / overturningStreamfunction as submitted (AD16 asks for them
   interpolated to the standard grid: x, y centres, 5 m levels), so the extrema are not
@@ -96,6 +97,7 @@ def psi_stats(bt, moc, xb, yb, xm) -> dict:
     return {"psi_bt_max_abs_cavity_Sv": ext(bt, cav, "abs"),
             "psi_bt_max_abs_front_Sv": ext(bt, front, "abs"),
             "psi_moc_max_abs_Sv": ext(moc, mw, "abs"),
+            "psi_moc_max_abs_full_domain_Sv": ext(moc, np.ones_like(mw), "abs"),
             "bt_strength_max_minus_min_Sv": ext(bt, west, "range"),
             "moc_strength_max_minus_min_Sv": ext(moc, mw, "range")}
 

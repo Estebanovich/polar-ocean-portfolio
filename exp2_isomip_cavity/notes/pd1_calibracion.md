@@ -314,5 +314,5 @@ W_hf coincide con w en todas. **Ningún CFL supera 0.5** (R17); el mayor es 0.34
 
 ## Resultados Ocean1
 
-En `pd1_ocean1.md` (Task 4 fase B, 2026-11-10): V2a, V2c, V2d, V3 barotrópica y N1–N3 PASAN; **V2b y V3 overturning FALLAN** (overturning de 0.185 Sv; la misma debilidad), lo que va a PD2. Figura 1 en `figures/fig1_ocean.{png,pdf}`.
+En `pd1_ocean1.md` (Task 4 fase B, 2026-11-10): V2a, V2c, V2d, V3 barotrópica y N1–N3 PASAN; **V2b y V3 overturning FALLAN** (V2b: 0.185 Sv en la cavidad; V3 overturning, marginal). Decisiones de PD2 del 2026-11-10 en esa nota: V2b sigue como FALLA pre-registrada, con una fila post hoc con la definición de Y26 (todo el dominio: 0.222 Sv, dentro); V3 overturning es una FALLA marginal sin clase. Figura 1 en `figures/fig1_ocean.{png,pdf}`.
 

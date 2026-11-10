@@ -62,6 +62,17 @@
         ],
         "verdict_band_held_at_anchors": "PASS",
         "variants_agree": true,
+        "margin_extended": {
+          "abs_Sv": 0.0,
+          "rel": 0.0,
+          "side": "inside"
+        },
+        "margin_held_at_anchors": {
+          "abs_Sv": 0.0,
+          "rel": 0.0,
+          "side": "inside"
+        },
+        "m_bar_in_extrapolated_band": true,
         "fit_240_months": {
           "slope": 0.01904442741731543,
           "intercept": 0.06892804753671301,
@@ -89,6 +100,17 @@
         ],
         "verdict_band_held_at_anchors": "FAIL",
         "variants_agree": true,
+        "margin_extended": {
+          "abs_Sv": 0.009628680710768694,
+          "rel": 0.04909708606958384,
+          "side": "below"
+        },
+        "margin_held_at_anchors": {
+          "abs_Sv": 0.0035135650983624533,
+          "rel": 0.018492447886118174,
+          "side": "below"
+        },
+        "m_bar_in_extrapolated_band": true,
         "fit_240_months": {
           "slope": 0.017007525257828757,
           "intercept": 0.015535919851517326,
@@ -286,7 +308,21 @@
       },
       "equality": "not available: no boundary-layer U/V diagnostic and no velocity snapshot simultaneous with SHIuStar (no model output added in Task 3)"
     },
-    "mean_melt_deep300_year20": 30.368657186542233
+    "mean_melt_deep300_year20": 30.368657186542233,
+    "V2b_posthoc_full_domain": {
+      "label": "V2b with the Yung 2026 definition (full-domain year-20 max of |psi(x,z)|), post hoc",
+      "post_hoc": true,
+      "value": 0.2224397273125213,
+      "x_km": 766.0,
+      "z_m": -220.0,
+      "range": [
+        0.2,
+        0.25
+      ],
+      "verdict_against_range": "PASS",
+      "jpl_value": 0.23366495833333334,
+      "note": "pd0 V2b verdict unchanged (FAIL, cavity x < 640 km); the restriction was taken from Y26 Fig. 13 by mistake, class (a) in the operationalisation"
+    }
   },
   "resolution_test_ocean0": {
     "shelf_mean_melt": {
@@ -311,7 +347,7 @@
     },
     "flag_shelf_melt_diff_gt_25pct": false
   },
-  "caption": "Exp. 2 ISOMIP+ validation at 2 km. Ocean1 (COLD start, WARM restoring, 20 years, GammaT_cal,2km = 0.030959): (a) melt rate averaged over year 20 (records 229-240), grounding line (black) and ice-shelf edge (grey dashed); (b) whole-shelf mean melt, monthly, 20 years (year 20 shaded; N1 year 20 vs 19); (c) pd0 V2 metrics of year 20 against the published ISOMIP+ ranges (Yung et al. 2026), as position within each range: V2a PASS, V2b FAIL, V2c PASS, V2d PASS; (d) monthly melt vs circulation strength (max - min psi, x < 640 km) over the multi-model COM band (read from Yung et al. 2026 Fig. 13 (approx.)); V3 barotropic PASS, overturning FAIL; dashed: published fits. (e) Ocean0 deep melt (ice base < -300 m, months 19-24) against GammaT, R21 calibration runs (circles) and the verification run at GammaT_cal (star); grey band: pd0 K1 28-32 m/a. Ocean0 2 vs 4 km (descriptive, pd0): the deep and whole-shelf melt agree largely BY CONSTRUCTION, because GammaT is calibrated separately at each resolution to the same Ocean0 deep melt (pd0 K1), so that agreement is not independent evidence of convergence; the cavity |psi_bt| maximum differs by +125 % (4 vs 2 km) and the melt maps correlate at r = 0.91. All verdicts mechanical against the pre-registration (pd0); FAILs shown as such.",
+  "caption": "Exp. 2 ISOMIP+ validation at 2 km. Ocean1 (COLD start, WARM restoring, 20 years, GammaT_cal,2km = 0.030959): (a) melt rate averaged over year 20 (records 229-240), grounding line (black) and ice-shelf edge (grey dashed); (b) whole-shelf mean melt, monthly, 20 years (year 20 shaded; N1 year 20 vs 19); (c) pd0 V2 metrics of year 20 against the published ISOMIP+ ranges (Yung et al. 2026), as position within each range: V2a PASS, V2b FAIL (pd0, cavity x < 640 km; POST HOC with the Yung 2026 full-domain definition, open diamond: 0.222 Sv, inside 0.20-0.25), V2c PASS, V2d PASS; (d) monthly melt vs circulation strength (max - min psi, x < 640 km) over the multi-model COM band (read from Yung et al. 2026 Fig. 13 (approx.); hatched where extrapolated beyond the 5 and 10 m/a anchors); V3 barotropic PASS, overturning FAIL (marginal, unresolved within the figure-reading uncertainty: 4.9 % below the extended band, 1.8 % below the band held at the 10 m/a anchor); dashed: published fits. (e) Ocean0 deep melt (ice base < -300 m, months 19-24) against GammaT, R21 calibration runs (circles) and the verification run at GammaT_cal (star); grey band: pd0 K1 28-32 m/a. Ocean0 2 vs 4 km (descriptive, pd0): the deep and whole-shelf melt agree largely BY CONSTRUCTION, because GammaT is calibrated separately at each resolution to the same Ocean0 deep melt (pd0 K1), so that agreement is not independent evidence of convergence; the cavity |psi_bt| maximum differs by +125 % (4 vs 2 km) and the melt maps correlate at r = 0.91. All verdicts mechanical against the pre-registration (pd0); FAILs shown as such.",
   "figure": [
     "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig1_ocean.png",
     "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig1_ocean.pdf"

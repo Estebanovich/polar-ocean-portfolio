@@ -148,3 +148,44 @@ def test_figure_data_assembly():
     assert d["e"]["2km"]["gammaT"] == [0.015, 0.03]
     assert d["e"]["4km"]["verification"] == [0.029356, 30.02]
     assert d["e"]["k1_band"] == [28.0, 32.0]
+
+
+# ---- PD2 (2026-11-10): V2b post hoc row, V3 margins, extrapolated band segments ----------
+
+def test_v2b_full_domain_posthoc_row():
+    xg = np.array([600e3, 700e3, 766e3])
+    rf = np.array([0.0, -200.0, -220.0, -240.0])
+    psi = np.zeros((4, 3))
+    psi[1, 0] = 0.185                                   # cavity peak (x < 640 km)
+    psi[2, 2] = -0.2224                                 # northern-boundary peak, |psi| larger
+    r = f1.v2b_full_domain_posthoc(psi, xg, rf, jpl_value=0.234)
+    assert r["value"] == pytest.approx(0.2224) and r["verdict_against_range"] == "PASS"
+    assert r["x_km"] == pytest.approx(766.0) and r["z_m"] == pytest.approx(-220.0)
+    assert r["post_hoc"] is True and "Yung" in r["label"] and r["jpl_value"] == 0.234
+    assert r["range"] == [0.20, 0.25]
+
+
+def test_v3_margins_reported_for_both_band_variants():
+    # moc at m = 10.34: extended lo = 0.10 + 1.068 * 0.09 = 0.19612; held lo = 0.19
+    v = f1.v3_verdict(10.34, 0.1865, "moc")
+    assert v["verdict"] == "FAIL"
+    assert v["margin_extended"]["abs_Sv"] == pytest.approx(0.19612 - 0.1865, abs=1e-9)
+    assert v["margin_extended"]["rel"] == pytest.approx((0.19612 - 0.1865) / 0.19612, rel=1e-9)
+    assert v["margin_held_at_anchors"]["abs_Sv"] == pytest.approx(0.0035, abs=1e-9)
+    assert v["margin_held_at_anchors"]["rel"] == pytest.approx(0.0035 / 0.19, rel=1e-9)
+    inside = f1.v3_verdict(10.0, 0.30, "bt")
+    assert inside["margin_extended"]["abs_Sv"] == 0.0                # inside: no margin
+
+
+def test_band_segments_outside_anchors_flagged_extrapolated():
+    s = _summary()
+    d = f1.figure_data(s, f1.ocean1_verdicts(s), np.zeros((2, 2)), np.ones((2, 2), bool),
+                       np.ones((2, 2), bool), np.arange(2) * 2e3, np.arange(2) * 2e3,
+                       {r: {"points": [], "gammaT_cal": 0.03} for r in ("2km", "4km")},
+                       {r: {"point": {"gammaT": 0.03, "deep_melt_last6_m_per_a": 30.0}}
+                        for r in ("2km", "4km")})
+    m = np.array(d["d"]["bt"]["band_m"])
+    ex = np.array(d["d"]["bt"]["band_extrapolated"])
+    assert 5.0 in m and 10.0 in m
+    assert (ex == ((m < 5.0) | (m > 10.0))).all()
+    assert d["d"]["bt"]["m_bar_in_extrapolated_band"] is True          # m_bar = 10.3

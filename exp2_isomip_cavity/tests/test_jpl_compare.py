@@ -31,3 +31,13 @@ def test_psi_stats_ignores_nan_land():
     assert s["psi_bt_max_abs_cavity_Sv"] == pytest.approx(0.4)
     assert s["psi_moc_max_abs_Sv"] == pytest.approx(0.3)
     assert s["psi_bt_max_abs_front_Sv"] is None                     # no x in (630, 650) km
+
+
+def test_psi_stats_full_domain_overturning_max():
+    xb = np.array([600e3, 700e3, 766e3])
+    yb = np.array([60e3])
+    bt = np.zeros((1, 3))
+    moc = np.array([[0.185, 0.0, -0.2224]])
+    s = jc.psi_stats(bt, moc, xb, yb, xb)
+    assert s["psi_moc_max_abs_Sv"] == pytest.approx(0.185)             # x < 640 km
+    assert s["psi_moc_max_abs_full_domain_Sv"] == pytest.approx(0.2224)

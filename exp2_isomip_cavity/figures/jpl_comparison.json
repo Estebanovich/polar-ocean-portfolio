@@ -29,6 +29,7 @@
         "psi_bt_max_abs_cavity_Sv": 0.26010211536371486,
         "psi_bt_max_abs_front_Sv": 0.47727758041324825,
         "psi_moc_max_abs_Sv": 0.18505175549278896,
+        "psi_moc_max_abs_full_domain_Sv": 0.2190424529205603,
         "bt_strength_max_minus_min_Sv": 0.2634628320997524,
         "moc_strength_max_minus_min_Sv": 0.18646576342740379
       }
@@ -64,6 +65,7 @@
         "psi_bt_max_abs_cavity_Sv": 0.24381491666666666,
         "psi_bt_max_abs_front_Sv": 0.2680527916666667,
         "psi_moc_max_abs_Sv": 0.199974375,
+        "psi_moc_max_abs_full_domain_Sv": 0.23616764583333336,
         "bt_strength_max_minus_min_Sv": 0.26914931770833334,
         "moc_strength_max_minus_min_Sv": 0.21654705989583334
       }
@@ -72,6 +74,7 @@
       "psi_bt_max_abs_cavity_Sv": 0.06680148581440307,
       "psi_bt_max_abs_front_Sv": 0.7805357573248487,
       "psi_moc_max_abs_Sv": -0.07462265856418378,
+      "psi_moc_max_abs_full_domain_Sv": -0.07251286624103684,
       "bt_strength_max_minus_min_Sv": -0.02112762408984871,
       "moc_strength_max_minus_min_Sv": -0.13891343748975257
     },
@@ -140,6 +143,7 @@
         "psi_bt_max_abs_cavity_Sv": 0.2576358345557216,
         "psi_bt_max_abs_front_Sv": 0.4919868427293332,
         "psi_moc_max_abs_Sv": 0.1851119541450705,
+        "psi_moc_max_abs_full_domain_Sv": 0.2224397273125213,
         "bt_strength_max_minus_min_Sv": 0.26111478883866157,
         "moc_strength_max_minus_min_Sv": 0.18648643490163752
       }
@@ -181,6 +185,7 @@
         "psi_bt_max_abs_cavity_Sv": 0.24631716666666667,
         "psi_bt_max_abs_front_Sv": 0.2762495625,
         "psi_moc_max_abs_Sv": 0.20303879166666666,
+        "psi_moc_max_abs_full_domain_Sv": 0.23366495833333334,
         "bt_strength_max_minus_min_Sv": 0.27140722395833333,
         "moc_strength_max_minus_min_Sv": 0.22152315234375
       }
@@ -189,6 +194,7 @@
       "psi_bt_max_abs_cavity_Sv": 0.04595159989142014,
       "psi_bt_max_abs_front_Sv": 0.7809506674941185,
       "psi_moc_max_abs_Sv": -0.08829267242206133,
+      "psi_moc_max_abs_full_domain_Sv": -0.048039856300570165,
       "bt_strength_max_minus_min_Sv": -0.03792248035834103,
       "moc_strength_max_minus_min_Sv": -0.15816277924640593
     },

@@ -78,6 +78,12 @@ V3_MELT_RANGE = (4.0, 12.0)
 V3_FIT_PUBLISHED = {"bt": {"slope": 0.024, "intercept": 0.071, "r": 0.89},
                     "moc": {"slope": 0.02, "intercept": 0.019, "r": 0.97}}
 V3_BAND_LABEL = "read from Yung et al. 2026 Fig. 13 (approx.)"
+# PD2 (Esteban, 2026-11-10): V2b stays the pre-registered FAIL. The pre-registration took the
+# x < 640 km restriction from Y26 Fig. 13, but the 0.20-0.25 Sv of Y26 L1099-1109 (and the
+# Fig. 8 caption, L1182) is the full-domain maximum, including the peak near the northern
+# boundary: our error (a) in operationalising the criterion. Reported as a POST HOC row only.
+V2B_POSTHOC_LABEL = ("V2b with the Yung 2026 definition (full-domain year-20 max of "
+                     "|psi(x,z)|), post hoc")
 KIND_LABEL = {"bt": "barotropic", "moc": "overturning"}
 KIND_COLOUR = {"bt": style.OKABE_ITO[0], "moc": style.OKABE_ITO[1]}
 RES_COLOUR = {"2km": style.OKABE_ITO[0], "4km": style.OKABE_ITO[1]}
@@ -103,6 +109,30 @@ def v3_band(m: float, kind: str, extend: bool = True):
     return (lo0 + f * (lo1 - lo0), hi0 + f * (hi1 - hi0))
 
 
+def _margin(c: float, band) -> dict:
+    """Distance of c outside the band [Sv] and relative to the violated edge (0 inside)."""
+    lo, hi = band
+    if c < lo:
+        return {"abs_Sv": lo - c, "rel": (lo - c) / lo, "side": "below"}
+    if c > hi:
+        return {"abs_Sv": c - hi, "rel": (c - hi) / hi, "side": "above"}
+    return {"abs_Sv": 0.0, "rel": 0.0, "side": "inside"}
+
+
+def v2b_full_domain_posthoc(psi, xg, rf, jpl_value: float | None = None) -> dict:
+    """POST HOC (PD2, 2026-11-10): max |psi(x, z)| over the whole domain (Y26 L1099-1109,
+    Fig. 8), with its location, against the V2b range. Not the pd0 verdict."""
+    psi = np.asarray(psi, float)
+    k, i = np.unravel_index(np.nanargmax(np.abs(psi)), psi.shape)
+    val = float(abs(psi[k, i]))
+    rng = V2_RANGES["V2b"]["range"]
+    return {"label": V2B_POSTHOC_LABEL, "post_hoc": True, "value": val,
+            "x_km": float(xg[i]) / 1e3, "z_m": float(rf[k]), "range": list(rng),
+            "verdict_against_range": range_verdict(val, rng), "jpl_value": jpl_value,
+            "note": "pd0 V2b verdict unchanged (FAIL, cavity x < 640 km); the restriction was "
+                    "taken from Y26 Fig. 13 by mistake, class (a) in the operationalisation"}
+
+
 def v3_verdict(m_bar: float, c_bar: float, kind: str) -> dict:
     if kind not in V3_ANCHORS:
         raise ValueError(f"kind must be 'bt' or 'moc', not {kind!r}")
@@ -115,7 +145,11 @@ def v3_verdict(m_bar: float, c_bar: float, kind: str) -> dict:
     return {"verdict": v, "m_bar": m_bar, "C_bar": c_bar, "band": list(band),
             "band_held_at_anchors": list(strict),
             "verdict_band_held_at_anchors": range_verdict(c_bar, strict),
-            "variants_agree": v == range_verdict(c_bar, strict)}
+            "variants_agree": v == range_verdict(c_bar, strict),
+            "margin_extended": _margin(c_bar, band),
+            "margin_held_at_anchors": _margin(c_bar, strict),
+            "m_bar_in_extrapolated_band": not (V3_ANCHORS[kind][0][0] <= m_bar
+                                               <= V3_ANCHORS[kind][1][0])}
 
 
 def linear_fit(x, y) -> dict:
@@ -199,6 +233,9 @@ def figure_data(summary: dict, verdicts: dict, melt_map, shelf, wet, x, y,
         d[kind] = {"monthly_melt": list(mon["melt_shelf"]), "monthly_C": list(mon[kind]),
                    "year20_idx": [n - 12, n], "m_bar": vv["m_bar"], "C_bar": vv["C_bar"],
                    "verdict": vv["verdict"], "band_m": m_band,
+                   "band_extrapolated": [not (V3_ANCHORS[kind][0][0] <= m
+                                              <= V3_ANCHORS[kind][1][0]) for m in m_band],
+                   "m_bar_in_extrapolated_band": vv["m_bar_in_extrapolated_band"],
                    "band_lo": [bb[0] for bb in bands], "band_hi": [bb[1] for bb in bands],
                    "fit_published": V3_FIT_PUBLISHED[kind], "fit_ours": vv["fit_240_months"]}
     e = {"k1_band": [28.0, 32.0], "target": 30.0}
@@ -209,7 +246,8 @@ def figure_data(summary: dict, verdicts: dict, melt_map, shelf, wet, x, y,
                   "deep_melt": [p["deep_melt_last6_m_per_a"] for p in pts],
                   "gammaT_cal": cal[res]["gammaT_cal"],
                   "verification": [vp["gammaT"], vp["deep_melt_last6_m_per_a"]]}
-    return {"a": a, "b": b, "c": c, "d": d, "e": e}
+    c_post = verdicts.get("V2b_posthoc_full_domain")
+    return {"a": a, "b": b, "c": c, "c_posthoc": c_post, "d": d, "e": e}
 
 
 # ---- caption and figure --------------------------------------------------------------------
@@ -234,11 +272,19 @@ def caption(verdicts: dict, resolution: dict | None) -> str:
         "grounding line (black) and ice-shelf edge (grey dashed); (b) whole-shelf mean melt, "
         "monthly, 20 years (year 20 shaded; N1 year 20 vs 19); (c) pd0 V2 metrics of year 20 "
         "against the published ISOMIP+ ranges (Yung et al. 2026), as position within each "
-        f"range: V2a {v['V2a']['verdict']}, V2b {v['V2b']['verdict']}, V2c "
+        f"range: V2a {v['V2a']['verdict']}, V2b {v['V2b']['verdict']} (pd0, cavity x < 640 km"
+        + (f"; POST HOC with the Yung 2026 full-domain definition, open diamond: "
+           f"{v['V2b_posthoc_full_domain']['value']:.3f} Sv, inside 0.20-0.25"
+           if v.get("V2b_posthoc_full_domain") else "") + "), V2c "
         f"{v['V2c']['verdict']}, V2d {v['V2d']['verdict']}; (d) monthly melt vs circulation "
         "strength (max - min psi, x < 640 km) over the multi-model COM band "
-        f"({V3_BAND_LABEL}); V3 barotropic {v3['bt']['verdict']}, overturning "
-        f"{v3['moc']['verdict']}; dashed: published fits. (e) Ocean0 deep melt (ice base "
+        f"({V3_BAND_LABEL}; hatched where extrapolated beyond the 5 and 10 m/a anchors); "
+        f"V3 barotropic {v3['bt']['verdict']}, overturning {v3['moc']['verdict']}"
+        + (f" (marginal, unresolved within the figure-reading uncertainty: "
+           f"{100 * v3['moc']['margin_extended']['rel']:.1f} % below the extended band, "
+           f"{100 * v3['moc']['margin_held_at_anchors']['rel']:.1f} % below the band held at "
+           f"the 10 m/a anchor)" if v3["moc"]["verdict"] == "FAIL" else "")
+        + "; dashed: published fits. (e) Ocean0 deep melt (ice base "
         "< -300 m, months 19-24) against GammaT, R21 calibration runs (circles) and the "
         "verification run at GammaT_cal (star); grey band: pd0 K1 28-32 m/a. "
         + res_txt + ". All verdicts mechanical against the pre-registration (pd0); FAILs "
@@ -290,6 +336,16 @@ def make_figure(data: dict, verdicts: dict, out_stem: Path, cap: str) -> list:
         axC.text(-0.08, yy + 0.22, f"{r['name']} {r['label']}", fontsize=6.5, ha="left")
         axC.text(1.08, yy, f"{r['value']:.3g} {r['units']}\n[{r['range'][0]:g}, "
                  f"{r['range'][1]:g}] {r['verdict']}", fontsize=6.3, va="center", color=col)
+    ph = data.get("c_posthoc")
+    if ph:
+        lo, hi = ph["range"]
+        yy = len(rows) - 1 - [r["name"] for r in rows].index("V2b")
+        axC.plot((ph["value"] - lo) / (hi - lo), yy - 0.28, "D", mfc="w",
+                 mec=style.OKABE_ITO[4], mew=1.3, ms=6)
+        txt = f"POST HOC, Y26 full-domain\ndef.: {ph['value']:.3f} Sv"
+        if ph.get("jpl_value"):
+            txt += f" (JPL {ph['jpl_value']:.3f})"
+        axC.text(1.08, yy - 0.42, txt, fontsize=5.6, va="center", color=style.OKABE_ITO[4])
     axC.set(xlim=(-0.6, 1.9), ylim=(-0.7, len(rows) - 0.3), yticks=[],
             xticks=[0, 1], xticklabels=["low", "high"],
             title="(c) V2, year 20: position in published range")
@@ -301,7 +357,13 @@ def make_figure(data: dict, verdicts: dict, out_stem: Path, cap: str) -> list:
     for kind in ("bt", "moc"):
         k = d[kind]
         col = KIND_COLOUR[kind]
-        axD.fill_between(k["band_m"], k["band_lo"], k["band_hi"], color=col, alpha=0.15, lw=0)
+        bm, ex = np.array(k["band_m"]), np.array(k["band_extrapolated"])
+        blo, bhi = np.array(k["band_lo"]), np.array(k["band_hi"])
+        inner = ~ex
+        axD.fill_between(bm[inner], blo[inner], bhi[inner], color=col, alpha=0.18, lw=0)
+        for seg in (bm <= 5.0, bm >= 10.0):          # extrapolated parts (edges shared)
+            axD.fill_between(bm[seg], blo[seg], bhi[seg], facecolor="none", edgecolor=col,
+                             hatch="////", alpha=0.45, lw=0)
         i0, i1 = k["year20_idx"]
         axD.plot(k["monthly_melt"][:i0], k["monthly_C"][:i0], ".", color=col, ms=2, alpha=0.35)
         axD.plot(k["monthly_melt"][i0:i1], k["monthly_C"][i0:i1], ".", color=col, ms=4)
@@ -312,6 +374,9 @@ def make_figure(data: dict, verdicts: dict, out_stem: Path, cap: str) -> list:
                  mec=col, mew=1.5, ms=8,
                  label=f"{KIND_LABEL[kind]} year-20 mean: V3 {k['verdict']}")
     axD.plot([], [], "s", color="0.6", alpha=0.4, label=f"COM band, {d['band_label']}")
+    axD.fill_between([], [], [], facecolor="none", edgecolor="0.4", hatch="////",
+                     label="band extrapolated beyond the 5 and 10 m/a anchors")
+    axD.set_ylim(top=0.66)                        # room for the legend above the band
     axD.set(xlabel=r"melt (m a$^{-1}$)", ylabel="circulation strength (Sv)",
             title="(d) melt vs circulation (V3)")
     axD.legend(fontsize=5.8, frameon=False, loc="upper left")
@@ -381,6 +446,13 @@ def evaluate(run_dir: Path) -> tuple[dict, dict, object]:
         rd.hfac, rd.rc, wall_rows=(0, nyw - 1))
     v["ustar_check_last_record (informative)"] = summary["ustar_check_last_record (informative)"]
     v["mean_melt_deep300_year20"] = summary["mean_melt_deep300"]["value"]
+    jpl_val = None
+    jf = FIG_DIR / "jpl_comparison.json"
+    if jf.exists():
+        jpl_val = (json.loads(jf.read_text()).get("ocean1", {}).get("jpl", {})
+                   .get("circulation", {}).get("psi_moc_max_abs_full_domain_Sv"))
+    v["V2b_posthoc_full_domain"] = v2b_full_domain_posthoc(
+        mt.overturning_streamfunction(rd, win), rd.xg[0], rd.rf, jpl_value=jpl_val)
     return v, summary, rd
 
 

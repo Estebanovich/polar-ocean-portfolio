@@ -13,6 +13,7 @@ Fecha: 2026-11-10. Evaluación mecánica contra `pd0_preregistro.md`, sin corrid
 |---|---|---|---|
 | V2a: melt medio de toda la plataforma | 10.34 m a⁻¹ | 4–12 | **PASA** |
 | V2b: máx. \|ψ(x, z)\| en la cavidad (x < 640 km) | 0.185 Sv | 0.20–0.25 | **FALLA** |
+| *V2b con la definición de Yung 2026 (máx. de \|ψ(x, z)\| en todo el dominio, año 20). **Post hoc**, no es veredicto de pd0* | *0.222 Sv (x = 766 km, z = −220 m); JPL: 0.234* | *0.20–0.25* | *dentro (post hoc)* |
 | V2c: máx. \|ψ_bt\| en la cavidad (y > 50 km, x < 640 km) | 0.258 Sv | 0.09–0.43 | **PASA** |
 | V2d: máx. \|ψ_bt\| cerca del frente (630 < x < 650 km; R13) | 0.492 Sv | 0.14–0.68 | **PASA** |
 | V3 barotrópica: (m̄, C̄) = (10.34, 0.261 Sv) | banda en m̄: 0.255–0.460 | — | **PASA** |
@@ -21,13 +22,22 @@ Fecha: 2026-11-10. Evaluación mecánica contra `pd0_preregistro.md`, sin corrid
 | N2 (presupuesto del trazador, 20 años) | 1.3e-6 | < 1 % | **PASA** |
 | N3 (`require_ok`, 4 etapas) | OK | — | **PASA** |
 
-- **V3, banda.** pd0 da anclajes en m = 5 y 10 y hace evaluable [4, 12]. Como m̄ = 10.34 queda fuera de [5, 10], la banda del veredicto es la prolongación lineal de las rectas de los anclajes. Con la banda fijada en los valores del anclaje de 10 (0.25–0.45 y 0.19–0.28) el veredicto es el mismo en los dos tipos; el JSON lo registra (`variants_agree`).
+- **V3, banda.** pd0 da anclajes en m = 5 y 10 y hace evaluable [4, 12]. Como m̄ = 10.34 queda fuera de [5, 10], la banda del veredicto es la prolongación lineal de las rectas de los anclajes; en la Figura 1(d) esos tramos (4–5 y 10–12 m a⁻¹) van rayados como extrapolados, y el punto del año 20 cae en uno de ellos. Con la banda fijada en los valores del anclaje de 10 (0.25–0.45 y 0.19–0.28) el veredicto es el mismo en los dos tipos; el JSON lo registra (`variants_agree`).
 - **V3, informativo (sin umbral):** ajuste con los 240 meses contra el ajuste multi-modelo impreso:
   - barotrópica: y = 0.0190 x + 0.0689, r = 0.974 (publicado: y = 0.024 x + 0.071, r = 0.89);
   - overturning: y = 0.0170 x + 0.0155, r = 0.993 (publicado: y = 0.02 x + 0.019, r = 0.97).
-- **V2b y V3 overturning fallan juntos:** son la misma debilidad, una overturning ~7 % por debajo del límite inferior de V2b (0.185 contra 0.20) y ~5 % por debajo de la banda de V3. Según el plan, un V que falla va a **PD2**. No se redefine ningún criterio. **Clasificación (a)–(d): pendiente.** Hechos que la acotan, sin atribuir causa:
-  - MITgcm-JPL, con el mismo modelo, ΓT = 0.0325 y otra configuración (advección 33, ajuste convectivo, hFacMin = 0.25, más celdas de plataforma), da 0.203 Sv en su año 20, dentro de V2b (comparación post hoc, `pd1_comparacion_jpl.md`).
-  - La serie R20, que probaba esas opciones de una en una, está anulada por R21; no hay evidencia vigente sobre su efecto.
+## Decisiones de PD2 (Esteban, 2026-11-10)
+
+- **V2b: FALLA, tal como está pre-registrado** (cavidad, x < 640 km: 0.185 Sv contra 0.20–0.25; ~7 % bajo el límite inferior). No se redefine.
+  - **Error (a) nuestro, en la operacionalización del criterio, no en el modelo.** El pre-registro tomó mal la fuente. Y26 L1099–1109 da los 0.20–0.25 Sv como el máximo de la overturning de la mayoría de los modelos, y describe picos tanto dentro de la cavidad como cerca de la frontera «norte» (x = 800 km). El pie de la Fig. 8 (L1182) muestra la streamfunction en todo el dominio. La restricción x < 640 km pertenece a la Fig. 13 (fuerza de la circulación, V3) y se trasladó por error a V2b.
+  - **Fila post hoc**, rotulada como tal en `figures/fig1_ocean.json` (`V2b_posthoc_full_domain`), en la tabla de arriba y en la Figura 1(c) (rombo abierto y pie). Con la definición de Y26, el máximo de \|ψ(x, z)\| del año 20 en todo el dominio es **0.222 Sv** (x = 766 km, z = −220 m), dentro de 0.20–0.25. El de MITgcm-JPL, con la misma definición, es 0.234 Sv.
+  - Esto no apoya que V2b y V3 overturning sean «la misma debilidad». En todo el dominio la overturning está dentro del rango publicado; solo la celda de la cavidad es débil. No se atribuye causa.
+- **V3 overturning: FALLA, marginal, no resuelta dentro de la incertidumbre de lectura de la figura.** C̄ = 0.1865 Sv:
+  - 4.9 % (0.0096 Sv) por debajo de la banda extendida (límite 0.1961 en m̄ = 10.34);
+  - 1.8 % (0.0035 Sv) por debajo de la banda fijada en el anclaje de 10 m a⁻¹ (límite 0.19).
+
+  Los anclajes son lecturas aproximadas de una figura y m̄ cae en el tramo extrapolado. **No se asigna clase (a)–(d).**
+- Contexto post hoc (`pd1_comparacion_jpl.md`): MITgcm-JPL, con el mismo modelo, ΓT = 0.0325 y otra configuración (advección 33, ajuste convectivo, hFacMin = 0.25, más celdas de plataforma), da 0.203 Sv en la cavidad y 0.234 Sv en todo el dominio. La serie R20, que probaba esas opciones de una en una, está anulada por R21.
 
 ## Informativo (no son criterios)
 

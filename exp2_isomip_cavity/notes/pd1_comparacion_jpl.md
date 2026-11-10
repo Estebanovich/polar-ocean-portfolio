@@ -70,6 +70,7 @@ Mismo procedimiento que arriba, a pedido de Esteban; **post hoc**, no cambia nin
 | máx. \|ψ_bt\|, cavidad (y > 50 km, x < 640 km) (Sv) | — | 0.258 | 0.246 | +4.6 % |
 | máx. \|ψ_bt\|, frente (630 < x < 650 km) (Sv) | — | 0.492 | 0.276 | +78 % |
 | máx. \|ψ(x, z)\|, x < 640 km (Sv) | — | 0.185 | 0.203 | −8.8 % |
+| máx. \|ψ(x, z)\|, todo el dominio (definición de Y26 L1099–1109, Fig. 8) (Sv) | — | 0.222 | 0.234 | −4.8 % |
 | Fuerza barotrópica (máx − mín, x < 640 km) (Sv) | — | 0.261 | 0.271 | −3.8 % |
 | Fuerza de la overturning (máx − mín, x < 640 km) (Sv) | — | 0.186 | 0.222 | −16 % |
 | ΓT | — | 0.030959 | 0.0325 | −4.7 % |

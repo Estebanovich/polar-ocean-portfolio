@@ -293,3 +293,7 @@
 - **pd0, año 20:** V2a PASA (10.34 m a⁻¹), **V2b FALLA** (overturning 0.185 Sv < 0.20), V2c PASA (0.258 Sv), V2d PASA (0.492 Sv), V3 barotrópica PASA, **V3 overturning FALLA**, N1 (0.11 %), N2 (1.3e-6) y N3 PASAN. CFL máx. 0.23. V2b y V3 overturning van a PD2; clasificación pendiente. Detalle en `notes/pd1_ocean1.md`.
 - Figura 1 (`analysis/fig1_ocean0_validation.py`, `figures/fig1_ocean.{png,pdf,json}`). El pie no usa el acuerdo de melt 2 contra 4 km como evidencia independiente.
 - Comparación post hoc con MITgcm-JPL Ocean1: melt profundo 30.37 contra 31.55 m a⁻¹, u\* profundo 0.00371 contra 0.00396 m s⁻¹, overturning 0.185 contra 0.203 Sv, r de los mapas = 0.91.
+- **PD2 (Esteban, 2026-11-10):**
+  - V2b sigue como FALLA pre-registrada (0.185 Sv en la cavidad). Se añade una fila **post hoc** con la definición de Y26 (máximo en todo el dominio): 0.222 Sv, dentro de 0.20–0.25; JPL 0.234. Error (a) nuestro al operacionalizar el criterio: x < 640 km es de la Fig. 13.
+  - V3 overturning: FALLA marginal, sin clase (4.9 % bajo la banda extendida, 1.8 % bajo la fijada en el anclaje de 10).
+  - Figura 1 regenerada, con los tramos extrapolados de la banda rayados.
