@@ -199,3 +199,54 @@ Consensus devolvió hasta 20 artículos por búsqueda. El plan permite hasta 300
 ## Para descargar (prioridad)
 
 Burgard et al. 2023 · Ockenden et al. 2026 · Bouissou et al. 2022 · Jourdain et al. 2020 · Lambert & Burgard 2025 · Lütjens et al. 2024 · Rosier et al. 2023 · Little et al. 2009 · Myren & Lawrence 2021. Los DOI están en `readinglist.md`, sección Exp. 3.
+
+## 8. Lectura completa (2026-11-10, después de la descarga)
+
+Esteban descargó 21 artículos, que están en `literatura/` con su versión `.md`. Falta Bouissou et al. 2022. Los grupos clave se leyeron completos. Lo que cambia o precisa respecto a las secciones 1–7:
+
+**Emuladores (Burgard 2023, Ockenden 2026, Rosier 2023).**
+- **Burgard 2023.** Usa 4 corridas NEMO circumantárticas con la geometría fija; no son experimentos de forzamiento controlados. El MLP por celda tiene 14 entradas, y la T/S se toma del perfil a 50 km del frente, llevado a la profundidad local. Hay un ensamble de 10 redes, pero no se analiza su dispersión.
+  - En la validación cruzada por plataforma, RMSE_int baja 31–61 % frente a las parametrizaciones.
+  - En 4xCO2, RMSE_GL ≈ la señal misma (sin destreza), y la red da ~3× menos melt en Pine Island.
+  - Por importancia de variables, la posición y la altura de la columna de agua pesan más que T dentro del régimen.
+- **Ockenden 2026.** Un MLP de 32/64/32 con 10 semillas. No compara contra ninguna parametrización.
+  - Extrapolar en T falla: de ANT2000 a ANT2300, RMSE 2220 Gt/a.
+  - "We do not see any examples of a low ensemble spread and high RMSE"; el umbral provisional es una dispersión mayor que ~10 % del melt integrado.
+  - No analiza la termoclina.
+- **Rosier 2023.** Unas 11 000 corridas NEMO idealizadas (ISOMIP+ con geometrías aleatorias), con perfiles de T/S generados por una GAN a partir de WOA. No mide incertidumbre ni prueba extrapolación.
+  - En una prueba de una losa, el melt es cuadrático en T uniforme, sin exponente reportado.
+  - La termoclina se menciona como motivación, pero no se prueba.
+- **Lo que ninguno hace:** variar Tbot, z_c y la geometría de forma controlada, uno a la vez; probar la profundidad de la termoclina; imponer restricciones físicas (las tres lo proponen como trabajo futuro).
+
+**Parametrizaciones (Favier 2019, Jourdain 2020, Burgard 2022, Lambert 2025, Little 2009, Olbers 2010, Reese 2018, Lazeroms 2018).**
+- **Fórmulas implementables con solo el calado y T(z), S(z):**
+  - lineal local (Favier, Ec. 2);
+  - cuadrática local (Favier, Ec. 4; Jourdain, Ec. 2; Burgard, Ec. 14, con constante K);
+  - no local / M+ (Favier, Ec. 5; Jourdain, Ec. 1) y semilocal (Burgard, Ec. 18).
+
+  Las tres tienen un solo parámetro libre. PICO tiene dos (γ_T*, C) y complejidad moderada. La pluma de Lazeroms es la más difícil, por el origen efectivo de la pluma.
+- **Elegir qué T usar es elegir la física.** Con T(z_draft), la parametrización "ve" la termoclina. Con T a profundidad fija (500 o 700 m), supone agua que entra por el fondo. Favier (Warm3) encontró que subir la termoclina 200 m no cambia el melt de NEMO acoplado, y que la versión de profundidad fija lo reproduce y la local no.
+- **Forma de la respuesta al calentamiento.** Ningún artículo predice un exponente > 2.
+  - Little 2009 da exponentes de 1.55–1.81 y desviaciones negativas respecto a la cuadrática, porque la eficiencia hielo–océano baja con T.
+  - Olbers & Hellmer 2010 y PICO dan cuadrática a lineal.
+  - En Lambert & Burgard 2025, la cuadrática y LADDIE son los más sensibles, con amplificación profunda de 6.7 y 4.2 contra 3.3 observada; PICO da 2.1 y la pluma ~1.
+- **Inferencia propia, a verificar en el Exp. 3.** Un polinomio cuadrático en Tbot que no se anula en T_f da necesariamente un exponente ≠ 2 respecto a TF. Hay que comparar ajustes contra Tbot y contra TF antes de interpretar el exponente de 2.4–2.8 del H1.
+- **Métricas recomendadas:**
+  - RMSE del melt integrado (Burgard, Ec. 33);
+  - RMSE cerca de la línea de apoyo, en la primera caja (~10 % del área; Ec. 35);
+  - sensibilidad dM/dT, no linealidad y amplificación profunda (Lambert, Ec. 1–3);
+  - patrón normalizado por el percentil 90.
+
+**Emulación con pocos datos (Myren 2021, Lütjens 2024, Van Katwyk 2023, Berdahl 2021, Lakshminarayanan 2017, Ross 2023).**
+- **Myren 2021.** El caso de cosmología (37 corridas, 5 entradas) es el más parecido al nuestro. Un proceso gaussiano sobre los pesos de PCA (99 % de la varianza), con validación dejando una fuera, gana en todos los casos. Las redes requirieron probar "hundreds of architectures".
+- **Lütjens 2024.** La línea base lineal por celda gana por el compromiso sesgo–varianza: la red sobreajusta el ruido. Recomiendan regularizar con supuestos físicos sobre la forma funcional, y advierten que la variación entre semillas puede invertir el orden de los métodos.
+- **Van Katwyk 2023.** La red gana con muchos datos, pero "GPs remain a good choice … for small data sets".
+- **Lakshminarayanan 2017.** M = 5 redes entrenadas con la verosimilitud negativa (NLL), con inicialización aleatoria y sin *bagging*. La evidencia fuera de distribución en regresión es solo un ejemplo 1-D de juguete.
+- **Ross 2023.** Las redes "generalize poorly to new regimes", y un mejor R² fuera de línea llegó a asociarse con un peor desempeño en línea. Recomiendan "better physics baselines".
+- **Protocolo sugerido:**
+  - validación dejando fuera una corrida completa, con todo el ajuste (estandarización, número de EOF, núcleo) dentro de cada pliegue;
+  - las 3 corridas a Tbot = 2.0 se tocan una sola vez;
+  - pliegues adicionales que dejan fuera un z_c y que dejan fuera las corridas más cálidas del entrenamiento;
+  - cobertura empírica de los intervalos al 68 % y al 95 %, y CRPS;
+  - errores por corrida con intervalos *bootstrap*;
+  - conocer el piso de ruido entre corridas.
