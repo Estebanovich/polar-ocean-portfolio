@@ -173,7 +173,11 @@ class GPonEOF(_UnionMethod):
     NOT added to sigma (it is a deterministic in-sample residual, not a predictive
     variance, and is <= 1 % of the standardised variance by construction); it is
     reported in ``info`` instead: ``k``, ``explained``, ``recon_rmse`` (in-sample RMSE
-    of the truncated reconstruction vs the training maps, m/a, over the runs' masks).
+    of the truncated reconstruction vs the training maps, m/a, POOLED over all runs'
+    mask cells), ``recon_rmse_per_run`` and ``recon_rmse_mean_run`` (mean of the
+    per-run RMSEs, comparable with per-run metrics). ``info["gp"]`` has, per coefficient
+    h, the fitted kernel string, log-theta, bounds, ``at_bound`` flags (theta within
+    1e-6 of a bound) and whether the optimiser raised a ConvergenceWarning.
     """
     name = "M5"
 
@@ -200,20 +204,32 @@ class GPonEOF(_UnionMethod):
         self.scaler = _InputScaler(runs)
         X = self.scaler(runs)
         self.gps = []
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", ConvergenceWarning)
-            for h in range(k):
+        gp_diag = []
+        for h in range(k):
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
                 kern = (ConstantKernel(1.0, (1e-3, 1e3))
                         * RBF(np.ones(X.shape[1]), (1e-2, 1e3))
                         + WhiteKernel(1e-2, (1e-8, 1e1)))
                 gp = GaussianProcessRegressor(kern, normalize_y=True, n_restarts_optimizer=5,
                                               random_state=SEED)
                 self.gps.append(gp.fit(X, W[:, h]))
+            th, bd = gp.kernel_.theta, gp.kernel_.bounds
+            gp_diag.append({
+                "kernel": str(gp.kernel_),
+                "theta": [float(t) for t in th],
+                "bounds": [[float(a), float(b)] for a, b in bd],
+                "at_bound": [bool(t - a < 1e-6 or b - t < 1e-6) for t, (a, b) in zip(th, bd)],
+                "convergence_warning": any(issubclass(w.category, ConvergenceWarning)
+                                           for w in caught),
+            })
         recon = (Z @ self.V @ self.V.T) * self.delta + self.cell_mean
         sq = np.where(present, (recon - self.Y) ** 2, np.nan)
         self.info = {
             "k": k, "n_runs": m, "explained": float(cum[k - 1]),
             "recon_rmse": float(np.sqrt(np.nanmean(sq))),
+            "recon_rmse_mean_run": float(np.mean([np.sqrt(np.nanmean(sq[i])) for i in range(m)])),
+            "gp": gp_diag,
             "recon_rmse_per_run": [float(np.sqrt(np.nanmean(sq[i]))) for i in range(m)],
         }
         self._fitted = True
