@@ -1629,7 +1629,7 @@
   "params": {
    "x": 66,
    "y": 555.0,
-   "text": "intensified along the y = 80 km wall (Yung et al., 2026); the arrows sketch that published pattern, not our output.",
+   "text": "intensified along the side at y > 50 km (Yung et al., 2026); the arrows, including the outflow along the y = 80 km wall, sketch that published pattern, not our output.",
    "size": 9.5,
    "font": "Helvetica",
    "color": "#222222"

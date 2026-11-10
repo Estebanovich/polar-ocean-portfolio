@@ -96,8 +96,8 @@ def build(work: Path) -> list[dict]:
     marker(49, ny + 14, 7)
     text(66, ny + 18, "Rotation: the domain is an f-plane at 75° S (f < 0). In most ISOMIP+ Ocean1 models the cavity holds a "
          "cyclonic (clockwise from above) circulation,", 9.5)
-    text(66, ny + 31, "intensified along the y = 80 km wall (Yung et al., 2026); the arrows sketch that published pattern, "
-         "not our output.", 9.5)
+    text(66, ny + 31, "intensified along the side at y > 50 km (Yung et al., 2026); the arrows, including the outflow along the y = 80 km wall, "
+         "sketch that published pattern, not our output.", 9.5)
     text(40, ny + 52, "Rendered with Blender from the ISOMIP+ input geometry (Cornford and Asay-Davis, 2016) on its 1 km "
          "grid; vertical exaggeration ×100. The geometry is symmetric about y = 40 km:", 9, color=GREY)
     text(40, ny + 64, "the near half (y = 0–40 km) is cut away along the centreline and drawn in outline. Arrows and the "
