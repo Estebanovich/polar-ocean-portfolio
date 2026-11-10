@@ -1,0 +1,1660 @@
+[
+ {
+  "command": "file.new",
+  "params": {
+   "width": 1100,
+   "height": 610,
+   "units": "Points",
+   "backgroundContents": "white",
+   "name": "fig0_geometry"
+  }
+ },
+ {
+  "command": "file.place",
+  "params": {
+   "path": "/var/folders/md/v_9w0p656250q6gw5wc707040000gn/T/fig0_geometry/geometry_render.png",
+   "rect": [
+    40.0,
+    40.0,
+    1020.0,
+    510.0
+   ],
+   "link": false
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 20,
+   "y": 26,
+   "text": "(d)",
+   "size": 13,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 46,
+   "y": 26,
+   "text": "The ISOMIP+ geometry in perspective: the real ice draft and bed of the input file",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 223.2328,
+   "y1": 126.9754,
+   "x2": 263.2328,
+   "y2": 100.9754
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 221.0328,
+   "y": 124.77539999999999,
+   "width": 4.4,
+   "height": 4.4
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 264.2328,
+   "y": 95.9754,
+   "width": 61.0,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 266.2328,
+   "y": 104.4754,
+   "text": "grounded ice",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "left"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 226.3132,
+   "y1": 108.136,
+   "x2": 204.3132,
+   "y2": 78.136
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 224.1132,
+   "y": 105.93599999999999,
+   "width": 4.4,
+   "height": 4.4
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 23.563199999999995,
+   "y": 73.136,
+   "width": 179.75,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 201.3132,
+   "y": 81.636,
+   "text": "side wall y = 80 km (closed, no-slip)",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 525.6628000000001,
+   "y1": 260.5648,
+   "x2": 555.6628000000001,
+   "y2": 190.5648
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 523.4628,
+   "y": 258.3648,
+   "width": 4.4,
+   "height": 4.4
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 556.6628000000001,
+   "y": 185.5648,
+   "width": 189.25,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 558.6628000000001,
+   "y": 194.0648,
+   "text": "ice shelf (floating; drawn translucent)",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "left"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 667.0347999999999,
+   "y1": 267.1897,
+   "x2": 689.0347999999999,
+   "y2": 231.18970000000002
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 664.8347999999999,
+   "y": 264.9897,
+   "width": 4.4,
+   "height": 4.4
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 690.0347999999999,
+   "y": 214.18970000000002,
+   "width": 65.75,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 692.0347999999999,
+   "y": 222.68970000000002,
+   "text": "calving front",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "left"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 690.0347999999999,
+   "y": 226.18970000000002,
+   "width": 51.5,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 692.0347999999999,
+   "y": 234.68970000000002,
+   "text": "x = 640 km",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "left"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 359.7598,
+   "y1": 350.0239,
+   "x2": 315.7598,
+   "y2": 304.0239
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 357.5598,
+   "y": 347.82390000000004,
+   "width": 4.4,
+   "height": 4.4
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 244.25979999999998,
+   "y": 299.0239,
+   "width": 70.5,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 312.7598,
+   "y": 307.5239,
+   "text": "grounding line",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 262.6456,
+   "y1": 340.084,
+   "x2": 232.6456,
+   "y2": 314.084
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5f4f40"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 260.4456,
+   "y": 337.884,
+   "width": 4.4,
+   "height": 4.4
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5f4f40"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 213.3956,
+   "y": 309.084,
+   "width": 18.25,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 229.6456,
+   "y": 317.584,
+   "text": "bed",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#5f4f40",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 450.3562,
+   "y1": 319.3015,
+   "x2": 458.3562,
+   "y2": 285.3015
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 448.1562,
+   "y": 317.1015,
+   "width": 4.4,
+   "height": 4.4
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 459.3562,
+   "y": 280.3015,
+   "width": 179.75,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 461.3562,
+   "y": 288.8015,
+   "text": "meltwater tracer source: the ice base",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#5b3f8f",
+   "justify": "left"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 951.9616,
+   "y1": 301.92580000000004,
+   "x2": 925.9616,
+   "y2": 255.92580000000004
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#c4622f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 949.7615999999999,
+   "y": 299.72580000000005,
+   "width": 4.4,
+   "height": 4.4
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#c4622f"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 854.4616,
+   "y": 238.92580000000004,
+   "width": 70.5,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 922.9616,
+   "y": 247.42580000000004,
+   "text": "restoring zone",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#c4622f",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 854.4616,
+   "y": 250.92580000000004,
+   "width": 70.5,
+   "height": 12.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 922.9616,
+   "y": 259.42580000000004,
+   "text": "x = 790\u2013800 km",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#c4622f",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 561.4767999999999,
+   "y": 354.6614,
+   "text": "cavity",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 838.3354,
+   "y": 318.6403,
+   "text": "open ocean",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#1f4e79",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 129.9334,
+   "y1": 377.66130000000004,
+   "x2": 947.4123999999999,
+   "y2": 514.6014
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "startArrow": "Triangle"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 558.6729,
+   "y": 470.13135,
+   "text": "480 km (x = 320\u2013800 km)",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 961.4123999999999,
+   "y1": 508.6014,
+   "x2": 953.1197999999999,
+   "y2": 425.0532
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "startArrow": "Triangle"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 969.4123999999999,
+   "y": 474.82730000000004,
+   "text": "80 km",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 91.677,
+   "y1": 257.617,
+   "x2": 113.9334,
+   "y2": 363.66130000000004
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "startArrow": "Triangle"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 85.677,
+   "y": 314.63915000000003,
+   "text": "720 m",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 866.0913999999999,
+   "y": 338.3193,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 875.0913999999999,
+   "y": 351.5193,
+   "text": "7",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 646.8602,
+   "y": 404.2129,
+   "width": 173.96,
+   "height": 14.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 649.8602,
+   "y": 413.7129,
+   "text": "inflow at depth (seen through the cut)",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 748.2370000000001,
+   "y1": 331.873,
+   "x2": 774.2370000000001,
+   "y2": 291.873
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 746.037,
+   "y": 329.673,
+   "width": 4.4,
+   "height": 4.4
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 775.2370000000001,
+   "y": 287.873,
+   "width": 140.0,
+   "height": 11.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 777.2370000000001,
+   "y": 295.373,
+   "text": "outflow along the y = 80 km wall",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#5b3f8f",
+   "justify": "left"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 834,
+   "y": 50,
+   "width": 226,
+   "height": 176
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#6b8fa3"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 94
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 842,
+   "y": 65,
+   "text": "forcing design: ramp profiles",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 874,
+   "y1": 84,
+   "x2": 1030,
+   "y2": 84
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 874,
+   "y1": 84,
+   "x2": 874,
+   "y2": 198
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 874,
+   "y1": 196,
+   "x2": 874,
+   "y2": 206
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 870,
+   "y": 88,
+   "text": "0",
+   "size": 8,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 870,
+   "y": 202,
+   "text": "720 m",
+   "size": 8,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 952.0,
+   "y": 80,
+   "text": "temperature T",
+   "size": 8,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 882 84 L 882 94.26 L 1018 142.14 L 1018 198"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 50
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 882 84 L 882 139.86 L 1018 187.74 L 1018 198"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 50
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 882 84 L 882 117.06 L 1018 164.94 L 1018 198"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.0,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 100
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 874,
+   "y1": 141.0,
+   "x2": 1030,
+   "y2": 141.0
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.7,
+   "cap": "round",
+   "dash": [
+    2,
+    2
+   ]
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 1034,
+   "y": 144.5,
+   "text": "zc",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 1,
+   "end": 2,
+   "size": 7.0,
+   "baselineShift": -2.2
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 1028,
+   "y1": 117.06,
+   "x2": 1028,
+   "y2": 164.94
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "startArrow": "Triangle"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 1034,
+   "y": 125.06,
+   "text": "d",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 889,
+   "y": 98,
+   "text": "\u22121.9 \u00b0C",
+   "size": 8,
+   "font": "Helvetica",
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 1016,
+   "y": 192,
+   "text": "Tbot",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#b8322a",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 1,
+   "end": 4,
+   "size": 6.3,
+   "baselineShift": -1.98
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 842,
+   "y": 212,
+   "text": "Tbot, zc varied; d = 300 m; S ramps",
+   "size": 8,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 1,
+   "end": 4,
+   "size": 5.6,
+   "baselineShift": -1.76
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 7,
+   "end": 8,
+   "size": 5.6,
+   "baselineShift": -1.76
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 842,
+   "y": 222,
+   "text": "the same way (33.8 to 34.7)",
+   "size": 8,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 40,
+   "y": 529.0,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 49,
+   "y": 542.2,
+   "text": "7",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66,
+   "y": 542.0,
+   "text": "Rotation: the domain is an f-plane at 75\u00b0 S (f < 0). In most ISOMIP+ Ocean1 models the cavity holds a cyclonic (clockwise from above) circulation,",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66,
+   "y": 555.0,
+   "text": "intensified along the y = 80 km wall (Yung et al., 2026); the arrows sketch that published pattern, not our output.",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 40,
+   "y": 576.0,
+   "text": "Rendered with Blender from the ISOMIP+ input geometry (Cornford and Asay-Davis, 2016) on its 1 km grid; vertical exaggeration \u00d7100. The geometry is symmetric about y = 40 km:",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 40,
+   "y": 588.0,
+   "text": "the near half (y = 0\u201340 km) is cut away along the centreline and drawn in outline. Arrows and the tracer layer are enlarged.",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ }
+]

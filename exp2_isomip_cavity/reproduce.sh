@@ -9,6 +9,8 @@
 #   PY     Python with numpy/scipy/matplotlib/pyyaml/netCDF4 (default: the pyocean conda env)
 #   RUNS   run-output root (default /Volumes/LaCie/portfolio_runs/exp2; must be mounted)
 #   SOURCE_DATE_EPOCH  timestamp written into the PDFs (default 0, so a rerun gives identical bytes)
+#   VECTORCRAFT_CLI  optional: path to vectorcraft-cli v0.22.0 to redraw Figure 0 (a)-(c)
+#   BLENDER          optional, with VECTORCRAFT_CLI: path to blender to re-render Figure 0 (d) from the geometry file
 # The full mode needs MITgcm (read-only source in /Volumes/ESTEBAN_MIT/MITgcm), MPI and gfortran, and the
 # external data of data_external/SOURCES.md. It takes about 20 h of compute on a laptop (timings in
 # notes/pd1_calibracion.md). Every run goes through scripts/run_campaign.py, which refuses to start while
@@ -36,7 +38,7 @@ for a in "$@"; do
   case "$a" in
     --quick) QUICK=1 ;;
     --gifs) GIFS=1 ;;
-    -h|--help) sed -n '2,24p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
     *) echo "unknown option: $a" >&2; exit 2 ;;
   esac
 done
@@ -82,6 +84,19 @@ step "Exp. 3 dataset";                         "$PY" "$A/export_exp3.py" --runs-
 
 if [ "$GIFS" -eq 1 ]; then
   step "animation"; "$PY" "$A/animate_tracer.py" "$RUNS/ocean0_4km$R" --out "$F/fig3_anim_ocean0_4km$R.gif"
+fi
+
+if [ -n "${VECTORCRAFT_CLI:-}" ]; then
+  step "Figure 0 (a)-(c): schematic (VectorCraft)"
+  "$PY" "$F/src/fig0_schematic.py" --cli "$VECTORCRAFT_CLI"
+  if [ -n "${BLENDER:-}" ] && [ -f "$HERE/data_external/Ocean1_input_geom_v1.01.nc" ]; then
+    step "Figure 0 (d): geometry (Blender + VectorCraft)"
+    "$PY" "$F/src/fig0_geometry.py" --all --blender "$BLENDER" --cli "$VECTORCRAFT_CLI"
+  else
+    echo; echo "=== Figure 0 (d) kept as committed (set BLENDER and provide the geometry file to re-render it)"
+  fi
+else
+  echo; echo "=== Figure 0 kept as committed (set VECTORCRAFT_CLI to redraw it)"
 fi
 
 step "README"; "$PY" "$HERE/scripts/render_readme.py"
