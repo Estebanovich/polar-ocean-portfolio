@@ -251,6 +251,14 @@
 - Commits: análisis en `excess_dx5.py` (0d24952); Figura 2 con panel (b) y README (7127d06).
 - Animación de (a): la nueva corrida es idéntica bit a bit a la de producción de 1 a 6 h (diferencia 0.0). GIF cada 5 min y sección «Animations» en el README (92f033f). 293 tests PASAN.
 
+## 2026-11-08 — Exp. 2: preregistro, configuración, smoke y primera calibración (Tasks 0–4a)
+
+- **PD0:** criterios K1, V1, V2a–d, V3, N1–N4, H1 y H2 fijados en `notes/pd0_preregistro.md` antes de cualquier corrida.
+- **Tasks 1–3:** geometría desde el archivo GFZ para fondo y base del hielo (R7, regla de mayoría flotante R9), columna mínima de 2 celdas y conectividad; ley de fusión AD16 en `code/` (override de `shelfice_thermodynamics.F`), trazador de deshielo con fuente virtual, librería de métricas (`analysis/metrics.py`) con `require_ok`.
+- **Smoke de 30 días:** S1, S2, S4, S5 pasan; **S3 FALLA** (T y S fuera del rango inicial; diagnóstico post hoc con la línea de Gade, R10). La revisión encontró que el dominio era periódico en y (R12): fila de tierra al norte y smoke repetido con paredes.
+- **Task 4a:** cronometraje y dt por CFL (400 s a 2 km, 800 s a 4 km; R17); `checkIniTemp=.FALSE.` (R18). Primera cola de calibración (20:40–23:46 CST): 30 m a⁻¹ no quedó acotado con ΓT ∈ {0.015, 0.03, 0.06} → PD2.
+- Todo esto corrió con la forma errónea de u\* y quedó **anulado** al día siguiente (R21); se conserva como registro.
+
 ## 2026-11-08 (tarde): correcciones de la revisión final (PD4)
 
 - **Bloqueantes:**
@@ -274,6 +282,12 @@
   - Carroll (viento) y Sanchez (Sermilik, la pluma duplica el intercambio) quedan separados.
 - `.gitignore` sin entradas del asistente en todo el historial (reescrito; las entradas se movieron a `.git/info/exclude`). Las referencias de commits en las notas están actualizadas.
 
+## 2026-11-09 (madrugada) — Exp. 2: calibración ampliada y serie diagnóstica R20 (anuladas por R21)
+
+- **Enmienda de PD2 (R19):** se añadió ΓT = 0.0075. Segunda cola (00:41–03:13 CST): ΓT_cal = 0.0094686 (4 km) y 0.0099627 (2 km); K1 pasaba y V1 fallaba (< 0.011).
+- **R20:** serie diagnóstica post hoc a 4 km (advección 33, hFacMin 0.25, `SHI_withBL_uStarTopDz`, ajuste convectivo), una opción por corrida, para explicar el ΓT_cal bajo. Ninguna lo explicó.
+- Hacia las 08:05 CST se encontró el error de u\* (siguiente entrada): la calibración, la enmienda y la serie R20 quedaron anuladas.
+
 ## 2026-11-09 — Exp. 2: error (a) en la forma de u\* (R21) y relanzamiento de la calibración
 
 - **Error (a), nuestro:** AD16 Eq. 27, verificada en la página del PDF (GMD 9, p. 2485 = p. 15 del PDF), es u\*² = Cd·(u_w² + u_tidal²), con piso √Cd·u_tidal = 5e-4 m s⁻¹. Implementamos Cd·u_w² + u_tidal² (piso 0.01 m s⁻¹). La fórmula del plan venía de una extracción de texto sin paréntesis.
@@ -286,6 +300,13 @@
 - **Candado:** `melt_law` en `case.json`; `--skip-ok` y `metrics.load_run` rechazan corridas con la ley anulada; sufijo por omisión `_r21`.
 - **Comparación post hoc con MITgcm-JPL** (`notes/pd1_comparacion_jpl.md`): melt profundo 30.00 contra 31.35 m a⁻¹, u\* profundo 0.00365 contra 0.00397 m s⁻¹, correlación de los mapas de melt r = 0.91.
 - **Producción (PD1a aprobada):** ΓT_cal en `cases.yaml` (4 km 0.029356 para el ensamble y `ocean0_4km`; 2 km 0.030959 para Ocean0 y Ocean1); `binary_sha256` en `case.json` al correr; `scripts/queue_production.sh` (ensamble de 28 casos, N1–N3, luego Ocean1 en 4 etapas de 5 años) lanzada.
+
+## 2026-11-09 (noche) — Exp. 2: ensamble a 4 km, evaluación de H1 y H2 (Tasks 5 y 6)
+
+- Cola de producción (desde las 16:07 CST, con `caffeinate` desde las 20:10 tras ver pausas por reposo del Mac): ensamble de 28 corridas y referencia; fin a las 22:03 CST. Aclaración R22 (⟨m⟩ de H1 = melt de toda la plataforma) subida a las 16:41, antes de leer ninguna salida.
+- **N1–N3** (`ensemble_n_check.json`, 22:04:40): N3 y N2 pasan en las 29 corridas; N1 falla en 5 (casos fríos o de termoclina profunda), que se quedan en los ajustes y se señalan.
+- **H1 FALLA** en los tres z_c: R² de la cuadrática ≥ 0.9995, pero n = 2.43, 2.78 y 2.70 > 2.0. **H2 PASA** en los tres z_c (ρ = −1). Figuras 2 y 3, y GIF del trazador (commit 8cc4547, 22:15 CST).
+- Ocean1 a 2 km arrancó a las 22:04 (fin el 2026-11-10, 06:45).
 
 ## 2026-11-10 — Exp. 2: Ocean1 a 2 km, Figura 1 y comparación post hoc con JPL (Task 4 fase B)
 
@@ -322,3 +343,11 @@
 - **Registros anulados:** los JSON anteriores a R21 (`calibration_*`, `*_3pt`, `verify_*`, `pd1_calibration_eval.json`, `diag_bl_*`) pasaron con `git mv` a `figures/void_pre_r21/`, con un README. El renderizador se niega a leerlos. Rutas actualizadas en `pd1_calibracion.md` y `pd1_diagnostico_capa_limite.md`.
 - **`reproduce.sh`:** `--quick` regenera calibración, evaluación, comparación con JPL, Figuras 1–3, análisis post hoc, la exportación y el README; `--gifs` añade la animación; el modo completo lanza las colas en su orden (calibración → producción → R24) con `caffeinate`. Con `SOURCE_DATE_EPOCH=0` (valor por omisión), dos `--quick` seguidos dan archivos idénticos (shasum de 27 archivos y del .npz). Frente a lo ya subido, solo cambian los PDF, y solo en su fecha de creación; JSON, PNG, GIF y README salen idénticos.
 - README principal y `RUNNING.md` con el Exp. 2 (rutas `EXP2_RUNS`/`EXP2_BUILDS`, colas, `reproduce.sh`).
+
+## 2026-11-10 (tarde) — Exp. 2: ronda final de correcciones antes del merge y prueba de reinicio (R25)
+
+- **R25, reinicio bit a bit de Ocean1** (expectativa subida antes de correr, ad882cd): 2 meses a 2 km, np = 5, continua contra 2 etapas de 1 mes con pickup. Un primer intento quedó FAILED por la regla del runner (monitor diario que no cae en el último paso; el modelo terminó bien); repetido con monitor mensual. **Idéntico bit a bit** (máx. |dif| = 0.0 en pickup, trazador y estados finales), con el ejecutable de producción.
+- **V3 barotrópica:** se reporta como PASA marginal (2.3 % dentro de la banda extendida, 4.5 % con la banda en el ancla), simétrica con la FALLA marginal de la overturning; `fig1_ocean.json` da ahora el margen interior y la fila post hoc de V2b usa `inside_range`.
+- **Rutas:** los scripts de análisis toman `EXP2_RUNS` de `pfcommon.paths`; `jpl_compare.py --runs-root`; prueba nueva. `RUNNING.md` aclara que las colas fijan la ruta de LaCie.
+- **README:** R9 declarado (s escala solo el hielo flotante; el borde mojado se mueve por la columna mínima), menos repeticiones de Holland 2008, §3.4 más corto, referencias de Rosevear 2022, Yung 2025 y Gade 1979 verificadas en Consensus (ficha bibliográfica; también en `readinglist.md`), frases matizadas (N1, sobreenfriamiento, Gade en la corrida anulada).
+- Notas: §7b de `pd1_config.md` marcado como anulado por R21; lectura de R24 en `pd2_ensamble.md` suavizada. `.gitignore` con `*.nc`, `*.log`, `*.npz`. Entradas de la bitácora del 2026-11-08 y de la noche del 2026-11-09 completadas.

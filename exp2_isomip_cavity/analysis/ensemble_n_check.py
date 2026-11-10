@@ -30,6 +30,7 @@ if str(REPO) not in sys.path:
 
 from exp2_isomip_cavity.analysis import metrics as mt  # noqa: E402
 from exp2_isomip_cavity.gendata.make_case import ensemble_cases, load_cases  # noqa: E402
+from pfcommon.paths import EXP2_RUNS as DEFAULT_RUNS  # noqa: E402
 
 N1_MAX = 0.03          # pd0 N1
 N2_MAX = 0.01          # pd0 N2
@@ -76,7 +77,7 @@ def _fmt(n: str, r: dict) -> str:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="pd0 N1-N3 over the ensemble runs")
-    ap.add_argument("--runs-root", type=Path, default=Path("/Volumes/LaCie/portfolio_runs/exp2"))
+    ap.add_argument("--runs-root", type=Path, default=DEFAULT_RUNS)
     ap.add_argument("--run-suffix", default="_r21")
     ap.add_argument("--out", type=Path, default=None)
     a = ap.parse_args(argv)

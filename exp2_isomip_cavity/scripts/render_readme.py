@@ -113,6 +113,11 @@ def values() -> dict[str, str]:
                                        f"{x['fit_published']['intercept']:g}, "
                                        f"r = {x['fit_published']['r']:g}")
         v["V3_mbar"] = f(vd["V3"]["moc"]["m_bar"])
+        be, bh = vd["V3"]["bt"]["margin_extended"], vd["V3"]["bt"]["margin_held_at_anchors"]
+        assert be["side"] == bh["side"] == "inside", "V3 barotropic wording assumes an inside margin"
+        v["V3_bt_ext_pct"], v["V3_bt_held_pct"] = pct(be["rel"], 1), pct(bh["rel"], 1)
+        v["V3_bt_ext_lo"] = f(vd["V3"]["bt"]["band"][0], 3)
+        v["V3_bt_held_lo"] = f(vd["V3"]["bt"]["band_held_at_anchors"][0], 2)
         me, mh = vd["V3"]["moc"]["margin_extended"], vd["V3"]["moc"]["margin_held_at_anchors"]
         v["V3_moc_ext_pct"], v["V3_moc_ext_sv"] = pct(me["rel"], 1), f(me["abs_Sv"], 4)
         v["V3_moc_held_pct"], v["V3_moc_held_sv"] = pct(mh["rel"], 1), f(mh["abs_Sv"], 4)

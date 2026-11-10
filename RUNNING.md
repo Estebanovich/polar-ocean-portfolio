@@ -71,7 +71,7 @@ Run output, builds and the MITgcm source default to the paths of the original ma
 - `EXP1_BUILDS`, `EXP2_BUILDS`: build roots (defaults `/Volumes/ESTEBAN_MIT/portfolio_builds/exp1` and `.../exp2`);
 - `MITGCM_ROOT`: MITgcm checkout.
 
-They are defined in `pfcommon/paths.py`. `reproduce.sh` also accepts `RUNS`.
+They are defined in `pfcommon/paths.py`. `reproduce.sh` also accepts `RUNS`. For Experiment 2, the analysis scripts and `exp2_isomip_cavity/reproduce.sh --quick` honour `EXP2_RUNS` / `RUNS`, but the queue scripts (`exp2_isomip_cavity/scripts/queue_*.sh`, and therefore the full mode of `reproduce.sh`) hardcode `/Volumes/LaCie/portfolio_runs/exp2` and refuse to start unless that disk is mounted.
 
 ## Conventions
 

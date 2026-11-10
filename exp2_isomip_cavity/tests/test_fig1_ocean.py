@@ -159,7 +159,8 @@ def test_v2b_full_domain_posthoc_row():
     psi[1, 0] = 0.185                                   # cavity peak (x < 640 km)
     psi[2, 2] = -0.2224                                 # northern-boundary peak, |psi| larger
     r = f1.v2b_full_domain_posthoc(psi, xg, rf, jpl_value=0.234)
-    assert r["value"] == pytest.approx(0.2224) and r["verdict_against_range"] == "PASS"
+    assert r["value"] == pytest.approx(0.2224) and r["inside_range"] is True
+    assert "verdict_against_range" not in r                          # post hoc: not a verdict
     assert r["x_km"] == pytest.approx(766.0) and r["z_m"] == pytest.approx(-220.0)
     assert r["post_hoc"] is True and "Yung" in r["label"] and r["jpl_value"] == 0.234
     assert r["range"] == [0.20, 0.25]
@@ -174,7 +175,22 @@ def test_v3_margins_reported_for_both_band_variants():
     assert v["margin_held_at_anchors"]["abs_Sv"] == pytest.approx(0.0035, abs=1e-9)
     assert v["margin_held_at_anchors"]["rel"] == pytest.approx(0.0035 / 0.19, rel=1e-9)
     inside = f1.v3_verdict(10.0, 0.30, "bt")
-    assert inside["margin_extended"]["abs_Sv"] == 0.0                # inside: no margin
+    assert inside["margin_extended"]["side"] == "inside"
+
+
+def test_v3_inside_margin_is_distance_to_nearest_edge():
+    # bt at m = 10.34: extended band lo = 0.25 + 0.068 * 0.08 ... ; held lo = 0.25
+    v = f1.v3_verdict(10.34, 0.2612, "bt")
+    assert v["verdict"] == "PASS"
+    lo_ext = v["band"][0]
+    me, mh = v["margin_extended"], v["margin_held_at_anchors"]
+    assert me["side"] == "inside" and me["nearest_edge"] == "lower"
+    assert me["abs_Sv"] == pytest.approx(0.2612 - lo_ext, abs=1e-12)
+    assert me["rel"] == pytest.approx((0.2612 - lo_ext) / lo_ext, rel=1e-12)
+    assert mh["abs_Sv"] == pytest.approx(0.0112, abs=1e-12)
+    assert mh["rel"] == pytest.approx(0.0112 / 0.25, rel=1e-12)
+    up = f1.v3_verdict(10.0, 0.44, "bt")["margin_held_at_anchors"]      # near the upper edge
+    assert up["nearest_edge"] == "upper" and up["abs_Sv"] == pytest.approx(0.01, abs=1e-12)
 
 
 def test_band_segments_outside_anchors_flagged_extrapolated():

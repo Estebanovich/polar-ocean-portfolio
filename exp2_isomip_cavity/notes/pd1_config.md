@@ -249,7 +249,7 @@ Todas en `/Volumes/LaCie/portfolio_runs/exp2/`.
 - **Celdas evaluadas:** las mojadas con T o S fuera del rango del perfil inicial ± 0.1, es decir T ∉ [−2.0, 1.1] o S ∉ [33.7, 34.8].
 - **Tolerancias:** |ΔT| ≤ 0.05 °C y |ΔS| ≤ 0.05.
 
-### Resultados en el smoke con paredes (`cal2_gT0.03_smoke30d_walls`, corrida 3, VIGENTE)
+### Resultados en el smoke con paredes (`cal2_gT0.03_smoke30d_walls`, corrida 3, anulada por R21)
 
 | Estado | Celdas fuera de rango | Ambiente local (R10), r = ρfw/ρ0 | Ambiente local, r = 1 | Ambiente inferido de S (extensión) |
 |---|---|---|---|---|
@@ -287,7 +287,7 @@ En todos los casos, S_amb = S/(1 − r·C) cae dentro del rango del perfil.
 
 En la Task 3 se vio que el dominio de la corrida 2 era periódico en y: hFacS(j = 0) = 1 y |V| en la cara y = 0/80 km llegaba a 0.18 m s⁻¹ en la media de 30 días. Se corrigió en la Task 2 (R12: fila de tierra en y = 80 km, corrida 3, §7b). Las cifras de la corrida 2 quedan anuladas.
 
-## 7b. Smoke con paredes cerradas (R12): corrida 3, `cal2_gT0.03_smoke30d_walls` (VIGENTE)
+## 7b. Smoke con paredes cerradas (R12): corrida 3, `cal2_gT0.03_smoke30d_walls` (anulada por R21)
 
 - **Configuración:** la misma que la corrida 2 (`cal2_gT0.03`, 2 km, np = 5, dt = 200 s, 30 días, `--set snapFreq=-864000`), con la fila de tierra en y = 80 km y Ny = 41. Binarios recompilados. Criterios S1–S5 **sin cambios** (§6).
 - **Paredes, en la salida del modelo:**

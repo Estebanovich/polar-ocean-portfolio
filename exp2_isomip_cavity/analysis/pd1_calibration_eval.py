@@ -45,6 +45,7 @@ if str(REPO) not in sys.path:
 from exp2_isomip_cavity.analysis import calibrate as cal  # noqa: E402
 from exp2_isomip_cavity.analysis import metrics as mt  # noqa: E402
 from exp2_isomip_cavity.theory import melt as ml  # noqa: E402
+from pfcommon.paths import EXP2_RUNS as DEFAULT_RUNS  # noqa: E402
 
 V1_RANGE = (0.011, 0.2)          # pd0 V1: Y26 Table 2 COM range
 N1_MAX = 0.03                    # pd0 N1
@@ -201,7 +202,7 @@ def evaluate_run(run_dir: Path, supercool: bool = False) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="PD1a evaluation of the calibration runs")
-    ap.add_argument("--runs-root", type=Path, default=Path("/Volumes/LaCie/portfolio_runs/exp2"))
+    ap.add_argument("--runs-root", type=Path, default=DEFAULT_RUNS)
     ap.add_argument("--out", type=Path,
                     default=REPO / "exp2_isomip_cavity" / "figures" / "pd1_calibration_eval_r21.json")
     ap.add_argument("--run-suffix", default="_r21",

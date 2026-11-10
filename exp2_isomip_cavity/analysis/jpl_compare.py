@@ -59,18 +59,26 @@ if str(REPO) not in sys.path:
 
 from exp2_isomip_cavity.analysis import metrics as mt  # noqa: E402
 from exp2_isomip_cavity.theory import melt as ml  # noqa: E402
+from pfcommon.paths import EXP2_RUNS  # noqa: E402
 
 JPL_DIR = REPO / "exp2_isomip_cavity" / "data_external" / "osf_jpl"
 JPL_FILE = JPL_DIR / "Ocean0_yosi_COM_MITgcm_JPL_new.nc"
 JPL_LAST6 = slice(6, 12)                # records 7-12 (1-based) of their 1-year file
-RUNS = Path("/Volumes/LaCie/portfolio_runs/exp2")
+RUNS = EXP2_RUNS                        # pfcommon.paths: env EXP2_RUNS (--runs-root)
 CASES = {
-    "ocean0": {"run": RUNS / "ocean0_2km_r21", "window": "last6",
+    "ocean0": {"run": "ocean0_2km_r21", "window": "last6",
                "jpl": JPL_FILE, "jpl_n": 12, "jpl_slice": JPL_LAST6},
-    "ocean1": {"run": RUNS / "ocean1_2km_r21", "window": "year20",
+    "ocean1": {"run": "ocean1_2km_r21", "window": "year20",
                "jpl": JPL_DIR / "Ocean1_yosi_COM_MITgcm_JPL_new.nc", "jpl_n": 240,
                "jpl_slice": slice(228, 240)},
 }
+
+
+def case_run(case: str, runs_root=RUNS) -> Path:
+    """Our run directory of ``case`` under ``runs_root``."""
+    return Path(runs_root) / CASES[case]["run"]
+
+
 X_CAV, Y_CAV, X_FRONT = mt.X_CAVITY_MAX_M, mt.Y_CAVITY_MIN_M, mt.X_FRONT_BAND_M
 JPL_GAMMA_T = 0.0325                    # MITgcm_JPL_Summary.pdf, "Parameter values"
 SEC_PER_YEAR = ml.SECONDS_PER_YEAR
@@ -206,6 +214,7 @@ def compare(run_dir: Path, jpl_path: Path, window: str = "last6", jpl_slice: sli
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="post hoc comparison with MITgcm-JPL")
     ap.add_argument("--cases", nargs="+", default=list(CASES), choices=list(CASES))
+    ap.add_argument("--runs-root", type=Path, default=RUNS)
     ap.add_argument("--out", type=Path,
                     default=REPO / "exp2_isomip_cavity" / "figures" / "jpl_comparison.json")
     a = ap.parse_args(argv)
@@ -214,7 +223,7 @@ def main(argv=None) -> int:
         res = {"ocean0": res}
     for c in a.cases:
         cs = CASES[c]
-        res[c] = compare(cs["run"], cs["jpl"], cs["window"], cs["jpl_slice"], cs["jpl_n"])
+        res[c] = compare(case_run(c, a.runs_root), cs["jpl"], cs["window"], cs["jpl_slice"], cs["jpl_n"])
         print(c, json.dumps({k: res[c][k] for k in ("ours", "jpl", "melt_map_correlation")},
                             indent=1, default=float))
     a.out.parent.mkdir(parents=True, exist_ok=True)

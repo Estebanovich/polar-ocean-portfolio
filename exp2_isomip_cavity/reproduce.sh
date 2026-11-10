@@ -65,7 +65,7 @@ done
 step "K1, V1, N1-N3, R15, R17 and the 2 vs 4 km resolution test"
 "$PY" "$A/pd1_calibration_eval.py" --runs-root "$RUNS" > /dev/null
 if [ -f "$HERE/data_external/osf_jpl/Ocean1_yosi_COM_MITgcm_JPL_new.nc" ]; then
-  step "post hoc comparison with MITgcm-JPL";   "$PY" "$A/jpl_compare.py" > /dev/null
+  step "post hoc comparison with MITgcm-JPL";   "$PY" "$A/jpl_compare.py" --runs-root "$RUNS" > /dev/null
 else
   echo; echo "=== MITgcm-JPL output not found (data_external/SOURCES.md): jpl_comparison.json kept as committed"
 fi

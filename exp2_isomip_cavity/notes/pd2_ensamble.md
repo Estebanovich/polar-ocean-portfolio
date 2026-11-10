@@ -186,9 +186,9 @@ Lectura mecánica de la regla fijada antes de correr (commit 874205e). Cola `que
 | q contra P_local = ⟨TF_loc·\|TF_loc\|⟩ | 0.99 [0.98–1.00] | 1.18 | 1.44 | 1.83 |
 
 **Lectura honesta.**
-- La regla dice "no apoya". Aun así, con mucha más exposición el exponente baja (2.16 frente a 2.43–2.78) y queda cerca del borde de la banda. El orden no es estrictamente monótono en la exposición: z_c = 400 (2.78) está por encima de z_c = 550 (2.70).
+- La regla dice "no apoya". Aun así, con mucha más exposición el exponente baja (2.16 frente a 2.43–2.78) y se acerca a la banda, pero todo el rango LOO (2.11–2.19) queda fuera de ella. El orden no es estrictamente monótono en la exposición: z_c = 400 (2.78) está por encima de z_c = 550 (2.70).
 - **Advertencia de la premisa:** solo ~50 % del área de la base está por debajo de 200 m (el 50.3 % está por encima). No es la exposición total del supuesto de la hipótesis. Una exposición completa podría acercar n a la banda, pero eso no se probó y la geometría no lo permite con un perfil de rampa.
-- Dentro de la familia `hol`, el melt sigue casi exactamente las formas de forzamiento local: n = 1.98 contra TF_eff y q = 0.99 contra el cuadrático local. Con la base expuesta, la sensibilidad a z_c fijo coincide con la familia cuadrática local. En el núcleo, con menos exposición, no coincide (q = 1.18–1.83). Esto concuerda con que el exceso de n en el núcleo venga de la exposición parcial a la termoclina. Pero es una lectura **post hoc** y la regla preregistrada para R24 dio "no apoya".
+- Dentro de la familia `hol`, el melt sigue casi exactamente las formas de forzamiento local: n = 1.98 contra TF_eff y q = 0.99 contra el cuadrático local. Con la base expuesta, la sensibilidad a z_c fijo es compatible con la familia cuadrática local (5 corridas, un solo perfil). En el núcleo, con menos exposición, no lo es (q = 1.18–1.83). Esto es compatible con que la exposición parcial a la termoclina contribuya al exceso de n en el núcleo, sin demostrarlo. Pero es una lectura **post hoc** y la regla preregistrada para R24 dio "no apoya".
 - **H1 sigue siendo FALLA,** como se preregistró.
 
 ## Corrección de literatura post hoc (2026-11-10, revisión de la Task 7)

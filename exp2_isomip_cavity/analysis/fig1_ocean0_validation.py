@@ -52,10 +52,11 @@ if str(REPO) not in sys.path:
 from exp2_isomip_cavity.analysis import metrics as mt  # noqa: E402
 from exp2_isomip_cavity.analysis import pd1_calibration_eval as ce  # noqa: E402
 from pfcommon import style  # noqa: E402
+from pfcommon.paths import EXP2_RUNS  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 
 FIG_DIR = REPO / "exp2_isomip_cavity" / "figures"
-DEFAULT_RUN = Path("/Volumes/LaCie/portfolio_runs/exp2/ocean1_2km_r21")
+DEFAULT_RUN = EXP2_RUNS / "ocean1_2km_r21"     # pfcommon.paths: env EXP2_RUNS
 YEAR_S = mt.SECONDS_PER_YEAR
 CFL_KEYS = ce.CFL_KEYS
 CFL_MAX = ce.CFL_MAX
@@ -110,13 +111,17 @@ def v3_band(m: float, kind: str, extend: bool = True):
 
 
 def _margin(c: float, band) -> dict:
-    """Distance of c outside the band [Sv] and relative to the violated edge (0 inside)."""
+    """Distance of c to the band edge [Sv] and relative to that edge: outside, to the violated
+    edge (side 'below' / 'above'); inside, to the nearest edge (side 'inside', with
+    'nearest_edge'), so a marginal PASS is reported like a marginal FAIL."""
     lo, hi = band
     if c < lo:
         return {"abs_Sv": lo - c, "rel": (lo - c) / lo, "side": "below"}
     if c > hi:
         return {"abs_Sv": c - hi, "rel": (c - hi) / hi, "side": "above"}
-    return {"abs_Sv": 0.0, "rel": 0.0, "side": "inside"}
+    if c - lo <= hi - c:
+        return {"abs_Sv": c - lo, "rel": (c - lo) / lo, "side": "inside", "nearest_edge": "lower"}
+    return {"abs_Sv": hi - c, "rel": (hi - c) / hi, "side": "inside", "nearest_edge": "upper"}
 
 
 def v2b_full_domain_posthoc(psi, xg, rf, jpl_value: float | None = None) -> dict:
@@ -128,7 +133,7 @@ def v2b_full_domain_posthoc(psi, xg, rf, jpl_value: float | None = None) -> dict
     rng = V2_RANGES["V2b"]["range"]
     return {"label": V2B_POSTHOC_LABEL, "post_hoc": True, "value": val,
             "x_km": float(xg[i]) / 1e3, "z_m": float(rf[k]), "range": list(rng),
-            "verdict_against_range": range_verdict(val, rng), "jpl_value": jpl_value,
+            "inside_range": bool(rng[0] <= val <= rng[1]), "jpl_value": jpl_value,
             "note": "pd0 V2b verdict unchanged (FAIL, cavity x < 640 km); the restriction was "
                     "taken from Y26 Fig. 13 by mistake, class (a) in the operationalisation"}
 
@@ -279,7 +284,12 @@ def caption(verdicts: dict, resolution: dict | None) -> str:
         f"{v['V2c']['verdict']}, V2d {v['V2d']['verdict']}; (d) monthly melt vs circulation "
         "strength (max - min psi, x < 640 km) over the multi-model COM band "
         f"({V3_BAND_LABEL}; hatched where extrapolated beyond the 5 and 10 m/a anchors); "
-        f"V3 barotropic {v3['bt']['verdict']}, overturning {v3['moc']['verdict']}"
+        f"V3 barotropic {v3['bt']['verdict']}"
+        + (f" (marginal, also within the figure-reading uncertainty: "
+           f"{100 * v3['bt']['margin_extended']['rel']:.1f} % inside the extended band, "
+           f"{100 * v3['bt']['margin_held_at_anchors']['rel']:.1f} % inside the band held at "
+           f"the 10 m/a anchor)" if v3["bt"]["verdict"] == "PASS" else "")
+        + f", overturning {v3['moc']['verdict']}"
         + (f" (marginal, unresolved within the figure-reading uncertainty: "
            f"{100 * v3['moc']['margin_extended']['rel']:.1f} % below the extended band, "
            f"{100 * v3['moc']['margin_held_at_anchors']['rel']:.1f} % below the band held at "

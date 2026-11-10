@@ -49,6 +49,7 @@ if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
 from exp2_isomip_cavity.analysis import metrics as mt  # noqa: E402
+from pfcommon.paths import EXP2_RUNS  # noqa: E402
 
 CORE_TBOT = (-0.5, 0.0, 0.5, 1.0, 1.5)       # pd0 H1/H2: Tbot in {-0.5, ..., 1.5} degC
 CORE_ZC = (250.0, 400.0, 550.0)              # pd0 H1/H2: z_c in {250, 400, 550} m
@@ -63,7 +64,7 @@ H1_MELT_KEY = "mean_melt_shelf"              # R22 / pd0 addendum: H1 <m> = whol
 RHO_DECIMALS = 12        # Spearman rho is rounded to 1e-12 before the pd0 comparison: with
                          # n = 5 and no ties rho is a multiple of 0.1 (e.g. exactly -0.9),
                          # which floating point can land a few ulp on either side of
-DEFAULT_RUNS = Path("/Volumes/LaCie/portfolio_runs/exp2")
+DEFAULT_RUNS = EXP2_RUNS                     # pfcommon.paths: env EXP2_RUNS
 COLUMNS = ("case", "group", "Tbot", "z_c", "s", "split", "status", "N3_pass", "N1",
            "N1_pass", "N2", "N2_pass", "mean_melt_shelf", "mean_melt_deep300", "total_flux",
            "z_out", "D_out", "T_f_GL", "notes")

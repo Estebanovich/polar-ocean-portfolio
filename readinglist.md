@@ -77,8 +77,9 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ⬜ | Lazeroms et al. (2019). *JPO* 49:917–939 | https://doi.org/10.1175/JPO-D-18-0131.1 |
 | ⬜ | Reese et al. (2018). PICO. *TC* 12:1969–1985 | https://doi.org/10.5194/tc-12-1969-2018 |
 | ⬜ | Pelle et al. (2019). PICOP. *TC* 13:1043–1049 | https://doi.org/10.5194/tc-13-1043-2019 |
-| ⬜ | Rosevear et al. (2022). *JPO* (respuesta muy no lineal; estratificación) | https://doi.org/10.1175/JPO-D-21-0317.1 |
-| ⬜ | Yung et al. (2025). Stratified suppression of turbulence in an ice shelf basal melt parameterisation. *TC* 19:5827 | https://doi.org/10.5194/tc-19-5827-2025 |
+| ⬜ | Rosevear, Gayen & Galton-Fenzi (2022). Regimes and transitions in the basal melting of Antarctic ice shelves. *JPO* (respuesta muy no lineal; estratificación; ficha verificada en Consensus, PDF pendiente) | https://doi.org/10.1175/JPO-D-21-0317.1 |
+| ⬜ | Yung, Rosevear et al. (2025). Stratified suppression of turbulence in an ice shelf basal melt parameterisation. *TC* 19:5827 (ficha verificada en Consensus, PDF pendiente) | https://doi.org/10.5194/tc-19-5827-2025 |
+| ⬜ | Gade (1979). Melting of ice in sea water: a primitive model with application to the Antarctic ice shelf and icebergs. *JPO* 9:189–198 (línea de mezcla de Gade; diagnóstico S3; ficha verificada en Consensus, PDF pendiente) | https://doi.org/10.1175/1520-0485(1979)009<0189:MOIISW>2.0.CO;2 |
 | ⬜ | Dutrieux et al. (2014). *Science* 343:174–178 (termoclina y melt de Pine Island) | https://doi.org/10.1126/science.1244341 |
 | ⬜ | Sergienko, Goldberg & Little (2013). *JGR Earth Surf.* (sensibilidad a la profundidad de la termoclina) | https://doi.org/10.1002/jgrf.20054 |
 | ⬜ | Kimura et al. (2017). *JGR Oceans* (control por termoclina; respuesta asimétrica) | https://doi.org/10.1002/2017JC012926 |
