@@ -90,6 +90,22 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ⬜ | Donat-Magnin et al. (2017). *JGR Oceans* (circulación inducida por melt amplificada por interfaz profunda) | https://doi.org/10.1002/2017JC013059 |
 | ⬜ | Jenkins (2016). A simple model of the ice shelf–ocean boundary layer and current. *JPO* [verificar DOI] | https://doi.org/10.1175/JPO-D-15-0194.1 |
 | ⬜ | Goldberg et al. (2012a). Investigation of land ice-ocean interaction with a fully coupled ice-ocean model. *JGR* [verificar DOI] | https://doi.org/10.1029/2011JF002246 |
+| | **Búsqueda Consensus 2026-11-10 (introducción de Exp. 2): todos los resultados** | |
+| ⬜ ✔ | Rignot, Jacobs et al. (2013). Ice-shelf melting around Antarctica. *Science* (citado en §1: el derretimiento basal es la mayor ablación; la mitad del agua de deshielo viene de 10 plataformas cálidas, 8 % del área; verificado en el resumen) | https://doi.org/10.1126/science.1235798 |
+| ⬜ ✔ | Depoorter et al. (2013). Calving fluxes and basal melt rates of Antarctic ice shelves. *Nature* | https://doi.org/10.1038/nature12567 |
+| ⬜ ✔ | Davison et al. (2023). Annual mass budget of Antarctic ice shelves from 1997 to 2021. *Science Advances* | https://doi.org/10.1126/sciadv.adi0186 |
+| ⬜ ✔ | Schodlok, Menemenlis & Rignot (2016). Ice shelf basal melt rates around Antarctica from simulations and observations. *JGR Oceans* 121:1085–1109 (ECCO2 con cavidades; resolución vertical) | https://doi.org/10.1002/2015JC011117 |
+| ⬜ ✔ | De Rydt & Naughten (2024). Geometric amplification and suppression of ice-shelf basal melt in West Antarctica. *TC* 18:1863 | https://doi.org/10.5194/tc-18-1863-2024 |
+| ⬜ ✔ | Jacobs, Jenkins et al. (2011). Stronger ocean circulation and increased melting under Pine Island Glacier ice shelf. *Nat. Geosci.* (no citado en el README) | https://doi.org/10.1038/ngeo1188 |
+| ⬜ ★ ✔ | Park, Nakayama & Nam (2024). Amundsen Sea circulation controls bottom upwelling and Antarctic Pine Island and Thwaites ice shelf melting. *Nat. Commun.* (citado en §1: la profundidad de la termoclina en el frente se correlaciona con el melt; coautor Nakayama) | https://doi.org/10.1038/s41467-024-47084-z |
+| ⬜ ✔ | Dotto et al. (2022). Ocean variability beneath Thwaites Eastern Ice Shelf driven by the Pine Island Bay Gyre strength. *Nat. Commun.* (agua de deshielo de Pine Island entra a la cavidad de Thwaites) | https://doi.org/10.1038/s41467-022-35499-5 |
+| ⬜ ✔ | Joughin et al. (2021). Ocean-induced melt volume directly paces ice loss from Pine Island Glacier. *Science Advances* | https://doi.org/10.1126/sciadv.abi5738 |
+| ⬜ ✔ | Lowery, Holland et al. (2026). Drivers of basal melt variability for Pine Island Glacier Ice Shelf: ocean forcing versus geometric feedback. *GRL* | https://doi.org/10.1029/2025gl121404 |
+| ⬜ ★ ✔ | Sheehan, Heywood et al. (2023). Sources and pathways of glacial meltwater in the Bellingshausen Sea, Antarctica. *GRL* 50:e2023GL102785 (citado en §1: destino del agua de deshielo; verificado en el resumen) | https://doi.org/10.1029/2023GL102785 |
+| ⬜ ✔ | Sheehan, Heywood et al. (2021). Sources and transport of glacial meltwater in the Bellingshausen Sea (resumen EGU, no artículo) | https://doi.org/10.5194/egusphere-egu21-2746 |
+| ⬜ ✔ | Flexas, Thompson et al. (2024). Pathways of inter-basin exchange from the Bellingshausen Sea to the Amundsen Sea. *JGR Oceans* | https://doi.org/10.1029/2023jc020080 |
+| ⬜ ✔ | Ruan, Speer et al. (2021). Ice-shelf meltwater overturning in the Bellingshausen Sea. *JGR Oceans* | https://doi.org/10.1029/2020jc016957 |
+| ⬜ ✔ | Schulze Chretien, Thompson et al. (2021). The shelf circulation of the Bellingshausen Sea. *JGR Oceans* | https://doi.org/10.1029/2020jc016871 |
 
 ## Exp. 3 — Emulador de ML del derretimiento (Purkey, Jourdain/Burgard)
 
