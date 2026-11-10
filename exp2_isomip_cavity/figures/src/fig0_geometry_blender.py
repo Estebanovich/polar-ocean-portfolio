@@ -28,6 +28,8 @@ from mathutils import Vector
 VE = 100.0
 VIEW = (0.30, -1.0, 0.50)       # direction from the scene centre to the camera
 ZBASE = -0.72 * VE           # base of the block: the domain bottom, 720 m below sea level
+ZCAP = 0.20 * VE             # the grounded-ice surface is drawn capped at 200 m above sea level (the file reaches
+                             # 878 m, which at VE = 100 towers over the 720 m deep box); a drawing choice only
 
 
 def args():
@@ -238,7 +240,8 @@ def main():
     yc = float(Y[jc])
     with_cut(column_mesh("bed", X, Y, bed, np.full_like(bed, ZBASE), far), rock, rock_cut, yc)
     # ice, far half: grounded ice opaque (its base on the bed), the floating ice shelf translucent
-    with_cut(column_mesh("ice_grounded", X, Y, upper, bed + 0.05, grounded & far), ice_g, ice_cut, yc)
+    upper_g = np.minimum(upper, ZCAP)                        # capped grounded-ice surface (drawing only)
+    with_cut(column_mesh("ice_grounded", X, Y, upper_g, bed + 0.05, grounded & far), ice_g, ice_cut, yc)
     with_cut(column_mesh("ice_shelf", X, Y, upper, lower, floating & far), ice, ice_cut, yc)
     # water, far half: under the ice shelf (up to the draft) and in the open ocean (up to sea level)
     wtop = np.where(floating, lower, 0.0)
@@ -284,7 +287,7 @@ def main():
     view = Vector(VIEW).normalized()
     cam.rotation_mode = "QUATERNION"
     cam.rotation_quaternion = (-view).to_track_quat("-Z", "Y")
-    box = [Vector((x, y, z)) for x in (0, 480) for y in (0, 80) for z in (ZBASE, float(upper.max()))]
+    box = [Vector((x, y, z)) for x in (0, 480) for y in (0, 80) for z in (ZBASE, float(upper.max()))]   # framing as uncapped
     cam.location = Vector((240, 40, 0)) + view * 600
     bpy.context.view_layer.update()
     loc, _ = cam.camera_fit_coords(bpy.context.evaluated_depsgraph_get(), [c for v in box for c in v])
@@ -338,10 +341,10 @@ def main():
         "base_cut_mid": P(230, Y[jc], float(lower[jc, 230])),
         "cavity_cut": P(250, Y[jc], float(lower[jc, 250] + bed[jc, 250]) / 2),
         "restore_top": P(475, 80, 0), "restore_mid": P(475, 40.5, -D / 2),
-        "bed_cut": P(150, Y[jc], float(bed[jc, 150])), "wall_far_top": P(40, 80, float(upper[-1, 40])),
+        "bed_cut": P(150, Y[jc], float(bed[jc, 150])), "wall_far_ocean": P(400, 80, -0.25 * D),
         "near_box_mid": P(240, 0, -D / 2), "near_box_top": P(240, 0, 0), "c_0_40_sl": P(0, 40, 0),
         "c_0_0_bot2": P(0, 0, -D), "c_0_40_bot": P(0, 40, -D), "far_wall_mid": P(200, 80, float(bed[-1, 200])),
-        "ice_grounded": P(50, 60, float(upper[60, 50])), "ice_shelf_top": P(240, 62, float(upper[62, 240])),
+        "ice_grounded": P(50, 60, float(upper_g[60, 50])), "ice_shelf_top": P(240, 62, float(upper[62, 240])),
         "open_ocean": P(400, 75, 0), "outflow_end": P(430, 66, -0.3 * VE), "outflow_mid": P(270, 74, zb(270, 74, -5)),
         "inflow_mid": P(330, 53, zbd(330, 53, 9)), "inflow_end": P(150, 62, zbd(150, 62, 12)),
         "tracer_cut": P(200, Y[jc], float(lower[jc, 200])),

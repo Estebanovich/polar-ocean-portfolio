@@ -318,6 +318,72 @@
  {
   "command": "shape.line",
   "params": {
+   "x1": 265.84705882352944,
+   "y1": 346.8571428571429,
+   "x2": 317.3058823529412,
+   "y2": 346.8571428571429
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 316.3058823529412,
+   "y": 341.3571428571429,
+   "width": 147.44,
+   "height": 14.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 319.3058823529412,
+   "y": 350.8571428571429,
+   "text": "Amundsen Sea Polynya: open water",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
    "x1": 400.2117647058824,
    "y1": 446.8571428571429,
    "x2": 457.3882352941177,

@@ -48,10 +48,10 @@
  {
   "command": "shape.line",
   "params": {
-   "x1": 223.2328,
-   "y1": 126.9754,
-   "x2": 263.2328,
-   "y2": 100.9754
+   "x1": 233.9734,
+   "y1": 200.5633,
+   "x2": 273.97339999999997,
+   "y2": 174.5633
   }
  },
  {
@@ -76,8 +76,8 @@
  {
   "command": "shape.ellipse",
   "params": {
-   "x": 221.0328,
-   "y": 124.77539999999999,
+   "x": 231.7734,
+   "y": 198.3633,
    "width": 4.4,
    "height": 4.4
   }
@@ -97,8 +97,8 @@
  {
   "command": "shape.rectangle",
   "params": {
-   "x": 264.2328,
-   "y": 95.9754,
+   "x": 274.97339999999997,
+   "y": 169.5633,
    "width": 61.0,
    "height": 12.5
   }
@@ -124,8 +124,8 @@
  {
   "command": "text.create",
   "params": {
-   "x": 266.2328,
-   "y": 104.4754,
+   "x": 276.97339999999997,
+   "y": 178.0633,
    "text": "grounded ice",
    "size": 9.5,
    "font": "Helvetica",
@@ -136,10 +136,10 @@
  {
   "command": "shape.line",
   "params": {
-   "x1": 226.3132,
-   "y1": 108.136,
-   "x2": 204.3132,
-   "y2": 78.136
+   "x1": 805.3059999999999,
+   "y1": 313.8496,
+   "x2": 795.3059999999999,
+   "y2": 143.8496
   }
  },
  {
@@ -164,8 +164,8 @@
  {
   "command": "shape.ellipse",
   "params": {
-   "x": 224.1132,
-   "y": 105.93599999999999,
+   "x": 803.1059999999999,
+   "y": 311.6496,
    "width": 4.4,
    "height": 4.4
   }
@@ -185,8 +185,8 @@
  {
   "command": "shape.rectangle",
   "params": {
-   "x": 23.563199999999995,
-   "y": 73.136,
+   "x": 614.5559999999999,
+   "y": 138.8496,
    "width": 179.75,
    "height": 12.5
   }
@@ -212,8 +212,8 @@
  {
   "command": "text.create",
   "params": {
-   "x": 201.3132,
-   "y": 81.636,
+   "x": 792.3059999999999,
+   "y": 147.3496,
    "text": "side wall y = 80 km (closed, no-slip)",
    "size": 9.5,
    "font": "Helvetica",
@@ -1062,8 +1062,8 @@
   "params": {
    "x1": 748.2370000000001,
    "y1": 331.873,
-   "x2": 774.2370000000001,
-   "y2": 291.873
+   "x2": 718.2370000000001,
+   "y2": 301.873
   }
  },
  {
@@ -1109,8 +1109,8 @@
  {
   "command": "shape.rectangle",
   "params": {
-   "x": 775.2370000000001,
-   "y": 287.873,
+   "x": 577.2370000000001,
+   "y": 297.873,
    "width": 140.0,
    "height": 11.5
   }
@@ -1136,13 +1136,13 @@
  {
   "command": "text.create",
   "params": {
-   "x": 777.2370000000001,
-   "y": 295.373,
+   "x": 715.2370000000001,
+   "y": 305.373,
    "text": "outflow along the y = 80 km wall",
    "size": 8.5,
    "font": "Helvetica",
    "color": "#5b3f8f",
-   "justify": "left"
+   "justify": "right"
   }
  },
  {
@@ -1651,7 +1651,7 @@
   "params": {
    "x": 40,
    "y": 588.0,
-   "text": "the near half (y = 0\u201340 km) is cut away along the centreline and drawn in outline. Arrows and the tracer layer are enlarged.",
+   "text": "the near half (y = 0\u201340 km) is cut away along the centreline and drawn in outline. Arrows and the tracer layer are enlarged; the grounded ice is drawn capped at 200 m above sea level.",
    "size": 9,
    "font": "Helvetica",
    "color": "#555555"

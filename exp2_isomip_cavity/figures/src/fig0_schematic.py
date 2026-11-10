@@ -170,7 +170,9 @@ PIG_CRS = "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=112.5 +x_0=0 +y_0=0 +datum=
 BBOX_ASE = (-2050000, -860000, -1200000, -160000)      # as fetch_sat.py
 BBOX_PIG = (806000, -1459000, 986000, -1319000)
 BBOX_ANT = (-3400000, -3400000, 3400000, 3400000)
-# Place names (USGS Geographic Names Information System coordinates, rounded)
+# Place names: the US-ACAN (USA) entries of the SCAR Composite Gazetteer of Antarctica (placenames.aq, checked
+# 2026-11-10): Pine Island Glacier 75.1667 S, 100.0 W; Thwaites Glacier 75.5 S, 106.75 W. Both are nominal points
+# on the grounded glacier, not positions of the ice front.
 PLACES = {"Pine Island Glacier": (-75.167, -100.0), "Thwaites Glacier": (-75.5, -106.75)}
 
 
@@ -207,6 +209,12 @@ def satellite_row(y0=64.0, hgt=400.0):
     line(*p0, *p1, color="#5aa0d8", weight=1.1)
     label(p1[0] - 60, p1[1] + 12, "Pine Island Bay: open water (polynya)", 8.5, color=COOL)
     label(*A(-1450000, -700000), "West Antarctic Ice Sheet", 9.5)
+    # the second open-water area: 73.0-74.2 S, 110-118 W, north of the Dotson Ice Shelf (SCAR gazetteer, US-ACAN:
+    # 74.4 S, 112.37 W) and the eastern Getz Ice Shelf, where Jenkins et al. (2018, Nat. Geosci.) place the
+    # Amundsen Sea polynya, "the most reliable area of summer open water" of the region
+    q0, q1 = A(-1655000, -655000), A(-1565000, -655000)
+    line(*q0, *q1, color="#5aa0d8", weight=1.1)
+    label(q1[0] + 2, q1[1] + 4, "Amundsen Sea Polynya: open water", 8.5, color=COOL)
     # scale bar 100 km and north arrow (north = away from the pole, here toward the page left)
     sx, sy = A(-1420000, -830000)
     sk = aw / ((BBOX_ASE[2] - BBOX_ASE[0]) / 1e3)                 # pt per km

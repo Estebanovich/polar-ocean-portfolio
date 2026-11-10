@@ -62,7 +62,7 @@ def build(work: Path) -> list[dict]:
 
     # the geometry
     callout("ice_grounded", "grounded ice", 40, -26)
-    callout("wall_far_top", "side wall y = 80 km (closed, no-slip)", -22, -30)
+    callout("wall_far_ocean", "side wall y = 80 km (closed, no-slip)", -10, -170)
     callout("ice_shelf_top", "ice shelf (floating; drawn translucent)", 30, -70)
     callout("front_far_top", "calving front\nx = 640 km", 22, -36)
     callout("gl_cut", "grounding line", -44, -46)
@@ -88,7 +88,7 @@ def build(work: Path) -> list[dict]:
     marker(xo + 18, yo - 4, 7)
     xi, yi = P("inflow_mid")
     S.label(xi - 20, yi + 26, "inflow at depth (seen through the cut)", 8.5, color=WARM)
-    callout("outflow_open", "outflow along the y = 80 km wall", 26, -40, color=PURP, size=8.5)
+    callout("outflow_open", "outflow along the y = 80 km wall", -30, -30, color=PURP, size=8.5)
     # inset: the ramp profile family (forcing design)
     inset_profile(834, 50)
     # notes
@@ -101,7 +101,7 @@ def build(work: Path) -> list[dict]:
     text(40, ny + 52, "Rendered with Blender from the ISOMIP+ input geometry (Cornford and Asay-Davis, 2016) on its 1 km "
          "grid; vertical exaggeration ×100. The geometry is symmetric about y = 40 km:", 9, color=GREY)
     text(40, ny + 64, "the near half (y = 0–40 km) is cut away along the centreline and drawn in outline. Arrows and the "
-         "tracer layer are enlarged.", 9, color=GREY)
+         "tracer layer are enlarged; the grounded ice is drawn capped at 200 m above sea level.", 9, color=GREY)
     return S.cmds
 
 
