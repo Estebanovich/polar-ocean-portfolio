@@ -40,3 +40,17 @@ from exp3_melt_emulator.methods import physics as _physics  # noqa: E402
 REGISTRY["M1"] = _physics.LinearLocal
 REGISTRY["M2"] = _physics.QuadLocal
 REGISTRY["M3"] = _physics.QuadNonLocal
+
+
+def _lazy(cls_name: str) -> Callable[[], Method]:
+    """Factory importing methods.stats (needs scikit-learn) only when called."""
+    def factory() -> Method:
+        from exp3_melt_emulator.methods import stats
+        return getattr(stats, cls_name)()
+    factory.__name__ = f"make_{cls_name}"
+    return factory
+
+
+REGISTRY["M0"] = _lazy("MeanMap")
+REGISTRY["M4"] = _lazy("CellRegression")
+REGISTRY["M5"] = _lazy("GPonEOF")
