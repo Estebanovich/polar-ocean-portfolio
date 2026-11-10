@@ -59,3 +59,12 @@ Fecha: 2026-11-10. Evaluación mecánica contra `pd0_preregistro.md`, sin corrid
 - (e) melt profundo de Ocean0 contra ΓT a 2 y 4 km, solo con las corridas de calibración R21.
 
 El pie no presenta el acuerdo de melt entre 2 y 4 km como evidencia independiente: es la meta de la calibración (K1). Cita en su lugar ψ_bt (+125 %) y la correlación de los mapas (r = 0.91).
+
+## Prueba de reinicio bit a bit (ruling R25), expectativa escrita antes de correr
+
+Fecha: 2026-11-10. El plan pedía una prueba de reinicio de Ocean1 y no se hizo; el controlador decidió (R25) hacerla ahora, porque es barata.
+- **Corridas** (configuración `ocean0_2km`, caso `ocean1_2km`, np = 5, `--end-time 5256000` = 2 meses, `--set pChkptFreq=2628000` en las dos para que la etapa termine en un múltiplo de pChkptFreq; `--skip-ok` para no recompilar):
+  - continua: 1 etapa, sufijo `_restartcheck_1stage`;
+  - reiniciada: 2 etapas de 1 mes con pickup, sufijo `_restartcheck_2stage`.
+- **Comparación:** `pfcommon.campaign.compare_bitwise` sobre el pickup final (iteración 13 140: `pickup` con U, V, T, S, Eta…, y `pickup_ptracers` con TRAC01) y los estados finales `T`, `S`, `Eta` y `PTRACER01`.
+- **Expectativa:** idénticas bit a bit. Si no lo son, se reporta el máximo |diferencia| de THETA, SALT, UVEL, VVEL, ETAN y TRAC01 y se clasifica, sin cambiar nada más (decide el controlador).
