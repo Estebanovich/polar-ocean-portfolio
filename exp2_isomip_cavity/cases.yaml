@@ -101,6 +101,16 @@ cases:
   # Task 4 timing: 4 km Ocean0 on 5 MPI ranks (compared with 5 concurrent serial runs).
   # Run VOID under R21 (timing only; the measured cost still holds).
   tim4m_gT0.03: {config: ocean0_4km_mpi, gammaT: 0.03}
+  # R24 post hoc (Esteban, 2026-11-10; notes/pd2_ensamble.md): exposure test of H1's n > 2.
+  # "Holland 2008-like" ramp: -1.9 degC / S0 above 100 m, linear 100-200 m, Tbot / Sbot below
+  # 200 m (Holland et al. 2008 sect. 3a: deep water uniform below 200 m). Same 4 km config,
+  # GammaT_cal,4km, length and melt_law as the ensemble core; NOT ensemble members (no
+  # ensemble_group), so they never enter H1/H2 or the 29-member N-check.
+  hol_T-0.5: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: -0.5, z_c: 150.0, d: 100.0, s: 1.0}
+  hol_T0.0: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: 0.0, z_c: 150.0, d: 100.0, s: 1.0}
+  hol_T0.5: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: 0.5, z_c: 150.0, d: 100.0, s: 1.0}
+  hol_T1.0: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: 1.0, z_c: 150.0, d: 100.0, s: 1.0}
+  hol_T1.5: {config: ocean0_4km, init_profile: ramp, restore_profile: ramp, Tbot: 1.5, z_c: 150.0, d: 100.0, s: 1.0}
 ensemble:
   config: ocean0_4km
   reference: ocean0_4km

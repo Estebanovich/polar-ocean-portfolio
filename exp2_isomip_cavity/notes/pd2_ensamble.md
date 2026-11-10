@@ -102,3 +102,41 @@ En ninguna variante n baja de 2.19. El fallo no depende de un punto aislado ni d
 - **Contra TD_diag hay un colapso casi perfecto** (n = 1.45, R² = 0.9995), pero es en parte circular. Lo que sí informa es esto: si m = c·γT·TD con γT = ΓT u*, entonces n − 1 ≈ 0.45 dice que u* (la velocidad en la capa límite) crece de forma sublineal con T_w − T_b. H08 §4 (`literatura/Holland_2008*.md` L650–657) encuentra en cambio que |u| y T − T_b crecen *ambos linealmente* con T_D, y por eso su producto es cuadrático. Aquí, la diferencia T_w − T_b efectiva crece más rápido que linealmente con Tbot, con TD_diag de 0.17 a 0.56 °C en z_c = 250, es decir, ×3.2 mientras Tbot − T_f,GL va ×2.1.
 - **Referencia de H08 §6** (`literatura/Holland_2008*.md` L917–929): ajustando una ley de potencia a su modelo obtienen "an exponent of 1.61 (r² = 0.994)". En la figura se dibuja solo como guía, no como ajuste. Su T_D es la temperatura del agua profunda, uniforme desde 200 m (L501); no es la misma variable que nuestra Tbot de rampa ni que TF_eff.
 - **Conclusión:** el exceso de n sobre 2 no se debe solo a haber elegido Tbot como variable. Con el forzamiento a priori en la base, el exponente dentro de cada z_c sigue fuera de [1.3, 2.0]. La sensibilidad supercuadrática pertenece a la respuesta de la cavidad (dónde está el agua cálida respecto a la base profunda, y cómo responde la circulación), no a la variable de forzamiento. Clasificación (c)/(b) [verificar]: puede ser un efecto del diseño de rampa, con el gradiente vertical concentrado cerca de la línea de apoyo, o de la física de la cavidad a 4 km. **H1 sigue siendo FALLA, tal como se preregistró.**
+
+## R24 — prueba post hoc de exposición (perfil tipo Holland 2008), predicción escrita antes de correr
+
+**POST HOC** (aprobado por Esteban, 2026-11-10). No cambia el veredicto preregistrado de H1, que sigue siendo **FALLA**. Esta sección se escribe y se sube **antes** de lanzar las corridas; la hora del commit es la evidencia.
+
+**Contexto.** La banda de H1, n ∈ [1.3, 2.0], viene de Holland et al. 2008. Su agua profunda es uniforme desde 200 m (`literatura/Holland_2008*.md` L501, §3a), así que el agua cálida cubre la base profunda del hielo. En nuestro núcleo, la termoclina de la rampa (z_c = 250, 400 y 550 m; d = 300 m) deja cálida solo una fracción pequeña de la base. Con R23 vimos que el forzamiento medio en la base no explica n > 2 dentro de cada z_c.
+
+**Corridas.**
+- Casos `hol_T{−0.5, 0.0, 0.5, 1.0, 1.5}` en `cases.yaml`: rampa con z_c = 150 m y d = 100 m. Es decir, −1.9 °C y S0 por encima de 100 m, rampa lineal de 100 a 200 m, y Tbot y Sbot por debajo de 200 m. Se usa `profiles.ramp` sin cambios.
+- Todo lo demás es igual al núcleo del ensamble: 4 km, ΓT_cal,4km = 0.029356, 2 años, `melt_law`, `checkIniTemp`, s = 1.
+- **No** son miembros del ensamble: no tienen `ensemble_group`.
+- **Verificación en seco:** `make_case` de `hol_T1.0` contra `ens_T1.0_zc250_s1.0`.
+  - Los binarios de geometría (batimetría, `icetopo.bin`, máscara rbcs) son idénticos.
+  - Los namelists solo difieren en la línea de comentario con el nombre del caso.
+  - En case.json solo difieren `case`, `z_c`, `d` y `ensemble_group`.
+  - Difieren, como debe ser, T/S iniciales y de restauración y `shelficeLoadAnomaly.bin`.
+  - Perfil comprobado: −1.90 °C a 90 m, −0.45 °C a 150 m, 1.00 °C a 210 m.
+
+**Exposición de la base** (fracción del área de plataforma, s = 1, geometría a 4 km):
+
+| Perfil | Base en agua a Tbot plena | Base en agua fría de superficie | Fracción de rampa r media (área) |
+|---|---|---|---|
+| `hol` (z_c 150, d 100) | 0.497 | 0.062 | 0.824 |
+| núcleo z_c = 250 | 0.126 | 0.062 | 0.435 |
+| núcleo z_c = 400 | 0.011 | 0.711 | 0.132 |
+| núcleo z_c = 550 | 0.000 | 0.875 | 0.032 |
+
+**Advertencia sobre la premisa.** El **50.3 %** del área de la base está a menos de 200 m de profundidad (6.2 % a menos de 100 m; la base llega hasta −5.6 m). El perfil tipo Holland **no** pone toda la base en agua cálida, y ningún perfil de rampa podría hacerlo, salvo uno uniforme. La prueba es, por tanto, de **exposición mucho mayor**: ~50 % de la base en agua a Tbot plena, contra ≤ 13 % en el núcleo. No es de exposición total. Esto se reporta tal cual y la regla de lectura no se cambia.
+
+**Hipótesis.** Si n > 2 se debe a la exposición parcial de la base a la termoclina, con la base mucho más expuesta el exponente contra (Tbot − T_f,GL) debería caer en [1.3, 2.0].
+
+**Regla de lectura (fijada ahora).**
+- Mismos ajustes que H1, con `ensemble.quadratic_fit` y `ensemble.power_law_fit` sobre las 5 corridas `hol_T*`.
+- ⟨m⟩ = melt medio de toda la plataforma (R22), registros 19–24.
+- T_f,GL = `metrics.freezing_point_gl`, la misma geometría que el núcleo: −2.3341 °C.
+- Se reporta n con su rango al dejar fuera una corrida, y R² de la cuadrática.
+- **"Apoya"** si n ∈ [1.3, 2.0]; **"no apoya"** en otro caso.
+- Se reportan N1–N3 de las 5 corridas. Un fallo de N3 deja la prueba "no evaluable": no se imputa ni se vuelve a correr. Un fallo de N1 o N2 se señala y la corrida se queda en el ajuste (como R22).
