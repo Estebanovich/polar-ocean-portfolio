@@ -147,7 +147,7 @@ Código: `h1_posthoc_tf.py --quad`. Salidas: `figures/fig2_posthoc_quad.{png,pdf
 
 **Predictores:**
 - **P_nonlocal = ⟨TF_loc·⟨TF⟩⟩.** Favier et al. 2019, Ec. 5 (`literatura/Favier_2019*.md` L491–497): "quadratic, local and non-local". Es la "quadratic-semilocal" de Burgard et al. 2022, Ec. 18 (`literatura/Burgard_2022*.md` L687–702). **Identidad:** ⟨TF⟩ es un solo número por corrida, así que P_nonlocal = ⟨TF⟩² = TF_eff² exactamente y q = n(TF_eff)/2. Este predictor **no aporta información nueva** sobre R23; se reporta porque se pidió.
-- **P_local = ⟨TF_loc·|TF_loc|⟩.** Favier 2019, Ec. 4 (L447–455): "quadratic, local". Es la "quadratic-local" de Burgard 2022, Ec. 14 (L648–654). No se reduce a TF_eff.
+- **P_local = ⟨TF_loc·|TF_loc|⟩.** Favier 2019, Ec. 4 (L447–455, "quadratic, local"), en la forma que conserva el signo de Burgard 2022, Ec. 14 (L648–654, "quadratic-local"). No se reduce a TF_eff.
 
 **Resultados.** No hay ningún P ≤ 0, así que no se excluyó ninguna corrida. Entre corchetes, el rango de q al dejar fuera una corrida.
 
@@ -157,6 +157,36 @@ Código: `h1_posthoc_tf.py --quad`. Salidas: `figures/fig2_posthoc_quad.{png,pdf
 | P_local | 1.18 [1.17–1.20] | 1.44 [1.43–1.46] | 1.83 [1.70–1.92] | **1.02**, R² = 0.96 [0.97–1.05] |
 
 **Lectura.**
-- El cuadrático **local**, en el conjunto, **colapsa las 15 corridas sobre q ≈ 1**: q = 1.02, R² en log = 0.96, rango LOO 0.97–1.05. Es lo que predice la familia cuadrática, y el colapso es mucho mejor que con TF_eff (R² = 0.85). Pesar cada columna por su propio forzamiento, que es lo que hace ⟨TF_loc|TF_loc|⟩, da más peso a la base profunda y cálida. Esto concuerda con la lectura de R23: el melt lo controla la parte expuesta de la base, no la media.
+- En el conjunto de las 15 corridas, el cuadrático local da q = 1.02 (R² en log = 0.96, rango LOO 0.97–1.05), con mejor colapso que TF_eff (R² = 0.85). **Esa pendiente no se toma como evidencia:** igual que en R23, mezcla la variación entre z_c con la que ocurre dentro de cada z_c, y dentro de cada z_c q vale 1.18–1.83. Que q del conjunto quede cerca de 1 no muestra que la familia cuadrática describa la respuesta a Tbot. Además, las corridas `hol` de R24 no caen sobre esa misma recta (`fig2_posthoc_r24`, panel b). Pesar cada columna por su propio forzamiento, que es lo que hace ⟨TF_loc|TF_loc|⟩, da más peso a la base profunda y cálida. Esto concuerda con la lectura de R23: el melt lo controla la parte expuesta de la base, no la media.
 - **Dentro de cada z_c, q sigue por encima de 1** (1.18, 1.44 y 1.83) y crece con z_c, es decir, con menos exposición. Ningún predictor a priori de esta familia reproduce la sensibilidad a Tbot a z_c fijo. El residuo concuerda con una respuesta de la circulación de la cavidad que no está en TF_loc.
 - **H1 sigue siendo FALLA**, como se preregistró.
+
+## R24 — lectura de la prueba de exposición (POST HOC)
+
+Lectura mecánica de la regla fijada antes de correr (commit 874205e). Cola `queue_r24.sh`: 11:01–11:34 CST, rc = 0; corridas de unos 33 min cada una. Código: `h1_posthoc_tf.py --r24`. Salidas: `figures/fig2_posthoc_r24.{png,pdf,json}`.
+
+**N1–N3 de las 5 corridas `hol_T*`:**
+- N3: pasan las 5, sin huecos.
+- N1: máximo 0.51 % (`hol_T-0.5`); pasan las 5.
+- N2: máximo 2.0e-7; pasan las 5.
+
+**Ajustes de H1 sobre `hol`** (⟨m⟩ de toda la plataforma, registros 19–24; T_f,GL = −2.3341 °C). ⟨m⟩ = 8.17, 14.12, 21.46, 30.21 y 40.31 m a⁻¹ para Tbot = −0.5 … 1.5.
+- Cuadrática: R² = 0.9999995.
+- Ley de potencia contra (Tbot − T_f,GL): **n = 2.16**, rango LOO 2.11–2.19 (R² en log = 0.9996).
+
+**Veredicto (regla): NO APOYA.** n = 2.16 queda fuera de [1.3, 2.0], también en todo el rango LOO.
+
+**Contexto (no es regla):**
+
+| Variable | hol | núcleo z_c = 250 | 400 | 550 |
+|---|---|---|---|---|
+| n contra Tbot − T_f,GL | **2.16** [2.11–2.19] | 2.43 | 2.78 | 2.70 |
+| Base en agua a Tbot plena (fracción de área) | 0.497 | 0.126 | 0.011 | 0.000 |
+| n contra TF_eff (plataforma, a priori) | 1.98 [1.96–1.99] | 2.36 | 3.44 | 6.49 |
+| q contra P_local = ⟨TF_loc·\|TF_loc\|⟩ | 0.99 [0.98–1.00] | 1.18 | 1.44 | 1.83 |
+
+**Lectura honesta.**
+- La regla dice "no apoya". Aun así, con mucha más exposición el exponente baja (2.16 frente a 2.43–2.78) y queda cerca del borde de la banda. El orden no es estrictamente monótono en la exposición: z_c = 400 (2.78) está por encima de z_c = 550 (2.70).
+- **Advertencia de la premisa:** solo ~50 % del área de la base está por debajo de 200 m (el 50.3 % está por encima). No es la exposición total del supuesto de la hipótesis. Una exposición completa podría acercar n a la banda, pero eso no se probó y la geometría no lo permite con un perfil de rampa.
+- Dentro de la familia `hol`, el melt sigue casi exactamente las formas de forzamiento local: n = 1.98 contra TF_eff y q = 0.99 contra el cuadrático local. Con la base expuesta, la sensibilidad a z_c fijo coincide con la familia cuadrática local. En el núcleo, con menos exposición, no coincide (q = 1.18–1.83). Esto concuerda con que el exceso de n en el núcleo venga de la exposición parcial a la termoclina. Pero es una lectura **post hoc** y la regla preregistrada para R24 dio "no apoya".
+- **H1 sigue siendo FALLA,** como se preregistró.

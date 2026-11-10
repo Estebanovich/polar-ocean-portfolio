@@ -150,3 +150,58 @@ def test_r24_pure_linear_in_p_recovers_q_one(tmp_path):
     for ext in ("png", "pdf", "json"):
         assert (tmp_path / "figs" / f"fig2_posthoc_quad.{ext}").stat().st_size > 0
     assert "POST HOC (R24)" in out["title"]
+
+
+# ---- R24 readout (rule of the prediction note, commit 874205e) ----------------------------
+
+TF_GL = L1 * 34.7 + L2 + L3 * RHO * G * 572.1674970323206     # make_run's deepest base
+
+
+def write_hol(root, n_exp, failed=()):
+    specs = []
+    for T in en.CORE_TBOT:
+        name = f"hol_T{T}"
+        m = 2.0 * (T - TF_GL) ** n_exp
+        fw = -m * 1000.0 / 31536000.0
+        make_run(root / f"{name}_r21", nrec=24, draft=draft_field(),
+                 status="FAILED" if T in failed else "OK",
+                 shi=lambda k, fw=fw: {"SHIfwFlx": fw, "SHIgammT": 1e-4},
+                 case_extra={"params": {"case": name, "init_profile": "ramp"},
+                             "actual": {"Tbot": T, "z_c": 150.0, "s": 1.0, "d": 100.0,
+                                        "init_profile": "ramp"}})
+        specs.append({"case": name, "group": "hol", "Tbot": T, "z_c": 150.0, "s": 1.0})
+    return specs
+
+
+@pytest.mark.parametrize("n_exp, verdict", [(1.6, "apoya"), (2.5, "no apoya")])
+def test_r24_readout_rule(tmp_path, n_exp, verdict):
+    specs = write_hol(tmp_path, n_exp)
+    r = hp.r24_readout(en.collect(tmp_path, cases=specs))
+    assert r["power_law"]["n"] == pytest.approx(n_exp, abs=1e-10)
+    assert r["loo_n_range"] == pytest.approx([n_exp, n_exp], abs=1e-10)
+    assert r["verdict"] == verdict and r["label"] == "POST HOC (R24)"
+    assert r["N"]["N3_gaps"] == [] and r["T_f_GL_degC"] == pytest.approx(TF_GL, rel=1e-12)
+
+
+def test_r24_readout_gap_not_evaluable(tmp_path):
+    specs = write_hol(tmp_path, 1.6, failed=(0.5,))
+    r = hp.r24_readout(en.collect(tmp_path, cases=specs))
+    assert r["verdict"] == "no evaluable" and r["N"]["N3_gaps"] == ["hol_T0.5"]
+
+
+def test_analyse_r24_end_to_end_figure(tmp_path):
+    specs = []
+    for z in en.CORE_ZC:
+        for T in en.CORE_TBOT:
+            name = f"ens_T{T}_zc{z:.0f}_s1.0"
+            write_ramp_run(tmp_path / f"{name}_r21", T, z, m=2.0 * (T - TF_GL) ** 2.5, name=name)
+            specs.append({"case": name, "group": "factorial", "Tbot": T, "z_c": z, "s": 1.0})
+    write_hol(tmp_path, 1.6)
+    res = hp.analyse_r24(en.collect(tmp_path, cases=specs), tmp_path)
+    assert res["verdict"] == "apoya" and len(res["hol_runs"]) == 5
+    assert res["core_fits_Tbot"]["400"]["n"] == pytest.approx(2.5, abs=1e-10)
+    assert set(res["context_fits_hol"]) == {"TF_eff_shelf", "P_local"}
+    out = hp.write_r24_outputs(res, tmp_path / "figs")
+    for ext in ("png", "pdf", "json"):
+        assert (tmp_path / "figs" / f"fig2_posthoc_r24.{ext}").stat().st_size > 0
+    assert "POST HOC (R24)" in out["title"] and "50 %" in out["exposure_caveat"]

@@ -297,3 +297,20 @@
   - V2b sigue como FALLA pre-registrada (0.185 Sv en la cavidad). Se añade una fila **post hoc** con la definición de Y26 (máximo en todo el dominio): 0.222 Sv, dentro de 0.20–0.25; JPL 0.234. Error (a) nuestro al operacionalizar el criterio: x < 640 km es de la Fig. 13.
   - V3 overturning: FALLA marginal, sin clase (4.9 % bajo la banda extendida, 1.8 % bajo la fijada en el anclaje de 10).
   - Figura 1 regenerada, con los tramos extrapolados de la banda rayados.
+
+## 2026-11-10 — Exp. 2: análisis post hoc de H1 (R23, R24) y predictores cuadráticos
+
+- **Contexto:** H1 FALLA en los tres z_c (n = 2.43, 2.78 y 2.70 > 2.0; la cuadrática ajusta con R² ≥ 0.9995) y H2 PASA (ρ = −1). Todo lo de abajo es **post hoc**; el veredicto preregistrado de H1 no cambia. Detalle en `notes/pd2_ensamble.md`.
+- **R23**, forzamiento en la base (`analysis/h1_posthoc_tf.py`, `figures/fig2_posthoc_tf.*`):
+  - Con el forzamiento a priori TF_eff, n dentro de cada z_c sale aún más alto: 2.36, 3.44 y 6.49.
+  - En el conjunto, n = 1.55 con R² = 0.85.
+  - Con T_w − T_b diagnosticado, n ≈ 1.45, pero esa medida es en parte circular.
+- **Predictores cuadráticos** de Favier 2019 (Ec. 4 y 5) y Burgard 2022 (Ec. 14 y 18) (`figures/fig2_posthoc_quad.*`):
+  - El no local es idéntico a TF_eff².
+  - El local da q = 1.18–1.83 dentro de cada z_c, y 1.02 en el conjunto. Esta última pendiente mezcla la variación entre z_c y no se toma como evidencia.
+- **R24**, prueba de exposición con perfil tipo Holland 2008 (z_c = 150 m, d = 100 m):
+  - La predicción y la regla se subieron antes de correr (874205e, 11:00:55).
+  - Se corrieron 5 casos `hol_T*` a 4 km, de 11:01 a 11:34, con `caffeinate`. N1–N3 pasan.
+  - n = 2.16 (LOO 2.11–2.19): **no apoya**, según la regla.
+  - Solo ~50 % de la base queda por debajo de 200 m.
+  - Dentro de `hol`, n contra TF_eff = 1.98 y q local = 0.99 (`figures/fig2_posthoc_r24.*`).
