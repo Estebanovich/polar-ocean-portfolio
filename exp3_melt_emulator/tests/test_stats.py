@@ -1,4 +1,5 @@
 import dataclasses
+import warnings
 
 import numpy as np
 import pytest
@@ -125,3 +126,22 @@ def test_M4_chooses_linear_on_linear_data():
     runs = _smooth_runs(n=10)
     m = CellRegression(); m.fit(runs)
     assert m.degree == 1
+
+
+def test_M5_info_gp_diagnostics_and_recon():
+    runs = _smooth_runs()
+    m = GPonEOF()
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")      # no warning may leak out of fit
+        m.fit(runs)
+    gp = m.info["gp"]
+    assert len(gp) == m.info["k"]
+    for d in gp:
+        n = len(d["theta"])
+        assert isinstance(d["kernel"], str) and "RBF" in d["kernel"]
+        assert len(d["bounds"]) == n and len(d["at_bound"]) == n
+        assert all(isinstance(b, bool) for b in d["at_bound"])
+        assert isinstance(d["convergence_warning"], bool)
+        for t, (a, b), ab in zip(d["theta"], d["bounds"], d["at_bound"]):
+            assert ab == (t - a < 1e-6 or b - t < 1e-6)
+    assert m.info["recon_rmse_mean_run"] == pytest.approx(np.mean(m.info["recon_rmse_per_run"]))
