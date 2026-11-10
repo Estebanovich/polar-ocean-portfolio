@@ -1,0 +1,418 @@
+{
+  "label": "POST HOC (R23)",
+  "melt_key": "mean_melt_shelf",
+  "runs": [
+    {
+      "case": "ens_T-0.5_zc250_s1.0",
+      "Tbot": -0.5,
+      "z_c": 250.0,
+      "melt": 4.492135270477996,
+      "TF_eff_shelf": 0.7643921957099413,
+      "TF_eff_deep300": 1.6104749573904167,
+      "TD_diag_shelf": 0.17347055207881207,
+      "TD_diag_deep300": 0.5869283384892392,
+      "Tbot_minus_Tf_GL": 1.8341395028324676
+    },
+    {
+      "case": "ens_T0.0_zc250_s1.0",
+      "Tbot": 0.0,
+      "z_c": 250.0,
+      "melt": 8.142057758452323,
+      "TF_eff_shelf": 0.9817584225102958,
+      "TF_eff_deep300": 2.071635161404906,
+      "TD_diag_shelf": 0.26023878997387057,
+      "TD_diag_deep300": 0.8004913354968681,
+      "Tbot_minus_Tf_GL": 2.3341395028324676
+    },
+    {
+      "case": "ens_T0.5_zc250_s1.0",
+      "Tbot": 0.5,
+      "z_c": 250.0,
+      "melt": 13.3606469370528,
+      "TF_eff_shelf": 1.1991246493106502,
+      "TF_eff_deep300": 2.5327953654193953,
+      "TD_diag_shelf": 0.3628993456065209,
+      "TD_diag_deep300": 1.0172319920801354,
+      "Tbot_minus_Tf_GL": 2.8341395028324676
+    },
+    {
+      "case": "ens_T1.0_zc250_s1.0",
+      "Tbot": 1.0,
+      "z_c": 250.0,
+      "melt": 19.654602198338022,
+      "TF_eff_shelf": 1.4164908761110047,
+      "TF_eff_deep300": 2.993955569433885,
+      "TD_diag_shelf": 0.46478553869852185,
+      "TD_diag_deep300": 1.2286786817271118,
+      "Tbot_minus_Tf_GL": 3.3341395028324676
+    },
+    {
+      "case": "ens_T1.5_zc250_s1.0",
+      "Tbot": 1.5,
+      "z_c": 250.0,
+      "melt": 26.697407998606895,
+      "TF_eff_shelf": 1.6338571029113593,
+      "TF_eff_deep300": 3.4551157734483744,
+      "TD_diag_shelf": 0.5588460608385734,
+      "TD_diag_deep300": 1.4463549717626956,
+      "Tbot_minus_Tf_GL": 3.8341395028324676
+    },
+    {
+      "case": "ens_T-0.5_zc400_s1.0",
+      "Tbot": -0.5,
+      "z_c": 400.0,
+      "melt": 1.6073014851613792,
+      "TF_eff_shelf": 0.325128722925866,
+      "TF_eff_deep300": 1.0864331936577913,
+      "TD_diag_shelf": 0.08303426324744514,
+      "TD_diag_deep300": 0.33694174185734793,
+      "Tbot_minus_Tf_GL": 1.8341395028324676
+    },
+    {
+      "case": "ens_T0.0_zc400_s1.0",
+      "Tbot": 0.0,
+      "z_c": 400.0,
+      "melt": 3.065507819352557,
+      "TF_eff_shelf": 0.39118861493558854,
+      "TF_eff_deep300": 1.3670847884654822,
+      "TD_diag_shelf": 0.12630079451746679,
+      "TD_diag_deep300": 0.5264049785656937,
+      "Tbot_minus_Tf_GL": 2.3341395028324676
+    },
+    {
+      "case": "ens_T0.5_zc400_s1.0",
+      "Tbot": 0.5,
+      "z_c": 400.0,
+      "melt": 5.320936734648242,
+      "TF_eff_shelf": 0.4572485069453111,
+      "TF_eff_deep300": 1.6477363832731728,
+      "TD_diag_shelf": 0.1904449920695449,
+      "TD_diag_deep300": 0.7202054259214956,
+      "Tbot_minus_Tf_GL": 2.8341395028324676
+    },
+    {
+      "case": "ens_T1.0_zc400_s1.0",
+      "Tbot": 1.0,
+      "z_c": 400.0,
+      "melt": 8.25071720376779,
+      "TF_eff_shelf": 0.5233083989550336,
+      "TF_eff_deep300": 1.9283879780808637,
+      "TD_diag_shelf": 0.2544608538447699,
+      "TD_diag_deep300": 0.895014977831125,
+      "Tbot_minus_Tf_GL": 3.3341395028324676
+    },
+    {
+      "case": "ens_T1.5_zc400_s1.0",
+      "Tbot": 1.5,
+      "z_c": 400.0,
+      "melt": 12.522787539380348,
+      "TF_eff_shelf": 0.5893682909647562,
+      "TF_eff_deep300": 2.2090395728885546,
+      "TD_diag_shelf": 0.3420312801263207,
+      "TD_diag_deep300": 1.073379354507504,
+      "Tbot_minus_Tf_GL": 3.8341395028324676
+    },
+    {
+      "case": "ens_T-0.5_zc550_s1.0",
+      "Tbot": -0.5,
+      "z_c": 550.0,
+      "melt": 0.34443878579100934,
+      "TF_eff_shelf": 0.17995249176249378,
+      "TF_eff_deep300": 0.476959785195834,
+      "TD_diag_shelf": 0.02831882230911679,
+      "TD_diag_deep300": 0.11414547928407312,
+      "Tbot_minus_Tf_GL": 1.8341395028324676
+    },
+    {
+      "case": "ens_T0.0_zc550_s1.0",
+      "Tbot": 0.0,
+      "z_c": 550.0,
+      "melt": 0.688962073127056,
+      "TF_eff_shelf": 0.1960057595090488,
+      "TF_eff_deep300": 0.5476754456490129,
+      "TD_diag_shelf": 0.045143282722464075,
+      "TD_diag_deep300": 0.19891122224903743,
+      "Tbot_minus_Tf_GL": 2.3341395028324676
+    },
+    {
+      "case": "ens_T0.5_zc550_s1.0",
+      "Tbot": 0.5,
+      "z_c": 550.0,
+      "melt": 1.1747533194315811,
+      "TF_eff_shelf": 0.2120590272556038,
+      "TF_eff_deep300": 0.618391106102192,
+      "TD_diag_shelf": 0.06837198627862594,
+      "TD_diag_deep300": 0.28434564861023215,
+      "Tbot_minus_Tf_GL": 2.8341395028324676
+    },
+    {
+      "case": "ens_T1.0_zc550_s1.0",
+      "Tbot": 1.0,
+      "z_c": 550.0,
+      "melt": 1.7843634497620118,
+      "TF_eff_shelf": 0.22811229500215882,
+      "TF_eff_deep300": 0.689106766555371,
+      "TD_diag_shelf": 0.09107675073466565,
+      "TD_diag_deep300": 0.3593658739079937,
+      "Tbot_minus_Tf_GL": 3.3341395028324676
+    },
+    {
+      "case": "ens_T1.5_zc550_s1.0",
+      "Tbot": 1.5,
+      "z_c": 550.0,
+      "melt": 2.50686932738267,
+      "TF_eff_shelf": 0.2441655627487138,
+      "TF_eff_deep300": 0.75982242700855,
+      "TD_diag_shelf": 0.11473164151234545,
+      "TD_diag_deep300": 0.42886537358499693,
+      "Tbot_minus_Tf_GL": 3.8341395028324676
+    }
+  ],
+  "fits": {
+    "TF_eff_shelf": {
+      "250": {
+        "n": 2.3620756084516867,
+        "k": 8.53634464834994,
+        "R2_log": 0.9995314879568763,
+        "n_runs": 5,
+        "loo_n_range": [
+          2.3355557754606897,
+          2.4014728825334903
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "400": {
+        "n": 3.4440309217143104,
+        "k": 77.5161093442587,
+        "R2_log": 0.999843125528666,
+        "n_runs": 5,
+        "loo_n_range": [
+          3.41650691820469,
+          3.45420076999168
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "550": {
+        "n": 6.486627754246066,
+        "k": 25380.59964657071,
+        "R2_log": 0.9907603923858846,
+        "n_runs": 5,
+        "loo_n_range": [
+          5.876963562953371,
+          6.939480909628435
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "pooled": {
+        "n": 1.5524674690296316,
+        "k": 12.400819145747011,
+        "R2_log": 0.8529654769793181,
+        "n_runs": 15,
+        "loo_n_range": [
+          1.41280416336064,
+          1.6095452312364136
+        ],
+        "excluded_nonpositive_forcing": []
+      }
+    },
+    "TF_eff_deep300": {
+      "250": {
+        "n": 2.3506309341383806,
+        "k": 1.475720716102735,
+        "R2_log": 0.999548344071464,
+        "n_runs": 5,
+        "loo_n_range": [
+          2.325677594992574,
+          2.3890078746789474
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "400": {
+        "n": 2.8872072820465533,
+        "k": 1.2550821122270646,
+        "R2_log": 0.9998177333492877,
+        "n_runs": 5,
+        "loo_n_range": [
+          2.8605706834380946,
+          2.9173454464214177
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "550": {
+        "n": 4.2601115544696215,
+        "k": 8.573661933006674,
+        "R2_log": 0.9947400579449498,
+        "n_runs": 5,
+        "loo_n_range": [
+          3.9466634347467675,
+          4.476887830709469
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "pooled": {
+        "n": 1.8923683285834398,
+        "k": 2.2792354586306294,
+        "R2_log": 0.93885456854413,
+        "n_runs": 15,
+        "loo_n_range": [
+          1.7784663118844977,
+          1.9596031109814314
+        ],
+        "excluded_nonpositive_forcing": []
+      }
+    },
+    "TD_diag_shelf": {
+      "250": {
+        "n": 1.517599528560696,
+        "k": 63.30775072078582,
+        "R2_log": 0.9995204044442761,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.4947389701227671,
+          1.549698207784615
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "400": {
+        "n": 1.4431423653693207,
+        "k": 59.12410818321837,
+        "R2_log": 0.9995573166013181,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.418994387822805,
+          1.4531927206676711
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "550": {
+        "n": 1.4050079304582532,
+        "k": 52.02886138085119,
+        "R2_log": 0.9994019956082921,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.3850778116166194,
+          1.4149344155033383
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "pooled": {
+        "n": 1.4493811917402095,
+        "k": 59.12912665799727,
+        "R2_log": 0.9995069385814065,
+        "n_runs": 15,
+        "loo_n_range": [
+          1.4419012577577128,
+          1.4548879399183243
+        ],
+        "excluded_nonpositive_forcing": []
+      }
+    },
+    "TD_diag_deep300": {
+      "250": {
+        "n": 1.990905213966752,
+        "k": 12.883402760226737,
+        "R2_log": 0.9997512997475405,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.9824432618084176,
+          2.0142286505219116
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "400": {
+        "n": 1.7589933234545676,
+        "k": 10.164234977020701,
+        "R2_log": 0.9916737901132898,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.663405804486346,
+          1.9641243874342718
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "550": {
+        "n": 1.4885165737556652,
+        "k": 8.183367099630486,
+        "R2_log": 0.9920413951110733,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.4193741193042548,
+          1.674786122255137
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "pooled": {
+        "n": 1.7420768909386841,
+        "k": 11.443457996658893,
+        "R2_log": 0.9872398731662059,
+        "n_runs": 15,
+        "loo_n_range": [
+          1.7077698900665286,
+          1.8410641721199046
+        ],
+        "excluded_nonpositive_forcing": []
+      }
+    },
+    "Tbot_minus_Tf_GL": {
+      "250": {
+        "n": 2.4331265615772537,
+        "k": 1.0369851867464346,
+        "R2_log": 0.9994175564350204,
+        "n_runs": 5,
+        "loo_n_range": [
+          2.396948464321791,
+          2.4788966197850515
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "400": {
+        "n": 2.7786877845881577,
+        "k": 0.29453682418921556,
+        "R2_log": 0.999726773935268,
+        "n_runs": 5,
+        "loo_n_range": [
+          2.746059369117302,
+          2.8205868223308257
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "550": {
+        "n": 2.6969655098511343,
+        "k": 0.06879580905522562,
+        "R2_log": 0.9989287951217076,
+        "n_runs": 5,
+        "loo_n_range": [
+          2.60476450038551,
+          2.7578664181854613
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "pooled": {
+        "n": 2.6362599520055134,
+        "k": 0.27594638663386684,
+        "R2_log": 0.31592077039417965,
+        "n_runs": 15,
+        "loo_n_range": [
+          1.9334887616449816,
+          3.2438263890424803
+        ],
+        "excluded_nonpositive_forcing": []
+      }
+    }
+  },
+  "H1_preregistered_verdict_unchanged": "FAIL",
+  "note": "post hoc; does not change the pre-registered H1 verdict (FAIL at every z_c, figures/fig2_h1.json)",
+  "definitions": {
+    "TF_eff": "area mean over wet ice-shelf columns of T_ramp(z_d) - T_f(S_ramp(z_d), rho_ref g |z_d|), AD16 Eq. 25; inputs only (icetopo.bin, case.json)",
+    "TD_diag": "jpl_compare: -<SHIfwFlx> L / (rho_ref cw <SHIgammT>), AD16 Eq. 24 kappa_i = 0, last 6 months; gammaT-weighted mean of Tw - Tb",
+    "Tbot_minus_Tf_GL": "pre-registered H1 variable (reference)",
+    "TD_diag_caveat": "partly circular: TD_diag is computed from the melt itself (m = c gammaT TD_diag), so its exponent is 1 + d ln<gammaT> / d ln TD_diag, i.e. it measures the u* response, not an independent forcing-melt relation",
+    "fit": "OLS of ln <m>_shelf on ln forcing; R2 in log space; LOO = leave one run out"
+  },
+  "holland2008_guide_n": 1.61,
+  "title": "POST HOC (R23): whole-shelf melt against the forcing at the ice base",
+  "figure": [
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig2_posthoc_tf.png",
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig2_posthoc_tf.pdf"
+  ]
+}
