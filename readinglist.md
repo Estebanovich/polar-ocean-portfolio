@@ -101,7 +101,7 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ⬜ ✔ | Dotto et al. (2022). Ocean variability beneath Thwaites Eastern Ice Shelf driven by the Pine Island Bay Gyre strength. *Nat. Commun.* (agua de deshielo de Pine Island entra a la cavidad de Thwaites) | https://doi.org/10.1038/s41467-022-35499-5 |
 | ⬜ ✔ | Joughin et al. (2021). Ocean-induced melt volume directly paces ice loss from Pine Island Glacier. *Science Advances* | https://doi.org/10.1126/sciadv.abi5738 |
 | ⬜ ✔ | Lowery, Holland et al. (2026). Drivers of basal melt variability for Pine Island Glacier Ice Shelf: ocean forcing versus geometric feedback. *GRL* | https://doi.org/10.1029/2025gl121404 |
-| ⬜ ★ ✔ | Sheehan, Heywood et al. (2023). Sources and pathways of glacial meltwater in the Bellingshausen Sea, Antarctica. *GRL* 50:e2023GL102785 (citado en §1: destino del agua de deshielo; verificado en el resumen) | https://doi.org/10.1029/2023GL102785 |
+| ✅ ★ ✔ | Sheehan, Heywood et al. (2023). Sources and pathways of glacial meltwater in the Bellingshausen Sea, Antarctica. *GRL* 50:e2023GL102785 (citado en §1: destino del agua de deshielo; verificado en el texto completo) | https://doi.org/10.1029/2023GL102785 |
 | ⬜ ✔ | Sheehan, Heywood et al. (2021). Sources and transport of glacial meltwater in the Bellingshausen Sea (resumen EGU, no artículo) | https://doi.org/10.5194/egusphere-egu21-2746 |
 | ⬜ ✔ | Flexas, Thompson et al. (2024). Pathways of inter-basin exchange from the Bellingshausen Sea to the Amundsen Sea. *JGR Oceans* | https://doi.org/10.1029/2023jc020080 |
 | ⬜ ✔ | Ruan, Speer et al. (2021). Ice-shelf meltwater overturning in the Bellingshausen Sea. *JGR Oceans* | https://doi.org/10.1029/2020jc016957 |
