@@ -5,3 +5,10 @@ __pycache__/
 runs/
 .pytest_cache/
 .DS_Store
+*.nc
+*.log
+*.npz
+
+# Exp. 2 external data (documented in SOURCES.md)
+exp2_isomip_cavity/data_external/*
+!exp2_isomip_cavity/data_external/SOURCES.md

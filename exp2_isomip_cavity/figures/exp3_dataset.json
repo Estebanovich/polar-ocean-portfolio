@@ -1,0 +1,166 @@
+{
+ "file": "/Volumes/LaCie/portfolio_runs/exp2/exp3_dataset.npz",
+ "sha256": "3d2eceb18be2d21c785b175e5a569dd2edbadd0b5437d9aba16ac71ae8d6200f",
+ "bytes": 1344225,
+ "window": "last 6 months, records 19-24 (pd0)",
+ "n_runs": 29,
+ "n_train": 26,
+ "n_test": 3,
+ "test_cases": [
+  "ens_T2.0_zc250_s1.0",
+  "ens_T2.0_zc400_s1.0",
+  "ens_T2.0_zc550_s1.0"
+ ],
+ "n_N1_fail": 5,
+ "N1_fail_cases": [
+  "ens_T-0.5_zc250_s1.0",
+  "ens_T-0.5_zc550_s1.0",
+  "ens_T1.5_zc550_s1.0",
+  "ens_T-0.42_zc402_s0.8",
+  "ens_T-0.39_zc503_s1.2"
+ ],
+ "excluded": [],
+ "grid": {
+  "nx": 120,
+  "ny": 21,
+  "nz": 36
+ },
+ "arrays": {
+  "N1": {
+   "dtype": "float64",
+   "shape": [
+    29
+   ]
+  },
+  "N1_pass": {
+   "dtype": "bool",
+   "shape": [
+    29
+   ]
+  },
+  "S_profile": {
+   "dtype": "float64",
+   "shape": [
+    29,
+    36
+   ]
+  },
+  "T_profile": {
+   "dtype": "float64",
+   "shape": [
+    29,
+    36
+   ]
+  },
+  "Tbot": {
+   "dtype": "float64",
+   "shape": [
+    29
+   ]
+  },
+  "case": {
+   "dtype": "<U21",
+   "shape": [
+    29
+   ]
+  },
+  "d": {
+   "dtype": "float64",
+   "shape": [
+    29
+   ]
+  },
+  "draft": {
+   "dtype": "float64",
+   "shape": [
+    29,
+    21,
+    120
+   ]
+  },
+  "excluded_case": {
+   "dtype": "<U1",
+   "shape": [
+    0
+   ]
+  },
+  "excluded_reason": {
+   "dtype": "<U1",
+   "shape": [
+    0
+   ]
+  },
+  "group": {
+   "dtype": "<U13",
+   "shape": [
+    29
+   ]
+  },
+  "mean_melt_shelf": {
+   "dtype": "float64",
+   "shape": [
+    29
+   ]
+  },
+  "melt": {
+   "dtype": "float64",
+   "shape": [
+    29,
+    21,
+    120
+   ]
+  },
+  "s": {
+   "dtype": "float64",
+   "shape": [
+    29
+   ]
+  },
+  "shelf_mask": {
+   "dtype": "bool",
+   "shape": [
+    29,
+    21,
+    120
+   ]
+  },
+  "split": {
+   "dtype": "<U5",
+   "shape": [
+    29
+   ]
+  },
+  "wet_mask": {
+   "dtype": "bool",
+   "shape": [
+    29,
+    21,
+    120
+   ]
+  },
+  "x": {
+   "dtype": "float64",
+   "shape": [
+    120
+   ]
+  },
+  "y": {
+   "dtype": "float64",
+   "shape": [
+    21
+   ]
+  },
+  "z": {
+   "dtype": "float64",
+   "shape": [
+    36
+   ]
+  },
+  "z_c": {
+   "dtype": "float64",
+   "shape": [
+    29
+   ]
+  }
+ }
+}

@@ -1,0 +1,474 @@
+{
+  "run": "/Volumes/LaCie/portfolio_runs/exp2/ocean1_2km_r21",
+  "window": "Ocean1 year 20, monthly records 229-240 (pd0)",
+  "gammaT": 0.030959,
+  "verdicts": {
+    "V2a": {
+      "value": 10.339728645133679,
+      "range": [
+        4.0,
+        12.0
+      ],
+      "units": "m a-1",
+      "verdict": "PASS",
+      "source": "Y26 p. 2068, L1260-1261",
+      "quantity": "whole-shelf mean melt"
+    },
+    "V2b": {
+      "value": 0.1851119541450705,
+      "range": [
+        0.2,
+        0.25
+      ],
+      "units": "Sv",
+      "verdict": "FAIL",
+      "source": "Y26 p. 2066, L1100-1102",
+      "quantity": "max overturning"
+    },
+    "V2c": {
+      "value": 0.2576358345557216,
+      "range": [
+        0.09,
+        0.43
+      ],
+      "units": "Sv",
+      "verdict": "PASS",
+      "source": "Y26 p. 2066, L1118 (0.26 +- 0.17)",
+      "quantity": "cavity max |psi_bt|"
+    },
+    "V2d": {
+      "value": 0.4919868427293332,
+      "range": [
+        0.14,
+        0.68
+      ],
+      "units": "Sv",
+      "verdict": "PASS",
+      "source": "Y26 p. 2067, L1155 (0.41 +- 0.27)",
+      "quantity": "near-front max |psi_bt|"
+    },
+    "V3": {
+      "bt": {
+        "verdict": "PASS",
+        "m_bar": 10.339728645133679,
+        "C_bar": 0.26123731000795725,
+        "band": [
+          0.2554356583221389,
+          0.4601918593540104
+        ],
+        "band_held_at_anchors": [
+          0.25,
+          0.45
+        ],
+        "verdict_band_held_at_anchors": "PASS",
+        "variants_agree": true,
+        "margin_extended": {
+          "abs_Sv": 0.005801651685818365,
+          "rel": 0.022712771286230126,
+          "side": "inside",
+          "nearest_edge": "lower"
+        },
+        "margin_held_at_anchors": {
+          "abs_Sv": 0.011237310007957246,
+          "rel": 0.044949240031828985,
+          "side": "inside",
+          "nearest_edge": "lower"
+        },
+        "m_bar_in_extrapolated_band": true,
+        "fit_240_months": {
+          "slope": 0.01904442741731543,
+          "intercept": 0.06892804753671301,
+          "r": 0.9738341536414216,
+          "n": 240
+        },
+        "fit_published": {
+          "slope": 0.024,
+          "intercept": 0.071,
+          "r": 0.89
+        },
+        "band_source": "read from Yung et al. 2026 Fig. 13 (approx.)"
+      },
+      "moc": {
+        "verdict": "FAIL",
+        "m_bar": 10.339728645133679,
+        "C_bar": 0.18648643490163755,
+        "band": [
+          0.19611511561240624,
+          0.28679457290267363
+        ],
+        "band_held_at_anchors": [
+          0.19,
+          0.28
+        ],
+        "verdict_band_held_at_anchors": "FAIL",
+        "variants_agree": true,
+        "margin_extended": {
+          "abs_Sv": 0.009628680710768694,
+          "rel": 0.04909708606958384,
+          "side": "below"
+        },
+        "margin_held_at_anchors": {
+          "abs_Sv": 0.0035135650983624533,
+          "rel": 0.018492447886118174,
+          "side": "below"
+        },
+        "m_bar_in_extrapolated_band": true,
+        "fit_240_months": {
+          "slope": 0.017007525257828757,
+          "intercept": 0.015535919851517326,
+          "r": 0.9928172040587133,
+          "n": 240
+        },
+        "fit_published": {
+          "slope": 0.02,
+          "intercept": 0.019,
+          "r": 0.97
+        },
+        "band_source": "read from Yung et al. 2026 Fig. 13 (approx.)"
+      }
+    },
+    "N1": {
+      "value": 0.001124202348860029,
+      "pass": true,
+      "form": "ocean1: |<m>(year 20) - <m>(year 19)| / <m>(year 20) < 3 %"
+    },
+    "N2": {
+      "value": 1.2618481783801081e-06,
+      "pass": true
+    },
+    "N3": {
+      "pass": true,
+      "source": "metrics.load_run -> require_ok (all 4 stages)"
+    },
+    "records": {
+      "n_records": 240,
+      "seams": [
+        {
+          "record_1based": 61,
+          "t_end_prev_s": 157680000.0,
+          "t_start_next_s": 157680000.0,
+          "contiguous": true,
+          "stage": "stage2"
+        },
+        {
+          "record_1based": 121,
+          "t_end_prev_s": 315360000.0,
+          "t_start_next_s": 315360000.0,
+          "contiguous": true,
+          "stage": "stage3"
+        },
+        {
+          "record_1based": 181,
+          "t_end_prev_s": 473040000.0,
+          "t_start_next_s": 473040000.0,
+          "contiguous": true,
+          "stage": "stage4"
+        }
+      ],
+      "all_contiguous": true
+    },
+    "R17_cfl_year20": {
+      "advcfl_uvel_max": 0.13091996696836,
+      "advcfl_vvel_max": 0.0806185871702,
+      "advcfl_wvel_max": 0.23034037274478,
+      "advcfl_W_hf_max": 0.23033760720525,
+      "max": 0.23034037274478,
+      "n_monitor_blocks": 366,
+      "above_0.5": false
+    },
+    "R17_cfl_whole_run": {
+      "advcfl_uvel_max": 0.13100313205517,
+      "advcfl_vvel_max": 0.082409518545121,
+      "advcfl_wvel_max": 0.23256725943553,
+      "advcfl_W_hf_max": 0.23256441917649,
+      "max": 0.23256725943553,
+      "n_monitor_lines": 7304,
+      "above_0.5": false
+    },
+    "R15_supercooling_end_state": {
+      "n_wet": 164922,
+      "count": 241,
+      "min_dT": -0.12620110106591298,
+      "n_below_minus_0.1": 10,
+      "wall_rows": {
+        "count": 0,
+        "min_dT": null,
+        "n_below_minus_0.1": 0
+      },
+      "interior_rows": {
+        "count": 241,
+        "min_dT": -0.12620110106591298,
+        "n_below_minus_0.1": 10
+      },
+      "lateral_dry_neighbour": {
+        "count": 53,
+        "min_dT": -0.12119154157071255,
+        "n_below_minus_0.1": 2
+      },
+      "no_dry_neighbour": {
+        "count": 188,
+        "min_dT": -0.12620110106591298,
+        "n_below_minus_0.1": 8
+      },
+      "thin_top_cells": {
+        "count": 158,
+        "min_dT": -0.12620110106591298,
+        "n_below_minus_0.1": 10
+      },
+      "other_cells": {
+        "count": 83,
+        "min_dT": -0.09629298699668243,
+        "n_below_minus_0.1": 0
+      },
+      "top_cells_any_hfac": {
+        "count": 241,
+        "min_dT": -0.12620110106591298,
+        "n_below_minus_0.1": 10
+      },
+      "coldest": {
+        "k": 9,
+        "j": 29,
+        "i": 131,
+        "z_c": -190.0,
+        "hFacC": 0.4558180805587909,
+        "T": -2.1114406671135875,
+        "S": 33.581619923315436,
+        "dT": -0.12620110106591298
+      }
+    },
+    "R15_supercooling_year20_mean": {
+      "n_wet": 164922,
+      "count": 173,
+      "min_dT": -0.12243705900476787,
+      "n_below_minus_0.1": 9,
+      "wall_rows": {
+        "count": 0,
+        "min_dT": null,
+        "n_below_minus_0.1": 0
+      },
+      "interior_rows": {
+        "count": 173,
+        "min_dT": -0.12243705900476787,
+        "n_below_minus_0.1": 9
+      },
+      "lateral_dry_neighbour": {
+        "count": 40,
+        "min_dT": -0.1141120844370771,
+        "n_below_minus_0.1": 2
+      },
+      "no_dry_neighbour": {
+        "count": 133,
+        "min_dT": -0.12243705900476787,
+        "n_below_minus_0.1": 7
+      },
+      "thin_top_cells": {
+        "count": 127,
+        "min_dT": -0.12243705900476787,
+        "n_below_minus_0.1": 8
+      },
+      "other_cells": {
+        "count": 46,
+        "min_dT": -0.10858185727856773,
+        "n_below_minus_0.1": 1
+      },
+      "top_cells_any_hfac": {
+        "count": 173,
+        "min_dT": -0.12243705900476787,
+        "n_below_minus_0.1": 9
+      },
+      "coldest": {
+        "k": 9,
+        "j": 29,
+        "i": 131,
+        "z_c": -190.0,
+        "hFacC": 0.4558180805587909,
+        "T": -2.107929315572042,
+        "S": 33.586029880027475,
+        "dT": -0.12243705900476787
+      }
+    },
+    "ustar_check_last_record (informative)": {
+      "pass": false,
+      "record": 239,
+      "n_shelf_columns": 2689,
+      "floor": {
+        "pass": true,
+        "min_ustar_m_s": 0.0005016561494235524,
+        "u_tidal": 0.01,
+        "floor_m_s": 0.0005
+      },
+      "gammT_identity": {
+        "pass": true,
+        "max_rel_err": 1.2295926017424548e-14
+      },
+      "jensen_bound": {
+        "pass": false,
+        "rtol": 0.001,
+        "min_ratio": 0.9981140458292209,
+        "median_ratio": 1.0040594453124985,
+        "frac_below_1": 0.03756043138713276
+      },
+      "equality": "not available: no boundary-layer U/V diagnostic and no velocity snapshot simultaneous with SHIuStar (no model output added in Task 3)"
+    },
+    "mean_melt_deep300_year20": 30.368657186542233,
+    "V2b_posthoc_full_domain": {
+      "label": "V2b with the Yung 2026 definition (full-domain year-20 max of |psi(x,z)|), post hoc",
+      "post_hoc": true,
+      "value": 0.2224397273125213,
+      "x_km": 766.0,
+      "z_m": -220.0,
+      "range": [
+        0.2,
+        0.25
+      ],
+      "inside_range": true,
+      "jpl_value": 0.23366495833333334,
+      "note": "pd0 V2b verdict unchanged (FAIL, cavity x < 640 km); the restriction was taken from Y26 Fig. 13 by mistake, class (a) in the operationalisation"
+    }
+  },
+  "resolution_test_ocean0": {
+    "shelf_mean_melt": {
+      "2km": 10.190988405718063,
+      "4km": 10.18596712376924,
+      "rel_diff_4_vs_2": -0.00049271785512044
+    },
+    "overturning_max": {
+      "2km": 0.18505175549278896,
+      "4km": 0.18454896315466568,
+      "rel_diff_4_vs_2": -0.002717036305785675
+    },
+    "psi_bt_max_cavity": {
+      "2km": 0.26010211536371486,
+      "4km": 0.5841414461676836,
+      "rel_diff_4_vs_2": 1.2458158225697127
+    },
+    "melt_map_correlation": {
+      "r": 0.9145806205539048,
+      "n_cells": 707,
+      "method": "2 km map (0 off-shelf) area-averaged 2x2 onto 4 km; cells where either has shelf"
+    },
+    "flag_shelf_melt_diff_gt_25pct": false
+  },
+  "caption": "Exp. 2 ISOMIP+ validation at 2 km. Ocean1 (COLD start, WARM restoring, 20 years, GammaT_cal,2km = 0.030959): (a) melt rate averaged over year 20 (records 229-240), grounding line (black) and ice-shelf edge (grey dashed); (b) whole-shelf mean melt, monthly, 20 years (year 20 shaded; N1 year 20 vs 19); (c) pd0 V2 metrics of year 20 against the published ISOMIP+ ranges (Yung et al. 2026), as position within each range: V2a PASS, V2b FAIL (pd0, cavity x < 640 km; POST HOC with the Yung 2026 full-domain definition, open diamond: 0.222 Sv, inside 0.20-0.25), V2c PASS, V2d PASS; (d) monthly melt vs circulation strength (max - min psi, x < 640 km) over the multi-model COM band (read from Yung et al. 2026 Fig. 13 (approx.); hatched where extrapolated beyond the 5 and 10 m/a anchors); V3 barotropic PASS (marginal, also within the figure-reading uncertainty: 2.3 % inside the extended band, 4.5 % inside the band held at the 10 m/a anchor), overturning FAIL (marginal, unresolved within the figure-reading uncertainty: 4.9 % below the extended band, 1.8 % below the band held at the 10 m/a anchor); dashed: published fits. (e) Ocean0 deep melt (ice base < -300 m, months 19-24) against GammaT, R21 calibration runs (circles) and the verification run at GammaT_cal (star); grey band: pd0 K1 28-32 m/a. Ocean0 2 vs 4 km (descriptive, pd0): the deep and whole-shelf melt agree largely BY CONSTRUCTION, because GammaT is calibrated separately at each resolution to the same Ocean0 deep melt (pd0 K1), so that agreement is not independent evidence of convergence; the cavity |psi_bt| maximum differs by +125 % (4 vs 2 km) and the melt maps correlate at r = 0.91. All verdicts mechanical against the pre-registration (pd0); FAILs shown as such.",
+  "figure": [
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig1_ocean.png",
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig1_ocean.pdf"
+  ],
+  "panel_data_summary": {
+    "d": {
+      "bt": {
+        "m_bar": 10.339728645133679,
+        "C_bar": 0.26123731000795725,
+        "verdict": "PASS",
+        "fit_ours": {
+          "slope": 0.01904442741731543,
+          "intercept": 0.06892804753671301,
+          "r": 0.9738341536414216,
+          "n": 240
+        }
+      },
+      "moc": {
+        "m_bar": 10.339728645133679,
+        "C_bar": 0.18648643490163755,
+        "verdict": "FAIL",
+        "fit_ours": {
+          "slope": 0.017007525257828757,
+          "intercept": 0.015535919851517326,
+          "r": 0.9928172040587133,
+          "n": 240
+        }
+      }
+    },
+    "e": {
+      "k1_band": [
+        28.0,
+        32.0
+      ],
+      "target": 30.0,
+      "2km": {
+        "gammaT": [
+          0.015,
+          0.03,
+          0.06
+        ],
+        "deep_melt": [
+          12.988288753545406,
+          29.238511314408868,
+          51.50238292563652
+        ],
+        "gammaT_cal": 0.030959,
+        "verification": [
+          0.030959,
+          30.00246484594071
+        ]
+      },
+      "4km": {
+        "gammaT": [
+          0.015,
+          0.03,
+          0.06
+        ],
+        "deep_melt": [
+          14.159991025956625,
+          30.73699325191627,
+          53.922039572121804
+        ],
+        "gammaT_cal": 0.029356,
+        "verification": [
+          0.029356,
+          30.02281749487971
+        ]
+      }
+    },
+    "c": [
+      {
+        "name": "V2a",
+        "label": "whole-shelf mean melt",
+        "value": 10.339728645133679,
+        "range": [
+          4.0,
+          12.0
+        ],
+        "units": "m a-1",
+        "verdict": "PASS",
+        "position": 0.7924660806417099
+      },
+      {
+        "name": "V2b",
+        "label": "max overturning",
+        "value": 0.1851119541450705,
+        "range": [
+          0.2,
+          0.25
+        ],
+        "units": "Sv",
+        "verdict": "FAIL",
+        "position": -0.29776091709859015
+      },
+      {
+        "name": "V2c",
+        "label": "cavity max |psi_bt|",
+        "value": 0.2576358345557216,
+        "range": [
+          0.09,
+          0.43
+        ],
+        "units": "Sv",
+        "verdict": "PASS",
+        "position": 0.4930465722227106
+      },
+      {
+        "name": "V2d",
+        "label": "near-front max |psi_bt|",
+        "value": 0.4919868427293332,
+        "range": [
+          0.14,
+          0.68
+        ],
+        "units": "Sv",
+        "verdict": "PASS",
+        "position": 0.6518274865358021
+      }
+    ]
+  }
+}

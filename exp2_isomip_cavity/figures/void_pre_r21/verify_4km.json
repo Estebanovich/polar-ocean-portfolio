@@ -1,0 +1,107 @@
+{
+  "resolution": "4km",
+  "point": {
+    "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/ocean0_4km",
+    "case": "ocean0_4km",
+    "gammaT": 0.0094686,
+    "gammaS": 0.0002705314285714286,
+    "dx_km": 4.0,
+    "deltaT": 800.0,
+    "init_profile": "ocean0",
+    "restore_profile": "ocean0",
+    "s": 1.0,
+    "deep_melt_last6_m_per_a": 30.409646020224795,
+    "shelf_melt_last6_m_per_a": 10.660532315495685,
+    "N1_drift": 0.012917244054191711,
+    "N3": "PASS"
+  },
+  "K1": {
+    "deep_melt_last6_m_per_a": 30.409646020224795,
+    "range": [
+      28.0,
+      32.0
+    ],
+    "pass": true
+  },
+  "evaluation": {
+    "K1": {
+      "deep_melt_last6_m_per_a": 30.409646020224795,
+      "range": [
+        28.0,
+        32.0
+      ],
+      "pass": true,
+      "gammaT_cal": 0.0094686,
+      "verification_run": "ocean0_4km"
+    },
+    "N1": {
+      "value": 0.012917244054191711,
+      "pass": true
+    },
+    "N2": {
+      "value": 4.7767996556576515e-08,
+      "pass": true
+    },
+    "N3": true,
+    "R17_cfl": {
+      "advcfl_uvel_max": 0.10387518308301,
+      "advcfl_vvel_max": 0.074725928194134,
+      "advcfl_wvel_max": 0.21505707430699,
+      "advcfl_W_hf_max": 0.21505400136697,
+      "max": 0.21505707430699,
+      "n_monitor_lines": 731,
+      "above_0.5": false
+    },
+    "R15_supercooling_end_state": {
+      "n_wet": 41249,
+      "count": 225,
+      "min_dT": -0.21681064802800964,
+      "n_below_minus_0.1": 56,
+      "wall_rows": {
+        "count": 15,
+        "min_dT": -0.012323633964696157,
+        "n_below_minus_0.1": 0
+      },
+      "interior_rows": {
+        "count": 210,
+        "min_dT": -0.21681064802800964,
+        "n_below_minus_0.1": 56
+      },
+      "lateral_dry_neighbour": {
+        "count": 78,
+        "min_dT": -0.21681064802800964,
+        "n_below_minus_0.1": 23
+      },
+      "no_dry_neighbour": {
+        "count": 132,
+        "min_dT": -0.16780428482816645,
+        "n_below_minus_0.1": 33
+      },
+      "thin_top_cells": {
+        "count": 123,
+        "min_dT": -0.21681064802800964,
+        "n_below_minus_0.1": 42
+      },
+      "other_cells": {
+        "count": 102,
+        "min_dT": -0.1611113611123285,
+        "n_below_minus_0.1": 14
+      },
+      "top_cells_any_hfac": {
+        "count": 225,
+        "min_dT": -0.21681064802800964,
+        "n_below_minus_0.1": 56
+      },
+      "coldest": {
+        "k": 8,
+        "j": 5,
+        "i": 79,
+        "z_c": -170.0,
+        "hFacC": 0.2,
+        "T": -2.1843033002247325,
+        "S": 33.536827166555376,
+        "dT": -0.21681064802800964
+      }
+    }
+  }
+}

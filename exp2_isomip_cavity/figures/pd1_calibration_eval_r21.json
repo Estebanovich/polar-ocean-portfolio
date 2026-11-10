@@ -1,0 +1,486 @@
+{
+  "runs": {
+    "cal4_gT0.015_r21": {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal4_gT0.015_r21",
+      "gammaT": 0.015,
+      "deltaT": 800.0,
+      "deep_melt_last6": 14.159991025956625,
+      "shelf_melt_last6": 5.424278124727973,
+      "N1": {
+        "value": 0.007561492167898198,
+        "pass": true
+      },
+      "N2": {
+        "value": 6.297815045097942e-08,
+        "pass": true
+      },
+      "N3": {
+        "pass": true,
+        "source": "metrics.load_run -> pfcommon.runctl.require_ok"
+      },
+      "R17_cfl": {
+        "advcfl_uvel_max": 0.07204128690175,
+        "advcfl_vvel_max": 0.059168076925261,
+        "advcfl_wvel_max": 0.12706190883598,
+        "advcfl_W_hf_max": 0.12706041309363,
+        "max": 0.12706190883598,
+        "n_monitor_lines": 731,
+        "above_0.5": false
+      }
+    },
+    "cal4_gT0.03_r21": {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal4_gT0.03_r21",
+      "gammaT": 0.03,
+      "deltaT": 800.0,
+      "deep_melt_last6": 30.73699325191627,
+      "shelf_melt_last6": 10.408508015598162,
+      "N1": {
+        "value": 0.004530141304937699,
+        "pass": true
+      },
+      "N2": {
+        "value": 4.1407079885611424e-08,
+        "pass": true
+      },
+      "N3": {
+        "pass": true,
+        "source": "metrics.load_run -> pfcommon.runctl.require_ok"
+      },
+      "R17_cfl": {
+        "advcfl_uvel_max": 0.10719864750298,
+        "advcfl_vvel_max": 0.07711361250313,
+        "advcfl_wvel_max": 0.21168122905124,
+        "advcfl_W_hf_max": 0.21167625810697,
+        "max": 0.21168122905124,
+        "n_monitor_lines": 731,
+        "above_0.5": false
+      }
+    },
+    "cal4_gT0.06_r21": {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal4_gT0.06_r21",
+      "gammaT": 0.06,
+      "deltaT": 800.0,
+      "deep_melt_last6": 53.922039572121804,
+      "shelf_melt_last6": 16.57979078729396,
+      "N1": {
+        "value": 0.0032328916411482507,
+        "pass": true
+      },
+      "N2": {
+        "value": 8.548627645054794e-08,
+        "pass": true
+      },
+      "N3": {
+        "pass": true,
+        "source": "metrics.load_run -> pfcommon.runctl.require_ok"
+      },
+      "R17_cfl": {
+        "advcfl_uvel_max": 0.16084311859016,
+        "advcfl_vvel_max": 0.099500018768537,
+        "advcfl_wvel_max": 0.30360662407846,
+        "advcfl_W_hf_max": 0.30359944344145,
+        "max": 0.30360662407846,
+        "n_monitor_lines": 731,
+        "above_0.5": false
+      }
+    },
+    "ocean0_4km_r21": {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/ocean0_4km_r21",
+      "gammaT": 0.029356,
+      "deltaT": 800.0,
+      "deep_melt_last6": 30.02281749487971,
+      "shelf_melt_last6": 10.18596712376924,
+      "N1": {
+        "value": 0.000243737652425891,
+        "pass": true
+      },
+      "N2": {
+        "value": 4.288973408235739e-08,
+        "pass": true
+      },
+      "N3": {
+        "pass": true,
+        "source": "metrics.load_run -> pfcommon.runctl.require_ok"
+      },
+      "R17_cfl": {
+        "advcfl_uvel_max": 0.10579975673987,
+        "advcfl_vvel_max": 0.075366797804124,
+        "advcfl_wvel_max": 0.20786961140869,
+        "advcfl_W_hf_max": 0.20786669125341,
+        "max": 0.20786961140869,
+        "n_monitor_lines": 731,
+        "above_0.5": false
+      },
+      "R15_supercooling_end_state": {
+        "n_wet": 41249,
+        "count": 109,
+        "min_dT": -0.14894863829665272,
+        "n_below_minus_0.1": 7,
+        "wall_rows": {
+          "count": 0,
+          "min_dT": null,
+          "n_below_minus_0.1": 0
+        },
+        "interior_rows": {
+          "count": 109,
+          "min_dT": -0.14894863829665272,
+          "n_below_minus_0.1": 7
+        },
+        "lateral_dry_neighbour": {
+          "count": 48,
+          "min_dT": -0.14894863829665272,
+          "n_below_minus_0.1": 7
+        },
+        "no_dry_neighbour": {
+          "count": 61,
+          "min_dT": -0.07428991892403691,
+          "n_below_minus_0.1": 0
+        },
+        "thin_top_cells": {
+          "count": 80,
+          "min_dT": -0.14894863829665272,
+          "n_below_minus_0.1": 7
+        },
+        "other_cells": {
+          "count": 29,
+          "min_dT": -0.040735670985349914,
+          "n_below_minus_0.1": 0
+        },
+        "top_cells_any_hfac": {
+          "count": 109,
+          "min_dT": -0.14894863829665272,
+          "n_below_minus_0.1": 7
+        },
+        "coldest": {
+          "k": 11,
+          "j": 14,
+          "i": 53,
+          "z_c": -230.0,
+          "hFacC": 0.2,
+          "T": -2.163857509288482,
+          "S": 33.5695558250075,
+          "dT": -0.14894863829665272
+        }
+      },
+      "R15_supercooling_last6_mean": {
+        "n_wet": 41249,
+        "count": 94,
+        "min_dT": -0.13404990115396087,
+        "n_below_minus_0.1": 7,
+        "wall_rows": {
+          "count": 0,
+          "min_dT": null,
+          "n_below_minus_0.1": 0
+        },
+        "interior_rows": {
+          "count": 94,
+          "min_dT": -0.13404990115396087,
+          "n_below_minus_0.1": 7
+        },
+        "lateral_dry_neighbour": {
+          "count": 48,
+          "min_dT": -0.13404990115396087,
+          "n_below_minus_0.1": 7
+        },
+        "no_dry_neighbour": {
+          "count": 46,
+          "min_dT": -0.051311577715622114,
+          "n_below_minus_0.1": 0
+        },
+        "thin_top_cells": {
+          "count": 76,
+          "min_dT": -0.13404990115396087,
+          "n_below_minus_0.1": 7
+        },
+        "other_cells": {
+          "count": 18,
+          "min_dT": -0.03278499478308694,
+          "n_below_minus_0.1": 0
+        },
+        "top_cells_any_hfac": {
+          "count": 94,
+          "min_dT": -0.13404990115396087,
+          "n_below_minus_0.1": 7
+        },
+        "coldest": {
+          "k": 11,
+          "j": 14,
+          "i": 53,
+          "z_c": -230.0,
+          "hFacC": 0.2,
+          "T": -2.1492315258314365,
+          "S": 33.57431592423343,
+          "dT": -0.13404990115396087
+        }
+      }
+    },
+    "cal2_gT0.015_r21": {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.015_r21",
+      "gammaT": 0.015,
+      "deltaT": 400.0,
+      "deep_melt_last6": 12.988288753545406,
+      "shelf_melt_last6": 5.032527633916407,
+      "N1": {
+        "value": 0.011241000729075494,
+        "pass": true
+      },
+      "N2": {
+        "value": 3.083942860396696e-07,
+        "pass": true
+      },
+      "N3": {
+        "pass": true,
+        "source": "metrics.load_run -> pfcommon.runctl.require_ok"
+      },
+      "R17_cfl": {
+        "advcfl_uvel_max": 0.097670438770277,
+        "advcfl_vvel_max": 0.081291091549127,
+        "advcfl_wvel_max": 0.13989421712936,
+        "advcfl_W_hf_max": 0.13989186183396,
+        "max": 0.13989421712936,
+        "n_monitor_lines": 731,
+        "above_0.5": false
+      }
+    },
+    "cal2_gT0.03_r21": {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.03_r21",
+      "gammaT": 0.03,
+      "deltaT": 400.0,
+      "deep_melt_last6": 29.238511314408868,
+      "shelf_melt_last6": 9.95996198803416,
+      "N1": {
+        "value": 0.009383557417370562,
+        "pass": true
+      },
+      "N2": {
+        "value": 8.507333916406107e-07,
+        "pass": true
+      },
+      "N3": {
+        "pass": true,
+        "source": "metrics.load_run -> pfcommon.runctl.require_ok"
+      },
+      "R17_cfl": {
+        "advcfl_uvel_max": 0.13529576962163,
+        "advcfl_vvel_max": 0.0983119609232,
+        "advcfl_wvel_max": 0.21565648431691,
+        "advcfl_W_hf_max": 0.21565370794426,
+        "max": 0.21565648431691,
+        "n_monitor_lines": 731,
+        "above_0.5": false
+      }
+    },
+    "cal2_gT0.06_r21": {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.06_r21",
+      "gammaT": 0.06,
+      "deltaT": 400.0,
+      "deep_melt_last6": 51.50238292563652,
+      "shelf_melt_last6": 15.846488934250948,
+      "N1": {
+        "value": 0.0021667323885689632,
+        "pass": true
+      },
+      "N2": {
+        "value": 3.929495324716211e-06,
+        "pass": true
+      },
+      "N3": {
+        "pass": true,
+        "source": "metrics.load_run -> pfcommon.runctl.require_ok"
+      },
+      "R17_cfl": {
+        "advcfl_uvel_max": 0.20878292415346,
+        "advcfl_vvel_max": 0.12520933194813,
+        "advcfl_wvel_max": 0.3479480386571,
+        "advcfl_W_hf_max": 0.34794236021151,
+        "max": 0.3479480386571,
+        "n_monitor_lines": 731,
+        "above_0.5": false
+      }
+    },
+    "ocean0_2km_r21": {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/ocean0_2km_r21",
+      "gammaT": 0.030959,
+      "deltaT": 400.0,
+      "deep_melt_last6": 30.00246484594071,
+      "shelf_melt_last6": 10.190988405718063,
+      "N1": {
+        "value": 0.008326268902448848,
+        "pass": true
+      },
+      "N2": {
+        "value": 1.1849037132505973e-06,
+        "pass": true
+      },
+      "N3": {
+        "pass": true,
+        "source": "metrics.load_run -> pfcommon.runctl.require_ok"
+      },
+      "R17_cfl": {
+        "advcfl_uvel_max": 0.13653946061889,
+        "advcfl_vvel_max": 0.097915050519499,
+        "advcfl_wvel_max": 0.21970327128084,
+        "advcfl_W_hf_max": 0.21970040655984,
+        "max": 0.21970327128084,
+        "n_monitor_lines": 731,
+        "above_0.5": false
+      },
+      "R15_supercooling_end_state": {
+        "n_wet": 164922,
+        "count": 184,
+        "min_dT": -0.11490513603515717,
+        "n_below_minus_0.1": 5,
+        "wall_rows": {
+          "count": 0,
+          "min_dT": null,
+          "n_below_minus_0.1": 0
+        },
+        "interior_rows": {
+          "count": 184,
+          "min_dT": -0.11490513603515717,
+          "n_below_minus_0.1": 5
+        },
+        "lateral_dry_neighbour": {
+          "count": 48,
+          "min_dT": -0.09702199822463986,
+          "n_below_minus_0.1": 0
+        },
+        "no_dry_neighbour": {
+          "count": 136,
+          "min_dT": -0.11490513603515717,
+          "n_below_minus_0.1": 5
+        },
+        "thin_top_cells": {
+          "count": 127,
+          "min_dT": -0.11490513603515717,
+          "n_below_minus_0.1": 3
+        },
+        "other_cells": {
+          "count": 57,
+          "min_dT": -0.10909209169186518,
+          "n_below_minus_0.1": 2
+        },
+        "top_cells_any_hfac": {
+          "count": 184,
+          "min_dT": -0.11490513603515717,
+          "n_below_minus_0.1": 5
+        },
+        "coldest": {
+          "k": 9,
+          "j": 29,
+          "i": 132,
+          "z_c": -190.0,
+          "hFacC": 0.4864776752209081,
+          "T": -2.1009742703344214,
+          "S": 33.59609755423323,
+          "dT": -0.11490513603515717
+        }
+      },
+      "R15_supercooling_last6_mean": {
+        "n_wet": 164922,
+        "count": 193,
+        "min_dT": -0.11608715540552028,
+        "n_below_minus_0.1": 7,
+        "wall_rows": {
+          "count": 0,
+          "min_dT": null,
+          "n_below_minus_0.1": 0
+        },
+        "interior_rows": {
+          "count": 193,
+          "min_dT": -0.11608715540552028,
+          "n_below_minus_0.1": 7
+        },
+        "lateral_dry_neighbour": {
+          "count": 42,
+          "min_dT": -0.10548790602296254,
+          "n_below_minus_0.1": 2
+        },
+        "no_dry_neighbour": {
+          "count": 151,
+          "min_dT": -0.11608715540552028,
+          "n_below_minus_0.1": 5
+        },
+        "thin_top_cells": {
+          "count": 134,
+          "min_dT": -0.11608715540552028,
+          "n_below_minus_0.1": 6
+        },
+        "other_cells": {
+          "count": 59,
+          "min_dT": -0.10295595834413618,
+          "n_below_minus_0.1": 1
+        },
+        "top_cells_any_hfac": {
+          "count": 193,
+          "min_dT": -0.11608715540552028,
+          "n_below_minus_0.1": 7
+        },
+        "coldest": {
+          "k": 9,
+          "j": 29,
+          "i": 131,
+          "z_c": -190.0,
+          "hFacC": 0.4558180805587909,
+          "T": -2.102160227874723,
+          "S": 33.59616628320249,
+          "dT": -0.11608715540552028
+        }
+      }
+    }
+  },
+  "K1": {
+    "4km": {
+      "deep_melt_last6_m_per_a": 30.02281749487971,
+      "range": [
+        28.0,
+        32.0
+      ],
+      "pass": true,
+      "gammaT_cal": 0.029356,
+      "verification_run": "ocean0_4km_r21"
+    },
+    "2km": {
+      "deep_melt_last6_m_per_a": 30.00246484594071,
+      "range": [
+        28.0,
+        32.0
+      ],
+      "pass": true,
+      "gammaT_cal": 0.030959,
+      "verification_run": "ocean0_2km_r21"
+    }
+  },
+  "V1": {
+    "gammaT_cal_2km": 0.030959,
+    "range": [
+      0.011,
+      0.2
+    ],
+    "pass": true,
+    "class": null
+  },
+  "resolution_test": {
+    "shelf_mean_melt": {
+      "2km": 10.190988405718063,
+      "4km": 10.18596712376924,
+      "rel_diff_4_vs_2": -0.00049271785512044
+    },
+    "overturning_max": {
+      "2km": 0.18505175549278896,
+      "4km": 0.18454896315466568,
+      "rel_diff_4_vs_2": -0.002717036305785675
+    },
+    "psi_bt_max_cavity": {
+      "2km": 0.26010211536371486,
+      "4km": 0.5841414461676836,
+      "rel_diff_4_vs_2": 1.2458158225697127
+    },
+    "melt_map_correlation": {
+      "r": 0.9145806205539048,
+      "n_cells": 707,
+      "method": "2 km map (0 off-shelf) area-averaged 2x2 onto 4 km; cells where either has shelf"
+    },
+    "flag_shelf_melt_diff_gt_25pct": false
+  }
+}

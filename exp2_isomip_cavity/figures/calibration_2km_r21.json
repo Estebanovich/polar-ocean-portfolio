@@ -1,0 +1,67 @@
+{
+  "resolution": "2km",
+  "rule": "pd0 K1 (AD16 sect. 3.2.1, Eq. 37): deep (< -300 m) Ocean0 melt, last 6 months (records 19-24), piecewise-linear ln<m> vs ln GammaT, no extrapolation",
+  "target_m_per_a": 30.0,
+  "k1_range": [
+    28.0,
+    32.0
+  ],
+  "dx_km": 2.0,
+  "deltaT": 400.0,
+  "points": [
+    {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.015_r21",
+      "case": "cal2_gT0.015",
+      "gammaT": 0.015,
+      "gammaS": 0.00042857142857142855,
+      "dx_km": 2.0,
+      "deltaT": 400.0,
+      "init_profile": "ocean0",
+      "restore_profile": "ocean0",
+      "s": 1.0,
+      "deep_melt_last6_m_per_a": 12.988288753545406,
+      "shelf_melt_last6_m_per_a": 5.032527633916407,
+      "N1_drift": 0.011241000729075494,
+      "N3": "PASS"
+    },
+    {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.03_r21",
+      "case": "cal2_gT0.03",
+      "gammaT": 0.03,
+      "gammaS": 0.0008571428571428571,
+      "dx_km": 2.0,
+      "deltaT": 400.0,
+      "init_profile": "ocean0",
+      "restore_profile": "ocean0",
+      "s": 1.0,
+      "deep_melt_last6_m_per_a": 29.238511314408868,
+      "shelf_melt_last6_m_per_a": 9.95996198803416,
+      "N1_drift": 0.009383557417370562,
+      "N3": "PASS"
+    },
+    {
+      "run_dir": "/Volumes/LaCie/portfolio_runs/exp2/cal2_gT0.06_r21",
+      "case": "cal2_gT0.06",
+      "gammaT": 0.06,
+      "gammaS": 0.0017142857142857142,
+      "dx_km": 2.0,
+      "deltaT": 400.0,
+      "init_profile": "ocean0",
+      "restore_profile": "ocean0",
+      "s": 1.0,
+      "deep_melt_last6_m_per_a": 51.50238292563652,
+      "shelf_melt_last6_m_per_a": 15.846488934250948,
+      "N1_drift": 0.0021667323885689632,
+      "N3": "PASS"
+    }
+  ],
+  "status": "OK",
+  "gammaT_cal_raw": 0.03095937515889742,
+  "gammaT_cal": 0.030959,
+  "gammaS_cal": 0.0008845428571428571,
+  "segment": [
+    0.03,
+    0.06
+  ],
+  "message": "GammaT_cal from the bracketing segment; verify with one run (K1)"
+}

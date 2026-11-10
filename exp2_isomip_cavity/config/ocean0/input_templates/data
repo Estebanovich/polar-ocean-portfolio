@@ -1,0 +1,114 @@
+# ====================================================================
+# Exp. 2 (ISOMIP+ ice-shelf cavity) -- case ${case}, config ${config}
+# Asay-Davis et al. 2016 (AD16) COM setup; rendered by
+# exp2_isomip_cavity/gendata/make_case.py from cases.yaml.
+# Choices are documented in exp2_isomip_cavity/notes/pd1_config.md.
+# ====================================================================
+ &PARM01
+# --- linear EOS, AD16 Eq. 23 and Table 4 (rhoConst = rho_ref, used for
+#     rho_sw in the melt law and in the load anomaly, profiles.py)
+ eosType='LINEAR',
+ tAlpha=${tAlpha},
+ sBeta=${sBeta},
+ rhoNil=${rho_ref},
+ rhoConst=${rho_ref},
+ tRef=${nz}*${tRef},
+ sRef=${nz}*${sRef},
+# AD16 Table 4: cw and rho_fw (rhoConstFresh: meltwater tracer source,
+# config/ocean0/code/shelfice_forcing_mwtr.F)
+ HeatCapacity_Cp=3974.,
+ rhoConstFresh=1000.,
+ gravity=${gravity},
+# --- mixing, AD16 Table 4 (no GGL90); convection with implicit
+#     vertical diffusion ivdc_kappa (tracers only)
+ viscAh=${viscAh},
+ diffKhT=${diffKh},
+ diffKhS=${diffKh},
+ viscAr=${viscAr},
+ diffKrT=${diffKr},
+ diffKrS=${diffKr},
+ ivdc_kappa=${ivdc_kappa},
+ implicitDiffusion=.TRUE.,
+ implicitViscosity=.TRUE.,
+# --- boundaries: no-slip side walls (context-config); free-slip bottom
+#     and ice base with quadratic drag Cd = 2.5e-3 (AD16 Table 4)
+ no_slip_sides=.TRUE.,
+ no_slip_bottom=.FALSE.,
+ bottomDragQuadratic=${Cd},
+# --- advection: 2nd-order flux limiter (77), not DST3 (33): Yung et al.
+#     2026 attribute spurious water masses in MITgcm to DST3
+ tempAdvScheme=${advScheme},
+ saltAdvScheme=${advScheme},
+ staggerTimeStep=.TRUE.,
+# --- f plane at 75 S (AD16 sect. 3.1.1)
+ f0=${f0},
+ beta=0.,
+# --- nonlinear free surface (verification/isomip/input.htd/data);
+#     virtual salt flux (AD16 Eq. 28-30): no volume flux at the ice base
+ implicitFreeSurface=.TRUE.,
+ exactConserv=.TRUE.,
+ nonlinFreeSurf=4,
+ select_rStar=2,
+ hFacInf=0.02,
+ hFacSup=2.0,
+ useRealFreshWaterFlux=.FALSE.,
+# --- partial cells: hFacMin as MITgcm-BAS in ISOMIP+ (Yung et al. 2026);
+#     hFacMinDr left at its default 0 (model/src/set_defaults.F:181).
+#     gendata snaps bed and draft to these rules (geometry.mitgcm_hfac,
+#     model/src/ini_masks_etc.F:105-195); open faces: useMin4hFacEdges
+#     in PARM04.
+ hFacMin=${hFacMin},
+# --- I/O (global constraints: big-endian float64, single-CPU I/O)
+ readBinaryPrec=64,
+ writeBinaryPrec=64,
+ useSingleCpuIO=.TRUE.,
+ plotLevel=0,
+ &
+
+ &PARM02
+ cg2dMaxIters=1000,
+ cg2dTargetResidual=1.E-13,
+ &
+
+# nIter0 / nTimeSteps (no endTime/startTime): pfcommon.campaign.run_stages
+# rewrites them per restart stage. pChkptFreq must divide each stage length.
+ &PARM03
+ nIter0=${nIter0},
+ nTimeSteps=${nTimeSteps},
+ deltaT=${deltaT},
+ abEps=0.1,
+# convective adjustment (model/src/convective_adjustment.F); 0 = off (the COM uses
+# ivdc_kappa instead). < 0 = every time step (model/src/ini_parms.F:1104-1106).
+ cAdjFreq=${cAdjFreq},
+ momDissip_In_AB=.FALSE.,
+ pChkptFreq=${pChkptFreq},
+ chkptFreq=${chkptFreq},
+ dumpFreq=0.,
+ monitorSelect=2,
+ monitorFreq=${monitorFreq},
+ &
+
+ &PARM04
+ usingCartesianGrid=.TRUE.,
+# hFacW = min(hFacC) of the two columns (model/src/ini_masks_etc.F:243-262),
+# as the connectivity test of gendata assumes (namelist PARM04,
+# model/src/ini_parms.F:302)
+ useMin4hFacEdges=.TRUE.,
+ xgOrigin=320000.,
+ ygOrigin=0.,
+ delX=${nx}*${dx},
+ delY=${ny}*${dy},
+# delR, not delZ: viscAr / diffKr* are r-coordinate names and MITgcm
+# refuses to mix z, p and r inputs (model/src/ini_parms.F, rCoordInputData)
+ delR=${nz}*${dz},
+ &
+
+ &PARM05
+# R18: T = 0 exactly is a valid initial value (ramp profile with Tbot = 0.0). The check
+# only stops the run (model/src/ini_theta.F:110-119); with allowFreezing = .FALSE.
+# (default, model/src/set_defaults.F:220) it changes nothing else (ini_theta.F:130).
+ checkIniTemp=.FALSE.,
+ bathyFile='bathy.bin',
+ hydrogThetaFile='T.init.bin',
+ hydrogSaltFile='S.init.bin',
+ &
