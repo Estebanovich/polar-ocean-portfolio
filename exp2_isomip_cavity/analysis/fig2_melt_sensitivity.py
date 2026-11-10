@@ -55,35 +55,77 @@ def _ok(r, key) -> bool:
 
 
 def caption(resolution: dict | None) -> str:
-    rd = None if not resolution else resolution.get("shelf_mean_melt", {}).get(
-        "rel_diff_4_vs_2")
-    res_txt = (f" (Ocean0 whole-shelf melt, 4 km vs 2 km: {100 * rd:+.2f} %)"
-               if rd is not None else "")
-    return ("Ensemble at 4 km horizontal resolution (GammaT_cal,4km); see the 2 km vs 4 km "
-            f"resolution test in notes/pd1_calibracion.md{res_txt}. Last 6 months "
-            "(records 19-24) of each 2-year run. Open markers / hatched column: Tbot = 2.0 "
-            "runs, Exp. 3 test data, not used in H1. Panel (c) is descriptive.")
+    """Caption. The resolution sentence states that the Ocean0 melt agreement between 4 and
+    2 km is largely the calibration target (GammaT calibrated separately at each resolution
+    to the same Ocean0 deep melt, pd0 K1), and cites the |psi_bt| and melt-map numbers."""
+    res = resolution or {}
+    rd = res.get("shelf_mean_melt", {}).get("rel_diff_4_vs_2")
+    psi = res.get("psi_bt_max_cavity", {}).get("rel_diff_4_vs_2")
+    r = res.get("melt_map_correlation", {}).get("r")
+    parts = []
+    if rd is not None:
+        parts.append(f"Ocean0 whole-shelf melt differs by {100 * rd:+.2f} % (4 vs 2 km), but "
+                     "this agreement is largely the calibration target (GammaT calibrated "
+                     "separately at each resolution to the same Ocean0 deep melt, pd0 K1), "
+                     "not independent evidence of convergence")
+    if psi is not None:
+        parts.append(f"the cavity |psi_bt| maximum differs by {100 * psi:+.0f} %")
+    if r is not None:
+        parts.append(f"the melt maps correlate at r = {r:.2f}")
+    res_txt = (": " + "; ".join(parts)) if parts else ""
+    return ("Ensemble at 4 km horizontal resolution (GammaT_cal,4km). 2 km vs 4 km "
+            f"resolution test (notes/pd1_calibracion.md){res_txt}. pd0 H1 requires BOTH a "
+            "quadratic fit with R^2 >= 0.98 AND a power law <m> = k (Tbot - T_f,GL)^n with "
+            "n in [1.3, 2.0]; the curves in (a) are the quadratic fits, and n and the H1 "
+            "verdict of each z_c are in its legend. Last 6 months (records 19-24) of each "
+            "2-year run. Open markers / hatched column: Tbot = 2.0 runs, Exp. 3 test data, "
+            "not used in H1. Panel (c) is descriptive.")
+
+
+def h1_label(z: float, v: dict) -> str:
+    """Legend entry of one z_c: R^2, n and the pd0 H1 verdict with its reason."""
+    head = f"z_c = {z:.0f} m"
+    if v["verdict"] == "NOT_EVALUABLE":
+        return f"{head}: H1 not evaluable (gap)"
+    q, p = v["quadratic"], v["power_law"]
+    n = p["n"]
+    txt = f"{head}: R² = {q['R2']:.3f}, " + ("n undefined" if n is None else f"n = {n:.2f}")
+    if v["verdict"] == "PASS":
+        return f"{txt}, H1 PASS"
+    why = []
+    if not q["pass"]:
+        why.append(f"R² < {en.H1_R2_MIN}")
+    if n is None:
+        why.append("n undefined")
+    elif n > en.H1_N_RANGE[1]:
+        why.append(f"n > {en.H1_N_RANGE[1]}")
+    elif n < en.H1_N_RANGE[0]:
+        why.append(f"n < {en.H1_N_RANGE[0]}")
+    return f"{txt}, H1 FAIL ({'; '.join(why)})"
 
 
 def make_figure(table: dict, h1: dict, out_stem: Path, cap: str) -> dict:
     key = h1["melt_key"]
     rs = en.rows(table)
-    plotted = {"a": {"core": [], "test": [], "reference": [], "fit_curves": []},
+    plotted = {"a": {"core": [], "test": [], "reference": [], "fit_curves": [],
+                     "legend": []},
                "b": {}, "c": {}}
     style.apply()
     fig = plt.figure(figsize=(7.0, 6.6))
     gs = fig.add_gridspec(2, 2, height_ratios=[1, 1], hspace=0.42, wspace=0.32,
-                          left=0.09, right=0.97, top=0.95, bottom=0.17)
+                          left=0.09, right=0.97, top=0.95, bottom=0.22)
     axA, axB, axC = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, :])
 
     # (a)
     for z in en.CORE_ZC:
         col = ZC_COLOURS[z]
         core = [r for r in en.core_rows(table, z) if _ok(r, key)]
-        axA.plot([r["Tbot"] for r in core], [r[key] for r in core], "o", color=col, ms=4.5,
-                 label=f"z_c = {z:.0f} m")
-        plotted["a"]["core"] += [r["case"] for r in core]
         v = h1["per_z_c"][f"{z:.0f}"]
+        lab = h1_label(z, v)
+        axA.plot([r["Tbot"] for r in core], [r[key] for r in core], "o", color=col, ms=4.5,
+                 label=lab)
+        plotted["a"]["legend"].append(lab)
+        plotted["a"]["core"] += [r["case"] for r in core]
         if v["verdict"] != "NOT_EVALUABLE":
             q = v["quadratic"]
             t = np.linspace(min(en.CORE_TBOT), max(en.CORE_TBOT), 100)
@@ -99,11 +141,14 @@ def make_figure(table: dict, h1: dict, out_stem: Path, cap: str) -> dict:
                  label="Ocean0 (linear profile)")
         plotted["a"]["reference"] = [r["case"] for r in ref]
     axA.plot([], [], "o", mfc="none", mec="0.3", label="Tbot = 2.0 (Exp. 3 test, not fitted)")
-    axA.plot([], [], "-", color="0.3", lw=1.0, label="quadratic fit (pd0 H1)")
+    axA.plot([], [], "-", color="0.3", lw=1.0, label="quadratic fit (H1 part 1 only)")
     axA.axvspan(1.75, 2.25, color="0.9", lw=0, zorder=0)
     axA.set(xlabel="Tbot (°C)", ylabel=r"$\langle m \rangle$ (m a$^{-1}$)",
-            title=f"(a) {MELT_LABEL[key]}, s = 1")
-    axA.legend(fontsize=6.5, loc="upper left", frameon=False)
+            title=f"(a) {MELT_LABEL[key]}, s = 1"
+                  + ("" if h1.get("role") == "criterion" else " [secondary]"))
+    lo, hi = axA.get_ylim()
+    axA.set_ylim(lo, lo + 1.55 * (hi - lo))              # room for the legend above the data
+    axA.legend(fontsize=5.8, loc="upper left", frameon=False)
 
     # (b)
     Ts = list(en.CORE_TBOT) + [en.TEST_TBOT]
@@ -150,7 +195,8 @@ def make_figure(table: dict, h1: dict, out_stem: Path, cap: str) -> dict:
                  label=f"s = {s:.1f}" + (" (core)" if s == 1.0 else " (Latin hypercube)"))
         if s != 1.0:
             for r in sel:
-                axC.annotate(f"{r['z_c']:.0f}", (r["Tbot"], r[key]), xytext=(4, 3),
+                axC.annotate(f"{r['z_c']:.0f}", (r["Tbot"], r[key]),
+                             xytext=(4, 3) if s < 1 else (4, -9),
                              textcoords="offset points", fontsize=6, color=col)
         plotted["c"][f"{s:.1f}"] = [r["case"] for r in sel]
     axC.set(xlabel="Tbot (°C)", ylabel=r"$\langle m \rangle$ (m a$^{-1}$)",

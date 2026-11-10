@@ -71,4 +71,6 @@ En ninguna variante n baja de 2.19. El fallo no depende de un punto aislado ni d
 - `figures/fig3_meltwater_export.{png,pdf}`: (a) secciones en x_front para Tbot −0.5 y 1.5 con z_c = 400; (b) D_out contra Tbot; (c) mapa de ∫C dz para Tbot 1.5 y z_c 400.
 - `figures/fig3_anim_ocean0_4km_r21.gif`: 0.71 MB, 24 meses.
 
+**Resolución.** El pie de la Figura 2 remite a la prueba de resolución, que es descriptiva. Ahí, el melt de toda la plataforma de Ocean0 difiere en −0.05 % entre 4 y 2 km. Esa coincidencia es, en gran parte, el objetivo de la calibración (ΓT se calibró por separado a cada resolución, K1), no evidencia independiente. Las métricas que no se calibraron difieren más: el máx. de |ψ_bt| en la cavidad, en +125 %, y los mapas de melt correlacionan con r = 0.91. El ensamble es a 4 km y sus números de melt heredan esa limitación.
+
 ψ_bt no se usa en ningún resultado: a 4 km su máximo en la cavidad es 2.2 veces el de 2 km.

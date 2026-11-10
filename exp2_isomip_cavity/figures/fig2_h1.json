@@ -299,7 +299,7 @@
     "N1_max": 0.08765500288417354,
     "N2_max_abs": 3.0748388368454016e-07
   },
-  "caption": "Ensemble at 4 km horizontal resolution (GammaT_cal,4km); see the 2 km vs 4 km resolution test in notes/pd1_calibracion.md (Ocean0 whole-shelf melt, 4 km vs 2 km: -0.05 %). Last 6 months (records 19-24) of each 2-year run. Open markers / hatched column: Tbot = 2.0 runs, Exp. 3 test data, not used in H1. Panel (c) is descriptive.",
+  "caption": "Ensemble at 4 km horizontal resolution (GammaT_cal,4km). 2 km vs 4 km resolution test (notes/pd1_calibracion.md): Ocean0 whole-shelf melt differs by -0.05 % (4 vs 2 km), but this agreement is largely the calibration target (GammaT calibrated separately at each resolution to the same Ocean0 deep melt, pd0 K1), not independent evidence of convergence; the cavity |psi_bt| maximum differs by +125 %; the melt maps correlate at r = 0.91. pd0 H1 requires BOTH a quadratic fit with R^2 >= 0.98 AND a power law <m> = k (Tbot - T_f,GL)^n with n in [1.3, 2.0]; the curves in (a) are the quadratic fits, and n and the H1 verdict of each z_c are in its legend. Last 6 months (records 19-24) of each 2-year run. Open markers / hatched column: Tbot = 2.0 runs, Exp. 3 test data, not used in H1. Panel (c) is descriptive.",
   "panel_c_label": "descriptive",
   "plotted_melt_key": "mean_melt_shelf",
   "melt_key_note": "R22 (2026-11-09 16:39 CST, before any ensemble output was evaluated; pd0 addendum): H1 <m> = whole-shelf mean melt; the deep (< -300 m) fit is secondary, not a criterion",

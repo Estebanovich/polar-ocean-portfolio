@@ -202,7 +202,7 @@ En todas las corridas, W_hf coincide con w. **Ningún CFL supera 0.5** (R17); el
 | Máx. \|ψ_bt\| en la cavidad (Sv) | 0.2654 | 0.6219 | **+134 %** |
 | Correlación espacial del melt (mapa de 2 km promediado 2×2 a 4 km; 707 celdas con plataforma en alguno de los dos) | — | — | r = 0.968 |
 
-- La diferencia de melt de la plataforma (0.5 %) está por debajo del 25 %, así que no hay bandera de pd0.
+- La diferencia de melt de la plataforma (0.5 %) está por debajo del 25 %, así que no hay bandera de pd0. Esta coincidencia es, en gran parte, el objetivo de la calibración (ΓT calibrado por separado a cada resolución al mismo melt profundo, K1), no evidencia independiente de convergencia.
 - **Observación descriptiva** (sin umbral; no se interpreta aquí): el máximo de |ψ_bt| en la cavidad (y > 50 km, x < 640 km) es 2.3 veces mayor a 4 km. El melt y la overturning, en cambio, casi coinciden. Hechos (revisión de código, comprobados con `metrics.barotropic_streamfunction`):
   - el máximo a 4 km está en y = 52 km, x = 608 km, dentro de un giro amplio 2–3 veces más intenso que a 2 km; a 2 km, el máximo está en y = 64 km, x = 592 km;
   - el revisor señala un zigzag de escala de malla cerca de y ≈ 52–60 km. En el perfil de ψ_bt a x = 608 km se ve además un escalón no monótono en y ≈ 68–72 km (0.142 → 0.191 Sv).
@@ -298,7 +298,7 @@ W_hf coincide con w en todas. **Ningún CFL supera 0.5** (R17); el mayor es 0.34
 - 2 km: 184 de 164 922 celdas; mínimo −0.115 °C; 5 por más de 0.1 °C. Ninguna en las filas de pared; todas son celdas superiores (127 delgadas); 48 con vecino lateral seco. La más fría, en k = 9 (z = −190 m), hFacC = 0.49.
 
 **Prueba de resolución (pd0, descriptiva, sin umbral).** 4 km contra 2 km, cada una con su ΓT_cal, meses 19–24:
-- melt medio de la plataforma: 10.186 contra 10.191 m a⁻¹ (−0.05 %); no hay bandera de pd0 (> 25 %);
+- melt medio de la plataforma: 10.186 contra 10.191 m a⁻¹ (−0.05 %); no hay bandera de pd0 (> 25 %). **Esta coincidencia es, en gran parte, el objetivo de la calibración:** ΓT se calibró por separado a cada resolución para dar el mismo melt profundo de Ocean0 (K1, 30 m a⁻¹). No es evidencia independiente de convergencia. Las métricas de resolución que no se calibraron son ψ_bt (+125 %) y la correlación de los mapas de melt (r = 0.915), abajo;
 - máximo de la overturning: 0.1845 contra 0.1851 Sv (−0.3 %);
 - máximo de |ψ_bt| en la cavidad: 0.584 contra 0.260 Sv (+125 %, 2.2 veces). Es la misma observación de §4.3 (allí 2.3 veces) y sigue pendiente la revisión del ruido de escala de malla en U a 4 km antes de usar ψ_bt del ensamble;
 - correlación espacial de los mapas de melt (2 km promediado 2 × 2 sobre la malla de 4 km): r = 0.915, en 707 celdas.

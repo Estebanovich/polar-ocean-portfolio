@@ -58,7 +58,9 @@ def synth_table(gap=None):
 def test_fig2_writes_png_pdf_json_and_roles(tmp_path):
     tab = synth_table(gap="ens_T0.5_zc250_s1.0")
     res = f2.run(tab, tmp_path,
-                 resolution={"shelf_mean_melt": {"rel_diff_4_vs_2": -0.0005}})
+                 resolution={"shelf_mean_melt": {"rel_diff_4_vs_2": -0.0005},
+                             "psi_bt_max_cavity": {"rel_diff_4_vs_2": 1.2458},
+                             "melt_map_correlation": {"r": 0.9146}})
     for ext in ("png", "pdf"):
         assert (tmp_path / f"fig2_melt_sensitivity.{ext}").stat().st_size > 0
     js = json.loads((tmp_path / "fig2_h1.json").read_text())
@@ -66,7 +68,15 @@ def test_fig2_writes_png_pdf_json_and_roles(tmp_path):
     assert js["H1"]["per_z_c"]["250"]["verdict"] == "NOT_EVALUABLE"
     assert js["H1"]["per_z_c"]["400"]["verdict"] == "PASS"
     assert js["H1"]["per_z_c"]["400"]["power_law"]["n"] == pytest.approx(1.6, abs=1e-10)
-    assert "4 km" in js["caption"] and "resolution test" in js["caption"]
+    cap = js["caption"]
+    assert "4 km" in cap and "resolution test" in cap
+    # review fix 2: the melt agreement is (largely) the calibration target; cite psi_bt, r
+    assert "calibration target" in cap and "+125 %" in cap and "r = 0.91" in cap
+    # review fix 1: both halves of H1 and the verdict are visible in panel (a)
+    leg = res["plotted"]["a"]["legend"]
+    assert any("z_c = 400 m" in l and "n = 1.60" in l and "H1 PASS" in l for l in leg)
+    assert any("z_c = 250 m" in l and "H1 not evaluable" in l for l in leg)
+    assert "power law" in cap and "[1.3, 2.0]" in cap
     assert js["panel_c_label"] == "descriptive"
     p = res["plotted"]
     # (a): 14 core points (one gap), 3 test points marked as such, the Ocean0 point
@@ -98,6 +108,18 @@ def test_fig2_default_is_shelf_and_deep_is_secondary(tmp_path):
     assert sec["melt_key"] == "mean_melt_deep300" and sec["role"].startswith("secondary")
     assert all(v["verdict"] == "PASS" for v in sec["per_z_c"].values())
     assert "R22" in js["melt_key_note"]
+
+
+def test_fig2_legend_shows_n_and_fail(tmp_path):
+    """A z_c whose quadratic fits but whose n is outside [1.3, 2.0] is shown as H1 FAIL."""
+    tab = synth_table()
+    for i, c in enumerate(tab["case"]):
+        if tab["group"][i] == "factorial" and tab["z_c"][i] == 550.0:
+            tab["mean_melt_shelf"][i] = 0.1 * (tab["Tbot"][i] - TF) ** 2.7
+    res = f2.run(tab, tmp_path)
+    leg = res["plotted"]["a"]["legend"]
+    assert any("z_c = 550 m" in l and "n = 2.70" in l and "H1 FAIL (n > 2.0)" in l
+               for l in leg)
 
 
 # ---- Fig. 3 ---------------------------------------------------------------------------------
