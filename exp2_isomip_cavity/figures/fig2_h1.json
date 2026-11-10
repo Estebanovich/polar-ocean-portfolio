@@ -1,0 +1,311 @@
+{
+  "H1": {
+    "hypothesis": "H1",
+    "melt_key": "mean_melt_shelf",
+    "role": "criterion",
+    "rule": "pd0 H1: per z_c, 5 core runs (4 km, s = 1, Tbot -0.5..1.5, last 6 months); quadratic R^2 >= 0.98 AND power-law n in [1.3, 2.0] (m = k (Tbot - T_f,GL)^n, log-log fit)",
+    "T_f_GL_degC": -2.3341395028324676,
+    "per_z_c": {
+      "250": {
+        "verdict": "FAIL",
+        "n_runs": 5,
+        "cases": [
+          "ens_T-0.5_zc250_s1.0",
+          "ens_T0.0_zc250_s1.0",
+          "ens_T0.5_zc250_s1.0",
+          "ens_T1.0_zc250_s1.0",
+          "ens_T1.5_zc250_s1.0"
+        ],
+        "Tbot": [
+          -0.5,
+          0.0,
+          0.5,
+          1.0,
+          1.5
+        ],
+        "melt": [
+          4.492135270477996,
+          8.142057758452323,
+          13.3606469370528,
+          19.654602198338022,
+          26.697407998606895
+        ],
+        "quadratic": {
+          "a": 2.2460379163639437,
+          "b": 8.938580062864755,
+          "c": 8.315551563880273,
+          "R2": 0.9997868764626203,
+          "pass": true
+        },
+        "power_law": {
+          "n": 2.4331265615772537,
+          "k": 1.0369851867464346,
+          "R2_loglog": 0.9994175564350204,
+          "pass": false
+        },
+        "T_f_GL_degC": -2.3341395028324676,
+        "quality": {
+          "N1_fail": [
+            "ens_T-0.5_zc250_s1.0"
+          ],
+          "N2_fail": []
+        }
+      },
+      "400": {
+        "verdict": "FAIL",
+        "n_runs": 5,
+        "cases": [
+          "ens_T-0.5_zc400_s1.0",
+          "ens_T0.0_zc400_s1.0",
+          "ens_T0.5_zc400_s1.0",
+          "ens_T1.0_zc400_s1.0",
+          "ens_T1.5_zc400_s1.0"
+        ],
+        "Tbot": [
+          -0.5,
+          0.0,
+          0.5,
+          1.0,
+          1.5
+        ],
+        "melt": [
+          1.6073014851613792,
+          3.065507819352557,
+          5.320936734648242,
+          8.25071720376779,
+          12.522787539380348
+        ],
+        "quadratic": {
+          "a": 1.8005941590476053,
+          "b": 3.602642139523031,
+          "c": 3.0016834674148476,
+          "R2": 0.9994906098374163,
+          "pass": true
+        },
+        "power_law": {
+          "n": 2.7786877845881577,
+          "k": 0.29453682418921556,
+          "R2_loglog": 0.999726773935268,
+          "pass": false
+        },
+        "T_f_GL_degC": -2.3341395028324676,
+        "quality": {
+          "N1_fail": [],
+          "N2_fail": []
+        }
+      },
+      "550": {
+        "verdict": "FAIL",
+        "n_runs": 5,
+        "cases": [
+          "ens_T-0.5_zc550_s1.0",
+          "ens_T0.0_zc550_s1.0",
+          "ens_T0.5_zc550_s1.0",
+          "ens_T1.0_zc550_s1.0",
+          "ens_T1.5_zc550_s1.0"
+        ],
+        "Tbot": [
+          -0.5,
+          0.0,
+          0.5,
+          1.0,
+          1.5
+        ],
+        "melt": [
+          0.34443878579100934,
+          0.688962073127056,
+          1.1747533194315811,
+          1.7843634497620118,
+          2.50686932738267
+        ],
+        "quadratic": {
+          "a": 0.251366875598608,
+          "b": 0.8326856163650476,
+          "c": 0.6950094262173863,
+          "R2": 0.9999729038740568,
+          "pass": true
+        },
+        "power_law": {
+          "n": 2.6969655098511343,
+          "k": 0.06879580905522562,
+          "R2_loglog": 0.9989287951217076,
+          "pass": false
+        },
+        "T_f_GL_degC": -2.3341395028324676,
+        "quality": {
+          "N1_fail": [
+            "ens_T-0.5_zc550_s1.0",
+            "ens_T1.5_zc550_s1.0"
+          ],
+          "N2_fail": []
+        }
+      }
+    }
+  },
+  "H1_secondary_deep300": {
+    "hypothesis": "H1",
+    "melt_key": "mean_melt_deep300",
+    "role": "secondary (not a criterion; R22: H1 <m> is the whole-shelf mean)",
+    "rule": "pd0 H1: per z_c, 5 core runs (4 km, s = 1, Tbot -0.5..1.5, last 6 months); quadratic R^2 >= 0.98 AND power-law n in [1.3, 2.0] (m = k (Tbot - T_f,GL)^n, log-log fit)",
+    "T_f_GL_degC": -2.3341395028324676,
+    "per_z_c": {
+      "250": {
+        "verdict": "PASS",
+        "n_runs": 5,
+        "cases": [
+          "ens_T-0.5_zc250_s1.0",
+          "ens_T0.0_zc250_s1.0",
+          "ens_T0.5_zc250_s1.0",
+          "ens_T1.0_zc250_s1.0",
+          "ens_T1.5_zc250_s1.0"
+        ],
+        "Tbot": [
+          -0.5,
+          0.0,
+          0.5,
+          1.0,
+          1.5
+        ],
+        "melt": [
+          17.276584460553646,
+          28.54232137826139,
+          42.47656076503946,
+          58.015034907540915,
+          74.91490457561667
+        ],
+        "quadratic": {
+          "a": 3.6778572161312364,
+          "b": 25.27201353574987,
+          "c": 28.85068153742905,
+          "R2": 0.9999143472591285,
+          "pass": true
+        },
+        "power_law": {
+          "n": 1.9949993634311567,
+          "k": 5.221305974025991,
+          "R2_loglog": 0.9993331407201134,
+          "pass": true
+        },
+        "T_f_GL_degC": -2.3341395028324676,
+        "quality": {
+          "N1_fail": [
+            "ens_T-0.5_zc250_s1.0"
+          ],
+          "N2_fail": []
+        }
+      },
+      "400": {
+        "verdict": "FAIL",
+        "n_runs": 5,
+        "cases": [
+          "ens_T-0.5_zc400_s1.0",
+          "ens_T0.0_zc400_s1.0",
+          "ens_T0.5_zc400_s1.0",
+          "ens_T1.0_zc400_s1.0",
+          "ens_T1.5_zc400_s1.0"
+        ],
+        "Tbot": [
+          -0.5,
+          0.0,
+          0.5,
+          1.0,
+          1.5
+        ],
+        "melt": [
+          6.905369402537234,
+          13.261349717308619,
+          21.865605882204047,
+          31.70182815180072,
+          43.413411837057986
+        ],
+        "quadratic": {
+          "a": 3.4123350987637084,
+          "b": 14.878977561943014,
+          "c": 13.430772893137437,
+          "R2": 0.9999370969641876,
+          "pass": true
+        },
+        "power_law": {
+          "n": 2.494949823204741,
+          "k": 1.5665543105043958,
+          "R2_loglog": 0.9982554022180161,
+          "pass": false
+        },
+        "T_f_GL_degC": -2.3341395028324676,
+        "quality": {
+          "N1_fail": [],
+          "N2_fail": []
+        }
+      },
+      "550": {
+        "verdict": "FAIL",
+        "n_runs": 5,
+        "cases": [
+          "ens_T-0.5_zc550_s1.0",
+          "ens_T0.0_zc550_s1.0",
+          "ens_T0.5_zc550_s1.0",
+          "ens_T1.0_zc550_s1.0",
+          "ens_T1.5_zc550_s1.0"
+        ],
+        "Tbot": [
+          -0.5,
+          0.0,
+          0.5,
+          1.0,
+          1.5
+        ],
+        "melt": [
+          1.4734266419691813,
+          3.057325835351663,
+          5.1891955808138714,
+          7.549703242331022,
+          10.154811099245597
+        ],
+        "quadratic": {
+          "a": 0.6488729266054606,
+          "b": 3.7221563377009774,
+          "c": 3.1371596161376822,
+          "R2": 0.9997754776287161,
+          "pass": true
+        },
+        "power_law": {
+          "n": 2.6224950271325014,
+          "k": 0.31746076520194055,
+          "R2_loglog": 0.9947426158859792,
+          "pass": false
+        },
+        "T_f_GL_degC": -2.3341395028324676,
+        "quality": {
+          "N1_fail": [
+            "ens_T-0.5_zc550_s1.0",
+            "ens_T1.5_zc550_s1.0"
+          ],
+          "N2_fail": []
+        }
+      }
+    }
+  },
+  "N1_N3": {
+    "n_members": 29,
+    "gaps": {},
+    "N1_fail": [
+      "ens_T-0.5_zc250_s1.0",
+      "ens_T-0.5_zc550_s1.0",
+      "ens_T1.5_zc550_s1.0",
+      "ens_T-0.42_zc402_s0.8",
+      "ens_T-0.39_zc503_s1.2"
+    ],
+    "N2_fail": [],
+    "N1_max": 0.08765500288417354,
+    "N2_max_abs": 3.0748388368454016e-07
+  },
+  "caption": "Ensemble at 4 km horizontal resolution (GammaT_cal,4km); see the 2 km vs 4 km resolution test in notes/pd1_calibracion.md (Ocean0 whole-shelf melt, 4 km vs 2 km: -0.05 %). Last 6 months (records 19-24) of each 2-year run. Open markers / hatched column: Tbot = 2.0 runs, Exp. 3 test data, not used in H1. Panel (c) is descriptive.",
+  "panel_c_label": "descriptive",
+  "plotted_melt_key": "mean_melt_shelf",
+  "melt_key_note": "R22 (2026-11-09 16:39 CST, before any ensemble output was evaluated; pd0 addendum): H1 <m> = whole-shelf mean melt; the deep (< -300 m) fit is secondary, not a criterion",
+  "window": "last 6 months, records 19-24 (pd0)",
+  "figure": [
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig2_melt_sensitivity.png",
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig2_melt_sensitivity.pdf"
+  ]
+}

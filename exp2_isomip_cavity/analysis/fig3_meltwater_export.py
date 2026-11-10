@@ -99,14 +99,15 @@ def make_figure(table: dict, h2: dict, sections: dict, map_run, out_stem: Path) 
         if r is not None and _ok(r):
             ax.axhline(-r["D_out"], color="w", ls="--", lw=1.0)
             ax.text(0.02, 0.04, f"D_out = {r['D_out']:.0f} m", transform=ax.transAxes,
-                    fontsize=7, color="w")
+                    fontsize=7, color="k")
         T = rd.actual.get("Tbot")
         ax.set_ylim(float(s["zf_m"][-1]), 0.0)
         ax.set(xlabel="y (km)", ylabel="z (m)" if n == 0 else None,
-               title=f"(a{n + 1}) C at x_front, Tbot = {T:g} °C, z_c = 400 m")
+               title=f"(a{n + 1}) C at x_front, Tbot = {T:g} °C")
         plotted["a"].append(case)
     if secs:
-        fig.colorbar(pm, cax=fig.add_subplot(gs[0, 2]), label="C (meltwater fraction)")
+        fig.colorbar(pm, cax=fig.add_subplot(gs[0, 2]),
+                     label="C (meltwater fraction), z_c = 400 m")
 
     # (b)
     axB = fig.add_subplot(gs[1, 0])
