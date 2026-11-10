@@ -311,3 +311,8 @@ W_hf coincide con w en todas. **Ningún CFL supera 0.5** (R17); el mayor es 0.34
 - Procedencia: desde ahora `run_campaign.py` escribe en `input/case.json` el sha256 del ejecutable con que corre cada caso (`binary_sha256`, `binary_path`, `binary_recorded_at`).
 - Cola `scripts/queue_production.sh`: primero el ensamble (28 casos, 4 km, np = 1, 5 a la vez; `ocean0_4km_r21` se reutiliza como referencia con `--skip-ok`), luego N1–N3 sobre las 29 corridas (`analysis/ensemble_n_check.py`; un fallo de N3 queda como hueco y no se vuelve a correr), luego `ocean1_2km` (np = 5, 4 etapas). Logs en `…/exp2/logs/production/`.
 - **Tbot = 0.0 (R18), comprobado:** los 3 casos `ens_T0.0_*` arrancan. Prueba de 1 día (108 pasos, `--end-time 86400`, sufijo `_r21_start1d`): OK, con el aviso `INI_THETA: found 10142 wet grid-pts with theta=0 identically` en lugar del STOP. Un primer intento de 10 pasos (sufijo `_r21_start10`) terminó normalmente en el modelo, pero quedó FAILED en `run_status`: el runner lee la última iteración del monitor diario, y 8000 s no llegan a una línea de monitor. Es un artefacto de la prueba, no del modelo; esos directorios quedan como registro. El `binary_sha256` registrado en la prueba coincide con el binario R21 de 4 km (`4ddad51a…`).
+
+## Resultados Ocean1
+
+En `pd1_ocean1.md` (Task 4 fase B, 2026-11-10): V2a, V2c, V2d, V3 barotrópica y N1–N3 PASAN; **V2b y V3 overturning FALLAN** (overturning de 0.185 Sv; la misma debilidad), lo que va a PD2. Figura 1 en `figures/fig1_ocean.{png,pdf}`.
+

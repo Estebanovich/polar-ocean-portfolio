@@ -286,3 +286,10 @@
 - **Candado:** `melt_law` en `case.json`; `--skip-ok` y `metrics.load_run` rechazan corridas con la ley anulada; sufijo por omisión `_r21`.
 - **Comparación post hoc con MITgcm-JPL** (`notes/pd1_comparacion_jpl.md`): melt profundo 30.00 contra 31.35 m a⁻¹, u\* profundo 0.00365 contra 0.00397 m s⁻¹, correlación de los mapas de melt r = 0.91.
 - **Producción (PD1a aprobada):** ΓT_cal en `cases.yaml` (4 km 0.029356 para el ensamble y `ocean0_4km`; 2 km 0.030959 para Ocean0 y Ocean1); `binary_sha256` en `case.json` al correr; `scripts/queue_production.sh` (ensamble de 28 casos, N1–N3, luego Ocean1 en 4 etapas de 5 años) lanzada.
+
+## 2026-11-10 — Exp. 2: Ocean1 a 2 km, Figura 1 y comparación post hoc con JPL (Task 4 fase B)
+
+- `ocean1_2km_r21` terminó (20 años, 4 etapas, 06:45 CST). Cargado con `metrics.load_run`: 240 registros contiguos, costuras de etapa sin huecos.
+- **pd0, año 20:** V2a PASA (10.34 m a⁻¹), **V2b FALLA** (overturning 0.185 Sv < 0.20), V2c PASA (0.258 Sv), V2d PASA (0.492 Sv), V3 barotrópica PASA, **V3 overturning FALLA**, N1 (0.11 %), N2 (1.3e-6) y N3 PASAN. CFL máx. 0.23. V2b y V3 overturning van a PD2; clasificación pendiente. Detalle en `notes/pd1_ocean1.md`.
+- Figura 1 (`analysis/fig1_ocean0_validation.py`, `figures/fig1_ocean.{png,pdf,json}`). El pie no usa el acuerdo de melt 2 contra 4 km como evidencia independiente.
+- Comparación post hoc con MITgcm-JPL Ocean1: melt profundo 30.37 contra 31.55 m a⁻¹, u\* profundo 0.00371 contra 0.00396 m s⁻¹, overturning 0.185 contra 0.203 Sv, r de los mapas = 0.91.

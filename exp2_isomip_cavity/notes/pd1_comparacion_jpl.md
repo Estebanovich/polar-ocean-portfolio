@@ -50,3 +50,34 @@ Fecha: 2026-11-09. **Post hoc**, a pedido de Esteban; no es un criterio de pd0 y
 - **Meses.** Los registros de JPL son meses de calendario (`time` = 0, 31, 59, … días: meses de 28–31 días), así que sus registros 7–12 cubren 184 días (julio–diciembre). Los nuestros son meses fijos de 2 628 000 s (30.42 días, pd0), así que nuestros 6 meses cubren 182.5 días. Las medias de JPL sobre la ventana se toman sin ponderar por la duración de cada mes (los meses de 30 y 31 días difieren en ~3 %).
 
 (La serie R20, que probó 33, hFacMin = 0.25 y ajuste convectivo de uno en uno, está anulada por R21 y no se usa aquí.)
+
+# Ocean1 (post hoc, 2026-11-10)
+
+Mismo procedimiento que arriba, a pedido de Esteban; **post hoc**, no cambia ningún veredicto (los de pd0 están en `pd1_ocean1.md`). `figures/jpl_comparison.json` tiene ahora una entrada por caso (`ocean0`, `ocean1`); los números de Ocean0 de arriba se reprodujeron sin cambios.
+
+- **Nuestro:** `ocean1_2km_r21`, año 20 (registros 229–240).
+- **JPL:** `Ocean1_yosi_COM_MITgcm_JPL_new.nc` tiene 240 registros mensuales de calendario (`time` de 0 a 19.92 años). Se toman los últimos 12 (`time` ≥ 19 años) como su año 20.
+- Mismas regiones, máscaras y definiciones que en Ocean0, incluida la advertencia sobre la thermal driving: la nuestra está ponderada por γT, la de JPL es la media simple, y el signo de la diferencia es desconocido.
+
+| Cantidad | Región | Nuestro | JPL | Nuestro/JPL − 1 |
+|---|---|---|---|---|
+| Melt medio (m a⁻¹) | profunda | 30.37 | 31.55 | −3.7 % |
+| Melt medio (m a⁻¹) | plataforma | 10.34 | 10.46 | −1.1 % |
+| u\* medio (m s⁻¹) | profunda | 0.00371 | 0.00396 | −6.2 % |
+| u\* medio (m s⁻¹) | plataforma | 0.00256 | 0.00282 | −9.3 % |
+| Thermal driving (°C) | profunda | 0.801 | 0.709 | +13.0 % |
+| Thermal driving (°C) | plataforma | 0.330 | 0.262 | +26.2 % |
+| máx. \|ψ_bt\|, cavidad (y > 50 km, x < 640 km) (Sv) | — | 0.258 | 0.246 | +4.6 % |
+| máx. \|ψ_bt\|, frente (630 < x < 650 km) (Sv) | — | 0.492 | 0.276 | +78 % |
+| máx. \|ψ(x, z)\|, x < 640 km (Sv) | — | 0.185 | 0.203 | −8.8 % |
+| Fuerza barotrópica (máx − mín, x < 640 km) (Sv) | — | 0.261 | 0.271 | −3.8 % |
+| Fuerza de la overturning (máx − mín, x < 640 km) (Sv) | — | 0.186 | 0.222 | −16 % |
+| ΓT | — | 0.030959 | 0.0325 | −4.7 % |
+
+**Correlación de los mapas de melt del año 20:** r = 0.913 en las 3170 celdas donde alguno tiene plataforma, y r = 0.942 en las 2689 donde los dos la tienen. Las diferencias de máscara son las mismas 481 celdas que en Ocean0.
+
+**Streamfunctions.** Las extremas se toman sobre la media del año 20 en los dos modelos. Las nuestras están en las esquinas de celda; las de JPL son las que entregaron, interpoladas a la malla estándar de AD16 (centros en x, y; niveles de 5 m). Por eso no se evalúan en los mismos puntos.
+- La fuerza aquí es máx − mín de la ψ media; la de V3 es la media de los máx − mín mensuales. Para nosotros dan casi lo mismo (0.261 contra 0.261 en la barotrópica, 0.186 contra 0.186 en la overturning).
+- El máximo de \|ψ_bt\| cerca del frente es 78 % mayor en nuestro modelo. Los dos valores caen dentro de V2d.
+
+**Lectura (sin atribución).** Con la misma meta de melt, JPL tiene una overturning ~10 % más fuerte (0.203 contra 0.185 Sv; la suya cae dentro de V2b) y algo más de u\*; nosotros, más thermal driving. Es coherente con lo visto en Ocean0. Las diferencias de configuración están listadas arriba; la serie R20, que las probaba, está anulada. No se clasifica aquí: es material para PD2 (V2b y V3 overturning fallan).

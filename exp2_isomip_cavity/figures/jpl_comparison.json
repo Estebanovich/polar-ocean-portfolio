@@ -1,79 +1,224 @@
 {
-  "label": "POST HOC (Esteban's request 2026-11-09); not a pd0 criterion",
-  "ours": {
-    "run": "/Volumes/LaCie/portfolio_runs/exp2/ocean0_2km_r21",
-    "records_1based": [
-      19,
-      20,
-      21,
-      22,
-      23,
-      24
-    ],
-    "gammaT": 0.030959,
-    "shelf": {
-      "n_cells": 2689,
-      "melt_m_per_a": 10.190988405718063,
-      "ustar_m_s": 0.002536758966728012,
-      "thermal_driving_degC": 0.3261400285433153
+  "ocean0": {
+    "label": "POST HOC (Esteban's requests 2026-11-09/10); not a pd0 criterion",
+    "ours": {
+      "run": "/Volumes/LaCie/portfolio_runs/exp2/ocean0_2km_r21",
+      "window": "last6",
+      "records_1based": [
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "gammaT": 0.030959,
+      "shelf": {
+        "n_cells": 2689,
+        "melt_m_per_a": 10.190988405718063,
+        "ustar_m_s": 0.002536758966728012,
+        "thermal_driving_degC": 0.3261400285433153
+      },
+      "deep300": {
+        "n_cells": 618,
+        "melt_m_per_a": 30.00246484594071,
+        "ustar_m_s": 0.0036533741611343845,
+        "thermal_driving_degC": 0.7985427558255742
+      },
+      "circulation": {
+        "psi_bt_max_abs_cavity_Sv": 0.26010211536371486,
+        "psi_bt_max_abs_front_Sv": 0.47727758041324825,
+        "psi_moc_max_abs_Sv": 0.18505175549278896,
+        "bt_strength_max_minus_min_Sv": 0.2634628320997524,
+        "moc_strength_max_minus_min_Sv": 0.18646576342740379
+      }
     },
-    "deep300": {
-      "n_cells": 618,
-      "melt_m_per_a": 30.00246484594071,
-      "ustar_m_s": 0.0036533741611343845,
-      "thermal_driving_degC": 0.7985427558255742
+    "jpl": {
+      "file": "Ocean0_yosi_COM_MITgcm_JPL_new.nc",
+      "records_1based": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "time_years_window_start": [
+        0.4958904109589041,
+        0.915068493150685
+      ],
+      "gammaT": 0.0325,
+      "shelf": {
+        "n_cells": 3170,
+        "melt_m_per_a": 10.327805215368548,
+        "ustar_m_s": 0.0028193319717654225,
+        "thermal_driving_degC": 0.25927702473706526
+      },
+      "deep300": {
+        "n_cells": 687,
+        "melt_m_per_a": 31.34912167336045,
+        "ustar_m_s": 0.0039658707122927125,
+        "thermal_driving_degC": 0.7028102920594462
+      },
+      "circulation": {
+        "psi_bt_max_abs_cavity_Sv": 0.24381491666666666,
+        "psi_bt_max_abs_front_Sv": 0.2680527916666667,
+        "psi_moc_max_abs_Sv": 0.199974375,
+        "bt_strength_max_minus_min_Sv": 0.26914931770833334,
+        "moc_strength_max_minus_min_Sv": 0.21654705989583334
+      }
+    },
+    "rel_diff_circulation_ours_vs_jpl": {
+      "psi_bt_max_abs_cavity_Sv": 0.06680148581440307,
+      "psi_bt_max_abs_front_Sv": 0.7805357573248487,
+      "psi_moc_max_abs_Sv": -0.07462265856418378,
+      "bt_strength_max_minus_min_Sv": -0.02112762408984871,
+      "moc_strength_max_minus_min_Sv": -0.13891343748975257
+    },
+    "rel_diff_ours_vs_jpl": {
+      "shelf": {
+        "melt_m_per_a": -0.013247423513264103,
+        "ustar_m_s": -0.10022693597890413,
+        "thermal_driving_degC": 0.25788248640255074
+      },
+      "deep300": {
+        "melt_m_per_a": -0.04295676419426092,
+        "ustar_m_s": -0.07879645450612038,
+        "thermal_driving_degC": 0.13621380456111845
+      }
+    },
+    "gammaT_ratio_ours_over_jpl": 0.9525846153846154,
+    "melt_map_correlation": {
+      "r_either_shelf_zero_off": 0.9105924826217338,
+      "n_cells_either": 3170,
+      "r_both_shelf": 0.9384237600612909,
+      "n_cells_both": 2689,
+      "n_shelf_only_ours": 0,
+      "n_shelf_only_jpl": 481,
+      "grid": "identical 2 km cell centres (JPL x, y == our XC, YC); our row y = 81 km (wall) dropped"
+    },
+    "definitions": {
+      "thermal_driving_ours": "-<SHIfwFlx> L / (rhoConst cw <SHIgammT>) (AD16 Eq. 24, kappa_i = 0): gammaT-weighted Tw - Tb",
+      "thermal_driving_jpl": "thermalDriving: Tw - T_zd (AD16 output spec), Tw over a 20 m layer below the draft",
+      "ustar_jpl": "u from a 20 m layer and the 4 horizontal neighbours, no-normal-flow velocities at vertical ice faces excluded (summary PDF)",
+      "ustar_ours": "SHELFICEboundaryLayer: top cell plus the part of the next one that completes one cell thickness (metrics.boundary_layer_velocity_sq)"
     }
   },
-  "jpl": {
-    "file": "Ocean0_yosi_COM_MITgcm_JPL_new.nc",
-    "records_1based": [
-      7,
-      8,
-      9,
-      10,
-      11,
-      12
-    ],
-    "gammaT": 0.0325,
-    "shelf": {
-      "n_cells": 3170,
-      "melt_m_per_a": 10.327805215368548,
-      "ustar_m_s": 0.0028193319717654225,
-      "thermal_driving_degC": 0.25927702473706526
+  "ocean1": {
+    "label": "POST HOC (Esteban's requests 2026-11-09/10); not a pd0 criterion",
+    "ours": {
+      "run": "/Volumes/LaCie/portfolio_runs/exp2/ocean1_2km_r21",
+      "window": "year20",
+      "records_1based": [
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240
+      ],
+      "gammaT": 0.030959,
+      "shelf": {
+        "n_cells": 2689,
+        "melt_m_per_a": 10.339728645133679,
+        "ustar_m_s": 0.00256103561637889,
+        "thermal_driving_degC": 0.3300681836646545
+      },
+      "deep300": {
+        "n_cells": 618,
+        "melt_m_per_a": 30.368657186542233,
+        "ustar_m_s": 0.003712332194494707,
+        "thermal_driving_degC": 0.8008964320733264
+      },
+      "circulation": {
+        "psi_bt_max_abs_cavity_Sv": 0.2576358345557216,
+        "psi_bt_max_abs_front_Sv": 0.4919868427293332,
+        "psi_moc_max_abs_Sv": 0.1851119541450705,
+        "bt_strength_max_minus_min_Sv": 0.26111478883866157,
+        "moc_strength_max_minus_min_Sv": 0.18648643490163752
+      }
     },
-    "deep300": {
-      "n_cells": 687,
-      "melt_m_per_a": 31.34912167336045,
-      "ustar_m_s": 0.0039658707122927125,
-      "thermal_driving_degC": 0.7028102920594462
-    }
-  },
-  "rel_diff_ours_vs_jpl": {
-    "shelf": {
-      "melt_m_per_a": -0.013247423513264103,
-      "ustar_m_s": -0.10022693597890413,
-      "thermal_driving_degC": 0.25788248640255074
+    "jpl": {
+      "file": "Ocean1_yosi_COM_MITgcm_JPL_new.nc",
+      "records_1based": [
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240
+      ],
+      "time_years_window_start": [
+        19.0,
+        19.915068493150685
+      ],
+      "gammaT": 0.0325,
+      "shelf": {
+        "n_cells": 3170,
+        "melt_m_per_a": 10.455285168486009,
+        "ustar_m_s": 0.0028249805221739533,
+        "thermal_driving_degC": 0.26162539445828553
+      },
+      "deep300": {
+        "n_cells": 687,
+        "melt_m_per_a": 31.548234995016834,
+        "ustar_m_s": 0.003958922665573436,
+        "thermal_driving_degC": 0.7086769972109064
+      },
+      "circulation": {
+        "psi_bt_max_abs_cavity_Sv": 0.24631716666666667,
+        "psi_bt_max_abs_front_Sv": 0.2762495625,
+        "psi_moc_max_abs_Sv": 0.20303879166666666,
+        "bt_strength_max_minus_min_Sv": 0.27140722395833333,
+        "moc_strength_max_minus_min_Sv": 0.22152315234375
+      }
     },
-    "deep300": {
-      "melt_m_per_a": -0.04295676419426092,
-      "ustar_m_s": -0.07879645450612038,
-      "thermal_driving_degC": 0.13621380456111845
+    "rel_diff_circulation_ours_vs_jpl": {
+      "psi_bt_max_abs_cavity_Sv": 0.04595159989142014,
+      "psi_bt_max_abs_front_Sv": 0.7809506674941185,
+      "psi_moc_max_abs_Sv": -0.08829267242206133,
+      "bt_strength_max_minus_min_Sv": -0.03792248035834103,
+      "moc_strength_max_minus_min_Sv": -0.15816277924640593
+    },
+    "rel_diff_ours_vs_jpl": {
+      "shelf": {
+        "melt_m_per_a": -0.011052450649613743,
+        "ustar_m_s": -0.09343246925891921,
+        "thermal_driving_degC": 0.26160606216412885
+      },
+      "deep300": {
+        "melt_m_per_a": -0.037389660900551805,
+        "ustar_m_s": -0.062287266488700484,
+        "thermal_driving_degC": 0.13012900831459467
+      }
+    },
+    "gammaT_ratio_ours_over_jpl": 0.9525846153846154,
+    "melt_map_correlation": {
+      "r_either_shelf_zero_off": 0.9131213669473109,
+      "n_cells_either": 3170,
+      "r_both_shelf": 0.942309588887863,
+      "n_cells_both": 2689,
+      "n_shelf_only_ours": 0,
+      "n_shelf_only_jpl": 481,
+      "grid": "identical 2 km cell centres (JPL x, y == our XC, YC); our row y = 81 km (wall) dropped"
+    },
+    "definitions": {
+      "thermal_driving_ours": "-<SHIfwFlx> L / (rhoConst cw <SHIgammT>) (AD16 Eq. 24, kappa_i = 0): gammaT-weighted Tw - Tb",
+      "thermal_driving_jpl": "thermalDriving: Tw - T_zd (AD16 output spec), Tw over a 20 m layer below the draft",
+      "ustar_jpl": "u from a 20 m layer and the 4 horizontal neighbours, no-normal-flow velocities at vertical ice faces excluded (summary PDF)",
+      "ustar_ours": "SHELFICEboundaryLayer: top cell plus the part of the next one that completes one cell thickness (metrics.boundary_layer_velocity_sq)"
     }
-  },
-  "gammaT_ratio_ours_over_jpl": 0.9525846153846154,
-  "melt_map_correlation": {
-    "r_either_shelf_zero_off": 0.9105924826217338,
-    "n_cells_either": 3170,
-    "r_both_shelf": 0.9384237600612909,
-    "n_cells_both": 2689,
-    "n_shelf_only_ours": 0,
-    "n_shelf_only_jpl": 481,
-    "grid": "identical 2 km cell centres (JPL x, y == our XC, YC); our row y = 81 km (wall) dropped"
-  },
-  "definitions": {
-    "thermal_driving_ours": "-<SHIfwFlx> L / (rhoConst cw <SHIgammT>) (AD16 Eq. 24, kappa_i = 0): gammaT-weighted Tw - Tb",
-    "thermal_driving_jpl": "thermalDriving: Tw - T_zd (AD16 output spec), Tw over a 20 m layer below the draft",
-    "ustar_jpl": "u from a 20 m layer and the 4 horizontal neighbours, no-normal-flow velocities at vertical ice faces excluded (summary PDF)",
-    "ustar_ours": "SHELFICEboundaryLayer: top cell plus the part of the next one that completes one cell thickness (metrics.boundary_layer_velocity_sq)"
   }
 }

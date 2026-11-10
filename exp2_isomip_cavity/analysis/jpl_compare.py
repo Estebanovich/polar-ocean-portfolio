@@ -1,17 +1,20 @@
 #!/opt/anaconda3/envs/pyocean/bin/python
-r"""POST HOC comparison of our Ocean0 at 2 km with MITgcm-JPL (Nakayama, Menemenlis) ISOMIP+
-Ocean0 output (Esteban's request, 2026-11-09). Not a pre-registered criterion; it changes no
-verdict.
+r"""POST HOC comparison of our Ocean0 and Ocean1 at 2 km with MITgcm-JPL (Nakayama, Menemenlis)
+ISOMIP+ output (Esteban's requests, 2026-11-09 and 2026-11-10). Not a pre-registered
+criterion; it changes no verdict.
 
 Usage::
 
-    jpl_compare.py [--run /Volumes/LaCie/portfolio_runs/exp2/ocean0_2km_r21]
-                   [--jpl exp2_isomip_cavity/data_external/osf_jpl/Ocean0_yosi_COM_MITgcm_JPL_new.nc]
-                   [--out exp2_isomip_cavity/figures/jpl_comparison.json]
+    jpl_compare.py [--cases ocean0 ocean1] [--out exp2_isomip_cavity/figures/jpl_comparison.json]
 
-Windows: ours = pd0 'last6' (monthly records 19-24 of the 2-year run); JPL's file holds one
-year of monthly means (12 records, ``time`` = start of each month), records 7-12 are taken
-as their last 6 months.
+The JSON holds one entry per case ("ocean0", "ocean1"). Windows (``CASES``):
+
+* ocean0: ours = pd0 'last6' (monthly records 19-24 of ocean0_2km_r21); JPL's Ocean0 file
+  holds one year of calendar-month means (12 records), records 7-12 are taken as their last
+  6 months;
+* ocean1: ours = pd0 'year20' (records 229-240 of ocean1_2km_r21); JPL's Ocean1 file holds 20
+  years of calendar-month means (240 records, time 0-19.92 years), its last 12 records
+  (time >= 19 years) are taken as year 20.
 
 Regions, each model with its own draft and shelf mask: whole shelf; deep = shelf and ice
 base < -300 m (AD16 Eq. 37). JPL's shelf = cells where meltRate is not masked (in all 12
@@ -29,6 +32,13 @@ Quantities (time means over the window, then area means):
   Tw - Tb = rho_fw m L / (rho_sw cw gammaT) = -SHIfwFlx L / (rhoConst cw SHIgammT), applied to
   the monthly means: <fw> / <gammT> is the gammaT-weighted mean of Tw - Tb, not the plain
   mean that JPL's thermalDriving is (if they averaged it per time step);
+* circulation (both models, time-mean fields of the window): max |psi_bt| in the cavity
+  (y > 50 km, x < 640 km) and near the front (630 < x < 650 km), max |psi(x, z)| for
+  x < 640 km, and max - min of each for x < 640 km. Ours at cell corners
+  (metrics.barotropic_streamfunction / overturning_streamfunction); JPL's
+  barotropicStreamfunction / overturningStreamfunction as submitted (AD16 asks for them
+  interpolated to the standard grid: x, y centres, 5 m levels), so the extrema are not
+  taken at the same points;
 * spatial correlation of the time-mean melt maps on the common 2 km grid: cell centres
   match exactly (JPL x, y = our XC, YC; checked); our extra row y = 81 km (closed wall) is
   dropped; cells where either model has shelf, melt = 0 off-shelf.
@@ -49,9 +59,18 @@ if str(REPO) not in sys.path:
 from exp2_isomip_cavity.analysis import metrics as mt  # noqa: E402
 from exp2_isomip_cavity.theory import melt as ml  # noqa: E402
 
-JPL_FILE = REPO / "exp2_isomip_cavity" / "data_external" / "osf_jpl" / \
-    "Ocean0_yosi_COM_MITgcm_JPL_new.nc"
+JPL_DIR = REPO / "exp2_isomip_cavity" / "data_external" / "osf_jpl"
+JPL_FILE = JPL_DIR / "Ocean0_yosi_COM_MITgcm_JPL_new.nc"
 JPL_LAST6 = slice(6, 12)                # records 7-12 (1-based) of their 1-year file
+RUNS = Path("/Volumes/LaCie/portfolio_runs/exp2")
+CASES = {
+    "ocean0": {"run": RUNS / "ocean0_2km_r21", "window": "last6",
+               "jpl": JPL_FILE, "jpl_n": 12, "jpl_slice": JPL_LAST6},
+    "ocean1": {"run": RUNS / "ocean1_2km_r21", "window": "year20",
+               "jpl": JPL_DIR / "Ocean1_yosi_COM_MITgcm_JPL_new.nc", "jpl_n": 240,
+               "jpl_slice": slice(228, 240)},
+}
+X_CAV, Y_CAV, X_FRONT = mt.X_CAVITY_MAX_M, mt.Y_CAVITY_MIN_M, mt.X_FRONT_BAND_M
 JPL_GAMMA_T = 0.0325                    # MITgcm_JPL_Summary.pdf, "Parameter values"
 SEC_PER_YEAR = ml.SECONDS_PER_YEAR
 
@@ -60,27 +79,55 @@ def _wmean(f, w, sel):
     return float((f * w)[sel].sum() / w[sel].sum())
 
 
-def jpl_fields(path: Path) -> dict:
+def psi_stats(bt, moc, xb, yb, xm) -> dict:
+    """Circulation extrema [Sv] of time-mean streamfunctions: bt (ny', nx') at (xb, yb),
+    moc (nz', nx') at xm."""
+    cav = (yb[:, None] > Y_CAV) & (xb[None, :] < X_CAV)
+    front = (xb[None, :] > X_FRONT[0]) & (xb[None, :] < X_FRONT[1]) & np.ones_like(cav)
+    west = np.broadcast_to(xb[None, :] < X_CAV, bt.shape)
+    mw = np.broadcast_to(xm[None, :] < X_CAV, moc.shape)
+    def ext(f, sel, how):            # None if the region holds no finite value
+        v = f[sel]
+        v = v[np.isfinite(v)]
+        if not v.size:
+            return None
+        return float(np.abs(v).max()) if how == "abs" else float(v.max() - v.min())
+
+    return {"psi_bt_max_abs_cavity_Sv": ext(bt, cav, "abs"),
+            "psi_bt_max_abs_front_Sv": ext(bt, front, "abs"),
+            "psi_moc_max_abs_Sv": ext(moc, mw, "abs"),
+            "bt_strength_max_minus_min_Sv": ext(bt, west, "range"),
+            "moc_strength_max_minus_min_Sv": ext(moc, mw, "range")}
+
+
+def jpl_fields(path: Path, rec: slice = JPL_LAST6, n_expected: int | None = None) -> dict:
     import netCDF4
     with netCDF4.Dataset(path) as d:
+        t = np.asarray(d["time"][:], float)
+        if n_expected is not None and t.size != n_expected:
+            raise ValueError(f"{path.name}: {t.size} records, expected {n_expected}")
         melt = d["meltRate"][:]
         mask_any = np.ma.getmaskarray(melt).any(axis=0)
         draft = np.asarray(d["iceDraft"][:], dtype=float)
         shelf = ~mask_any & (draft < 0)
 
         def tmean(name):
-            return np.ma.filled(d[name][JPL_LAST6].mean(axis=0), np.nan).astype(float)
+            return np.ma.filled(d[name][rec].mean(axis=0), np.nan).astype(float)
 
-        return {"x": np.asarray(d["x"][:], float), "y": np.asarray(d["y"][:], float),
-                "time_s": np.asarray(d["time"][:], float).tolist(),
-                "draft": draft, "shelf": shelf,
+        x, y = np.asarray(d["x"][:], float), np.asarray(d["y"][:], float)
+        psi = psi_stats(tmean("barotropicStreamfunction") / mt.SV,
+                        tmean("overturningStreamfunction") / mt.SV, x, y, x)
+        idx = list(range(t.size))[rec]
+        return {"x": x, "y": y, "time_years_window": [t[idx[0]] / SEC_PER_YEAR,
+                                                     t[idx[-1]] / SEC_PER_YEAR],
+                "records": [k + 1 for k in idx], "draft": draft, "shelf": shelf,
                 "melt": tmean("meltRate") * SEC_PER_YEAR,
-                "ustar": tmean("frictionVelocity"), "td": tmean("thermalDriving")}
+                "ustar": tmean("frictionVelocity"), "td": tmean("thermalDriving"), "psi": psi}
 
 
-def ours_fields(run_dir: Path) -> dict:
+def ours_fields(run_dir: Path, window: str = "last6") -> dict:
     rd = mt.load_run(run_dir)                     # require_ok + R21 melt_law guard
-    win = mt.calendar_window(rd, "last6")
+    win = mt.calendar_window(rd, window)
     fw = rd.mean_field(mt._SHI, "SHIfwFlx", win)
     gm = rd.mean_field(mt._SHI, "SHIgammT", win)
     rho = float(rd.params["rho_ref"])
@@ -89,7 +136,10 @@ def ours_fields(run_dir: Path) -> dict:
     return {"rd": rd, "x": rd.xc[0, :], "y": rd.yc[:, 0], "draft": rd.draft,
             "shelf": rd.shelf, "w": rd.rA, "melt": mt.melt_rate_m_per_a(fw),
             "ustar": rd.mean_field(mt._SHI, "SHIuStar", win), "td": td,
-            "gammaT": float(rd.params["gammaT"]), "records": [k + 1 for k in win]}
+            "gammaT": float(rd.params["gammaT"]), "records": [k + 1 for k in win],
+            "psi": psi_stats(mt.barotropic_streamfunction(rd, win),
+                             mt.overturning_streamfunction(rd, win), rd.xg[0],
+                             mt._corner_y(rd), rd.xg[0])}
 
 
 def region_stats(f: dict, w) -> dict:
@@ -102,8 +152,9 @@ def region_stats(f: dict, w) -> dict:
     return out
 
 
-def compare(run_dir: Path, jpl_path: Path) -> dict:
-    o, j = ours_fields(run_dir), jpl_fields(jpl_path)
+def compare(run_dir: Path, jpl_path: Path, window: str = "last6", jpl_slice: slice = JPL_LAST6,
+            jpl_n: int | None = None) -> dict:
+    o, j = ours_fields(run_dir, window), jpl_fields(jpl_path, jpl_slice, jpl_n)
     ny = len(j["y"])
     if not (np.array_equal(o["x"], j["x"]) and np.array_equal(o["y"][:ny], j["y"])):
         raise ValueError("grids do not align: our XC/YC differ from JPL x/y")
@@ -121,11 +172,15 @@ def compare(run_dir: Path, jpl_path: Path) -> dict:
     rel = {reg: {k: (ours[reg][k] - jpl[reg][k]) / jpl[reg][k] for k in ours[reg]
                  if k != "n_cells"} for reg in ours}
     return {
-        "label": "POST HOC (Esteban's request 2026-11-09); not a pd0 criterion",
-        "ours": {"run": str(run_dir), "records_1based": o["records"], "gammaT": o["gammaT"],
-                 **ours},
-        "jpl": {"file": jpl_path.name, "records_1based": list(range(7, 13)),
-                "gammaT": JPL_GAMMA_T, **jpl},
+        "label": "POST HOC (Esteban's requests 2026-11-09/10); not a pd0 criterion",
+        "ours": {"run": str(run_dir), "window": window, "records_1based": o["records"],
+                 "gammaT": o["gammaT"], **ours, "circulation": o["psi"]},
+        "jpl": {"file": jpl_path.name, "records_1based": j["records"],
+                "time_years_window_start": j["time_years_window"], "gammaT": JPL_GAMMA_T,
+                **jpl, "circulation": j["psi"]},
+        "rel_diff_circulation_ours_vs_jpl": {k: (o["psi"][k] - j["psi"][k]) / j["psi"][k]
+                                             for k in o["psi"]
+                                             if o["psi"][k] is not None and j["psi"][k]},
         "rel_diff_ours_vs_jpl": rel,
         "gammaT_ratio_ours_over_jpl": o["gammaT"] / JPL_GAMMA_T,
         "melt_map_correlation": {
@@ -147,18 +202,21 @@ def compare(run_dir: Path, jpl_path: Path) -> dict:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="post hoc comparison with MITgcm-JPL Ocean0")
-    ap.add_argument("--run", type=Path,
-                    default=Path("/Volumes/LaCie/portfolio_runs/exp2/ocean0_2km_r21"))
-    ap.add_argument("--jpl", type=Path, default=JPL_FILE)
+    ap = argparse.ArgumentParser(description="post hoc comparison with MITgcm-JPL")
+    ap.add_argument("--cases", nargs="+", default=list(CASES), choices=list(CASES))
     ap.add_argument("--out", type=Path,
                     default=REPO / "exp2_isomip_cavity" / "figures" / "jpl_comparison.json")
     a = ap.parse_args(argv)
-    res = compare(a.run, a.jpl)
+    res = json.loads(a.out.read_text()) if a.out.exists() else {}
+    if "ours" in res:                              # pre-2026-11-10 layout: Ocean0 only
+        res = {"ocean0": res}
+    for c in a.cases:
+        cs = CASES[c]
+        res[c] = compare(cs["run"], cs["jpl"], cs["window"], cs["jpl_slice"], cs["jpl_n"])
+        print(c, json.dumps({k: res[c][k] for k in ("ours", "jpl", "melt_map_correlation")},
+                            indent=1, default=float))
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(res, indent=2, default=float) + "\n")
-    print(json.dumps({k: res[k] for k in ("ours", "jpl", "melt_map_correlation")},
-                     indent=1, default=float))
     return 0
 
 
