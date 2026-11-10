@@ -140,3 +140,23 @@ En ninguna variante n baja de 2.19. El fallo no depende de un punto aislado ni d
 - Se reporta n con su rango al dejar fuera una corrida, y R² de la cuadrática.
 - **"Apoya"** si n ∈ [1.3, 2.0]; **"no apoya"** en otro caso.
 - Se reportan N1–N3 de las 5 corridas. Un fallo de N3 deja la prueba "no evaluable": no se imputa ni se vuelve a correr. Un fallo de N1 o N2 se señala y la corrida se queda en el ajuste (como R22).
+
+### R24, parte 2 (sin corridas): predictores cuadráticos local y no local (POST HOC)
+
+Código: `h1_posthoc_tf.py --quad`. Salidas: `figures/fig2_posthoc_quad.{png,pdf,json}`. TF_loc es el forzamiento lejano a priori en la base de cada columna (el mismo de R23). ⟨·⟩ es la media ponderada por área sobre la plataforma. Se ajusta m = k·P^q (MCO en log–log); la familia cuadrática predice q = 1.
+
+**Predictores:**
+- **P_nonlocal = ⟨TF_loc·⟨TF⟩⟩.** Favier et al. 2019, Ec. 5 (`literatura/Favier_2019*.md` L491–497): "quadratic, local and non-local". Es la "quadratic-semilocal" de Burgard et al. 2022, Ec. 18 (`literatura/Burgard_2022*.md` L687–702). **Identidad:** ⟨TF⟩ es un solo número por corrida, así que P_nonlocal = ⟨TF⟩² = TF_eff² exactamente y q = n(TF_eff)/2. Este predictor **no aporta información nueva** sobre R23; se reporta porque se pidió.
+- **P_local = ⟨TF_loc·|TF_loc|⟩.** Favier 2019, Ec. 4 (L447–455): "quadratic, local". Es la "quadratic-local" de Burgard 2022, Ec. 14 (L648–654). No se reduce a TF_eff.
+
+**Resultados.** No hay ningún P ≤ 0, así que no se excluyó ninguna corrida. Entre corchetes, el rango de q al dejar fuera una corrida.
+
+| Predictor | z_c = 250 | z_c = 400 | z_c = 550 | Conjunto (15 corridas) |
+|---|---|---|---|---|
+| P_nonlocal (= TF_eff²) | 1.18 [1.17–1.20] | 1.72 [1.71–1.73] | 3.24 [2.94–3.47] | 0.78, R² = 0.85 [0.71–0.80] |
+| P_local | 1.18 [1.17–1.20] | 1.44 [1.43–1.46] | 1.83 [1.70–1.92] | **1.02**, R² = 0.96 [0.97–1.05] |
+
+**Lectura.**
+- El cuadrático **local**, en el conjunto, **colapsa las 15 corridas sobre q ≈ 1**: q = 1.02, R² en log = 0.96, rango LOO 0.97–1.05. Es lo que predice la familia cuadrática, y el colapso es mucho mejor que con TF_eff (R² = 0.85). Pesar cada columna por su propio forzamiento, que es lo que hace ⟨TF_loc|TF_loc|⟩, da más peso a la base profunda y cálida. Esto concuerda con la lectura de R23: el melt lo controla la parte expuesta de la base, no la media.
+- **Dentro de cada z_c, q sigue por encima de 1** (1.18, 1.44 y 1.83) y crece con z_c, es decir, con menos exposición. Ningún predictor a priori de esta familia reproduce la sensibilidad a Tbot a z_c fijo. El residuo concuerda con una respuesta de la circulación de la cavidad que no está en TF_loc.
+- **H1 sigue siendo FALLA**, como se preregistró.

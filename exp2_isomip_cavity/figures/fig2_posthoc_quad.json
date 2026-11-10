@@ -1,0 +1,249 @@
+{
+  "label": "POST HOC (R24)",
+  "melt_key": "mean_melt_shelf",
+  "runs": [
+    {
+      "case": "ens_T-0.5_zc250_s1.0",
+      "Tbot": -0.5,
+      "z_c": 250.0,
+      "melt": 4.492135270477996,
+      "P_nonlocal": 0.5842954288622653,
+      "P_local": 0.8522134310398986,
+      "TF_eff_shelf": 0.7643921957099413
+    },
+    {
+      "case": "ens_T0.0_zc250_s1.0",
+      "Tbot": 0.0,
+      "z_c": 250.0,
+      "melt": 8.142057758452323,
+      "P_nonlocal": 0.9638496001699044,
+      "P_local": 1.4078977825900987,
+      "TF_eff_shelf": 0.9817584225102958
+    },
+    {
+      "case": "ens_T0.5_zc250_s1.0",
+      "Tbot": 0.5,
+      "z_c": 250.0,
+      "melt": 13.3606469370528,
+      "P_nonlocal": 1.43789992458439,
+      "P_local": 2.1023841680599227,
+      "TF_eff_shelf": 1.1991246493106502
+    },
+    {
+      "case": "ens_T1.0_zc250_s1.0",
+      "Tbot": 1.0,
+      "z_c": 250.0,
+      "melt": 19.654602198338022,
+      "P_nonlocal": 2.0064464021057216,
+      "P_local": 2.9356725874493703,
+      "TF_eff_shelf": 1.4164908761110047
+    },
+    {
+      "case": "ens_T1.5_zc250_s1.0",
+      "Tbot": 1.5,
+      "z_c": 250.0,
+      "melt": 26.697407998606895,
+      "P_nonlocal": 2.6694890327339,
+      "P_local": 3.9077630407584425,
+      "TF_eff_shelf": 1.6338571029113593
+    },
+    {
+      "case": "ens_T-0.5_zc400_s1.0",
+      "Tbot": -0.5,
+      "z_c": 400.0,
+      "melt": 1.6073014851613792,
+      "P_nonlocal": 0.10570868647140452,
+      "P_local": 0.32004451441939263,
+      "TF_eff_shelf": 0.325128722925866
+    },
+    {
+      "case": "ens_T0.0_zc400_s1.0",
+      "Tbot": 0.0,
+      "z_c": 400.0,
+      "melt": 3.065507819352557,
+      "P_nonlocal": 0.15302853245522416,
+      "P_local": 0.5059024869105672,
+      "TF_eff_shelf": 0.39118861493558854
+    },
+    {
+      "case": "ens_T0.5_zc400_s1.0",
+      "Tbot": 0.5,
+      "z_c": 400.0,
+      "melt": 5.320936734648242,
+      "P_nonlocal": 0.20907619710371622,
+      "P_local": 0.7349890143008961,
+      "TF_eff_shelf": 0.4572485069453111
+    },
+    {
+      "case": "ens_T1.0_zc400_s1.0",
+      "Tbot": 1.0,
+      "z_c": 400.0,
+      "melt": 8.25071720376779,
+      "P_nonlocal": 0.2738516804168806,
+      "P_local": 1.00730409659038,
+      "TF_eff_shelf": 0.5233083989550336
+    },
+    {
+      "case": "ens_T1.5_zc400_s1.0",
+      "Tbot": 1.5,
+      "z_c": 400.0,
+      "melt": 12.522787539380348,
+      "P_nonlocal": 0.3473549823947175,
+      "P_local": 1.3228477337790179,
+      "TF_eff_shelf": 0.5893682909647562
+    },
+    {
+      "case": "ens_T-0.5_zc550_s1.0",
+      "Tbot": -0.5,
+      "z_c": 550.0,
+      "melt": 0.34443878579100934,
+      "P_nonlocal": 0.03238289929153039,
+      "P_local": 0.08226881182006808,
+      "TF_eff_shelf": 0.17995249176249378
+    },
+    {
+      "case": "ens_T0.0_zc550_s1.0",
+      "Tbot": 0.0,
+      "z_c": 550.0,
+      "melt": 0.688962073127056,
+      "P_nonlocal": 0.038418257760719075,
+      "P_local": 0.11346077288349898,
+      "TF_eff_shelf": 0.1960057595090488
+    },
+    {
+      "case": "ens_T0.5_zc550_s1.0",
+      "Tbot": 0.5,
+      "z_c": 550.0,
+      "melt": 1.1747533194315811,
+      "P_nonlocal": 0.04496903104059291,
+      "P_local": 0.15059691218697166,
+      "TF_eff_shelf": 0.2120590272556038
+    },
+    {
+      "case": "ens_T1.0_zc550_s1.0",
+      "Tbot": 1.0,
+      "z_c": 550.0,
+      "melt": 1.7843634497620118,
+      "P_nonlocal": 0.05203521913115192,
+      "P_local": 0.1936772297304861,
+      "TF_eff_shelf": 0.22811229500215882
+    },
+    {
+      "case": "ens_T1.5_zc550_s1.0",
+      "Tbot": 1.5,
+      "z_c": 550.0,
+      "melt": 2.50686932738267,
+      "P_nonlocal": 0.05961682203239609,
+      "P_local": 0.24270172551404248,
+      "TF_eff_shelf": 0.2441655627487138
+    }
+  ],
+  "fits": {
+    "P_nonlocal": {
+      "250": {
+        "n": 1.1810378042258427,
+        "k": 8.536344648349944,
+        "R2_log": 0.9995314879568763,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.167777887730346,
+          1.2007364412667452
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "400": {
+        "n": 1.7220154608571576,
+        "k": 77.51610934425877,
+        "R2_log": 0.9998431255286659,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.708253459102345,
+          1.72710038499584
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "550": {
+        "n": 3.243313877123033,
+        "k": 25380.59964657071,
+        "R2_log": 0.9907603923858846,
+        "n_runs": 5,
+        "loo_n_range": [
+          2.938481781476693,
+          3.4697404548142177
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "pooled": {
+        "n": 0.776233734514816,
+        "k": 12.400819145747016,
+        "R2_log": 0.852965476979318,
+        "n_runs": 15,
+        "loo_n_range": [
+          0.7064020816803194,
+          0.8047726156182067
+        ],
+        "excluded_nonpositive_forcing": []
+      }
+    },
+    "P_local": {
+      "250": {
+        "n": 1.178214692800278,
+        "k": 5.462671608005035,
+        "R2_log": 0.9995391829294604,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.1653071081556814,
+          1.197678603357036
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "400": {
+        "n": 1.4437333890099202,
+        "k": 8.269656645882346,
+        "R2_log": 0.9998403672858771,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.4315406068390304,
+          1.456483060222774
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "550": {
+        "n": 1.8329462967539953,
+        "k": 35.60402947593412,
+        "R2_log": 0.9949020632983726,
+        "n_runs": 5,
+        "loo_n_range": [
+          1.6992710748376587,
+          1.9236098299689934
+        ],
+        "excluded_nonpositive_forcing": []
+      },
+      "pooled": {
+        "n": 1.023916342186626,
+        "k": 6.854879020495066,
+        "R2_log": 0.9611148127309869,
+        "n_runs": 15,
+        "loo_n_range": [
+          0.9685822010364827,
+          1.0450496827154632
+        ],
+        "excluded_nonpositive_forcing": []
+      }
+    }
+  },
+  "exponent_name": "q (fit m = k P^q; the key 'n' of each fit holds q)",
+  "quadratic_family_predicts_q": 1.0,
+  "H1_preregistered_verdict_unchanged": "FAIL",
+  "identity": "P_nonlocal = <TF_loc <TF>> = <TF>^2 = TF_eff_shelf^2 exactly, so q(P_nonlocal) = n(TF_eff_shelf) / 2 (no information beyond R23)",
+  "sources": {
+    "P_nonlocal": "Favier et al. 2019 Eq. 5 (L491-497); Burgard et al. 2022 Eq. 18 (L687-702)",
+    "P_local": "Favier et al. 2019 Eq. 4 (L447-455); Burgard et al. 2022 Eq. 14 (L648-654)"
+  },
+  "note": "post hoc; far-field (a priori) ramp T, S at each column's ice base, AD16 liquidus; does not change the pre-registered H1 verdict",
+  "title": "POST HOC (R24): whole-shelf melt against quadratic melt predictors",
+  "figure": [
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig2_posthoc_quad.png",
+    "/Users/estebancruz/Phd_project/portfolio/exp2_isomip_cavity/figures/fig2_posthoc_quad.pdf"
+  ]
+}

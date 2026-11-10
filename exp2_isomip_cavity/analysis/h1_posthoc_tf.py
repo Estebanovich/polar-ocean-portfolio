@@ -61,8 +61,9 @@ FORCINGS = ("TF_eff_shelf", "TF_eff_deep300", "TD_diag_shelf", "TD_diag_deep300"
 
 # ---- forcings -------------------------------------------------------------------------------
 
-def tf_eff_a_priori(rd: mt.RunData, region: str = "shelf") -> float:
-    """A priori thermal forcing at the ice base [degC] (see module doc). Inputs only."""
+def tf_local(rd: mt.RunData, region: str = "shelf") -> tuple[np.ndarray, np.ndarray]:
+    """A priori far-field thermal forcing at each column's ice base [degC] and the column
+    areas [m^2] over ``region`` (see module doc). Inputs only."""
     prof = rd.actual.get("init_profile", rd.params.get("init_profile"))
     if prof != "ramp":
         raise ValueError(f"{rd.run_dir}: init_profile {prof!r}, TF_eff needs a ramp run")
@@ -73,7 +74,12 @@ def tf_eff_a_priori(rd: mt.RunData, region: str = "shelf") -> float:
     T, S = pr.ramp(zd, Tbot, z_c, d)
     p = float(rd.params["rho_ref"]) * float(rd.params["gravity"]) * np.abs(zd)
     tf = T - (ml.LAMBDA1 * S + ml.LAMBDA2 + ml.LAMBDA3 * p)   # AD16 Eq. 25, Table 4
-    w = rd.rA[sel]
+    return tf, rd.rA[sel]
+
+
+def tf_eff_a_priori(rd: mt.RunData, region: str = "shelf") -> float:
+    """Area-weighted mean of ``tf_local`` [degC] (TF_eff, R23)."""
+    tf, w = tf_local(rd, region)
     return float((tf * w).sum() / w.sum())
 
 
@@ -151,6 +157,100 @@ def analyse(table: dict, runs_root, suffix: str = "_r21") -> dict:
                        "run out"}}
 
 
+# ---- R24 part 2: quadratic predictors of Favier et al. (2019) -----------------------------
+
+R24_LABEL = "POST HOC (R24)"
+QUAD = ("P_nonlocal", "P_local")
+
+
+def quad_predictors(rd: mt.RunData) -> dict:
+    """Shelf-area means of the quadratic melt predictors [degC^2], TF = ``tf_local``:
+
+    * P_nonlocal = < TF_loc <TF> >: Favier et al. 2019 Eq. 5 (literatura/Favier_2019*.md
+      L491-497, "quadratic, local and non-local"; Burgard et al. 2022 Eq. 18, L687-702,
+      "quadratic-semilocal"). Since <TF> is one number per run, P_nonlocal = <TF>^2
+      exactly, i.e. TF_eff^2 (R23): a power law in it has q = n(TF_eff) / 2;
+    * P_local = < TF_loc |TF_loc| >: Favier 2019 Eq. 4 (L447-455, "quadratic, local");
+      Burgard 2022 Eq. 14 (L648-654, "quadratic-local"). Not reducible to TF_eff.
+    Melt ~ k P with q = 1 is what the quadratic family predicts."""
+    tf, w = tf_local(rd, "shelf")
+    mean = float((tf * w).sum() / w.sum())
+    return {"P_nonlocal": float((tf * mean * w).sum() / w.sum()),
+            "P_local": float((tf * np.abs(tf) * w).sum() / w.sum()), "TF_eff_shelf": mean}
+
+
+def analyse_quad(table: dict, runs_root, suffix: str = "_r21") -> dict:
+    runs = []
+    for z in en.CORE_ZC:
+        for r in en.core_rows(table, z):
+            if r["status"] != "OK" or r[MELT_KEY] is None:
+                continue
+            rd = mt.load_run(Path(runs_root) / f"{r['case']}{suffix}")
+            runs.append({"case": r["case"], "Tbot": r["Tbot"], "z_c": z, "melt": r[MELT_KEY],
+                         **quad_predictors(rd)})
+    fits = {}
+    for f in QUAD:
+        fits[f] = {}
+        for key, sel in [(f"{z:.0f}", [u for u in runs if u["z_c"] == z]) for z in en.CORE_ZC] \
+                + [("pooled", runs)]:
+            fits[f][key] = power_fit([u[f] for u in sel], [u["melt"] for u in sel],
+                                     [u["case"] for u in sel])
+    return {"label": R24_LABEL, "melt_key": MELT_KEY, "runs": runs, "fits": fits,
+            "exponent_name": "q (fit m = k P^q; the key 'n' of each fit holds q)",
+            "quadratic_family_predicts_q": 1.0,
+            "H1_preregistered_verdict_unchanged": "FAIL",
+            "identity": "P_nonlocal = <TF_loc <TF>> = <TF>^2 = TF_eff_shelf^2 exactly, so "
+                        "q(P_nonlocal) = n(TF_eff_shelf) / 2 (no information beyond R23)",
+            "sources": {"P_nonlocal": "Favier et al. 2019 Eq. 5 (L491-497); Burgard et al. "
+                                      "2022 Eq. 18 (L687-702)",
+                        "P_local": "Favier et al. 2019 Eq. 4 (L447-455); Burgard et al. 2022 "
+                                   "Eq. 14 (L648-654)"},
+            "note": "post hoc; far-field (a priori) ramp T, S at each column's ice base, AD16 "
+                    "liquidus; does not change the pre-registered H1 verdict"}
+
+
+def write_quad_outputs(res: dict, out_dir: Path) -> dict:
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    title = "POST HOC (R24): whole-shelf melt against quadratic melt predictors"
+    style.apply()
+    fig, axs = plt.subplots(1, 2, figsize=(7.0, 3.9))
+    for ax, f, xl in ((axs[0], "P_nonlocal", r"$\langle TF_{loc}\langle TF\rangle\rangle$ "
+                                             r"(°C$^2$)"),
+                      (axs[1], "P_local", r"$\langle TF_{loc}|TF_{loc}|\rangle$ (°C$^2$)")):
+        for z in en.CORE_ZC:
+            sel = [u for u in res["runs"] if u["z_c"] == z and u[f] > 0]
+            fz = res["fits"][f][f"{z:.0f}"]
+            lab = f"z_c = {z:.0f} m" + (f": q = {fz['n']:.2f}" if fz["n"] is not None else "")
+            ax.loglog([u[f] for u in sel], [u["melt"] for u in sel], "o", color=ZC_COLOURS[z],
+                      ms=4.5, label=lab)
+        fp = res["fits"][f]["pooled"]
+        xs = np.array([u[f] for u in res["runs"] if u[f] > 0])
+        if fp["n"] is not None and xs.size:
+            t = np.geomspace(xs.min(), xs.max(), 50)
+            ax.loglog(t, fp["k"] * t ** fp["n"], "k-", lw=1.0,
+                      label=f"pooled fit: q = {fp['n']:.2f}, R²(log) = {fp['R2_log']:.3f}")
+            ms = np.array([u["melt"] for u in res["runs"] if u[f] > 0])
+            x0, m0 = np.exp(np.log(xs).mean()), np.exp(np.log(ms).mean())
+            ax.loglog(t, m0 * (t / x0), "k:", lw=1.0, label="guide: q = 1 (quadratic family)")
+        ax.set(xlabel=xl, ylabel=r"$\langle m \rangle$ whole shelf (m a$^{-1}$)")
+        ax.legend(fontsize=6, frameon=False)
+    axs[0].set_title("(a) local x non-local (Favier 2019 Eq. 5)", fontsize=8)
+    axs[1].set_title("(b) local quadratic (Favier 2019 Eq. 4)", fontsize=8)
+    fig.suptitle(title, fontsize=9)
+    fig.text(0.01, -0.02, "POST HOC, not a pre-registered test; the pd0 H1 verdict stays FAIL. "
+             "TF_loc = far-field ramp T - T_f(S, p) at each column's ice base (a priori). "
+             "(a) equals <TF>^2 = TF_eff^2 exactly,\nso its q is n(TF_eff)/2 (R23). 4 km core "
+             "runs (s = 1, Tbot -0.5..1.5), last 6 months.", fontsize=6.5, color="0.25",
+             ha="left")
+    fig.tight_layout()
+    paths = style.save(fig, out_dir / "fig2_posthoc_quad")
+    plt.close(fig)
+    js = {**res, "title": title, "figure": [str(p) for p in paths]}
+    (out_dir / "fig2_posthoc_quad.json").write_text(json.dumps(js, indent=2) + "\n")
+    return js
+
+
 def write_outputs(res: dict, out_dir: Path) -> dict:
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -201,7 +301,18 @@ def main(argv=None) -> int:
     ap.add_argument("--runs-root", type=Path, default=en.DEFAULT_RUNS)
     ap.add_argument("--run-suffix", default="_r21")
     ap.add_argument("--out-dir", type=Path, default=FIG_DIR)
+    ap.add_argument("--quad", action="store_true",
+                    help="R24 part 2: quadratic local / non-local predictors instead")
     a = ap.parse_args(argv)
+    if a.quad:
+        res = analyse_quad(en.read_table(a.table), a.runs_root, a.run_suffix)
+        write_quad_outputs(res, a.out_dir)
+        for f in QUAD:
+            print(f, {k: (None if v["n"] is None else round(v["n"], 3), v["R2_log"] and
+                          round(v["R2_log"], 4), v["loo_n_range"] and
+                          [round(x, 2) for x in v["loo_n_range"]],
+                          v["excluded_nonpositive_forcing"]) for k, v in res["fits"][f].items()})
+        return 0
     res = analyse(en.read_table(a.table), a.runs_root, a.run_suffix)
     write_outputs(res, a.out_dir)
     for f in FORCINGS:
