@@ -60,6 +60,35 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ✅ ✔ | Cornford & Asay-Davis (2016). Geometría ISOMIP+ (`Ocean1_input_geom_v1.01.nc`), GFZ Data Services (dato, no artículo) | https://doi.org/10.5880/PIK.2016.002 |
 | ✅ | Cessi & Young (1996). Some unexpected consequences of the interaction between convective adjustment and horizontal diffusion. *Physica D* 98:287–300 (el "esquema" convectivo que Y26 atribuye a los MITgcm; diagnóstico R20) | https://doi.org/10.1016/0167-2789(96)00118-2 |
 | ✅ | Cessi (1996). Grid-scale instability of convective-adjustment schemes. *J. Mar. Res.* 54:407–420 (contexto del zigzag de ψ_bt a 4 km) | https://doi.org/10.1357/0022240963213529 |
+| | **Revisión 2026-11-10: sensibilidad del melt (H1) y overturning de la cavidad (V2b/V3)** | |
+| ✅ ★ | Jenkins et al. (2018). West Antarctic Ice Sheet retreat in the Amundsen Sea driven by decadal oceanic variability. *Nat. Geosci.* 11:733–738 (melt ∝ T² con T media de sección; termoclina) | https://doi.org/10.1038/s41561-018-0207-4 |
+| ✅ ★ | De Rydt et al. (2014). Geometric and oceanographic controls on melting beneath Pine Island Glacier. *JGR Oceans* 119 (MITgcm; subir la picnoclina → respuesta lineal por área expuesta) | https://doi.org/10.1002/2013JC009513 |
+| ✅ ★ | Hattermann et al. (2014). Eddy-resolving simulations of the Fimbul Ice Shelf cavity circulation. *Ocean Modelling* 82:28–44 (hipsometría: el área por profundidad modula la respuesta) | https://doi.org/10.1016/j.ocemod.2014.07.004 |
+| ✅ ★ | Favier et al. (2019). Assessment of sub-shelf melting parameterisations using NEMO–Elmer/Ice. *GMD* 12:2255–2283 (cuadrática; local × no local; Warm3 termoclina) | https://doi.org/10.5194/gmd-12-2255-2019 |
+| ✅ ★ | Burgard et al. (2022). An assessment of basal melt parameterisations for Antarctic ice shelves. *TC* 16:4931–4975 (tiene corrigendum ⬜) | https://doi.org/10.5194/tc-16-4931-2022 |
+| ✅ | Holland (2017). The transient response of ice shelf melting to ocean change. *JPO* 47:2101–2114 (respuesta de equilibrio cuadrática) | https://doi.org/10.1175/JPO-D-17-0071.1 |
+| ✅ | Steiger et al. (2022). The dynamics of a barotropic current impinging on an ice front. *JPO* (la viscosidad de baja resolución rompe la restricción de PV; ψ_bt a 4 km) | https://doi.org/10.1175/jpo-d-21-0312.1 |
+| ⬜ ★ | Jourdain et al. (2017). Ocean circulation and sea-ice thinning induced by melting ice shelves in the Amundsen Sea. *JGR Oceans* 122 (escala overturning–melt; calibrar el melt no fija u* y TF por separado) | https://doi.org/10.1002/2016JC012509 |
+| ⬜ | Jourdain et al. (2020). A protocol for calculating basal melt rates in the ISMIP6 Antarctic ice sheet projections. *TC* 14:3111–3134 (cuadrática local/no local) | https://doi.org/10.5194/tc-14-3111-2020 |
+| ⬜ | Lambert & Burgard (2025). *TC* 19:2495 (calentamiento bajo 500 m; respuesta fuertemente no lineal) | https://doi.org/10.5194/tc-19-2495-2025 |
+| ⬜ | Little, Gnanadesikan & Oppenheimer (2009). How ice shelf morphology controls basal melting. *JGR* 114:C12007 [verificar afirmación subcuadrática] | https://doi.org/10.1029/2008JC005197 |
+| ⬜ | Gwyther et al. (2016). *Ann. Glaciol.* (las mareas reducen la sensibilidad a la temperatura) | https://doi.org/10.1017/aog.2016.31 |
+| ⬜ | Lazeroms et al. (2018). *TC* 12:49–70 (parametrización de pluma) | https://doi.org/10.5194/tc-12-49-2018 |
+| ⬜ | Lazeroms et al. (2019). *JPO* 49:917–939 | https://doi.org/10.1175/JPO-D-18-0131.1 |
+| ⬜ | Reese et al. (2018). PICO. *TC* 12:1969–1985 | https://doi.org/10.5194/tc-12-1969-2018 |
+| ⬜ | Pelle et al. (2019). PICOP. *TC* 13:1043–1049 | https://doi.org/10.5194/tc-13-1043-2019 |
+| ⬜ | Rosevear et al. (2022). *JPO* (respuesta muy no lineal; estratificación) | https://doi.org/10.1175/JPO-D-21-0317.1 |
+| ⬜ | Yung et al. (2025). Stratified suppression of turbulence in an ice shelf basal melt parameterisation. *TC* 19:5827 | https://doi.org/10.5194/tc-19-5827-2025 |
+| ⬜ | Dutrieux et al. (2014). *Science* 343:174–178 (termoclina y melt de Pine Island) | https://doi.org/10.1126/science.1244341 |
+| ⬜ | Sergienko, Goldberg & Little (2013). *JGR Earth Surf.* (sensibilidad a la profundidad de la termoclina) | https://doi.org/10.1002/jgrf.20054 |
+| ⬜ | Kimura et al. (2017). *JGR Oceans* (control por termoclina; respuesta asimétrica) | https://doi.org/10.1002/2017JC012926 |
+| ⬜ | Olbers & Hellmer (2010). *Ocean Dyn.* (modelo de caja: cuadrático → lineal) | https://doi.org/10.1007/s10236-009-0252-z |
+| ⬜ | Grosfeld et al. (1997). Thermohaline circulation and interaction between ice shelf cavities and the adjacent open ocean. *JGR* (f/H en el frente) | https://doi.org/10.1029/97JC00891 |
+| ⬜ | Zhou & Hattermann (2020). Modeling ice shelf cavities in FVCOM. *Ocean Modelling* 146:101536 | https://doi.org/10.1016/j.ocemod.2019.101536 |
+| ⬜ | Naughten et al. (2018). Intercomparison MetROMS-iceshelf vs FESOM 1.4. *GMD* 11:1257 | https://doi.org/10.5194/gmd-11-1257-2018 |
+| ⬜ | Donat-Magnin et al. (2017). *JGR Oceans* (circulación inducida por melt amplificada por interfaz profunda) | https://doi.org/10.1002/2017JC013059 |
+| ⬜ | Jenkins (2016). A simple model of the ice shelf–ocean boundary layer and current. *JPO* [verificar DOI] | https://doi.org/10.1175/JPO-D-15-0194.1 |
+| ⬜ | Goldberg et al. (2012a). Investigation of land ice-ocean interaction with a fully coupled ice-ocean model. *JGR* [verificar DOI] | https://doi.org/10.1029/2011JF002246 |
 
 ## Exp. 3 — Emulador de ML del derretimiento (Purkey, Jourdain/Burgard)
 
