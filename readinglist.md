@@ -117,6 +117,23 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ✔ | Ockenden et al. (2026). DeepMelt-GL v1: a neural network emulator of sub-shelf melt rates. *GMD* (muy reciente: hay que distinguirse de esto) | https://doi.org/10.5194/gmd-19-7979-2026 |
 | (m) | Burgard et al. (2022). An assessment of basal melt parameterisations for Antarctic ice shelves. *The Cryosphere* | https://doi.org/10.5194/tc-16-4931-2022 |
 | ✔ | Lanham et al. (2025). Seasonal regimes of warm Circumpolar Deep Water intrusion toward Antarctic ice shelves. *Commun. Earth Environ.* | https://doi.org/10.1038/s43247-025-02091-w |
+| ⬜ ★ | Bouissou, Burgard & Jourdain (2022). Parameterising ocean-induced melt of an idealised Antarctic ice shelf using deep learning. *ECCOMAS 2022* (el antecedente más cercano: NN entrenada en una cavidad idealizada) | https://doi.org/10.23967/eccomas.2022.216 |
+| ⬜ | Rosier, Bull & Gudmundsson (2022). Predicting ocean-induced ice-shelf melt rates using a machine learning image segmentation approach (preprint de MELTNET y sus revisiones públicas: Smith, Bolibar, Jouvet) | https://doi.org/10.5194/tc-2021-396 |
+| ⬜ | Berdahl et al. (2020). Statistical emulation of a perturbed basal melt ensemble of an ice sheet model. *The Cryosphere* (emulador estadístico, tipo proceso gaussiano, para ensambles pequeños) | https://doi.org/10.5194/tc-2020-178 |
+| ⬜ | Sartore, Haseloff & Wagner (2026). Feedbacks between ice shelf geometry and basal melt in plume parameterizations. *J. Glaciol.* (línea base de plumas) | https://doi.org/10.1017/jog.2026.10189 |
+| ⬜ | Rosevear, Galton-Fenzi & Stevens (2021). Evaluation of basal melting parameterisations using in situ observations from the Amery Ice Shelf. *Ocean Sci.* | https://doi.org/10.5194/os-2021-111 |
+| ⬜ ★ | Lambert & Burgard (2025). Brief communication: Sensitivity of Antarctic ice shelf melting to ocean warming across basal melt models. *The Cryosphere* 19:2495 (calentamiento idealizado bajo la termoclina: +67–240 % con +1 °C según el modelo de melt; calibrar al presente no fija la sensibilidad) | https://doi.org/10.5194/tc-19-2495-2025 |
+| ⬜ ★ | Jourdain et al. (2020). A protocol for calculating basal melt rates in the ISMIP6 Antarctic ice sheet projections. *The Cryosphere* (la cuadrática local y no local que será la línea base) | https://doi.org/10.5194/tc-14-3111-2020 |
+| ⬜ ★ | Little, Gnanadesikan & Oppenheimer (2009). How ice shelf morphology controls basal melting. *JGR* 114 (las simulaciones se apartan de la ley cuadrática simple; también sirve para discutir el H1 del Exp. 2) | https://doi.org/10.1029/2008JC005197 |
+| ⬜ ★ | Lütjens et al. (2024). The impact of internal variability on benchmarking deep learning climate emulators. *JAMES* (una regresión lineal le gana a un emulador profundo en 3 de 4 variables: hay que comparar contra líneas base simples) | https://doi.org/10.1029/2024MS004619 |
+| ⬜ | Van Katwyk et al. (2023). A variational LSTM emulator of sea level contribution from the Antarctic Ice Sheet. *JAMES* (red contra proceso gaussiano en ISMIP6) | https://doi.org/10.1029/2023MS003899 |
+| ⬜ | Myren & Lawrence (2021). A comparison of Gaussian processes and neural networks for computer model emulation and calibration. *Stat. Anal. Data Min.* (el proceso gaussiano es más preciso y mejor calibrado con pocos datos) | https://doi.org/10.1002/sam.11507 |
+| ⬜ | Lakshminarayanan, Pritzel & Blundell (2017). Simple and scalable predictive uncertainty estimation using deep ensembles. *NeurIPS* (método de ensamble de redes) | https://doi.org/10.48550/arXiv.1612.01474 |
+| ⬜ | Reese et al. (2018). Antarctic sub-shelf melt rates via PICO. *The Cryosphere* 12:1969 | https://doi.org/10.5194/tc-12-1969-2018 |
+| ⬜ | Lazeroms et al. (2018). Modelling present-day basal melt rates for Antarctic ice shelves using a parametrization of buoyant meltwater plumes. *The Cryosphere* 12:49 | https://doi.org/10.5194/tc-12-49-2018 |
+| ⬜ | Lambert et al. (2023). Modelling Antarctic ice shelf basal melt patterns using LADDIE v1.0. *The Cryosphere* 17:3203 | https://doi.org/10.5194/tc-17-3203-2023 |
+| ⬜ | Olbers & Hellmer (2010). A box model of circulation and melting in ice shelf caverns. *Ocean Dyn.* (melt cuadrático para T pequeña y lineal para T grande) | https://doi.org/10.1007/s10236-009-0252-z |
+| ⬜ | Mathiot & Jourdain (2023). Southern Ocean warming and Antarctic ice shelf melting in conditions plausible by late 23rd century. *Ocean Sci.* 19:1595 | https://doi.org/10.5194/os-19-1595-2023 |
 
 ## Exp. 4 — BayIW ártico (MacKinnon, Maksym)
 
