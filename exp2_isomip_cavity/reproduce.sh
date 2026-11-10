@@ -20,6 +20,8 @@
 #                                    the N1-N3 check, then Ocean1 at 2 km (np 5, four 5-year stages)
 #   3. scripts/queue_r24.sh          the post hoc R24 exposure runs hol_T* (5 runs, 4 km)
 # Each queue is wrapped in caffeinate: an idle Mac otherwise pauses the runs.
+# Note: the queue scripts hardcode RUNS=/Volumes/LaCie/portfolio_runs/exp2 (RUNS above does not override
+# them), and queue_production.sh takes Gamma_T,cal from cases.yaml (0.029356 at 4 km, 0.030959 at 2 km).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
