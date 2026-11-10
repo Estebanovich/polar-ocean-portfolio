@@ -1,6 +1,6 @@
 # Running the experiments
 
-A portfolio of idealized, reproducible MITgcm polar-ocean experiments. Each experiment pairs a model configuration with theory, validation tests and analysis scripts. Experiment 1 (`exp1_fjord_plumes/`, subglacial plumes in a fjord) is the first.
+A portfolio of idealized, reproducible MITgcm polar-ocean experiments. Each experiment pairs a model configuration with theory, validation tests and analysis scripts. Experiment 1 (`exp1_fjord_plumes/`) studies subglacial plumes in a fjord; Experiment 2 (`exp2_isomip_cavity/`) an ISOMIP+ ice-shelf cavity.
 
 ## Commands
 
@@ -22,6 +22,20 @@ $PY exp1_fjord_plumes/scripts/run_campaign.py --config a_line2d --cases '<glob>'
 
 # Everything (figures, metrics and README) from existing run output
 bash exp1_fjord_plumes/reproduce.sh --quick
+bash exp2_isomip_cavity/reproduce.sh --quick      # also writes the Exp. 3 dataset (outside the repo)
+```
+
+Experiment 2 uses the same scripts with its own configurations (`ocean0_2km`, MPI np 5; `ocean0_4km`, serial):
+
+```bash
+scripts/build_mitgcm.sh exp2_isomip_cavity/config/ocean0_4km /Volumes/ESTEBAN_MIT/portfolio_builds/exp2/ocean0_4km
+$PY exp2_isomip_cavity/scripts/run_campaign.py --config ocean0_4km --cases 'ens_*' --np 1 \
+    --max-concurrent 5 --run-suffix _r21 --skip-ok          # Ocean1: --stages 4 (pickup restarts)
+# The campaigns as actually run (each wrapped in caffeinate so an idle Mac does not pause them):
+caffeinate -is bash exp2_isomip_cavity/scripts/queue_calibration.sh   # K1 calibration + verification
+caffeinate -is bash exp2_isomip_cavity/scripts/queue_production.sh    # 28-run ensemble, N1-N3, Ocean1
+caffeinate -is bash exp2_isomip_cavity/scripts/queue_r24.sh           # post hoc R24 runs
+bash exp2_isomip_cavity/reproduce.sh --quick [--gifs]
 ```
 
 ## Pipeline (Experiment 1)
@@ -41,11 +55,20 @@ The pipeline runs `cases.yaml` → `gendata` → MITgcm run → `analysis`; `the
 - **`theory/`** holds the plume models (Jenkins 2011 line plume, Slater et al. 2016 half-cone plume, Morton–Taylor–Turner cone) and the three-equation melt law. The `mitgcm` melt mode reproduces `pkg/icefront/icefront_thermodynamics.F` line by line.
 - **`notes/`** (in Spanish) is the decision record: pre-registered criteria, results and every follow-up.
 
+## Pipeline (Experiment 2)
+
+The same chain, `cases.yaml` → `gendata` → MITgcm run → `analysis`, with these differences:
+
+- **Geometry** (`gendata/geometry.py`) comes from the ISOMIP+ file `Ocean1_input_geom_v1.01.nc`, which is not tracked: download it into `exp2_isomip_cavity/data_external/` as described, with its DOI and checksum, in `data_external/SOURCES.md` (the MITgcm-JPL output for the post hoc comparison is there too).
+- **Run suffix `_r21`.** Every valid run directory ends in `_r21`; runs made before the correction of the friction-velocity law (ruling R21) are void. `case.json` carries `melt_law`, and `analysis/metrics.load_run` refuses any run without the current one, as well as any run that is not OK.
+- **Analysis** (`analysis/`): `calibrate.py` and `pd1_calibration_eval.py` (K1, V1), `fig1_ocean0_validation.py` (Ocean1, V2, V3), `ensemble.py`, `fig2_melt_sensitivity.py` and `fig3_meltwater_export.py` (H1, H2), `h1_posthoc_tf.py` (post hoc R23, R24), `jpl_compare.py` (post hoc), `export_exp3.py` (dataset for Experiment 3, written to `$EXP2_RUNS/exp3_dataset.npz`).
+- **README:** rendered by `scripts/render_readme.py` from `README.template.md` and `figures/*.json` (`--check` verifies that it is up to date). `figures/void_pre_r21/` holds void records that nothing reads.
+
 ## Locations
 
 Run output, builds and the MITgcm source default to the paths of the original machine. Override them with environment variables:
-- `EXP1_RUNS`: run-output root;
-- `EXP1_BUILDS`: build root;
+- `EXP1_RUNS`, `EXP2_RUNS`: run-output roots (defaults `/Volumes/LaCie/portfolio_runs/exp1` and `.../exp2`);
+- `EXP1_BUILDS`, `EXP2_BUILDS`: build roots (defaults `/Volumes/ESTEBAN_MIT/portfolio_builds/exp1` and `.../exp2`);
 - `MITGCM_ROOT`: MITgcm checkout.
 
 They are defined in `pfcommon/paths.py`. `reproduce.sh` also accepts `RUNS`.

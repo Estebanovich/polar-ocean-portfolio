@@ -92,7 +92,7 @@ Si ninguna variante llega a 0.0135, el resultado se reporta como "no explicado p
 
 ## Resultado (post hoc; cola 2026-11-09 03:21–03:48 CST, commit e898d77)
 
-Las dos variantes terminaron OK, con N3 aplicado por `metrics.load_run`. Lectura mecánica según la regla de arriba: p = 0.690, referencia 41.2156 m a⁻¹, umbral ΓT_est ≥ 0.0135. Valores en `figures/diag_bl_<caso>.json`.
+Las dos variantes terminaron OK, con N3 aplicado por `metrics.load_run`. Lectura mecánica según la regla de arriba: p = 0.690, referencia 41.2156 m a⁻¹, umbral ΓT_est ≥ 0.0135. Valores en `figures/void_pre_r21/diag_bl_<caso>.json`.
 
 | Variante | Caso | Melt profundo, meses 19–24 (m a⁻¹) | Δ frente a la referencia | ΓT_est (estimación) | ¿Explica la diferencia (≥ 0.0135)? |
 |---|---|---|---|---|---|
@@ -133,7 +133,7 @@ Las dos variantes terminaron OK, con N3 aplicado por `metrics.load_run`. Lectura
 
 - Informativo: melt de la plataforma 13.995 m a⁻¹; N1 = 0.0039; N2 = 4.8e-8; CFL máximo 0.264; sobreenfriamiento en el estado final de 289 celdas, con mínimo −0.325 °C (ΓT = 0.015).
 - El signo resultó **positivo**: el promedio en las caras da un u\* mayor y más melt, así que el ΓT_cal implícito **baja**. Esta variante aleja nuestro modelo de los otros MITgcm en lugar de acercarlo.
-- Archivo: `figures/diag_bl_diag4_ustartopdz.json`.
+- Archivo: `figures/void_pre_r21/diag_bl_diag4_ustartopdz.json`.
 
 ## Cota (no es una corrida): columna mínima de 40 m con calado excavado (MITgcm-BAS, Y26 final L764)
 

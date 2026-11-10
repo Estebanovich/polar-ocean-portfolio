@@ -314,3 +314,11 @@
   - n = 2.16 (LOO 2.11–2.19): **no apoya**, según la regla.
   - Solo ~50 % de la base queda por debajo de 200 m.
   - Dentro de `hol`, n contra TF_eff = 1.98 y q local = 0.99 (`figures/fig2_posthoc_r24.*`).
+
+## 2026-11-10 — Exp. 2, Task 7: exportación para el Exp. 3, README, reproducibilidad
+
+- **Exportación para el Exp. 3** (`analysis/export_exp3.py`, TDD en `tests/test_export.py`: forma, NaN en celdas secas, exclusión de las corridas que fallan N3 o faltan, partición, N1, perfiles, escritura reproducible byte a byte). Archivo fuera del repo: `/Volumes/LaCie/portfolio_runs/exp2/exp3_dataset.npz`, 29 corridas (26 de entrenamiento, 3 de prueba con Tbot = 2.0), 0 excluidas, 5 marcadas por N1; sha256 `3d2eceb1…`. N1 y melt coinciden exactamente con `ensemble_table.json`. Esquema en `notes/exp3_dataset.md`.
+- **README del Exp. 2** en estructura IMRaD, en inglés, renderizado desde `README.template.md` con `scripts/render_readme.py` (mismo mecanismo `{{name}}` del Exp. 1, con su propio `values()`). Todos los números salen de `figures/*.json`; la única excepción es el u\* de 0.0109 m s⁻¹ de la corrida anulada, citado de `pd1_config.md` y señalado así en el texto. Tabla de criterios con resultado: V2b FALLA (con la fila post hoc), V3 overturning FALLA marginal, H1 FALLA, H2 PASA, 5 fallos de N1. `render_readme.py --check` pasa; pruebas en `tests/test_exp2_render_readme.py`; suite completa: 569 pasan.
+- **Registros anulados:** los JSON anteriores a R21 (`calibration_*`, `*_3pt`, `verify_*`, `pd1_calibration_eval.json`, `diag_bl_*`) pasaron con `git mv` a `figures/void_pre_r21/`, con un README. El renderizador se niega a leerlos. Rutas actualizadas en `pd1_calibracion.md` y `pd1_diagnostico_capa_limite.md`.
+- **`reproduce.sh`:** `--quick` regenera calibración, evaluación, comparación con JPL, Figuras 1–3, análisis post hoc, la exportación y el README; `--gifs` añade la animación; el modo completo lanza las colas en su orden (calibración → producción → R24) con `caffeinate`. Con `SOURCE_DATE_EPOCH=0` (valor por omisión), dos `--quick` seguidos dan archivos idénticos (shasum de 27 archivos y del .npz). Frente a lo ya subido, solo cambian los PDF, y solo en su fecha de creación; JSON, PNG, GIF y README salen idénticos.
+- README principal y `RUNNING.md` con el Exp. 2 (rutas `EXP2_RUNS`/`EXP2_BUILDS`, colas, `reproduce.sh`).

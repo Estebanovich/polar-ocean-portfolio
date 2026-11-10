@@ -112,7 +112,7 @@ La cola `scripts/queue_calibration.sh` corrió del 2026-11-08 20:40 al 23:46 CST
 | 2 km | 0.06 | 74.680 | 21.761 | 0.0025 |
 
 - **Resultado mecánico de K1:** el objetivo de 30 m a⁻¹ **no queda acotado** a ninguna resolución, porque el melt mínimo muestreado es 41.2 (4 km) y 39.9 (2 km). pd0 prohíbe extrapolar, así que `calibrate.py` devolvió NOT_BRACKETED (código 3) y la cola no lanzó verificaciones. Esto fue a PD2.
-- **Registro:** `figures/calibration_{4km,2km}_3pt.json`.
+- **Registro:** `figures/void_pre_r21/calibration_{4km,2km}_3pt.json` (anulado por R21).
 - **Extrapolación log–log informativa** con los dos primeros puntos. No es la calibración ni sustituye a ninguna corrida:
   - 4 km: pendiente 0.546, ΓT ≈ 0.0084;
   - 2 km: pendiente 0.529, ΓT ≈ 0.0087.
@@ -139,7 +139,7 @@ La cola `scripts/queue_calibration.sh` corrió del 2026-11-08 20:40 al 23:46 CST
 
 ### 4.3 Resultado y evaluación (segunda cola, 2026-11-09 00:41–03:13 CST, commit f7fdd41)
 
-La evaluación es mecánica: `analysis/pd1_calibration_eval.py` escribe `figures/pd1_calibration_eval.json`, y los veredictos se copian en `figures/calibration_{4km,2km}.json` (clave `evaluation`) y en `figures/verify_{4km,2km}.json`. Todas las corridas se leyeron con `metrics.load_run`.
+La evaluación es mecánica: `analysis/pd1_calibration_eval.py` escribe `figures/void_pre_r21/pd1_calibration_eval.json`, y los veredictos se copian en `figures/void_pre_r21/calibration_{4km,2km}.json` (clave `evaluation`) y en `figures/void_pre_r21/verify_{4km,2km}.json` (todos anulados por R21). Todas las corridas se leyeron con `metrics.load_run`.
 
 **Calibración (4 puntos por malla).** En las dos mallas, el tramo que acota los 30 m a⁻¹ es [0.0075, 0.015].
 
