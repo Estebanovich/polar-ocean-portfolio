@@ -459,3 +459,9 @@
 - Esteban se saltó las preguntas del diseño y pidió una bahía real con topografía real. Eligió Van Mijenfjorden/Isfjorden (Svalbard, ~78°N) y conservar la bahía de la tesis como control a f ártica.
 - Addendum a la revisión (§9 de `rev_literatura.md`): 3 búsquedas en Consensus y 2 de fuentes de datos. Van Mijenfjorden solo se ha modelado con marea (Støylen & Fer 2014, ondas de Kelvin internas); su respuesta al viento con y sin hielo no está estudiada. Batimetría IBCAO v5 (100 m) e hidrografía UNIS HD. 18 entradas nuevas en `readinglist.md`.
 - Spec escrito: `docs/superpowers/specs/2026-11-11-exp4-arctic-fjord-design.md` (local), pendiente de aprobación.
+- **Mezcla (después de revisar la discusión de la tesis).** La tesis identifica la capa superficial como su limitación principal: sin parametrización de capa de mezcla, con viscosidad vertical de 1e-5 y celda superficial de 1 m, solo radiaba el 0.3 % y el 0.08 % del trabajo del viento, dos órdenes de magnitud menos que en el lago Superior. Propone KPP como trabajo futuro. Decisiones de Esteban:
+  - KPP en todas las corridas, con sensibilidades F1c (cierre de la tesis) y F1g (GGL90);
+  - R1k (la bahía de la tesis con KPP), para responder la pregunta abierta de la tesis;
+  - corridas de ~10 días.
+
+  Spec (§3.6, H4d) y plan actualizados. En `readinglist.md`: Large et al. 1994 y Pollard & Millard 1970, ambos ya en la biblioteca de la tesis.

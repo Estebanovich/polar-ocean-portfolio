@@ -213,6 +213,8 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | dato | Jakobsson et al. (2024). The International Bathymetric Chart of the Arctic Ocean Version 5.0. *Sci. Data* (malla de 100 m; revisar términos de uso de GEBCO antes de redistribuir) | https://repository.library.noaa.gov/view/noaa/66918 |
 | dato | UNIS Hydrographic Database (UNIS HD), perfiles CTD 75–83°N; la calibración no está revisada en todos los datos | https://b2find.eudat.eu/dataset/b3f1b0cb-9afb-5265-ab2e-bd8d6a586a31 |
 | dato | Norwegian Polar Institute, S100 Kartdata (línea de costa oficial de Svalbard, 1:100 000; licencia abierta [verificar términos]) | https://geodata.npolar.no |
+| 📁 ★ | Large, McWilliams & Doney (1994). Oceanic vertical mixing: a review and a model with a nonlocal boundary layer parameterization. *Rev. Geophys.* 32 (KPP; cierre del Exp. 4, propuesto en la discusión de la tesis) | https://doi.org/10.1029/94RG01872 |
+| 📁 | Pollard & Millard (1970). Comparison between observed and simulated wind-generated inertial oscillations. *Deep-Sea Res.* 17 (viento como fuerza de cuerpo en la capa de mezcla; alternativa propuesta en la tesis) | https://doi.org/10.1016/0011-7471(70)90043-4 |
 
 📁 = ya está en la biblioteca de la tesis (`~/Documents/TESIS_InternalWaves-2/Literatura/`), no en `literatura/`. Detalle en `exp4_arctic_bayiw/notes/rev_literatura.md`.
 
