@@ -6,6 +6,7 @@ IBCAO v5.2 window and the NPI S100 coastline in data_external/ and are skipped i
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -222,6 +223,48 @@ def test_two_600m_channels_stay_open(tmp_path):
     assert w[:, 25:39].all()                           # east basin kept: connected through the gaps
 
 
+# --------------------------------------------------------------------------- PD1 force regions
+def force_grid():
+    """10 x 12 grid at 200 m: sea in the west (i < 4), a lagoon (i >= 7, j >= 5) joined to the sea
+    by a channel on row 7, and a second unconnected pond (row 1, i = 9) inside the lagoon polygon."""
+    xc = X0 + 100.0 + 200.0 * np.arange(12)
+    yc = Y0 + 100.0 + 200.0 * np.arange(10)
+    wet = np.zeros((10, 12), bool)
+    wet[:, :4] = True
+    wet[7, 4:7] = True                       # channel
+    wet[5:9, 7:11] = True                    # lagoon
+    wet[1, 9] = True                         # separate pond
+    g = {"xc": xc, "yc": yc, "wet_fraction": np.where(wet, 1.0, 0.0),
+         "depth_mean": np.where(wet, 10.0, 0.0), "tid_mode": np.full(wet.shape, 11)}
+    return wet, g
+
+
+def test_force_land_seed_fills_only_connected_region_in_polygon():
+    wet, g = force_grid()
+    poly = [[X0 + 1400, Y0], [X0 + 2400, Y0], [X0 + 2400, Y0 + 2000], [X0 + 1400, Y0 + 2000]]   # i >= 7
+    region = {"Lagoon": {"seed": [X0 + 1700, Y0 + 1300], "polygon": poly}}
+    out, counts = bathy.apply_force_regions(wet, g, FACES, region, None)
+    assert not out[5:9, 7:11].any()                      # lagoon closed
+    assert out[1, 9]                                     # pond in the polygon, not connected: kept
+    assert out[7, 4:7].all() and out[:, :4].all()        # channel and sea untouched
+    assert counts["force_land:Lagoon"] == {"cells": 16, "area_km2": pytest.approx(16 * 0.04)}
+
+
+def test_force_sea_with_measured_tid_and_depth_condition():
+    wet, g = force_grid()
+    npi = wet.copy()
+    npi[:, 2:4] = False                                  # NPI land over IBCAO sea in columns 2-3
+    g["tid_mode"][:, 2] = 41                             # column 2 interpolated
+    g["depth_mean"][0:3, 3] = 2.5                        # rows 0-2 of column 3 shallower than 2 levels
+    region = {"Head": {"seed": [X0 + 100, Y0 + 100], "require_measured_tid": True, "min_depth_cells": 2}}
+    out, counts = bathy.apply_force_regions(npi, g, FACES, None, region)
+    assert not out[:, 2].any()                           # no measured data: NPI keeps winning
+    assert not out[0:3, 3].any() and out[3:, 3].all()    # measured and deeper than faces[2] only
+    assert counts["force_sea:Head"]["cells"] == 7
+    out2, _ = bathy.apply_force_regions(npi, g, FACES, None, {"Head": {"seed": [X0 + 100, Y0 + 100]}})
+    assert out2[:, 2:4].all()                            # unconditional: the whole IBCAO-sea fill
+
+
 # --------------------------------------------------------------------------- open boundaries
 def test_open_boundaries_zero_normal_gradient_and_wet_corners():
     rng = np.random.default_rng(0)
@@ -342,7 +385,29 @@ def test_real_controls_vs_stoylen_fer(pipeline):
     _, _, rep = pipeline
     assert rep["controls"], "no controls"
     for c in rep["controls"]:
-        assert c["pass"] or c["classification"], c
+        if not c["pass"]:
+            cl = c["classification"] or ""
+            assert re.match(r"^\([a-d]\)", cl) and "post hoc" in cl, c
+
+
+@real
+def test_real_vallunden_closed_and_force_regions_counted(pipeline):
+    _, grid, rep = pipeline
+    xc, yc = grid["xc"], grid["yc"]
+    j, i = bathy._cell_of(CFG["bathy"]["vallunden_point"], xc, yc, CFG["dx_m"])
+    assert not grid["wet"][j, i]                          # ruling R6
+    assert rep["vallunden"]["forced_land"]
+    assert rep["force_regions"]["force_land:Vallunden"]["cells"] > 0
+    fs = rep["force_regions"]["force_sea:VanKeulen_head"]
+    assert fs["cells"] >= 0
+    forced = grid["wet_forced"] & ~grid["wet_npi"]
+    assert np.isin(grid["tid_mode"][forced], list(range(10, 18))).all()
+
+
+@real
+def test_real_sponge_zero_normal_gradient(pipeline):
+    _, grid, _ = pipeline
+    bathy.check_sponge(grid["depth"], CFG["n_sponge"], tuple(CFG["ob_sides"]))
 
 
 @real

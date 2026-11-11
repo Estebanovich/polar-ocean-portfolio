@@ -19,7 +19,8 @@ Data and sources:
   of the TID = 100 cells are above sea level) [verificar en la documentacion de IBCAO 5].
 - NPI S100 Kartdata (Norwegian Polar Institute, https://doi.org/10.21334/npolar.2014.645336c7,
   CC BY 4.0), land polygons ``S100_Land_f`` in ETRS89 / UTM 33N (EPSG:25833). ETRS89 and WGS 84
-  differ by < 1 m in Svalbard, far below the 200 m grid, so the polygons are used as EPSG:32633.
+  differ by < 1 m in Svalbard [verificar], far below the 200 m grid, so the polygons are used as
+  EPSG:32633.
 - Partial cells follow MITgcm ``model/src/ini_masks_etc.F:105-121``.
 """
 from __future__ import annotations
@@ -117,8 +118,11 @@ def to_model_grid(src: dict, bbox_utm, dx_m: float) -> dict:
 
     Each source point (cell centre of the 100 m polar-stereographic grid) is transformed to
     EPSG:32633 with pyproj and assigned to the model cell that contains it; the model value is the
-    mean over those points (not a sample at the cell centre). Land points count as depth 0, so
-    ``depth_mean`` * dx^2 is the sea volume of the source points in the cell (volume-conserving).
+    mean over those points (not a sample at the cell centre). Land points count as depth 0.
+    The sea volume is conserved only in aggregate: a model cell holds 3-5 source points of slightly
+    different UTM area (the projection change aliases the 100 m points onto the 200 m cells), so
+    ``depth_mean`` * dx^2 is not the exact sea volume of one cell, but its sum over a region
+    matches the source volume (sum of depth x ``src_area``) to well under 1 % (tested).
 
     Returns depth_mean (m, >= 0), depth_wet_mean (mean over sea points only, NaN if none),
     wet_fraction (fraction of points below sea level), tid_mode, sid_mode, n_points, xc, yc,
@@ -540,6 +544,74 @@ def write_bathy(path, depth, wet) -> None:
     np.ascontiguousarray(d, dtype=">f8").tofile(Path(path))
 
 
+# ----------------------------------------------------------------------------- PD1 mask edits
+def region_cells(xc, yc, region: dict, fill_mask=None) -> np.ndarray:
+    """Model cells of a force_land / force_sea region of cases.yaml.
+
+    ``region`` has ``polygon`` (list of [x, y] vertices, EPSG:32633; cells whose centre is inside)
+    and/or ``seed`` ([x, y]). With a seed, only the cells of ``fill_mask`` 4-connected to the seed
+    cell (inside the polygon, if one is given) are selected.
+    """
+    XC, YC = np.meshgrid(xc, yc)
+    if "polygon" in region:
+        sel = shapely.contains_xy(shapely.Polygon(region["polygon"]), XC, YC)
+    else:
+        sel = np.ones(XC.shape, bool)
+    if "seed" in region:
+        if fill_mask is None:
+            raise ValueError("a seeded region needs a fill mask")
+        dx = xc[1] - xc[0]
+        js, is_ = _cell_of(region["seed"], xc, yc, dx)
+        lab, _ = ndimage.label(fill_mask & sel)
+        if lab[js, is_] == 0:
+            raise ValueError(f"seed {region['seed']} is not in the fill mask")
+        sel = lab == lab[js, is_]
+    return sel
+
+
+def apply_force_regions(wet, g: dict, faces, force_land: dict | None, force_sea: dict | None):
+    """PD1 edits of the sea mask, all from cases.yaml (``bathy: force_land / force_sea``).
+
+    force_sea regions (seed fill on the IBCAO sea, wet_fraction > 0.5) turn land cells into sea,
+    optionally only where ``require_measured_tid`` (GEBCO TID 10-17) and the IBCAO area-mean depth
+    exceeds ``min_depth_cells`` model levels. force_land regions (seed fill on the current sea)
+    then turn sea into land. Returns (wet, counts per region: cells changed and km^2).
+    """
+    wet = np.asarray(wet, bool).copy()
+    dx = g["xc"][1] - g["xc"][0]
+    counts = {}
+    for name, r in (force_sea or {}).items():
+        sel = region_cells(g["xc"], g["yc"], r, fill_mask=(g["wet_fraction"] > 0.5) | wet) & ~wet
+        if r.get("require_measured_tid"):
+            sel &= np.isin(g["tid_mode"], list(TID_CLASSES["measured"]))
+        if r.get("min_depth_cells") is not None:
+            sel &= g["depth_mean"] > np.asarray(faces)[int(r["min_depth_cells"])]
+        wet |= sel
+        counts[f"force_sea:{name}"] = {"cells": int(sel.sum()), "area_km2": float(sel.sum() * dx**2 / 1e6)}
+    for name, r in (force_land or {}).items():
+        sel = region_cells(g["xc"], g["yc"], r, fill_mask=wet) & wet
+        wet &= ~sel
+        counts[f"force_land:{name}"] = {"cells": int(sel.sum()), "area_km2": float(sel.sum() * dx**2 / 1e6)}
+    return wet, counts
+
+
+def check_sponge(depth, n_sponge: int, ob_sides) -> None:
+    """Raise if the sponge band of an open boundary does not have d h / d n = 0 exactly."""
+    n = int(n_sponge)
+    d = np.asarray(depth)
+    ok = True
+    if "W" in ob_sides:
+        ok &= bool(np.all(d[:, :n + 1] == d[:, [n]]))
+    if "E" in ob_sides:
+        ok &= bool(np.all(d[:, -n - 1:] == d[:, [-n - 1]]))
+    if "S" in ob_sides:
+        ok &= bool(np.all(d[:n + 1, :] == d[[n], :]))
+    if "N" in ob_sides:
+        ok &= bool(np.all(d[-n - 1:, :] == d[[-n - 1], :]))
+    if not ok:
+        raise RuntimeError("sponge band lost d h / d n = 0")
+
+
 # ----------------------------------------------------------------------------- pipeline
 def build(cfg: dict, data_dir: Path) -> tuple[dict, dict]:
     """Run the whole pipeline for a config of cases.yaml (configs: fjord_vmf:)."""
@@ -554,16 +626,18 @@ def build(cfg: dict, data_dir: Path) -> tuple[dict, dict]:
     frac = land_fraction(g["xc"], g["yc"], land, dx)
     coast = frac > 0.5 + 1e-9
     wet0 = make_wet(g["depth_mean"], g["wet_fraction"], coast, rule=b["mask_rule"])
+    wet1, forced = apply_force_regions(wet0, g, faces, b.get("force_land"), b.get("force_sea"))
     kw = dict(hfac_min=cfg["hFacMin"], hfac_min_dr=cfg["hFacMinDr"])
-    c1 = clean(np.where(wet0, g["depth_mean"], 0.0), wet0, faces, cfg["min_depth_m"], 2, ob, **kw)
+    c1 = clean(np.where(wet1, g["depth_mean"], 0.0), wet1, faces, cfg["min_depth_m"], 2, ob, **kw)
     d_ob = open_boundaries(c1["depth"], c1["wet"], cfg["n_sponge"], ob)
     sponge = {"changed_cells": int((np.abs(d_ob - c1["depth"]) > 1e-9).sum()),
               "land_to_sea": int(((d_ob > 0) & ~c1["wet"]).sum()),
               "sea_to_land": int(((d_ob == 0) & c1["wet"]).sum())}
     c2 = clean(d_ob, d_ob > 0, faces, cfg["min_depth_m"], 2, ob, **kw)
+    check_sponge(c2["depth"], cfg["n_sponge"], ob)
     depth, info = smooth_if_needed(c2["depth"], c2["wet"], cfg.get("max_step_cells"), faces)
     sections = sound_sections(land, b["sounds"])
-    g.update({"land_fraction": frac, "coast": coast, "wet_npi": wet0, "clean1": c1, "clean2": c2,
+    g.update({"land_fraction": frac, "coast": coast, "wet_npi": wet0, "wet_forced": wet1, "forced": forced, "clean1": c1, "clean2": c2,
               "sponge": sponge, "smooth": info, "depth": depth, "wet": depth > 0, "faces": faces,
               "sections": sections, "land": land, "cfg": cfg})
     return src, g
@@ -660,7 +734,8 @@ def report(src: dict, grid: dict) -> dict:
     # Vallunden
     vp = _cell_of(b["vallunden_point"], xc, yc, dx)
     vall = {"cell": [int(vp[0]), int(vp[1])], "npi_sea": bool(grid["wet_npi"][vp]),
-            "ibcao_wet_fraction": float(grid["wet_fraction"][vp]), "final_wet": bool(wet[vp])}
+            "ibcao_wet_fraction": float(grid["wet_fraction"][vp]), "final_wet": bool(wet[vp]),
+            "forced_land": bool(grid["wet_npi"][vp] and not grid["wet_forced"][vp])}
     if vall["npi_sea"]:
         lab0, _ = ndimage.label(grid["wet_npi"])
         comp = lab0 == lab0[vp]
@@ -689,7 +764,7 @@ def report(src: dict, grid: dict) -> dict:
         "hypsometry_inner": hyps, "below_levels_inner": below, "max_depth": maxd, "sounds": sounds,
         "tid_fraction": tid, "clean_pass1": grid["clean1"]["counts"], "clean_pass2": grid["clean2"]["counts"],
         "removed_components_pass1": sorted(grid["clean1"]["removed"], key=lambda r: -r["n_cells"])[:15],
-        "sponge": grid["sponge"], "smoothing": grid["smooth"],
+        "force_regions": grid["forced"], "sponge": grid["sponge"], "smoothing": grid["smooth"],
         "mask_disagreements": dis, "mask_disagreements_inner": dis_inner, "vallunden": vall,
     }
     for r in rep["removed_components_pass1"]:
