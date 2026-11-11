@@ -1,0 +1,591 @@
+{
+ "figure": "fig4_spread_error",
+ "variant": "main",
+ "rule": "zc_out (25) + warm_out (5) + final (3) test runs, per method: PASS if no case has spread < 5 % AND |integrated_rel_error| > 20 %; spread = std (ddof = 0) of the 5 member integrated melts / |ensemble-mean integrated melt|",
+ "spread_threshold": 0.05,
+ "error_threshold": 0.2,
+ "ockenden_spread_threshold": 0.1,
+ "M6": {
+  "verdict": "PASS",
+  "n_cases": 33,
+  "n_violations": 0,
+  "violations": [],
+  "ockenden_10pct_confusion": {
+   "spread_gt_10pct_error_gt_20pct": 19,
+   "spread_gt_10pct_error_le_20pct": 3,
+   "spread_le_10pct_error_gt_20pct": 1,
+   "spread_le_10pct_error_le_20pct": 10,
+   "cases_low_spread_high_error": [
+    "ens_T0.0_zc400_s1.0"
+   ]
+  },
+  "cases": [
+   {
+    "case": "ens_T-0.5_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.21305474180332354,
+    "abs_ire": 0.8876608543080915,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.0_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.21672565540132155,
+    "abs_ire": 1.7203157441835988,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.5_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.2002409486982217,
+    "abs_ire": 1.809154968367608,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.0_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.21365899904927801,
+    "abs_ire": 1.7959235733395913,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.23563848473002846,
+    "abs_ire": 1.7327744382014638,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.43_zc295_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.12716315172008003,
+    "abs_ire": 0.3885724616621239,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.02_zc291_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.23277386869475056,
+    "abs_ire": 1.290966304878109,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.66_zc311_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.21659810834002224,
+    "abs_ire": 1.3392688355736768,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.5_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.2029966542670892,
+    "abs_ire": 4.296307412266044,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.0_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.17578160949946522,
+    "abs_ire": 2.363876368121409,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.5_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.14845415631445374,
+    "abs_ire": 1.433509419798371,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.0_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.12361705235566142,
+    "abs_ire": 0.9431756190597624,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.10672865370030211,
+    "abs_ire": 0.644328925414419,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.75_zc527_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.2776244767225526,
+    "abs_ire": 1.57137351922338,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.42_zc481_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.2099260919797153,
+    "abs_ire": 0.12768476818877356,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.39_zc503_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.6016177541772193,
+    "abs_ire": 1.8465069941513845,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.5_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.18676872938611466,
+    "abs_ire": 0.3982697707334213,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.0_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.08745532145386044,
+    "abs_ire": 0.3101261472628577,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.5_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.06126791866375227,
+    "abs_ire": 0.1717954023311997,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.0_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.07849221709186982,
+    "abs_ire": 0.0397069466523769,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.10584311670699992,
+    "abs_ire": 0.11065715962783101,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.05_zc328_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.25872156841765487,
+    "abs_ire": 0.5816879869010543,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.42_zc402_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.30431900824971114,
+    "abs_ire": 1.021210561685704,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.34_zc444_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.18327595512002653,
+    "abs_ire": 0.32228245593292415,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.97_zc386_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.08891511089752724,
+    "abs_ire": 0.008967546517069113,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc250_s1.0",
+    "kind": "warm_out",
+    "spread_rel": 0.015577028235928856,
+    "abs_ire": 0.05608969043800941,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc400_s1.0",
+    "kind": "warm_out",
+    "spread_rel": 0.07550246048081138,
+    "abs_ire": 0.14067228107453505,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc550_s1.0",
+    "kind": "warm_out",
+    "spread_rel": 0.05642554570693881,
+    "abs_ire": 0.15923227094969733,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.43_zc295_s0.8",
+    "kind": "warm_out",
+    "spread_rel": 0.14442142581439607,
+    "abs_ire": 0.19644339098925076,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.42_zc481_s1.2",
+    "kind": "warm_out",
+    "spread_rel": 0.04760755694051071,
+    "abs_ire": 0.15044928393048074,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T2.0_zc250_s1.0",
+    "kind": "final",
+    "spread_rel": 0.04936774656390689,
+    "abs_ire": 0.04648799108628799,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T2.0_zc400_s1.0",
+    "kind": "final",
+    "spread_rel": 0.03974121963672833,
+    "abs_ire": 0.08775208749468695,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T2.0_zc550_s1.0",
+    "kind": "final",
+    "spread_rel": 0.017921459711706122,
+    "abs_ire": 0.0508519694164589,
+    "n1_pass": true,
+    "violation": false
+   }
+  ]
+ },
+ "M7": {
+  "verdict": "FAIL",
+  "n_cases": 33,
+  "n_violations": 2,
+  "violations": [
+   {
+    "case": "ens_T1.5_zc550_s1.0",
+    "kind": "warm_out",
+    "spread_rel": 0.031017801104656524,
+    "abs_ire": 0.26196688073859303,
+    "n1_pass": false,
+    "violation": true
+   },
+   {
+    "case": "ens_T2.0_zc550_s1.0",
+    "kind": "final",
+    "spread_rel": 0.03569498373588207,
+    "abs_ire": 0.2573939664447525,
+    "n1_pass": true,
+    "violation": true
+   }
+  ],
+  "ockenden_10pct_confusion": {
+   "spread_gt_10pct_error_gt_20pct": 13,
+   "spread_gt_10pct_error_le_20pct": 9,
+   "spread_le_10pct_error_gt_20pct": 5,
+   "spread_le_10pct_error_le_20pct": 6,
+   "cases_low_spread_high_error": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T2.0_zc550_s1.0"
+   ]
+  },
+  "cases": [
+   {
+    "case": "ens_T-0.5_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.4277204890418456,
+    "abs_ire": 1.1046589904062953,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.0_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.4222920042340999,
+    "abs_ire": 0.8509284601778837,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.5_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.4222475935005468,
+    "abs_ire": 0.6406483047580617,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.0_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.4248573385326707,
+    "abs_ire": 0.5258030075845674,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc250_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.4288217374906099,
+    "abs_ire": 0.4707899717657131,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.43_zc295_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.45551807042544323,
+    "abs_ire": 0.035066273435088106,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.02_zc291_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.15515511184259517,
+    "abs_ire": 0.08882176184712062,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.66_zc311_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.11422601785992287,
+    "abs_ire": 0.08891666450435275,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.5_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.3895887590841946,
+    "abs_ire": 3.9729045449987317,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.0_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.4139383994031685,
+    "abs_ire": 2.1358267372491477,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.5_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.4322000671075777,
+    "abs_ire": 1.3175884167566927,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.0_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.4444051406397607,
+    "abs_ire": 0.9088993069675761,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc550_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.45170469112808026,
+    "abs_ire": 0.6823897859047028,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.75_zc527_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.8162701780922953,
+    "abs_ire": 0.18982305349927572,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.42_zc481_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.1267926790998413,
+    "abs_ire": 0.05198293203566611,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.39_zc503_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.1384897393754576,
+    "abs_ire": 2.470899696450562,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.5_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.08783464324533515,
+    "abs_ire": 0.2514218577734258,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.0_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.08672148544550375,
+    "abs_ire": 0.08847979758520613,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.5_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.09678133249474406,
+    "abs_ire": 0.0479815017918297,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.0_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.11048910324640089,
+    "abs_ire": 0.12454978568685424,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc400_s1.0",
+    "kind": "zc_out",
+    "spread_rel": 0.12453974008636992,
+    "abs_ire": 0.21490137293351644,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.05_zc328_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.10984939918791856,
+    "abs_ire": 0.06147928253210901,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T-0.42_zc402_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.13155131721215693,
+    "abs_ire": 0.37945041527162376,
+    "n1_pass": false,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.34_zc444_s0.8",
+    "kind": "zc_out",
+    "spread_rel": 0.10134526938218776,
+    "abs_ire": 0.0032867113882905784,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T0.97_zc386_s1.2",
+    "kind": "zc_out",
+    "spread_rel": 0.07845786484495271,
+    "abs_ire": 0.02266151509606835,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc250_s1.0",
+    "kind": "warm_out",
+    "spread_rel": 0.06009698255947002,
+    "abs_ire": 0.03658137244869702,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc400_s1.0",
+    "kind": "warm_out",
+    "spread_rel": 0.08776412988535602,
+    "abs_ire": 0.22226081640356413,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.5_zc550_s1.0",
+    "kind": "warm_out",
+    "spread_rel": 0.031017801104656524,
+    "abs_ire": 0.26196688073859303,
+    "n1_pass": false,
+    "violation": true
+   },
+   {
+    "case": "ens_T1.43_zc295_s0.8",
+    "kind": "warm_out",
+    "spread_rel": 0.14055107425667385,
+    "abs_ire": 0.07554692146506192,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T1.42_zc481_s1.2",
+    "kind": "warm_out",
+    "spread_rel": 0.0702828524372973,
+    "abs_ire": 0.2856742687788506,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T2.0_zc250_s1.0",
+    "kind": "final",
+    "spread_rel": 0.04162646490033226,
+    "abs_ire": 0.039225268667039084,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T2.0_zc400_s1.0",
+    "kind": "final",
+    "spread_rel": 0.0619324347289108,
+    "abs_ire": 0.1961830419219838,
+    "n1_pass": true,
+    "violation": false
+   },
+   {
+    "case": "ens_T2.0_zc550_s1.0",
+    "kind": "final",
+    "spread_rel": 0.03569498373588207,
+    "abs_ire": 0.2573939664447525,
+    "n1_pass": true,
+    "violation": true
+   }
+  ]
+ }
+}
