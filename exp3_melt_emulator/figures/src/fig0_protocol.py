@@ -258,7 +258,7 @@ def hypotheses_panel(x0=30, y0=510, w=1040, h=200):
     for k, s in enumerate(("RMSE of the melt map over the run's own ice shelf (Eq. 32)",
                            "relative error of the integrated melt (Eq. 33–34)",
                            "error of the mean melt near the grounding line (Eq. 35)",
-                           "spread of the 5 network members (M5–M7: also coverage, CRPS)",
+                           "M6, M7: spread of the 5 network members; M5–M7: coverage, CRPS",
                            "noise floor: no difference below 0.157 m a^{-1} or 1.3 % is read")):
         text(cx + 10, y0 + 74 + 17 * k, "• " + s, 9)
     hx = x0 + 450
@@ -303,7 +303,7 @@ def main() -> None:
         print(f"wrote {cmd_file}; pass --cli to render")
         return
     outs = [FIG / f"fig0_protocol.{e}" for e in ("png", "pdf")]
-    args = [a.cli, "run", "--commands", str(cmd_file), "--ppi", "150"]
+    args = [a.cli, "run", "--commands", str(cmd_file), "--ppi", "120"]
     for o in outs:
         args += ["--export", str(o)]
     r = subprocess.run(args, capture_output=True, text=True, env={**os.environ, "VECTORCRAFT_NO_PREFS": "1"})
