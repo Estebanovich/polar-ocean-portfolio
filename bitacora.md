@@ -453,3 +453,9 @@
 - **Corrección propia:** en el checkpoint dije que a 75–80°N la seiche podría quedar por debajo de f. Con los periodos de la tesis (seiche 3.4–4.3 h; modo baroclínico 4.5–6.5 h; periodo inercial 25 h a 28.6°N y 12.2–12.4 h a 75–80°N), la seiche sigue por encima de f: las bandas se acercan, pero no se cruzan.
 - **Propuesta para el diseño:** separar hielo fijo y hielo libre. Las observaciones muestran que el hielo libre también puede generar ondas.
 - El Exp. 3 se fusionó en `main` (433ebde) y se subió a GitHub; el Exp. 4 sigue en la rama `exp4-arctic-bayiw`, creada desde `main`.
+
+## 2026-11-11 (noche, 5) — Exp. 4: bahía real
+
+- Esteban se saltó las preguntas del diseño y pidió una bahía real con topografía real. Eligió Van Mijenfjorden/Isfjorden (Svalbard, ~78°N) y conservar la bahía de la tesis como control a f ártica.
+- Addendum a la revisión (§9 de `rev_literatura.md`): 3 búsquedas en Consensus y 2 de fuentes de datos. Van Mijenfjorden solo se ha modelado con marea (Støylen & Fer 2014, ondas de Kelvin internas); su respuesta al viento con y sin hielo no está estudiada. Batimetría IBCAO v5 (100 m) e hidrografía UNIS HD. 18 entradas nuevas en `readinglist.md`.
+- Spec escrito: `docs/superpowers/specs/2026-11-11-exp4-arctic-fjord-design.md` (local), pendiente de aprobación.

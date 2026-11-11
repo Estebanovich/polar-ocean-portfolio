@@ -269,3 +269,43 @@ El plan de Consensus permite hasta 300 artículos por búsqueda. Se pidieron 20�
 ## Para descargar (prioridad)
 
 Rippeth & Fine 2022 · Dosser & Rainville 2016 · Martini et al. 2014 · Guthrie & Morison 2021 · Antenucci & Imberger 2001 · Carmack & Kulikov 1998 · Hughes & Klymak 2019 · McPhee 1978 · Rainville & Woodgate 2009 · Cole et al. 2018. (Alford 2016, Kelly 2019, Kelly 2024 y Chen 2017 ya están en la biblioteca de la tesis.) Los DOI están en `readinglist.md`, sección Exp. 4.
+
+## 9. Addendum (2026-11-11): Van Mijenfjorden, la bahía real
+
+Esteban decidió hacer el Exp. 4 en una bahía real con topografía real. Eligió **Van Mijenfjorden/Isfjorden (Svalbard, ~78°N)** y conservar la bahía rectangular de la tesis como control a f ártica. Antes de buscar en Consensus se revisaron las dos bibliotecas locales: no tienen nada específico de los fiordos de Svalbard. Se hicieron 3 búsquedas nuevas en Consensus, de 20 artículos cada una, y 2 búsquedas web de fuentes de datos.
+
+**Lo esencial:**
+1. **Van Mijenfjorden ya se modeló con topografía real, pero forzado por marea.**
+   - Støylen & Fer (2014) muestran que, al norte de la latitud crítica, la marea genera **ondas de Kelvin internas** que giran ciclónicamente alrededor del fiordo. Lo muestran con un modelo 3D no lineal y con observaciones de agosto de 2010.
+   - El fiordo es ancho comparado con el radio de Rossby interno.
+   - La isla Akseløya casi cierra la boca y deja dos estrechos.
+
+   Es el antecedente directo de la configuración, y del forzamiento que el Exp. 4 **no** estudia.
+2. **El fiordo responde al viento en horas.**
+   - La capa superficial cambia de profundidad y de distribución con el viento.
+   - La rotación produce remolinos y gradientes transversales fuertes, que se invierten con viento del oeste.
+   - Hay ondas internas activas debajo de la capa superior.
+
+   (Skarðhamar & Svendsen, 2010.) Nadie ha cuantificado esa respuesta como ondas cercanas a la inercial o de Kelvin, ni el flujo de energía por los estrechos.
+3. **Con hielo, el viento no excita ondas internas.** Morozov & Marchenko (2012) lo observaron para ondas de periodo corto. El hielo fijo cubre el fiordo de enero a junio, con 0.7–1.3 m de espesor. Algunos años la cuenca exterior no tiene hielo fijo (Høyland, 2009). Así, el caso "hielo fijo dentro, agua abierta o hielo a la deriva fuera" es realista.
+4. **Ondas cercanas a la inercial en un fiordo de Svalbard.** En Kongsfjorden, con ROMS y observaciones, una capa de mezcla somera en verano produce corrientes cercanas a la inercial fuertes aun con tormentas débiles. Cerca del 45 % de la energía de entrada se disipa en los 150 m superiores (Divya David et al., 2022). Es el estudio de modelado más cercano y una referencia de cifras.
+5. **Contexto regional.**
+   - Circulación de Isfjorden con *gliders* (Fraser et al., 2018) y su climatología oceánica (Skogseth et al., 2020).
+   - Intrusión de Agua Atlántica en la plataforma (Nilsen et al., 2016).
+   - Ondas de Kelvin internas en Storfjorden (Jardon et al., 2011).
+
+**Datos disponibles:**
+- **Batimetría:** IBCAO v5.0, con malla de 100 m (Jakobsson et al., 2024), distribuida por GEBCO. Hay que revisar los términos de uso antes de redistribuir el archivo: si no se puede, el repo guarda el script de descarga y la suma de verificación, como en el Exp. 2.
+- **Hidrografía:** base de datos hidrográfica de UNIS (UNIS HD), con perfiles CTD de 75–83°N. Advierte que la calibración, sobre todo de la salinidad, no está revisada en todos los datos. Los CTD de agosto de 2010 de Støylen & Fer sirven de comparación.
+
+**Hueco:** la respuesta de Van Mijenfjorden al **viento**, con y sin hielo, y el flujo de energía de ondas internas por sus dos estrechos, no aparece en ninguna de las búsquedas.
+
+**Registro:**
+
+| # | Búsqueda | Artículos | Estado |
+|---|---|---|---|
+| 11 | Van Mijenfjorden Svalbard landfast ice circulation hydrography internal waves tides | 20 | OK |
+| 12 | Isfjorden Svalbard circulation, wind-driven exchange, internal Kelvin waves, coastal current, numerical model | 20 | OK |
+| 13 | near-inertial internal waves and mixing in Svalbard fjords under sea ice, mooring observations | 20 | OK |
+
+Se agregaron 18 entradas a `readinglist.md`, sección Exp. 4 (16 artículos y 2 fuentes de datos).
