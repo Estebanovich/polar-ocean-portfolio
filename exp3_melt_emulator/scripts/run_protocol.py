@@ -41,8 +41,7 @@ FIGURES = REPO / "exp3_melt_emulator" / "figures"
 DEFAULT_CONFIG = FIGURES / "protocol_config.json"
 DEFAULT_NOISE = FIGURES / "noise_floor.json"
 
-# PD0 (notes/pd0_preregistro.md). PROPOSED values until Esteban approves PD0; the note and
-# this dict must agree when --freeze-config is run.
+# PD0 (notes/pd0_preregistro.md), approved by Esteban on 2026-11-10.
 PD0_THRESHOLDS = {
     "gl_frac": 0.10,
     "hypothesis_folds": "H3a-H3c use the main folds only; drop_n1 results are sensitivity",
@@ -65,7 +64,10 @@ PD0_THRESHOLDS = {
                         "(integrated_rel_error) is not interpreted",
     "ranking": "reported, not hypothesised",
     "stop_rule": "--cv: if the wall-clock estimate (<= 5 concurrent processes, 1 thread "
-                 "each, measured after the first batch of folds) exceeds 6 h, stop and report",
+                 "each, measured after the first batch of folds) exceeds 8 h, stop and report",
+    "stop_rule_note": "limit raised from the plan's 6 h to 8 h by Esteban (2026-11-10), before "
+                      "any protocol run, because full-LORO tf_kind selection puts the estimate "
+                      "at about 6 h",
 }
 
 # Methods fitted per fold kind: M4 and M5 see only (Tbot, z_c, s) and cannot represent the

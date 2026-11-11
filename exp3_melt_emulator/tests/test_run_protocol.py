@@ -48,7 +48,7 @@ def test_freeze_records_folds_methods_thresholds(tmp_path, dataset):
     for mid, rec in cfg["methods"].items():
         assert rec == json.loads(json.dumps(REGISTRY[mid]().hparams()))   # constructor defaults
     assert cfg["methods"]["M6"]["max_epochs"] == 5000 and cfg["methods"]["M6"]["seeds"] == [0, 1, 2, 3, 4]
-    assert cfg["methods"]["M7"]["tf_kind_folds"] == 5
+    assert cfg["methods"]["M7"]["tf_kind_folds"] is None          # PD0 decision 3: full LORO
     assert cfg["methods"]["M5"]["var_fraction"] == 0.99 and cfg["methods"]["M5"]["n_restarts"] == 5
     assert cfg["methods"]["M4"]["degrees"] == [1, 2]
     from exp3_melt_emulator.methods.nets import HYBRID_G_FEATURES, N0, N_VAL, NET_FEATURES
@@ -66,7 +66,9 @@ def test_freeze_records_folds_methods_thresholds(tmp_path, dataset):
     assert cfg["methods"]["M3"]["input_features"] == ["TF", "TF_mean"]
     for mid in ("M4", "M5"):
         assert cfg["methods"][mid]["input_features"] == ["Tbot", "z_c", "s"]
-    assert cfg["methods"]["M5"]["white_bounds"] == [1e-8, 1e1]
+    assert cfg["methods"]["M5"]["white_bounds"] == [1e-8, 1e-2]   # PD0 decision 4
+    assert cfg["methods"]["M5"]["white_init"] == 1e-3
+    assert "8 h" in cfg["thresholds"]["stop_rule"]
     assert cfg["profile_test_methods"] == ["M0", "M1", "M2", "M3", "M6", "M7"]
     assert "drop_n1" in cfg["thresholds"]["H3b"]["cases"]
     assert cfg["thresholds"] == json.loads(json.dumps(rp.PD0_THRESHOLDS))
