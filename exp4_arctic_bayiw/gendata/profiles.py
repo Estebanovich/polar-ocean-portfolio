@@ -14,9 +14,12 @@ Sources:
   caution (salinity values in particular)" (global attribute ``summary`` of every file).
 - Depth from pressure and the TEOS-10 density used by ``qc``: gsw (IOC, SCOR and IAPSO 2010,
   TEOS-10 manual) through ``gsw.z_from_p``, ``gsw.SA_from_SP``, ``gsw.CT_from_t``, ``gsw.sigma0``.
-- Model EOS (``EOS_EXP4``): MITgcm linear EOS, rho = rhoNil (sBeta (S - sRef) - tAlpha (T - tRef))
-  + (rhoNil - rhoConst) (model/src/find_rho.F:104-107), with the thesis coefficients tAlpha = 2e-4
-  K^-1 and sBeta = 7.4e-4 (thesis_copy/BayIW_Rectan/run_expand/data.stage1:15-16).
+- Model EOS: MITgcm linear EOS, rho = rhoNil (sBeta (S - sRef) - tAlpha (T - tRef))
+  + (rhoNil - rhoConst) (model/src/find_rho.F:104-107). ``EOS_THESIS`` holds the thesis
+  coefficients tAlpha = 2e-4 K^-1, sBeta = 7.4e-4 (thesis_copy/BayIW_Rectan/run_expand/
+  data.stage1:15-16), kept for R1/R1k. The fjord and bridge runs use the linear EOS fitted to
+  TEOS-10 on the Van Mijenfjorden profiles (``fit_linear_eos``; coefficients in cases.yaml
+  ``configs.fjord_vmf.eos``; PD0 decision 3).
 """
 from __future__ import annotations
 
@@ -30,7 +33,7 @@ import shapely
 from scipy.ndimage import uniform_filter1d
 from shapely.geometry import Polygon
 
-EOS_EXP4 = {"tAlpha": 2.0e-4, "sBeta": 7.4e-4}   # K^-1, (g/kg)^-1 ; data.stage1:15-16
+EOS_THESIS = {"tAlpha": 2.0e-4, "sBeta": 7.4e-4}   # K^-1, PSU^-1 ; data.stage1:15-16
 QC_DEFAULTS = {"s_range": (0.0, 35.5), "t_range": (-2.1, 10.0), "smooth_m": 3.0,
                "max_inversion_fraction": 0.10, "inversion_tol_kg_m3": 4.0e-3, "min_levels": 5}
 
@@ -133,19 +136,25 @@ def inversion_fraction(prof, smooth_m: float = 3.0, tol: float = 4.0e-3) -> floa
     return float(np.mean(ds < -tol))
 
 
-def qc(prof, *, s_range=(0.0, 35.5), t_range=(-2.1, 10.0), smooth_m: float = 3.0,
-       max_inversion_fraction: float = 0.10, inversion_tol_kg_m3: float = 4.0e-3,
-       min_levels: int = 5) -> dict | None:
-    """Quality control of one profile. Returns a copy (NaN levels dropped, key ``qc`` added) or None.
+def qc_check(prof, *, s_range=(0.0, 35.5), t_range=(-2.1, 10.0), smooth_m: float = 3.0,
+             max_inversion_fraction: float = 0.10, inversion_tol_kg_m3: float = 4.0e-3,
+             min_levels: int = 5) -> tuple[dict | None, str]:
+    """Quality control of one profile: (copy or None, reason).
 
-    Rejects the profile if any S is outside ``s_range`` or any T outside ``t_range`` (the whole
-    cast: an out-of-range value flags a bad sensor or calibration, the UNIS HD caveat), if fewer
-    than ``min_levels`` valid levels remain, or if more than ``max_inversion_fraction`` of its 1 m
-    steps are density inversions (TEOS-10 sigma0, after a ``smooth_m`` running mean; steps with
-    a decrease larger than ``inversion_tol_kg_m3``; 0.004 kg m^-3 is the sigma0 change of a 0.005
-    salinity error, the order of the CTD salinity accuracy, so sensor noise in well-mixed winter
-    columns is not counted as an inversion).
+    reason is "ok", "no_salinity", "too_few_levels", "salinity_range", "temperature_range" or
+    "inversions", tested in that order. The copy has the NaN levels dropped and a ``qc`` key.
+
+    Rejects the profile if it has no salinity, if fewer than ``min_levels`` valid levels remain,
+    if any S is outside ``s_range`` or any T outside ``t_range`` (the whole cast: an out-of-range
+    value flags a bad sensor or calibration, the UNIS HD caveat), or if more than
+    ``max_inversion_fraction`` of its 1 m steps are density inversions (TEOS-10 sigma0, after a
+    ``smooth_m`` running mean; steps with a decrease larger than ``inversion_tol_kg_m3``).
+    The default 0.004 kg m^-3 is **post hoc** (chosen after seeing the data; see PD0 1.1): it is
+    the sigma0 change of a 0.005 salinity error, the order of the CTD salinity accuracy, so sensor
+    noise in well-mixed winter columns is not counted as an inversion.
     """
+    if not prof.get("has_salinity", True):
+        return None, "no_salinity"
     T, S, z = (np.asarray(prof[k], float) for k in ("T", "S", "z"))
     ok = np.isfinite(T) & np.isfinite(S) & np.isfinite(z)
     q = dict(prof)
@@ -153,20 +162,60 @@ def qc(prof, *, s_range=(0.0, 35.5), t_range=(-2.1, 10.0), smooth_m: float = 3.0
         if k in prof and prof[k] is not None:
             q[k] = np.asarray(prof[k], float)[ok]
     if ok.sum() < min_levels:
-        return None
+        return None, "too_few_levels"
     if np.any((q["S"] < s_range[0]) | (q["S"] > s_range[1])):
-        return None
+        return None, "salinity_range"
     if np.any((q["T"] < t_range[0]) | (q["T"] > t_range[1])):
-        return None
+        return None, "temperature_range"
     frac = inversion_fraction(q, smooth_m, inversion_tol_kg_m3)
     if frac > max_inversion_fraction:
-        return None
+        return None, "inversions"
     q["qc"] = {"inversion_fraction": frac, "n_levels": int(ok.sum())}
-    return q
+    return q, "ok"
+
+
+def qc(prof, **kw) -> dict | None:
+    """Quality control of one profile (see ``qc_check``): the checked copy, or None."""
+    return qc_check(prof, **kw)[0]
+
+
+# ----------------------------------------------------------------------------- linear EOS
+def fit_linear_eos(T, S, *, lon: float, lat: float, p_dbar: float = 0.0) -> dict:
+    """Least-squares linear fit of TEOS-10 sigma0 (gsw) to in-situ T and practical S:
+
+        sigma0 ~ sigma_ref - rhoNil tAlpha (T - tRef) + rhoNil sBeta (S - sRef),
+
+    with tRef, sRef the means of the samples and rhoNil = 1000 + sigma_ref (kg m^-3), so that
+    the MITgcm linear EOS (model/src/find_rho.F:104-107) with these tAlpha, sBeta, tRef, sRef and
+    rhoNil has the same density derivatives. The difference between in-situ and potential
+    temperature is < 0.01 K in the upper 120 m and is neglected. Returns the coefficients and the
+    max/rms residuals (kg m^-3) on the samples.
+    """
+    T = np.asarray(T, float).ravel()
+    S = np.asarray(S, float).ravel()
+    SA = gsw.SA_from_SP(S, p_dbar, lon, lat)
+    sig = gsw.sigma0(SA, gsw.CT_from_t(SA, T, p_dbar))
+    T0, S0 = float(T.mean()), float(S.mean())
+    A = np.c_[np.ones_like(T), T - T0, S - S0]
+    c, *_ = np.linalg.lstsq(A, sig, rcond=None)
+    rho_nil = 1000.0 + float(c[0])
+    fit = {"tAlpha": float(-c[1] / rho_nil), "sBeta": float(c[2] / rho_nil), "tRef": T0, "sRef": S0,
+           "rhoNil": rho_nil, "sigma_ref": float(c[0]), "n_samples": int(T.size),
+           "T_range": [float(T.min()), float(T.max())], "S_range": [float(S.min()), float(S.max())]}
+    r = sig - linear_sigma(T, S, fit)
+    fit["max_abs_err_kg_m3"] = float(np.max(np.abs(r)))
+    fit["rms_err_kg_m3"] = float(np.sqrt(np.mean(r ** 2)))
+    return fit
+
+
+def linear_sigma(T, S, eos: dict) -> np.ndarray:
+    """sigma (kg m^-3) of the MITgcm linear EOS with rhoNil, tRef, sRef (find_rho.F:104-107)."""
+    return (eos["rhoNil"] - 1000.0) + eos["rhoNil"] * (
+        eos["sBeta"] * (np.asarray(S, float) - eos["sRef"]) - eos["tAlpha"] * (np.asarray(T, float) - eos["tRef"]))
 
 
 # ----------------------------------------------------------------------------- representative
-def rho_prime(T, S, eos=EOS_EXP4):
+def rho_prime(T, S, eos=EOS_THESIS):
     """Linear-EOS density anomaly divided by rhoNil, up to a constant: sBeta S - tAlpha T
     (model/src/find_rho.F:104-107). Dimensionless."""
     return eos["sBeta"] * np.asarray(S, float) - eos["tAlpha"] * np.asarray(T, float)
@@ -195,7 +244,7 @@ def _thickness(zc):
     return f[:-1] - f[1:]
 
 
-def stabilize(zc, T, S, eos=EOS_EXP4) -> tuple[np.ndarray, int]:
+def stabilize(zc, T, S, eos=EOS_THESIS) -> tuple[np.ndarray, int]:
     """Minimal static-stability adjustment under the linear EOS.
 
     The density anomaly r = sBeta S - tAlpha T must not decrease with depth (N^2 >= 0 at every
@@ -226,7 +275,7 @@ def _on_grid(prof, zc, surface_extend_m: float):
     return Ti, Si
 
 
-def representative(profs, z_grid, *, eos=EOS_EXP4, min_count: int = 5,
+def representative(profs, z_grid, *, eos=EOS_THESIS, min_count: int = 5,
                    surface_extend_m: float = 5.0, info: dict | None = None) -> tuple[np.ndarray, np.ndarray]:
     """Median T and S per model level, made statically stable.
 
@@ -274,7 +323,7 @@ def representative(profs, z_grid, *, eos=EOS_EXP4, min_count: int = 5,
             "last_data_z_m": float(zc[k1]),
             "first_data_z_m": float(zc[k0]),
             "n_levels_extended_below": int(zc.size - 1 - k1),
-            "n_levels_extended_above": int(k0),
+            "n_levels_extended_above": int(k0),   # levels above the first median level
             "n_levels_interior_gap": int(gap.sum()),
             "n_levels_adjusted": n_adj,
             "max_abs_dS_adjust": float(np.max(np.abs(S - S_med))),

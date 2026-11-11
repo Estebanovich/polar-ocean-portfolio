@@ -513,3 +513,24 @@
 - Lecturas: Frank et al. 2023 (canalización del viento, solo Isfjorden), Fer et al. 2022 y Kawaguchi et al. 2024 (arrastre hielo–agua), y de nuevo Støylen & Fer 2014, que usaron MITgcm en este fiordo con Smagorinsky 2.2 y arrastre de 0.0025. Los PDF no se guardaron. `readinglist.md` actualizado.
 - `notes/pd0_preregistro.md`: **BORRADOR**, pendiente de aprobación de Esteban. Nada del fiordo corre antes del PD0.
 - Para la Task 3: la suma del `delR` de la tesis es 599.9 m, pero su plataforma mide 1000 m.
+
+## 2026-11-11 (noche, 9) — Exp. 4: PD0 aprobado
+
+Esteban aprobó el preregistro con cuatro decisiones (`notes/pd0_preregistro.md` §0):
+1. La malla de invierno se decide en el PD1: 100 m para F2 y F3 si caben.
+2. T_fin ≈ 280 h si cabe, si no 240 h, y los umbrales se integran en 0–T_fin.
+3. EOS lineal ajustada a Van Mijenfjorden para el fiordo y para R2/R3.
+4. El resto, tal como estaba.
+
+- **EOS ajustada** a TEOS-10 (gsw) en los perfiles representativos (66 niveles, 0–120 m): tα = 3.05×10⁻⁵ K⁻¹, sβ = 8.41×10⁻⁴, ρNil = 1026.96 kg m⁻³. El error en σ es de 0.017 kg m⁻³ como máximo; la tolerancia probada es 0.03. Los coeficientes y su procedencia están en `cases.yaml`.
+- **Números recalculados:** c₁ de verano 0.52 (H máx.) y 0.35 m s⁻¹ (H medio); R₁ = 3.6 y 2.5 km; T_K = 95 y 140 h. V2b pasa de [0.30, 0.69] a [0.28, 0.62] m s⁻¹, con la misma fórmula. Los valores con la EOS de la tesis quedan como sensibilidad.
+- **Bandas** comprobadas con 240 h y 280 h. Con 280 h caben 2.0 vueltas de Kelvin en el peor caso de verano; con 240 h, 1.7.
+- **Correcciones menores de la revisión:**
+  - `qc_check` devuelve el motivo del rechazo;
+  - la tolerancia de inversiones queda etiquetada *post hoc*;
+  - la sensibilidad TEOS-10 usa la longitud media de los perfiles y recorta y cuenta los N² negativos;
+  - las citas de MITgcm de la truncación de la columna de la tesis a 600 m;
+  - la relación del factor 2 de H4b con la regla del 1.5;
+  - las líneas de la figura van rasterizadas;
+  - V2a en la plataforma queda como punto propio.
+- **Desde ahora los umbrales están congelados.** Cualquier cambio requiere una enmienda fechada.

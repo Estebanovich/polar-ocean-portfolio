@@ -44,13 +44,14 @@ THESIS_INPUT = Path("/Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan/input
 THESIS_DATA = PKG / "thesis_copy" / "BayIW_Rectan" / "run_expand" / "data.stage1"
 G = modes.G
 LAT_FJORD = 78.0          # plan: f-plane at 78 N, f = 2 Omega sin 78 = 1.4266e-4 s^-1
-RECORD_H = 240.0          # spec 3.4: free decay to ~240 h
+RECORD_H = 240.0          # spec 3.4: free decay to ~240 h (PD0 decision 2: 280 h if PD1 allows)
+RECORDS_H = (240.0, 280.0)
 DT_OUT_S = 1200.0         # plan: records every 1200 s
 N_MODES = 4
 
 
 # ----------------------------------------------------------------------------- vertical structure
-def modes_column(delR, T, S, H: float, eos=prof.EOS_EXP4):
+def modes_column(delR, T, S, H: float, eos=prof.EOS_THESIS):
     """Nodes (z, m, positive up, 0 to -H) and N^2 (s^-2) for theory.modes.vertical_modes.
 
     The nodes are the model interfaces shallower than H plus z = -H. N^2 at an interior interface
@@ -72,18 +73,26 @@ def modes_column(delR, T, S, H: float, eos=prof.EOS_EXP4):
     return z, n2
 
 
-def modes_column_teos10(delR, T, S, H: float, lat: float):
-    """As ``modes_column`` but with TEOS-10 N^2 (gsw.Nsquared; IOC et al. 2010), for the EOS check."""
+def modes_column_teos10(delR, T, S, H: float, lat: float, lon: float):
+    """As ``modes_column`` but with TEOS-10 N^2 (gsw.Nsquared; IOC et al. 2010), for the EOS check.
+
+    ``lon`` is the mean longitude of the casts (absolute salinity anomaly). Negative N^2 values
+    (statically unstable under TEOS-10 although stable under the model EOS) are clipped to 0 and
+    counted: returns (z, N2, n_negative).
+    """
     f = vgrid.faces(delR)
     zc = -0.5 * (f[1:] + f[:-1])
     p = gsw.p_from_z(zc, lat)
-    SA = gsw.SA_from_SP(S, p, 15.5, lat)
+    SA = gsw.SA_from_SP(S, p, lon, lat)
     CT = gsw.CT_from_t(SA, T, p)
     n2f, _ = gsw.Nsquared(SA, CT, p, lat)
     zf = -f[1:-1]
     keep = zf > -H + 1e-6
     n2_in = n2f[keep]
-    return np.concatenate([[0.0], zf[keep], [-H]]), np.concatenate([[n2_in[0]], n2_in, [n2_in[-1]]])
+    nneg = int(np.sum(n2_in < 0))
+    n2_in = np.maximum(n2_in, 0.0)
+    return (np.concatenate([[0.0], zf[keep], [-H]]), np.concatenate([[n2_in[0]], n2_in, [n2_in[-1]]]),
+            nneg)
 
 
 # ----------------------------------------------------------------------------- basin geometry
@@ -241,12 +250,14 @@ def _median_ignore_warnings(fn, *a, **k):
         return fn(*a, **k)
 
 
-def vmf_profiles(cfg: dict, data_dir: Path) -> dict:
+def vmf_profiles(cfg: dict, data_dir: Path, eos: dict | None = None) -> dict:
+    """Selection, QC and representative profiles per season. ``eos`` (default: the fitted EOS of
+    cases.yaml, ``configs.fjord_vmf.eos``) is the one used for the static-stability adjustment."""
     pc = cfg["profiles"]
     f = vgrid.faces(cfg["delR"])
     zc = -0.5 * (f[1:] + f[:-1])
     allp = prof.load_unis_hd(data_dir / pc["source"])
-    eos = pc["eos"]
+    eos = cfg["eos"] if eos is None else eos
     out = {"n_files": len(allp), "z_c_m": zc.tolist(), "seasons": {}}
     for season, s in pc["seasons"].items():
         sel = prof.select(allp, pc["polygon_lonlat"], set(s["months"]), tuple(s["years"]))
@@ -254,20 +265,11 @@ def vmf_profiles(cfg: dict, data_dir: Path) -> dict:
         reasons = defaultdict(int)
         ok = []
         for p in sel:
-            q = prof.qc(p, **pc["qc"])
+            q, why = prof.qc_check(p, **pc["qc"])
             if q is not None:
                 ok.append(q)
-                continue
-            if not p.get("has_salinity", True):
-                reasons["no_salinity"] += 1
-            elif p["S"].size < pc["qc"]["min_levels"]:
-                reasons["too_few_levels"] += 1
-            elif np.any((p["S"] < pc["qc"]["s_range"][0]) | (p["S"] > pc["qc"]["s_range"][1])):
-                reasons["salinity_range"] += 1
-            elif np.any((p["T"] < pc["qc"]["t_range"][0]) | (p["T"] > pc["qc"]["t_range"][1])):
-                reasons["temperature_range"] += 1
             else:
-                reasons["inversions"] += 1
+                reasons[why] += 1
         if len(ok) < pc["min_profiles"]:
             raise RuntimeError(f"{season}: {len(ok)} profiles after QC < {pc['min_profiles']}")
         info = {}
@@ -289,6 +291,8 @@ def vmf_profiles(cfg: dict, data_dir: Path) -> dict:
         for tol in (1e-3, 2e-3, 4e-3, 1e-2):
             kw = dict(pc["qc"], inversion_tol_kg_m3=tol)
             tol_sens[f"{tol:g}"] = int(sum(prof.qc(p, **kw) is not None for p in sel))
+        lon_mean = float(np.mean([q["lon"] for q in ok]))
+        lat_mean = float(np.mean([q["lat"] for q in ok]))
         years = sorted({q["time"].year for q in ok})
         out["seasons"][season] = {
             "months": s["months"], "years_window": s["years"], "n_selected": len(sel),
@@ -297,11 +301,30 @@ def vmf_profiles(cfg: dict, data_dir: Path) -> dict:
             "years_present": years, "n_per_year": {str(k): len(v) for k, v in sorted(by_year.items())},
             "n_per_month": {str(m): sum(q["time"].month == m for q in ok) for m in s["months"]},
             "instrument_types": sorted({str(q.get("instrument_type")) for q in ok}),
+            "lon_mean": lon_mean, "lat_mean": lat_mean,
             "T": T.tolist(), "S": S.tolist(), "info": info,
             "T_year_balanced": Tyb.tolist(), "S_year_balanced": Syb.tolist(),
             "_casts": ok,
         }
     return out
+
+
+def fit_eos(cfg: dict, data_dir: Path, zmax_m: float = 120.0) -> dict:
+    """Linear EOS for the fjord and bridge runs (PD0 decision 3): ``prof.fit_linear_eos`` on the
+    summer and winter representative profiles (levels above ``zmax_m``, both seasons pooled).
+    The representative profiles used for the fit are stabilised with the thesis EOS (the
+    adjustment changes S by < 0.004); test_real_fitted_eos_in_cases_yaml checks that re-fitting
+    on the final profiles changes the coefficients by < 1 %."""
+    pr = vmf_profiles(cfg, data_dir, eos=prof.EOS_THESIS)
+    zc = np.array(pr["z_c_m"])
+    k = zc > -zmax_m
+    T = np.concatenate([np.array(pr["seasons"][s]["T"])[k] for s in ("summer", "winter")])
+    S = np.concatenate([np.array(pr["seasons"][s]["S"])[k] for s in ("summer", "winter")])
+    lon = float(np.mean([pr["seasons"][s]["lon_mean"] for s in ("summer", "winter")]))
+    lat = float(np.mean([pr["seasons"][s]["lat_mean"] for s in ("summer", "winter")]))
+    fit = prof.fit_linear_eos(T, S, lon=lon, lat=lat)
+    fit.update({"fit_lon": lon, "fit_lat": lat, "zmax_m": zmax_m})
+    return fit
 
 
 # ----------------------------------------------------------------------------- numbers
@@ -381,8 +404,8 @@ def figure(prof_out: dict, cases: dict, thesis: dict | None, stem: Path):
     for season, s in prof_out["seasons"].items():
         c = cols[season]
         for q in s["_casts"]:
-            axs[0].plot(q["T"], q["z"], color=c, lw=0.2, alpha=0.08)
-            axs[1].plot(q["S"], q["z"], color=c, lw=0.2, alpha=0.08)
+            axs[0].plot(q["T"], q["z"], color=c, lw=0.2, alpha=0.08, rasterized=True)
+            axs[1].plot(q["S"], q["z"], color=c, lw=0.2, alpha=0.08, rasterized=True)
         T, S = np.array(s["T"]), np.array(s["S"])
         lab = f"{season} (n = {s['n_qc_pass']})"
         axs[0].plot(T, zc, color=c, lw=1.6, label=lab)
@@ -412,7 +435,7 @@ def figure(prof_out: dict, cases: dict, thesis: dict | None, stem: Path):
     axs[1].set_xlim(24, 35.5)
     fig.legend(*axs[0].get_legend_handles_labels(), loc="lower center", ncol=2, frameon=False,
                bbox_to_anchor=(0.5, -0.03))
-    axs[2].text(0.97, 0.03, "solid: model EOS\ndashed: TEOS-10", transform=axs[2].transAxes,
+    axs[2].text(0.97, 0.03, "solid: fitted linear EOS\ndashed: TEOS-10", transform=axs[2].transAxes,
                 ha="right", va="bottom", fontsize=7)
     axs[3].text(0.03, 0.97, "solid n = 1\ndashed n = 2\ndotted n = 3", transform=axs[3].transAxes,
                 ha="left", va="top", fontsize=6.5, bbox=dict(fc="w", ec="none", alpha=0.8))
@@ -438,7 +461,7 @@ def _strip(d):
 
 def run(data_dir: Path, thesis_input: Path) -> tuple[dict, dict, dict | None]:
     cfg = yaml.safe_load(CASES.read_text())["configs"]["fjord_vmf"]
-    eos = cfg["profiles"]["eos"]
+    eos = cfg["eos"]                       # linear EOS fitted to VMF (PD0 decision 3)
     delR = np.array(cfg["delR"])
     geo = fjord_geometry(cfg, data_dir)
     P = geo["contour_outer_m"]
@@ -452,9 +475,15 @@ def run(data_dir: Path, thesis_input: Path) -> tuple[dict, dict, dict | None]:
         for tag, H in (("", geo["max_depth_m"]), ("_Hmean", geo["mean_depth_m"])):
             z, n2 = modes_column(delR, T, S, H, eos)
             c = case_numbers(z, n2, H, f78, L, P, geo["mean_depth_m"], W=geo["mean_width_m"])
-            zt, n2t = modes_column_teos10(delR, T, S, H, LAT_FJORD)
+            c["eos"] = "fitted_vmf"
+            zt, n2t, nneg = modes_column_teos10(delR, T, S, H, LAT_FJORD, s["lon_mean"])
             ct, _ = modes.vertical_modes(zt, n2t, H, n_modes=N_MODES)
             c["c_n_teos10_eos"] = [float(x) for x in ct]
+            c["teos10_negative_N2_interfaces_clipped"] = nneg
+            # sensitivity: the thesis EOS on the same T/S (the PD0 draft numbers)
+            zth, n2th = modes_column(delR, T, S, H, prof.EOS_THESIS)
+            cth, _ = modes.vertical_modes(zth, n2th, H, n_modes=N_MODES)
+            c["c_n_thesis_eos"] = [float(x) for x in cth]
             zy, n2y = modes_column(delR, s["T_year_balanced"], s["S_year_balanced"], H, eos)
             cy, _ = modes.vertical_modes(zy, n2y, H, n_modes=N_MODES)
             c["c_n_year_balanced"] = [float(x) for x in cy]
@@ -473,6 +502,7 @@ def run(data_dir: Path, thesis_input: Path) -> tuple[dict, dict, dict | None]:
                          W=thesis["width_m"])
         c["kelvin_circuit_period_closed_loop_h"] = [thesis["closed_loop_m"] / x / 3600 for x in c["c_n"]]
         c["profile"] = "thesis realistic (feb_temp/feb_salt, column 0,0)"
+        c["eos"] = "thesis"
         cases["thesis_bay_thesis_f"] = c
         # bridge R2: VMF summer profile on the thesis levels (below 240 m the last value)
         tf = vgrid.faces(tdel)
@@ -486,14 +516,21 @@ def run(data_dir: Path, thesis_input: Path) -> tuple[dict, dict, dict | None]:
         c = case_numbers(z, n2, Hb, f78, thesis["length_m"], thesis["coast_m"], Hb, W=thesis["width_m"])
         c["kelvin_circuit_period_closed_loop_h"] = [thesis["closed_loop_m"] / x / 3600 for x in c["c_n"]]
         c["profile"] = "vmf_summer interpolated to the thesis levels"
+        c["eos"] = "fitted_vmf"
+        Sb_th, _ = prof.stabilize(tzc, Tb, np.interp(-tzc, -zc, s["S"]), prof.EOS_THESIS)
+        zth, n2th = modes_column(tdel, Tb, Sb_th, Hb, prof.EOS_THESIS)
+        cth, _ = modes.vertical_modes(zth, n2th, Hb, n_modes=N_MODES)
+        c["c_n_thesis_eos"] = [float(x) for x in cth]
         c["levels_adjusted_after_interp"] = nadj
         cases["thesis_bay_78N_vmf_summer"] = c
         pr_out["thesis_levels_vmf_summer"] = {"T": Tb.tolist(), "S": Sb.tolist(), "delR": tdel.tolist()}
-    # spectral bands
+    # spectral bands: 240 h and 280 h (PD0 decision 2; T_end fixed at the PD1)
     bands = {}
+    f78_cph = f78 / (2 * np.pi) * 3600
     fj_merian_low = 1.0 / cases["vmf_summer"]["merian_closed_open_h"][0]
-    bands["fjord_78N"] = spectral_bands(f78 / (2 * np.pi) * 3600, RECORD_H, DT_OUT_S, fj_merian_low)
-    bands["fjord_78N_free_decay_180h"] = spectral_bands(f78 / (2 * np.pi) * 3600, 180.0, DT_OUT_S, fj_merian_low)
+    for rec in RECORDS_H:
+        bands[f"fjord_78N_{rec:.0f}h"] = spectral_bands(f78_cph, rec, DT_OUT_S, fj_merian_low)
+    bands["fjord_78N_free_decay_180h"] = spectral_bands(f78_cph, 180.0, DT_OUT_S, fj_merian_low)
     if thesis is not None:
         bay_merian_low = 1.0 / cases["thesis_bay_thesis_f"]["merian_closed_open_h"][0]
         f0_cph = thesis["f0_s-1"] / (2 * np.pi) * 3600
@@ -504,11 +541,13 @@ def run(data_dir: Path, thesis_input: Path) -> tuple[dict, dict, dict | None]:
             bands["bay_thesis_f_120h_check"] = "resolved"
         except ValueError as e:
             bands["bay_thesis_f_120h_check"] = f"not resolved: {e}"
-        bands["bay_78N_240h"] = spectral_bands(f78 / (2 * np.pi) * 3600, RECORD_H, DT_OUT_S, bay_merian_low)
+        for rec in RECORDS_H:
+            bands[f"bay_78N_{rec:.0f}h"] = spectral_bands(f78_cph, rec, DT_OUT_S, bay_merian_low)
     # where the theoretical periods fall
     placement = {}
-    for key, bkey in (("vmf_summer", "fjord_78N"), ("vmf_winter", "fjord_78N"), ("vmf_summer_Hmean", "fjord_78N"),
-                      ("vmf_winter_Hmean", "fjord_78N"), ("thesis_bay_thesis_f", "bay_thesis_f_240h"),
+    for key, bkey in (("vmf_summer", "fjord_78N_240h"), ("vmf_winter", "fjord_78N_240h"),
+                      ("vmf_summer_Hmean", "fjord_78N_240h"), ("vmf_winter_Hmean", "fjord_78N_240h"),
+                      ("thesis_bay_thesis_f", "bay_thesis_f_240h"),
                       ("thesis_bay_78N_vmf_summer", "bay_78N_240h")):
         if key not in cases or bkey not in bands:
             continue
@@ -519,9 +558,16 @@ def run(data_dir: Path, thesis_input: Path) -> tuple[dict, dict, dict | None]:
             "inertial": band_of(1 / c["inertial_period_h"], b),
             "kelvin_mode1_harmonics": {str(n): {"period_h": TK1 / n, "band": band_of(n / TK1, b)} for n in range(1, 11)},
             "kelvin_circuits_in_record": b["record_h"] / TK1,
+            "kelvin_circuits_in_280h": 280.0 / TK1,
+            "kelvin_mode1_band_280h": band_of(1 / TK1, bands[bkey.replace("240h", "280h")])
+            if bkey.replace("240h", "280h") in bands else None,
             "merian_closed_open_1": band_of(1 / c["merian_closed_open_h"][0], b),
             "merian_closed_closed_1": band_of(1 / c["merian_closed_closed_h"][0], b),
         }
+    resolution = {k: {"R1_over_dx_200m": c["rossby_radius_m"][0] / geo["dx_m"],
+                      "R1_over_dx_400m": c["rossby_radius_m"][0] / (2 * geo["dx_m"]),
+                      "R1_over_dx_100m": c["rossby_radius_m"][0] / (geo["dx_m"] / 2)}
+                  for k, c in cases.items() if k.startswith("vmf_")}
     # proposed wind direction: along the principal axis of the inner fjord, down-fjord (blowing
     # towards the mouth, i.e. towards the west end of the axis)
     a = geo["axis_angle_deg"]                    # axis direction, CCW from east, (-90, 90]
@@ -537,6 +583,14 @@ def run(data_dir: Path, thesis_input: Path) -> tuple[dict, dict, dict | None]:
         "lat_fjord_deg": LAT_FJORD,
         "fjord_geometry": {k: v for k, v in geo.items() if not k.startswith("_")},
         "thesis_bay_geometry": {k: v for k, v in (thesis or {}).items() if k not in ("T", "S", "delR")},
+        "eos": {"fitted_vmf": {k: v for k, v in eos.items()}, "thesis": prof.EOS_THESIS,
+                "check_on_final_profiles": _eos_check(pr_out, eos)},
+        "v2b_range_m_s-1": {
+            "formula": "[0.8 c1(H mean), 1.2 c1(H max)], summer (PD0 4)",
+            "fitted_vmf": [0.8 * cases["vmf_summer_Hmean"]["c_n"][0], 1.2 * cases["vmf_summer"]["c_n"][0]],
+            "thesis_eos": [0.8 * cases["vmf_summer_Hmean"]["c_n_thesis_eos"][0],
+                           1.2 * cases["vmf_summer"]["c_n_thesis_eos"][0]]},
+        "resolution": resolution,
         "cases": cases, "bands": bands, "placement": placement, "wind": wind,
         "profiles_summary": {k: {kk: vv for kk, vv in v.items()
                                  if kk not in ("T", "S", "T_year_balanced", "S_year_balanced", "_casts", "info")}
@@ -546,13 +600,34 @@ def run(data_dir: Path, thesis_input: Path) -> tuple[dict, dict, dict | None]:
     return theory, pr_out, thesis
 
 
+def _eos_check(pr_out: dict, eos: dict, zmax_m: float = 120.0) -> dict:
+    """Fitted linear sigma against TEOS-10 sigma0 on the final representative profiles."""
+    zc = np.array(pr_out["z_c_m"])
+    k = zc > -zmax_m
+    T = np.concatenate([np.array(pr_out["seasons"][s]["T"])[k] for s in ("summer", "winter")])
+    S = np.concatenate([np.array(pr_out["seasons"][s]["S"])[k] for s in ("summer", "winter")])
+    SA = gsw.SA_from_SP(S, 0.0, eos["fit_lon"], eos["fit_lat"])
+    sig = gsw.sigma0(SA, gsw.CT_from_t(SA, T, 0.0))
+    r = prof.linear_sigma(T, S, eos) - sig
+    refit = prof.fit_linear_eos(T, S, lon=eos["fit_lon"], lat=eos["fit_lat"])
+    return {"max_abs_err_kg_m3": float(np.max(np.abs(r))), "rms_err_kg_m3": float(np.sqrt(np.mean(r**2))),
+            "refit_tAlpha": refit["tAlpha"], "refit_sBeta": refit["sBeta"],
+            "refit_rel_change": [refit["tAlpha"] / eos["tAlpha"] - 1, refit["sBeta"] / eos["sBeta"] - 1]}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", type=Path, default=FIG / "theory.json")
     ap.add_argument("--data", type=Path, default=PKG / "data_external")
     ap.add_argument("--thesis-input", type=Path, default=THESIS_INPUT)
     ap.add_argument("--no-figure", action="store_true")
+    ap.add_argument("--fit-eos", action="store_true",
+                    help="only fit the linear EOS (PD0 decision 3) and print it for cases.yaml")
     a = ap.parse_args(argv)
+    if a.fit_eos:
+        cfg = yaml.safe_load(CASES.read_text())["configs"]["fjord_vmf"]
+        print(json.dumps(fit_eos(cfg, a.data), indent=1))
+        return
     theory, pr_out, thesis = run(a.data, a.thesis_input)
     if not a.no_figure:
         for p in figure(pr_out, theory["cases"], thesis, FIG / "profiles_vmf"):

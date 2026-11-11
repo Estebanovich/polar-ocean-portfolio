@@ -17,7 +17,7 @@ from exp4_arctic_bayiw.theory import modes
 
 PKG = Path(__file__).resolve().parents[1]
 CFG = yaml.safe_load((PKG / "cases.yaml").read_text())["configs"]["fjord_vmf"]
-EOS = profiles.EOS_EXP4
+EOS = profiles.EOS_THESIS
 UNIS = PKG / "data_external" / "unis_hd" / "profiles"
 THESIS_IN = Path("/Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan/input")
 G = 9.81
@@ -75,6 +75,26 @@ def test_qc_tolerates_small_noise():
     p = summer_like()
     p["S"] = p["S"] + rng.normal(0, 5e-4, p["S"].size)   # CTD-like salinity noise
     assert profiles.qc(p) is not None
+
+
+def test_qc_check_reports_reason():
+    p = summer_like()
+    assert profiles.qc_check(p) [1] == "ok"
+    bad = summer_like()
+    bad["S"][3] = 40.0
+    q, why = profiles.qc_check(bad)
+    assert q is None and why == "salinity_range"
+    bad = summer_like()
+    bad["T"][3] = 12.0
+    assert profiles.qc_check(bad)[1] == "temperature_range"
+    nos = summer_like()
+    nos["S"][:] = np.nan
+    nos["has_salinity"] = False
+    assert profiles.qc_check(nos)[1] == "no_salinity"
+    z = -np.arange(1.0, 101.0)
+    S = np.where(z > -50, 33.0 + 0.02 * (-z), 34.0 - 0.02 * (-z - 50))
+    assert profiles.qc_check(make_prof(z, np.full_like(z, 1.0), S))[1] == "inversions"
+    assert profiles.qc_check(make_prof([-1.0, -2.0], [1, 1], [34, 34.1]))[1] == "too_few_levels"
 
 
 def test_qc_drops_nan_levels_and_rejects_too_short():
@@ -160,6 +180,50 @@ def test_representative_needs_profiles():
         profiles.representative([], zgrid())
 
 
+# ----------------------------------------------------------------------------- linear EOS fit
+def test_fit_linear_eos_recovers_teos10():
+    """The fitted linear sigma reproduces TEOS-10 sigma0 within 0.03 kg m^-3 on fjord-like T/S
+    (stated tolerance of the PD0, 1 % of the 3 kg m^-3 summer column contrast)."""
+    import gsw
+    summer = summer_like(zmax=120.0)                      # T 1-5 C, S 31.4-34.4
+    zw = -np.arange(1.0, 121.0)
+    Tw = np.full_like(zw, -1.5)                          # late-winter-like: cold, salty, weak gradient
+    Sw = 34.45 + 0.15 * (-zw / 120.0)
+    T = np.concatenate([summer["T"], Tw])
+    S = np.concatenate([summer["S"], Sw])
+    fit = profiles.fit_linear_eos(T, S, lon=15.5, lat=77.8)
+    SA = gsw.SA_from_SP(S, 0.0, 15.5, 77.8)
+    sig = gsw.sigma0(SA, gsw.CT_from_t(SA, T, 0.0))
+    lin = profiles.linear_sigma(T, S, fit)
+    assert np.max(np.abs(lin - sig)) <= 0.03
+    assert fit["max_abs_err_kg_m3"] == pytest.approx(np.max(np.abs(lin - sig)), rel=1e-6)
+    # cold, fjord-range coefficients: alpha well below the thesis 2e-4, beta near 7.8e-4
+    assert 1e-5 < fit["tAlpha"] < 1.2e-4 and 7e-4 < fit["sBeta"] < 9e-4
+    assert fit["rhoNil"] == pytest.approx(1000.0 + fit["sigma_ref"])
+
+
+@pytest.mark.skipif(not UNIS.is_dir(), reason="UNIS HD profiles not downloaded")
+def test_real_fitted_eos_in_cases_yaml():
+    """The coefficients in cases.yaml reproduce TEOS-10 sigma0 on the representative profiles
+    (upper 120 m, both seasons) within 0.03 kg m^-3, and re-fitting on the final profiles changes
+    them by < 1 % (fixed point of the fit -> stabilisation loop)."""
+    import json
+    import gsw
+    eos = CFG["eos"]
+    assert eos["provenance"]
+    pj = json.loads((PKG / "figures" / "profiles_vmf.json").read_text())
+    zc = np.array(pj["z_c_m"])
+    k = zc > -120
+    T = np.concatenate([np.array(pj[s]["T"])[k] for s in ("summer", "winter")])
+    S = np.concatenate([np.array(pj[s]["S"])[k] for s in ("summer", "winter")])
+    SA = gsw.SA_from_SP(S, 0.0, eos["fit_lon"], eos["fit_lat"])
+    sig = gsw.sigma0(SA, gsw.CT_from_t(SA, T, 0.0))
+    assert np.max(np.abs(profiles.linear_sigma(T, S, eos) - sig)) <= 0.03
+    refit = profiles.fit_linear_eos(T, S, lon=eos["fit_lon"], lat=eos["fit_lat"])
+    for key in ("tAlpha", "sBeta"):
+        assert refit[key] == pytest.approx(eos[key], rel=0.01)
+
+
 # ----------------------------------------------------------------------------- load
 def test_load_unis_hd_synthetic(tmp_path):
     netCDF4 = pytest.importorskip("netCDF4")
@@ -214,6 +278,8 @@ def test_modes_column_truncates_at_H():
     S = 34.4 - 3.0 * np.exp(zc / 8.0)
     z, n2 = tn.modes_column(delR, T, S, 119.0, EOS)
     assert z[-1] == pytest.approx(-119.0) and np.all(np.diff(z) < 0) and np.all(n2 > 0)
+    zt, n2t, nneg = tn.modes_column_teos10(delR, T, S, 119.0, 77.8, 15.5)
+    assert nneg == 0 and np.all(n2t >= 0) and zt[-1] == pytest.approx(-119.0)
 
 
 def test_mask_geometry_rectangle():
@@ -247,6 +313,9 @@ def test_bands_non_overlapping_and_resolved():
     assert edges[-1][1] == pytest.approx(1 / (2 * 1200 / 3600))     # Nyquist
     with pytest.raises(ValueError):
         tn.spectral_bands(f_cph, 240.0, 1200.0, merian_lowest_cph=0.1)   # seiche band would hit NI
+    b280 = tn.spectral_bands(f_cph, record_h=280.0, dt_out_s=1200.0, merian_lowest_cph=0.3)
+    assert b280["df_cph"] == pytest.approx(1 / 280.0)
+    assert b280["bands"][2]["n_bins"] > b["bands"][2]["n_bins"]
 
 
 # ----------------------------------------------------------------------------- real data
@@ -261,9 +330,12 @@ def test_real_unis_summer_winter():
         ok = [q for q in (profiles.qc(p, **pc["qc"]) for p in sel) if q is not None]
         assert len(ok) >= pc["min_profiles"], season
         info = {}
-        T, S = profiles.representative(ok, zgrid(), min_count=pc["min_count_per_level"], info=info)
+        eos = CFG["eos"]
+        T, S = profiles.representative(ok, zgrid(), eos=eos, min_count=pc["min_count_per_level"], info=info)
         assert np.all(np.isfinite(T)) and np.all(np.isfinite(S))
-        assert np.all(n2_linear(zgrid(), T, S) >= -1e-12)
+        dz = np.diff(zgrid())
+        n2 = G * (eos["tAlpha"] * np.diff(T) / dz - eos["sBeta"] * np.diff(S) / dz)
+        assert np.all(n2 >= -1e-12)
 
 
 @pytest.mark.skipif(not (PKG / "figures" / "theory.json").is_file(), reason="theory.json not written")
@@ -276,6 +348,11 @@ def test_theory_json_contents():
         assert c["inertial_period_h"] > 0 and c["kelvin_circuit_period_h"][0] > 0
     assert d["cases"]["vmf_summer"]["inertial_period_h"] == pytest.approx(12.23, abs=0.01)
     assert d["cases"]["thesis_bay_thesis_f"]["f_s-1"] == pytest.approx(6.97e-5, rel=1e-3)
+    assert d["cases"]["thesis_bay_thesis_f"]["eos"] == "thesis"
+    for k in ("vmf_summer", "vmf_winter", "thesis_bay_78N_vmf_summer"):
+        assert d["cases"][k]["eos"] == "fitted_vmf"
+        assert len(d["cases"][k]["c_n_thesis_eos"]) >= 3
+    assert set(d["bands"]) >= {"fjord_78N_240h", "fjord_78N_280h"}
 
 
 def test_parse_namelist_fortran_numbers():
