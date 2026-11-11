@@ -404,10 +404,14 @@ def test_test_mode_refused_on_real_dataset(monkeypatch):
     assert rp.test_overrides({"dataset": {"sha256": "a" * 64}}, runs) == {}
 
 
-def test_final_refuses_second_run(proto, tmp_path):
-    kw = dict(out=tmp_path / "final_test.json", maps_out=tmp_path / "final_maps.npz",
-              marker=tmp_path / "final_started.json", progress_log=tmp_path / "final.log",
-              git_state=lambda: dict(FAKE_GIT), workers=2)
+def _final_kw(tmp_path, cv_results):
+    return dict(out=tmp_path / "final_test.json", maps_out=tmp_path / "final_maps.npz",
+                marker=tmp_path / "final_started.json", progress_log=tmp_path / "final.log",
+                git_state=lambda: dict(FAKE_GIT), workers=2, cv_results=cv_results)
+
+
+def test_final_refuses_second_run(proto, cv_done, tmp_path):
+    kw = _final_kw(tmp_path, cv_done[0] / "cv_results.json")
     rec = rp.run_final(proto["cfg"], proto["csha"], **kw)
     res = json.loads((tmp_path / "final_test.json").read_text())
     assert res == json.loads(json.dumps(rec))
@@ -489,3 +493,131 @@ def test_default_has_no_amendment(cv_done):
     assert res["amendments"] == [] and res["wall_limit_hours"] == 8.0
     assert all(json.loads(p.read_text())["amendment"] is None
                for p in (root / "units").glob("*.json"))
+
+
+# --- Fix round 1: crash-safe one-time final test --------------------------------------------
+def _fake_cv(path, proto, overrides):
+    """Minimal complete cv_results.json for the --final guard (config sha, overrides, units)."""
+    cfg = json.loads(proto["cfg"].read_text())
+    units = rp.cv_units(cfg, {r.case: r for r in proto["runs"]})
+    path.write_text(json.dumps({"config_sha256": proto["csha"], "test_overrides": overrides,
+                                "units": [{"unit": u["unit"]} for u in units]}))
+    return path
+
+
+def _marker(tmp_path):
+    return json.loads((tmp_path / "final_started.json").read_text())
+
+
+def test_final_crash_in_worker_recorded(proto, tmp_path, monkeypatch):
+    bad = json.loads(json.dumps(rp.TEST_OVERRIDES))
+    bad["M7"]["bogus_kwarg"] = 1                       # M7 raises TypeError in its worker
+    monkeypatch.setattr(rp, "TEST_OVERRIDES", bad)
+    kw = _final_kw(tmp_path, _fake_cv(tmp_path / "cv.json", proto, bad))
+    with pytest.raises(TypeError, match="bogus_kwarg"):
+        rp.run_final(proto["cfg"], proto["csha"], **kw)
+    assert not (tmp_path / "final_test.json").exists()
+    (att,) = _marker(tmp_path)["attempts"]
+    assert att["status"] == "failed" and att["error_type"] == "TypeError"
+    assert "bogus_kwarg" in att["error"] and att["failed"] and att["resume_reason"] is None
+    assert "main__final__M7" not in att["completed_units"]
+    assert set(att["completed_units"]) <= {f"main__final__{m}" for m in REGISTRY}
+    log = (tmp_path / "final.log").read_text()
+    assert "FAILED" in log and "TypeError" in log
+    with pytest.raises(rp.ProtocolError, match="started"):           # plain --final refuses
+        rp.run_final(proto["cfg"], proto["csha"], **kw)
+    assert len(_marker(tmp_path)["attempts"]) == 1
+
+
+def test_final_resume_after_crash(proto, cv_done, tmp_path, monkeypatch):
+    kw = _final_kw(tmp_path, cv_done[0] / "cv_results.json")
+    # resume refused when nothing has been attempted
+    with pytest.raises(rp.ProtocolError, match="no previous"):
+        rp.run_final(proto["cfg"], proto["csha"], resume_after_crash="why", **kw)
+    assert not (tmp_path / "final_started.json").exists()
+    real = rp._write_final_maps
+
+    def crash(*a, **k):
+        raise KeyboardInterrupt                        # after all 8 fits, before any output
+    monkeypatch.setattr(rp, "_write_final_maps", crash)
+    with pytest.raises(KeyboardInterrupt):
+        rp.run_final(proto["cfg"], proto["csha"], **kw)
+    (att,) = _marker(tmp_path)["attempts"]
+    assert att["status"] == "failed" and att["error_type"] == "KeyboardInterrupt"
+    assert sorted(att["completed_units"]) == sorted(f"main__final__{m}" for m in REGISTRY)
+    assert not (tmp_path / "final_test.json").exists()
+    monkeypatch.setattr(rp, "_write_final_maps", real)
+    with pytest.raises(rp.ProtocolError, match="reason"):
+        rp.run_final(proto["cfg"], proto["csha"], resume_after_crash="  ", **kw)
+    res = rp.run_final(proto["cfg"], proto["csha"], resume_after_crash="test: interrupted", **kw)
+    out = json.loads((tmp_path / "final_test.json").read_text())
+    assert out == json.loads(json.dumps(res))
+    a1, a2 = out["attempts"]
+    assert a1["status"] == "failed" and a1["error_type"] == "KeyboardInterrupt"
+    assert a2["status"] == "complete" and a2["resume_reason"] == "test: interrupted"
+    assert a2["completed_units"] and a2["finished"]
+    assert _marker(tmp_path)["attempts"] == out["attempts"]
+    assert {(e["method"], e["case"]) for e in out["entries"]} == {(m, "synth_6") for m in REGISTRY}
+    assert all(u["hparams"] and u["test_overrides"] == rp.TEST_OVERRIDES for u in out["units"])
+    log = (tmp_path / "final.log").read_text()
+    assert "RESUME-AFTER-CRASH" in log and "test: interrupted" in log
+    # after a completed run every path refuses
+    with pytest.raises(FileExistsError):
+        rp.run_final(proto["cfg"], proto["csha"], resume_after_crash="again", **kw)
+    with pytest.raises(FileExistsError):
+        rp.run_final(proto["cfg"], proto["csha"], **kw)
+
+
+def test_final_resume_refused_unless_failed(proto, cv_done, tmp_path):
+    kw = _final_kw(tmp_path, cv_done[0] / "cv_results.json")
+    m = tmp_path / "final_started.json"
+    for content in ({"attempts": [{"attempt": 1, "status": "running"}]},   # hard kill: no record
+                    {"attempts": [{"attempt": 1, "status": "complete"}]},
+                    {"attempts": []}):
+        m.write_text(json.dumps(content))
+        with pytest.raises(rp.ProtocolError, match="failure"):
+            rp.run_final(proto["cfg"], proto["csha"], resume_after_crash="r", **kw)
+        assert json.loads(m.read_text()) == content
+    m.write_text("not json")
+    with pytest.raises(rp.ProtocolError):
+        rp.run_final(proto["cfg"], proto["csha"], resume_after_crash="r", **kw)
+    m.unlink()
+    (tmp_path / "final_test.json").write_text("{}")
+    with pytest.raises(FileExistsError):
+        rp.run_final(proto["cfg"], proto["csha"], resume_after_crash="r", **kw)
+
+
+def test_final_requires_complete_cv(proto, tmp_path):
+    kw = _final_kw(tmp_path, tmp_path / "missing.json")
+    with pytest.raises(rp.ProtocolError, match="cv_results"):
+        rp.run_final(proto["cfg"], proto["csha"], **kw)
+    cv = _fake_cv(tmp_path / "cv.json", proto, rp.TEST_OVERRIDES)
+    rec = json.loads(cv.read_text())
+    for bad in ({**rec, "config_sha256": "f" * 64}, {**rec, "units": rec["units"][:-1]},
+                {**rec, "test_overrides": {}}):
+        cv.write_text(json.dumps(bad))
+        with pytest.raises(rp.ProtocolError, match="cv_results"):
+            rp.run_final(proto["cfg"], proto["csha"], **_final_kw(tmp_path, cv))
+    assert not (tmp_path / "final_started.json").exists()
+
+
+@pytest.mark.parametrize("argv", [
+    ["--cv", "--dataset", "x.npz"], ["--cv", "--out", "x.json"], ["--final", "--dataset-sha", "ab"],
+    ["--final", "--noise-json", ""], ["--final", "--out", "x.json"],
+    ["--cv", "--resume-after-crash", "r"], ["--freeze-config", "--resume-after-crash", "r"],
+])
+def test_cli_rejects_ignored_flags(argv, monkeypatch):
+    monkeypatch.setattr(rp, "run_cv", lambda *a, **k: pytest.fail("run_cv called"))
+    monkeypatch.setattr(rp, "run_final", lambda *a, **k: pytest.fail("run_final called"))
+    with pytest.raises(SystemExit):
+        rp.main(argv)
+
+
+def test_cli_final_resume_passthrough(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(rp, "run_final", lambda cfg, sha, **kw: seen.update(sha=sha, **kw) or
+                        {"entries": []})
+    assert rp.main(["--final"]) == 0
+    assert seen["sha"] == rp.CONFIG_SHA256 and seen["resume_after_crash"] is None
+    assert rp.main(["--final", "--resume-after-crash", "power cut"]) == 0
+    assert seen["resume_after_crash"] == "power cut"
