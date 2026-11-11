@@ -3,10 +3,11 @@
 # A throw-away shim directory symlinks the pure-Python pytest stack from the
 # pyocean env; nothing is installed. Default target: exp3_melt_emulator, added
 # whenever no path is given (also when only options are given, e.g. -q).
+# Interpreters: $PYOCEAN (has pytest) and $ANEMOI (runs the tests); defaults below.
 set -euo pipefail
 
-PYOCEAN=/opt/anaconda3/envs/pyocean/bin/python
-ANEMOI=/opt/anaconda3/envs/anemoi/bin/python
+PYOCEAN="${PYOCEAN:-/opt/anaconda3/envs/pyocean/bin/python}"
+ANEMOI="${ANEMOI:-/opt/anaconda3/envs/anemoi/bin/python}"
 
 SITE=$("$PYOCEAN" -c "import pytest,os;print(os.path.dirname(os.path.dirname(pytest.__file__)))")
 SHIM=$(mktemp -d)

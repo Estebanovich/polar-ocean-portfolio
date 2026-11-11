@@ -12,7 +12,7 @@ Fecha: 2026-11-10. Se hizo antes de diseñar el experimento y antes de entrenar 
 2. **Lo que el spec planeaba como aporte ya está publicado.** El plan era usar la dispersión de un ensamble de redes como indicador de confianza y probar la extrapolación a CDW más cálida. DeepMelt-GL ya muestra las dos cosas: la red es "particularly sensitive to temperatures and ice-draft slopes outside those used in the training dataset", y la dispersión del ensamble de redes "is a good indicator of the reliability of the emulator". El Exp. 3 tiene que **reproducir** ese resultado en un caso controlado y citarlo, no presentarlo como nuevo.
 3. **El antecedente más cercano es Bouissou, Burgard & Jourdain (2022).** Entrenan una red profunda en una **geometría idealizada**, con ocean simulations de alta resolución, y concluyen tres cosas: las redes grandes rinden mejor, el formato de entrada de T y S es lo que más importa, y la red puede aplicarse fuera del rango de entrenamiento "if trained appropriately". Es un artículo de congreso (ECCOMAS) y hay que leerlo completo.
 4. **Con pocos datos, las líneas base simples a menudo ganan.**
-   - En ClimateBench, una regresión lineal tipo *pattern scaling* superó a un modelo de 100 M de parámetros en 3 de 4 variables (Lütjens et al., 2024).
+   - En ClimateBench, una regresión lineal tipo *pattern scaling* superó a un modelo de 100 M de parámetros en 3 de 4 variables (Lütjens et al., 2025).
    - En emulación de simuladores, los procesos gaussianos fueron más precisos y estuvieron mejor calibrados que las redes (Myren & Lawrence, 2021).
    - Para la contribución antártica al nivel del mar, en cambio, una LSTM superó a un proceso gaussiano (Van Katwyk et al., 2023).
 
@@ -30,7 +30,7 @@ Fecha: 2026-11-10. Se hizo antes de diseñar el experimento y antes de entrenar 
 4. **Ockenden et al. (2026), DeepMelt-GL** (⬜). Es lo más reciente y define qué ya no es nuevo. Revisar cómo construyen el ensamble de redes y cómo relacionan la dispersión con el error.
 5. **Bouissou, Burgard & Jourdain (2022)** (⬜), el caso idealizado. Revisar qué entradas usan para T/S y qué significa "trained appropriately" para extrapolar.
 6. **Lambert & Burgard (2025)** (⬜). Muestra por qué extrapolar es la pregunta abierta: es la incertidumbre que el Exp. 3 puede ilustrar.
-7. **Lütjens et al. (2024)** (⬜). Advierte sobre comparar contra líneas base débiles y sobre el sobreajuste al ruido.
+7. **Lütjens et al. (2025)** (⬜). Advierte sobre comparar contra líneas base débiles y sobre el sobreajuste al ruido.
 
 ## 3. Cómo llegó el campo aquí
 
@@ -115,11 +115,11 @@ Fecha: 2026-11-10. Se hizo antes de diseñar el experimento y antes de entrenar 
 
 **Qué muestra la literatura.**
 - No hay un ganador universal. Con simuladores costosos y pocos datos, el proceso gaussiano fue más preciso y estuvo mejor calibrado (**Myren & Lawrence, 2021**). En ISMIP6, una LSTM superó al proceso gaussiano (**Van Katwyk et al., 2023**).
-- Un emulador lineal le ganó a un modelo profundo en 3 de 4 variables, porque las redes sobreajustan el ruido de la variabilidad interna (**Lütjens et al., 2024**).
+- Un emulador lineal le ganó a un modelo profundo en 3 de 4 variables, porque las redes sobreajustan el ruido de la variabilidad interna (**Lütjens et al., 2025**).
 - Para un ensamble perturbado de melt, Berdahl et al. (2020) usaron un emulador estadístico.
 
 **Artículos clave:**
-- Lütjens et al. (2024), *JAMES*. Las líneas base simples ganan.
+- Lütjens et al. (2025), *JAMES*. Las líneas base simples ganan.
 - Myren & Lawrence (2021). Proceso gaussiano contra red con pocos datos.
 - Van Katwyk et al. (2023), *JAMES*. El resultado contrario, en hielo antártico.
 - Berdahl et al. (2020), *The Cryosphere* (preprint tc-2020-178). Emulación de un ensamble de melt.
@@ -135,7 +135,7 @@ Fecha: 2026-11-10. Se hizo antes de diseñar el experimento y antes de entrenar 
 
 **Qué muestra la literatura.**
 - La validación usual es probar con corridas no vistas o con un ensamble independiente (**Burgard et al., 2023**).
-- Los *benchmarks* deben usar promedios de ensamble para no premiar el sobreajuste al ruido (**Lütjens et al., 2024**).
+- Los *benchmarks* deben usar promedios de ensamble para no premiar el sobreajuste al ruido (**Lütjens et al., 2025**).
 - En parametrizaciones de submalla del océano en un modelo idealizado, las redes con restricciones físicas fueron estables en línea pero "generalize poorly to new regimes"; una regresión lineal con programación genética rindió igual en el dominio de entrenamiento (Ross et al., 2023).
 - No encontré trabajos de restricciones físicas (por ejemplo, forzar la dependencia del melt con u*·ΔT) aplicadas a emuladores del melt basal. Esta búsqueda devolvió sobre todo flujos turbulentos aire–hielo (Cummins et al., 2023), así que la cobertura de este punto es incompleta.
 
@@ -158,7 +158,7 @@ Fecha: 2026-11-10. Se hizo antes de diseñar el experimento y antes de entrenar 
 **Lo que el Exp. 3 puede aportar sin decir que es el primero:**
 
 1. **Un caso donde la ley cuadrática falla de forma conocida.** El Exp. 2 mostró que el melt es casi exactamente cuadrático en Tbot, pero con exponente 2.4–2.8, y que depende de z_c. La cuadrática no local de ISMIP6 usa una sola T lejana, y la local usa la T a la profundidad del hielo. El Exp. 3 puede medir cuánto de la dependencia en z_c captura cada una, porque la local "ve" la termoclina y la no local no. Esto es una pregunta física con respuesta medible, y no encontré que nadie la haya probado en un ensamble controlado.
-2. **Una comparación honesta con 26 corridas.** Hay que comparar el ensamble de redes contra la cuadrática local, la cuadrática no local, una regresión lineal sobre los parámetros (Tbot, z_c, s) y un proceso gaussiano. La literatura no da un ganador para este tamaño de datos (Myren & Lawrence 2021 frente a Van Katwyk et al. 2023), y Lütjens et al. (2024) muestran que omitir la línea base simple puede inflar el mérito de la red.
+2. **Una comparación honesta con 26 corridas.** Hay que comparar el ensamble de redes contra la cuadrática local, la cuadrática no local, una regresión lineal sobre los parámetros (Tbot, z_c, s) y un proceso gaussiano. La literatura no da un ganador para este tamaño de datos (Myren & Lawrence 2021 frente a Van Katwyk et al. 2023), y Lütjens et al. (2025) muestran que omitir la línea base simple puede inflar el mérito de la red.
 3. **La extrapolación a Tbot = 2.0 °C como réplica controlada de DeepMelt-GL.** El objetivo es comprobar si la dispersión del ensamble de redes crece donde crece el error en las tres corridas de prueba, y citar a Ockenden et al. (2026) como el resultado que se reproduce.
 
 **Huecos metodológicos:**
@@ -198,7 +198,7 @@ Consensus devolvió hasta 20 artículos por búsqueda. El plan permite hasta 300
 
 ## Para descargar (prioridad)
 
-Burgard et al. 2023 · Ockenden et al. 2026 · Bouissou et al. 2022 · Jourdain et al. 2020 · Lambert & Burgard 2025 · Lütjens et al. 2024 · Rosier et al. 2023 · Little et al. 2009 · Myren & Lawrence 2021. Los DOI están en `readinglist.md`, sección Exp. 3.
+Burgard et al. 2023 · Ockenden et al. 2026 · Bouissou et al. 2022 · Jourdain et al. 2020 · Lambert & Burgard 2025 · Lütjens et al. 2025 · Rosier et al. 2023 · Little et al. 2009 · Myren & Lawrence 2021. Los DOI están en `readinglist.md`, sección Exp. 3.
 
 ## 8. Lectura completa (2026-11-10, después de la descarga)
 
@@ -237,9 +237,9 @@ Esteban descargó 21 artículos, que están en `literatura/` con su versión `.m
   - sensibilidad dM/dT, no linealidad y amplificación profunda (Lambert, Ec. 1–3);
   - patrón normalizado por el percentil 90.
 
-**Emulación con pocos datos (Myren 2021, Lütjens 2024, Van Katwyk 2023, Berdahl 2021, Lakshminarayanan 2017, Ross 2023).**
+**Emulación con pocos datos (Myren 2021, Lütjens 2025, Van Katwyk 2023, Berdahl 2021, Lakshminarayanan 2017, Ross 2023).**
 - **Myren 2021.** El caso de cosmología (37 corridas, 5 entradas) es el más parecido al nuestro. Un proceso gaussiano sobre los pesos de PCA (99 % de la varianza), con validación dejando una fuera, gana en todos los casos. Las redes requirieron probar "hundreds of architectures".
-- **Lütjens 2024.** La línea base lineal por celda gana por el compromiso sesgo–varianza: la red sobreajusta el ruido. Recomiendan regularizar con supuestos físicos sobre la forma funcional, y advierten que la variación entre semillas puede invertir el orden de los métodos.
+- **Lütjens 2025.** La línea base lineal por celda gana por el compromiso sesgo–varianza: la red sobreajusta el ruido. Recomiendan regularizar con supuestos físicos sobre la forma funcional, y advierten que la variación entre semillas puede invertir el orden de los métodos.
 - **Van Katwyk 2023.** La red gana con muchos datos, pero "GPs remain a good choice … for small data sets".
 - **Lakshminarayanan 2017.** M = 5 redes entrenadas con la verosimilitud negativa (NLL), con inicialización aleatoria y sin *bagging*. La evidencia fuera de distribución en regresión es solo un ejemplo 1-D de juguete.
 - **Ross 2023.** Las redes "generalize poorly to new regimes", y un mejor R² fuera de línea llegó a asociarse con un peor desempeño en línea. Recomiendan "better physics baselines".

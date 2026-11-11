@@ -73,17 +73,17 @@ The emulators are trained on the dataset that `exp2_isomip_cavity/analysis/expor
 - **Tests under anemoi.** That environment has no pytest. `exp3_melt_emulator/scripts/pytest_anemoi.sh [pytest args]` symlinks the pure-Python pytest stack of the main environment into a temporary directory and runs it under anemoi; with no path among the arguments it tests `exp3_melt_emulator`. Under the main environment the modules that need PyTorch or scikit-learn skip themselves, so the whole suite still runs there.
 
 ```bash
-ANEMOI=/path/to/anemoi/bin/python
+export ANEMOI=/path/to/anemoi/bin/python                                      # pytest_anemoi.sh and reproduce.sh read ANEMOI (and PYOCEAN / PY)
 bash exp3_melt_emulator/scripts/pytest_anemoi.sh -q                       # Exp. 3 tests under anemoi
 $PY -m pytest -q                                                          # whole suite (Exp. 3 torch/sklearn modules skip)
 $ANEMOI exp3_melt_emulator/scripts/run_protocol.py --freeze-config       # once, at the pre-registration (refuses to overwrite)
 $ANEMOI exp3_melt_emulator/scripts/run_protocol.py --cv [--wall-limit-hours H --amendment "<text>"]   # resumable
 $ANEMOI exp3_melt_emulator/scripts/run_protocol.py --final               # the final test: runs once, then refuses
-bash exp3_melt_emulator/reproduce.sh [--quick]                            # full mode re-runs --cv, never --final
+bash exp3_melt_emulator/reproduce.sh [--quick]                            # full mode re-runs --cv (compared with, then restored to, the committed record), never --final
 ```
 
-- **`run_protocol.py`** has three modes. `--freeze-config` writes `figures/protocol_config.json` (dataset sha256, folds, every method's hyperparameters, thresholds, noise floor) and refuses to overwrite it. `--cv` verifies that frozen configuration, the dataset and the folds, fits every method on every non-final fold in up to 5 single-threaded processes, writes one file per unit to `/Volumes/LaCie/portfolio_runs/exp3/cv_units/` (a restart skips finished units) and assembles `figures/cv_results.json`; its frozen wall-clock stop rule can be replaced only together with the text of a documented amendment. `--final` refuses if `figures/final_test.json` or its start marker exists, or if the cross-validation is incomplete; there is no override.
-- **Analysis** (`analysis/`): `noise_floor.py` (noise floor from the Exp. 2 runs), `hypotheses.py` (H3a–H3c and the ranking), `figures.py` (Figures 1, 2, 4), `physics_diag.py` (Figure 3), `profile_test_diag.py` (post hoc, under anemoi).
+- **`run_protocol.py`** has three modes. `--freeze-config` writes `figures/protocol_config.json` (dataset sha256, folds, every method's hyperparameters, thresholds, noise floor) and refuses to overwrite it. `--cv` verifies that frozen configuration, the dataset and the folds, fits every method on every non-final fold in up to 5 single-threaded processes, writes one file per unit to `/Volumes/LaCie/portfolio_runs/exp3/cv_units/` (a restart skips finished units) and assembles `figures/cv_results.json`; its frozen wall-clock stop rule can be replaced only together with the text of a documented amendment. `--final` refuses if `figures/final_test.json` or its start marker exists, or if the cross-validation is incomplete; once an attempt has completed there is no override (`--resume-after-crash` repeats, from scratch, only an attempt recorded as crashed).
+- **Analysis** (`analysis/`): `noise_floor.py` (noise floor from the Exp. 2 runs), `hypotheses.py` (H3a–H3c and the ranking), `figures.py` (Figures 1, 2, 4), `physics_diag.py` (Figure 3), `profile_test_diag.py` (post hoc, under anemoi), `bootstrap.py` (bootstrap intervals over runs), `compare_records.py` (re-run against committed record, used by `reproduce.sh`).
 - **README:** rendered by `scripts/render_readme.py` from `README.template.md` and `figures/*.json` (`--check` verifies that it is up to date); a test fails if the template contains a number that does not come from a placeholder.
 
 ## Locations
