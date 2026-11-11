@@ -289,7 +289,7 @@ def _figure(a, b, c, out_dir) -> None:
                 ax.plot(xx, p["k"] * xx ** p["n"], color="0.5", lw=0.9, ls="--",
                         label=f"pooled, 28 runs: n = {p['n']:.2f}")
             if any(b["fits"][key][k]["all_Tbot"]["poorly_constrained"] for k in zcs):
-                ax.plot([], [], " ", label="* poorly constrained (F spans < 1.5×)")
+                ax.plot([], [], " ", label="* F spans < 1.5× (post hoc): weak fit")
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel(xl)
@@ -354,7 +354,7 @@ def _figure(a, b, c, out_dir) -> None:
     ax2.axhline(DA_AXIS_MAX, color="0.6", lw=0.6, ls="--")
     ax2.set_title("(c2) DA, LB25 Eq. 3: open = (REF, +1), in-sample;\n"
                   "filled = (+1, +2), extension of Eq. 3", loc="left", fontsize=8)
-    ax2.set_xlabel("× |dM/dT| < 0.5 m a$^{-1}$ °C$^{-1}$: ill-conditioned;"
+    ax2.set_xlabel("× |dM/dT| < 0.5 m a$^{-1}$ °C$^{-1}$: ill-conditioned (post hoc);"
                    " ▲ clipped at 12", fontsize=6.5)
     style.save(fig, Path(out_dir) / "fig3_physics")
     plt.close(fig)
