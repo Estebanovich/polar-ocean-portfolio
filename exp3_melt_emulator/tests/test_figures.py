@@ -5,7 +5,8 @@ import json
 import numpy as np
 import pytest
 
-pytest.importorskip("cmocean")            # pfcommon.style; absent from the anemoi env
+pytest.importorskip("cmocean", reason="pfcommon.style needs cmocean (absent in anemoi): "
+                    "run this module under pyocean")
 
 from exp3_melt_emulator.analysis import figures as fg  # noqa: E402
 from exp3_melt_emulator.analysis import physics_diag as pdg  # noqa: E402
@@ -121,6 +122,15 @@ def test_physics_diag(tmp_path, no_npz):
     assert lam["M2"]["dMdT_p1_p2"] == pytest.approx(1.1 * 7 * c)
     # uniform maps: deep amplification is 1
     assert lam["MITgcm"]["DA_ref_p1"] == pytest.approx(1.0)
+    # labelling (fix round 1): in-sample caveat and small-denominator flags in the JSON
+    assert "in-sample" in saved["c_lambert"]["caveat"].lower()
+    assert lam["MITgcm"]["DA_ref_p1_small_denominator"] == (abs(5 * c) < pdg.DA_DENOM_MIN)
+    assert "poorly_constrained" in saved["b_power_law"]["fits"]["TF_shelf_mean"]["pooled_all_runs"]
+
+
+def test_powerlaw_fit_flags_narrow_forcing():
+    assert pdg.powerlaw_fit([1.0, 1.1, 1.2], [1.0, 2.0, 3.0])["poorly_constrained"]
+    assert not pdg.powerlaw_fit([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])["poorly_constrained"]
 
 
 def test_physics_diag_checks_integrated_true(tmp_path):

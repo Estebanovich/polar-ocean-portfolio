@@ -34,6 +34,10 @@ training, Tbot = 2.0 for the final test). Melt in m a-1 of freshwater, months 19
       draft (metrics.deep_amplification). M0 (a constant mean map) has no sensitivity and
       is left out. T here is Tbot, the temperature below the thermocline, which LB25 apply
       as their warming (+1, +2 degC at depth).
+    REF and +1 are IN-SAMPLE (the final-fold model trained on those runs); only +2 is held
+    out; the figure titles and fig3_physics.json ("caveat") say so. DA values with
+    |dM/dT| < 0.5 m a-1 degC-1 are flagged (small denominator, post hoc display rule) and
+    the (c2) axis is clipped at 12 with the clipped values annotated.
 
 Writes fig3_physics.{png,pdf} (pfcommon.style.save) and fig3_physics.json.
 """
@@ -65,12 +69,21 @@ LAMBERT_METHODS = tuple(f"M{i}" for i in range(1, 8))
 LAMBERT_T = (0.0, 1.0, 2.0)     # REF, +1, +2 (Lambert & Burgard 2025, Sect. 2)
 ZC_COLOURS = {250.0: style.OKABE_ITO[0], 400.0: style.OKABE_ITO[1], 550.0: style.OKABE_ITO[2]}
 POST_HOC = "POST HOC relative to Exp. 2"
+# Display caveats, chosen after seeing the values (labelled post hoc in the JSON):
+DA_DENOM_MIN = 0.5      # m a-1 degC-1: |dM/dT| below this makes DA = (dM10/dT)/(dM/dT) a ratio
+                        # of small numbers (~3x the 0.157 m a-1 noise floor of the melt maps)
+DA_AXIS_MAX = 12.0      # (c2) y-axis top; larger DA values are drawn at the top and annotated
+FIT_MIN_RANGE = 1.5     # a power-law fit whose forcing spans < 1.5x (max/min) is flagged
+                        # poorly constrained
 GT = 1e12                       # kg per Gt
 
 
 def powerlaw_fit(forcing, melt, labels=None) -> dict:
     """m = k F^n by OLS of ln m on ln F (as exp2 analysis/ensemble.py power_law_fit);
-    runs with F <= 0 or m <= 0 are excluded and listed. R^2 in log space."""
+    runs with F <= 0 or m <= 0 are excluded and listed (exp2 refuses instead). R^2 in log
+    space. An empirical fit, not a theory: the form of Exp. 2 pd0 H1, as Holland et al. 2008
+    Sect. 6 fit their modelled melt (exponent 1.61; literatura/Holland_2008*.md L923-925).
+    ``forcing_ratio`` = max/min of the used forcing; ``poorly_constrained`` if < 1.5."""
     x, m = np.asarray(forcing, float), np.asarray(melt, float)
     labels = list(labels) if labels is not None else list(range(len(x)))
     ok = (x > 0) & (m > 0)
@@ -82,7 +95,9 @@ def powerlaw_fit(forcing, melt, labels=None) -> dict:
     n, lnk = np.polyfit(lx, ly, 1)
     res = ly - (n * lx + lnk)
     r2 = 1.0 - float((res**2).sum()) / float(((ly - ly.mean()) ** 2).sum())
-    return {**out, "n": float(n), "k": float(np.exp(lnk)), "R2_log": r2}
+    ratio = float(x[ok].max() / x[ok].min())
+    return {**out, "n": float(n), "k": float(np.exp(lnk)), "R2_log": r2,
+            "forcing_ratio": ratio, "poorly_constrained": ratio < FIT_MIN_RANGE}
 
 
 def tf_gl(run) -> float:
@@ -166,6 +181,9 @@ def part_b(runs) -> dict:
                     "added here after the fact",
             "rule": "<m> = k F^n, OLS of ln <m> on ln F; <m> = MITgcm whole-shelf mean melt "
                     "(m a-1), months 19-24",
+            "poorly_constrained_rule": "post hoc display flag: forcing max/min < 1.5 over the "
+                                       "fitted runs (e.g. <TF> at z_c = 550 spans 0.18-0.26 "
+                                       "degC), so n is weakly determined",
             "runs": info, "fits": fits}
 
 
@@ -191,12 +209,24 @@ def part_c(runs, maps) -> dict:
             row[m] = {"M": [M[t] for t in LAMBERT_T], **s,
                       "DA_ref_p1": deep_amplification(f[0], f[1], rr[0], rr[1]),   # Eq. 3
                       "DA_p1_p2": deep_amplification(f[1], f[2], rr[1], rr[2])}
+            row[m]["DA_ref_p1_small_denominator"] = abs(s["dMdT_ref_p1"]) < DA_DENOM_MIN
+            row[m]["DA_p1_p2_small_denominator"] = abs(s["dMdT_p1_p2"]) < DA_DENOM_MIN
         row["cases"] = [r.case for r in rr]
         res[f"{zc:.0f}"] = row
     res["definition"] = ("Lambert & Burgard 2025 Eq. 1-3 with REF/+1/+2 = Tbot 0.0/1.0/2.0; "
                          "M = shelf-mean melt (m a-1); final-fold model of each method "
                          "(in-sample at 0.0 and 1.0, test at 2.0); DA_p1_p2 is Eq. 3 applied "
                          "to the (+1, +2) interval (extension)")
+    res["caveat"] = (
+        "REF (Tbot 0.0) and +1 (1.0) are IN-SAMPLE maps of the final-fold model (trained on "
+        "those runs); only +2 (Tbot 2.0) is held out. For the flexible methods (M4-M7) the "
+        "REF/+1 values largely reproduce the training data, so dM/dT|(REF,+1) and DA_ref_p1 "
+        "are not an independent test of learned sensitivity, and dM/dT|(+1,+2) restates the "
+        "final-test error. DA_p1_p2 is an extension of LB25 Eq. 3 (defined over REF,+1 only). "
+        "DA flagged *_small_denominator where |dM/dT| < 0.5 m a-1 degC-1 (post hoc display "
+        "rule): a ratio of small numbers, e.g. M4 at z_c = 550, DA_ref_p1 = 25.4 with "
+        "dM/dT = 0.36, a small-denominator artefact.")
+    res["da_small_denominator_threshold"] = DA_DENOM_MIN
     return res
 
 
@@ -245,25 +275,38 @@ def _figure(a, b, c, out_dir) -> None:
                 xx = np.geomspace(x.min(), x.max(), 30)
                 ax.plot(xx, f["k"] * xx ** f["n"], color=col, lw=0.9)
                 n5 = f"{f5['n']:.2f}" if f5["n"] is not None else "–"
+                flag = " *" if f["poorly_constrained"] else ""
                 ax.plot([], [], color=col, lw=0.9,
-                        label=f"z$_c$ {k}: n = {f['n']:.2f} (≤ 1.5: {n5})")
+                        label=f"z$_c$ {k}: n = {f['n']:.2f} (≤ 1.5: {n5}){flag}")
         if j == 1:
             p = b["fits"][key]["pooled_all_runs"]
             others = [v for v in b["runs"].values() if v["s"] != 1.0]
             ax.scatter([v["TF_shelf_mean"] for v in others], [v["mean_melt"] for v in others],
                        marker="^", color="0.5", s=14, zorder=2, label="geometry runs (s ≠ 1)")
             if p["n"] is not None:
-                ax.plot([], [], " ", label=f"pooled, 28 runs: n = {p['n']:.2f}")
+                allx = [v["TF_shelf_mean"] for v in b["runs"].values()]
+                xx = np.geomspace(min(allx), max(allx), 30)
+                ax.plot(xx, p["k"] * xx ** p["n"], color="0.5", lw=0.9, ls="--",
+                        label=f"pooled, 28 runs: n = {p['n']:.2f}")
+            if any(b["fits"][key][k]["all_Tbot"]["poorly_constrained"] for k in zcs):
+                ax.plot([], [], " ", label="* poorly constrained (F spans < 1.5×)")
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel(xl)
         ax.set_ylabel("MITgcm shelf-mean melt (m a$^{-1}$)")
         ax.set_title(f"(b{j + 1}) $\\langle m\\rangle = k F^n$ (POST HOC vs Exp. 2)",
                      loc="left", fontsize=8.5)
-        ax.legend(fontsize=6.3, frameon=False, loc="upper left" if j == 0 else "lower right")
+        if j == 1:                                   # room above the data for the legend
+            lo_, hi_ = ax.get_ylim()
+            ax.set_ylim(lo_, hi_ * 25)
+            from matplotlib.ticker import NullFormatter
+            ticks = [0.2, 0.3, 0.5, 1.0, 2.0]
+            ax.set_xticks(ticks, [f"{t:g}" for t in ticks])
+            ax.xaxis.set_minor_formatter(NullFormatter())
+        ax.legend(fontsize=6.3, frameon=False, loc="upper left")
     # (c1) dM/dT, (c2) DA
     names = ("MITgcm",) + LAMBERT_METHODS
-    zc_c = [k for k in c if k != "definition"]
+    zc_c = [k for k in c if isinstance(c[k], dict)]
     off = np.linspace(-0.22, 0.22, max(len(zc_c), 1))
     ax = fig.add_subplot(gs[1, 0:2])
     ax2 = fig.add_subplot(gs[1, 2])
@@ -274,28 +317,45 @@ def _figure(a, b, c, out_dir) -> None:
                    edgecolor=col, s=20, zorder=3)
         ax.scatter(xs, [c[k][n]["dMdT_p1_p2"] for n in names], marker="o", color=col, s=20,
                    zorder=3, label=f"z$_c$ = {k} m")
-        ax2.scatter(xs, [c[k][n]["DA_ref_p1"] for n in names], marker="o", facecolor="none",
-                    edgecolor=col, s=20, zorder=3)
-        ax2.scatter(xs, [c[k][n]["DA_p1_p2"] for n in names], marker="o", color=col, s=20,
-                    zorder=3)
+        for key_, filled in (("DA_ref_p1", False), ("DA_p1_p2", True)):
+            v = np.array([c[k][n][key_] for n in names])
+            small = np.array([c[k][n][key_ + "_small_denominator"] for n in names])
+            vis = np.minimum(v, DA_AXIS_MAX)
+            kw = dict(color=col) if filled else dict(facecolor="none", edgecolor=col)
+            inb = v <= DA_AXIS_MAX
+            ax2.scatter(xs[inb], vis[inb], marker="o", s=20, zorder=3, **kw)
+            ax2.scatter(xs[~inb], vis[~inb], marker="^", s=34, zorder=3, **kw)
+            ax2.scatter(xs[small], vis[small], marker="x", color="0.25", s=14, lw=0.8,
+                        zorder=4)
+            for xi, vi, n in zip(xs[~inb], v[~inb], np.array(names)[~inb]):
+                d = c[k][n]["dMdT_ref_p1" if key_ == "DA_ref_p1" else "dMdT_p1_p2"]
+                ax2.annotate(f"{n}, z$_c$ {k}: DA = {vi:.1f} (clipped);\n"
+                             f"dM/dT = {d:.2f}: small-denominator artefact",
+                             (xi, DA_AXIS_MAX), xytext=(0, 7), textcoords="offset points",
+                             ha="center", va="bottom", fontsize=6.2)
     ax.scatter([], [], marker="o", facecolor="none", edgecolor="0.3", s=20,
-               label="(REF, +1): $T_{bot}$ 0 → 1 °C")
-    ax.scatter([], [], marker="o", color="0.3", s=20, label="(+1, +2): 1 → 2 °C (test)")
+               label="(REF, +1): 0 → 1 °C, both in-sample")
+    ax.scatter([], [], marker="o", color="0.3", s=20,
+               label="(+1, +2): 1 → 2 °C, +2 held out")
     for a_ in (ax, ax2):
         a_.set_xticks(range(len(names)), names, rotation=45 if a_ is ax2 else 0)
         a_.axvspan(-0.5, 0.5, color="0.93", zorder=0)
         a_.set_xlim(-0.5, len(names) - 0.5)
     ax.set_ylabel("dM/dT (m a$^{-1}$ °C$^{-1}$)")
-    ax.set_title("(c1) melt sensitivity, Lambert & Burgard 2025 Eq. 1 (final-fold models)",
-                 loc="left", fontsize=8.5)
+    ax.set_title("(c1) dM/dT, Lambert & Burgard 2025 Eq. 1; final-fold models: "
+                 "REF, +1 in-sample, +2 held out", loc="left", fontsize=8.5)
     lo_, hi_ = ax.get_ylim()
     ax.set_ylim(lo_, hi_ + 0.3 * (hi_ - lo_))
-    ax.legend(fontsize=7, frameon=False, ncol=5, loc="upper left", columnspacing=1.0,
+    ax.legend(fontsize=7, frameon=False, ncol=3, loc="upper left", columnspacing=1.0,
               handletextpad=0.2)
     ax2.axhline(1.0, color="0.5", lw=0.7, ls=":")
     ax2.set_ylabel("deep amplification DA")
-    ax2.set_title("(c2) DA, LB25 Eq. 3 (open: REF,+1; filled: +1,+2)", loc="left",
-                  fontsize=8.5)
+    ax2.set_ylim(0, DA_AXIS_MAX * 1.3)
+    ax2.axhline(DA_AXIS_MAX, color="0.6", lw=0.6, ls="--")
+    ax2.set_title("(c2) DA, LB25 Eq. 3: open = (REF, +1), in-sample;\n"
+                  "filled = (+1, +2), extension of Eq. 3", loc="left", fontsize=8)
+    ax2.set_xlabel("× |dM/dT| < 0.5 m a$^{-1}$ °C$^{-1}$: ill-conditioned;"
+                   " ▲ clipped at 12", fontsize=6.5)
     style.save(fig, Path(out_dir) / "fig3_physics")
     plt.close(fig)
 

@@ -3227,7 +3227,7 @@
   "params": {
    "x": 62,
    "y": 635,
-   "text": "\u2022 spread of the 5 network members (M5\u2013M7: also coverage, CRPS)",
+   "text": "\u2022 M6, M7: spread of the 5 network members; M5\u2013M7: coverage, CRPS",
    "size": 9,
    "font": "Helvetica",
    "color": "#222222"

@@ -181,6 +181,7 @@
   "label": "POST HOC relative to Exp. 2",
   "note": "descriptive; Exp. 2 H1 (pre-registered) fitted Tbot - T_f,GL over Tbot <= 1.5 only; the shelf-mean TF forcing and the Tbot = 2.0 runs are added here after the fact",
   "rule": "<m> = k F^n, OLS of ln <m> on ln F; <m> = MITgcm whole-shelf mean melt (m a-1), months 19-24",
+  "poorly_constrained_rule": "post hoc display flag: forcing max/min < 1.5 over the fitted runs (e.g. <TF> at z_c = 550 spans 0.18-0.26 degC), so n is weakly determined",
   "runs": {
    "ens_T-0.5_zc250_s1.0": {
     "Tbot": -0.5,
@@ -443,14 +444,18 @@
       "excluded": [],
       "n": 2.433126561577252,
       "k": 1.0369851867464368,
-      "R2_log": 0.9994175564350204
+      "R2_log": 0.9994175564350204,
+      "forcing_ratio": 2.090429597591347,
+      "poorly_constrained": false
      },
      "all_Tbot": {
       "n_runs": 6,
       "excluded": [],
       "n": 2.3843705796338446,
       "k": 1.0814189654069337,
-      "R2_log": 0.9987879680402101
+      "R2_log": 0.9987879680402101,
+      "forcing_ratio": 2.363036996989184,
+      "poorly_constrained": false
      }
     },
     "400": {
@@ -459,14 +464,18 @@
       "excluded": [],
       "n": 2.778687784588156,
       "k": 0.2945368241892165,
-      "R2_log": 0.999726773935268
+      "R2_log": 0.999726773935268,
+      "forcing_ratio": 2.090429597591347,
+      "poorly_constrained": false
      },
      "all_Tbot": {
       "n_runs": 6,
       "excluded": [],
       "n": 2.7490897004263646,
       "k": 0.3021351158638499,
-      "R2_log": 0.999590468256487
+      "R2_log": 0.999590468256487,
+      "forcing_ratio": 2.363036996989184,
+      "poorly_constrained": false
      }
     },
     "550": {
@@ -475,14 +484,18 @@
       "excluded": [],
       "n": 2.6969655098511325,
       "k": 0.06879580905522582,
-      "R2_log": 0.9989287951217076
+      "R2_log": 0.9989287951217076,
+      "forcing_ratio": 2.090429597591347,
+      "poorly_constrained": false
      },
      "all_Tbot": {
       "n_runs": 6,
       "excluded": [],
       "n": 2.628699686288001,
       "k": 0.07295831027588115,
-      "R2_log": 0.9979479081033577
+      "R2_log": 0.9979479081033577,
+      "forcing_ratio": 2.363036996989184,
+      "poorly_constrained": false
      }
     }
    },
@@ -493,14 +506,18 @@
       "excluded": [],
       "n": 2.3621872967115607,
       "k": 8.543095570194549,
-      "R2_log": 0.9995313212669761
+      "R2_log": 0.9995313212669761,
+      "forcing_ratio": 2.1373821738681418,
+      "poorly_constrained": false
      },
      "all_Tbot": {
       "n_runs": 6,
       "excluded": [],
       "n": 2.3189143738116056,
       "k": 8.540458811427108,
-      "R2_log": 0.9989948627588638
+      "R2_log": 0.9989948627588638,
+      "forcing_ratio": 2.421727717335177,
+      "poorly_constrained": false
      }
     },
     "400": {
@@ -509,14 +526,18 @@
       "excluded": [],
       "n": 3.4440309217143126,
       "k": 77.51610934425862,
-      "R2_log": 0.9998431255286659
+      "R2_log": 0.9998431255286659,
+      "forcing_ratio": 1.8127229291247229,
+      "poorly_constrained": false
      },
      "all_Tbot": {
       "n_runs": 6,
       "excluded": [],
       "n": 3.3671702921710045,
       "k": 72.22446863096475,
-      "R2_log": 0.9989471572660618
+      "R2_log": 0.9989471572660618,
+      "forcing_ratio": 2.015903661405903,
+      "poorly_constrained": false
      }
     },
     "550": {
@@ -525,14 +546,18 @@
       "excluded": [],
       "n": 6.462670146998202,
       "k": 24118.161891540843,
-      "R2_log": 0.9907924591379417
+      "R2_log": 0.9907924591379417,
+      "forcing_ratio": 1.3583763751396656,
+      "poorly_constrained": true
      },
      "all_Tbot": {
       "n_runs": 6,
       "excluded": [],
       "n": 6.054261056054952,
       "k": 12495.86015362741,
-      "R2_log": 0.9865250072492696
+      "R2_log": 0.9865250072492696,
+      "forcing_ratio": 1.4479704689245818,
+      "poorly_constrained": true
      }
     },
     "pooled_all_runs": {
@@ -540,7 +565,9 @@
      "excluded": [],
      "n": 1.6076278228976915,
      "k": 13.754151993848717,
-     "R2_log": 0.8589034407778915
+     "R2_log": 0.8589034407778915,
+     "forcing_ratio": 13.8614347254316,
+     "poorly_constrained": false
     }
    }
   }
@@ -557,7 +584,9 @@
     "dMdT_p1_p2": 14.773034620433716,
     "d2MdT2": 3.2604901805480164,
     "DA_ref_p1": 2.805977052732963,
-    "DA_p1_p2": 2.7785329764665465
+    "DA_p1_p2": 2.7785329764665465,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M1": {
     "M": [
@@ -569,7 +598,9 @@
     "dMdT_p1_p2": 6.487485982373379,
     "d2MdT2": -1.7763568394002505e-15,
     "DA_ref_p1": 2.301157900828277,
-    "DA_p1_p2": 2.301157900828282
+    "DA_p1_p2": 2.301157900828282,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M2": {
     "M": [
@@ -581,7 +612,9 @@
     "dMdT_p1_p2": 13.14896700936995,
     "d2MdT2": 3.5045736304169957,
     "DA_ref_p1": 3.6430333668577997,
-    "DA_p1_p2": 3.633448607028158
+    "DA_p1_p2": 3.633448607028158,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M3": {
     "M": [
@@ -593,7 +626,9 @@
     "dMdT_p1_p2": 18.78743147753769,
     "d2MdT2": 4.998752660280868,
     "DA_ref_p1": 2.309899401346607,
-    "DA_p1_p2": 2.30757355925249
+    "DA_p1_p2": 2.30757355925249,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M4": {
     "M": [
@@ -605,7 +640,9 @@
     "dMdT_p1_p2": 13.287134384270992,
     "d2MdT2": 2.6911850427897104,
     "DA_ref_p1": 3.1745612269277523,
-    "DA_p1_p2": 3.001260260193537
+    "DA_p1_p2": 3.001260260193537,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M5": {
     "M": [
@@ -617,7 +654,9 @@
     "dMdT_p1_p2": 13.528419740942205,
     "d2MdT2": 2.1119176284079586,
     "DA_ref_p1": 2.7671002919097814,
-    "DA_p1_p2": 2.75454801297266
+    "DA_p1_p2": 2.75454801297266,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M6": {
     "M": [
@@ -629,7 +668,9 @@
     "dMdT_p1_p2": 12.74595638113668,
     "d2MdT2": 1.085764361226687,
     "DA_ref_p1": 2.8654303496217426,
-    "DA_p1_p2": 2.715483744225865
+    "DA_p1_p2": 2.715483744225865,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M7": {
     "M": [
@@ -641,7 +682,9 @@
     "dMdT_p1_p2": 16.82681412323213,
     "d2MdT2": 5.81716423181253,
     "DA_ref_p1": 3.7451076527485627,
-    "DA_p1_p2": 3.7356219839810416
+    "DA_p1_p2": 3.7356219839810416,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "cases": [
     "ens_T0.0_zc250_s1.0",
@@ -660,7 +703,9 @@
     "dMdT_p1_p2": 8.4054042332639,
     "d2MdT2": 3.2201948488486662,
     "DA_ref_p1": 4.728748778647671,
-    "DA_p1_p2": 3.8297338115291324
+    "DA_p1_p2": 3.8297338115291324,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M1": {
     "M": [
@@ -672,7 +717,9 @@
     "dMdT_p1_p2": 1.9723805337200329,
     "d2MdT2": -8.881784197001252e-16,
     "DA_ref_p1": 6.091523736606476,
-    "DA_p1_p2": 6.091523736606471
+    "DA_p1_p2": 6.091523736606471,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M2": {
     "M": [
@@ -684,7 +731,9 @@
     "dMdT_p1_p2": 4.262097145000202,
     "d2MdT2": 1.092925851174949,
     "DA_ref_p1": 7.5905916343631485,
-    "DA_p1_p2": 7.621679106398476
+    "DA_p1_p2": 7.621679106398476,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M3": {
     "M": [
@@ -696,7 +745,9 @@
     "dMdT_p1_p2": 2.0611476802654285,
     "d2MdT2": 0.46205130225632196,
     "DA_ref_p1": 5.561747105178562,
-    "DA_p1_p2": 5.6805081162404765
+    "DA_p1_p2": 5.6805081162404765,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M4": {
     "M": [
@@ -708,7 +759,9 @@
     "dMdT_p1_p2": 8.1710379306275,
     "d2MdT2": 2.6911850427897113,
     "DA_ref_p1": 3.9116217280753856,
-    "DA_p1_p2": 3.3870568604745275
+    "DA_p1_p2": 3.3870568604745275,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M5": {
     "M": [
@@ -720,7 +773,9 @@
     "dMdT_p1_p2": 10.221693537446589,
     "d2MdT2": 4.455480461446443,
     "DA_ref_p1": 4.950591045021181,
-    "DA_p1_p2": 2.990815083419426
+    "DA_p1_p2": 2.990815083419426,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M6": {
     "M": [
@@ -732,7 +787,9 @@
     "dMdT_p1_p2": 6.909049889701054,
     "d2MdT2": 1.7402783980914904,
     "DA_ref_p1": 4.721589597313643,
-    "DA_p1_p2": 4.039335735869931
+    "DA_p1_p2": 4.039335735869931,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M7": {
     "M": [
@@ -744,7 +801,9 @@
     "dMdT_p1_p2": 5.964483391620081,
     "d2MdT2": 1.9755380447450754,
     "DA_ref_p1": 7.08470291647973,
-    "DA_p1_p2": 7.1460707935626075
+    "DA_p1_p2": 7.1460707935626075,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "cases": [
     "ens_T0.0_zc400_s1.0",
@@ -763,7 +822,9 @@
     "dMdT_p1_p2": 1.491454845602658,
     "d2MdT2": 0.396053468967702,
     "DA_ref_p1": 6.7760091947714,
-    "DA_p1_p2": 6.194775277617601
+    "DA_p1_p2": 6.194775277617601,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M1": {
     "M": [
@@ -775,7 +836,9 @@
     "dMdT_p1_p2": 0.4821108389789006,
     "d2MdT2": -8.881784197001252e-16,
     "DA_ref_p1": 9.609708612880995,
-    "DA_p1_p2": 9.609708612881017
+    "DA_p1_p2": 9.609708612881017,
+    "DA_ref_p1_small_denominator": true,
+    "DA_p1_p2_small_denominator": true
    },
    "M2": {
     "M": [
@@ -787,7 +850,9 @@
     "dMdT_p1_p2": 0.6580860214470348,
     "d2MdT2": 0.15033415985288112,
     "DA_ref_p1": 9.839639118417846,
-    "DA_p1_p2": 9.85326498354295
+    "DA_p1_p2": 9.85326498354295,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M3": {
     "M": [
@@ -799,7 +864,9 @@
     "dMdT_p1_p2": 0.2092730565195362,
     "d2MdT2": 0.02760594220514101,
     "DA_ref_p1": 7.366095957553326,
-    "DA_p1_p2": 7.662058764824295
+    "DA_p1_p2": 7.662058764824295,
+    "DA_ref_p1_small_denominator": true,
+    "DA_p1_p2_small_denominator": true
    },
    "M4": {
     "M": [
@@ -811,7 +878,9 @@
     "dMdT_p1_p2": 3.054941476984008,
     "d2MdT2": 2.691185042789709,
     "DA_ref_p1": 25.381635719898078,
-    "DA_p1_p2": 5.065037048163487
+    "DA_p1_p2": 5.065037048163487,
+    "DA_ref_p1_small_denominator": true,
+    "DA_p1_p2_small_denominator": false
    },
    "M5": {
     "M": [
@@ -823,7 +892,9 @@
     "dMdT_p1_p2": 3.0349253596076133,
     "d2MdT2": 2.284853921475731,
     "DA_ref_p1": 8.0160729761902,
-    "DA_p1_p2": 3.8227431129410547
+    "DA_p1_p2": 3.8227431129410547,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M6": {
     "M": [
@@ -835,7 +906,9 @@
     "dMdT_p1_p2": 1.3408065750559197,
     "d2MdT2": 0.2803811853338709,
     "DA_ref_p1": 7.043562217541456,
-    "DA_p1_p2": 6.365672928841049
+    "DA_p1_p2": 6.365672928841049,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "M7": {
     "M": [
@@ -847,7 +920,9 @@
     "dMdT_p1_p2": 0.90303692905839,
     "d2MdT2": 0.265325702017868,
     "DA_ref_p1": 9.677488853904835,
-    "DA_p1_p2": 9.724648172841974
+    "DA_p1_p2": 9.724648172841974,
+    "DA_ref_p1_small_denominator": false,
+    "DA_p1_p2_small_denominator": false
    },
    "cases": [
     "ens_T0.0_zc550_s1.0",
@@ -855,6 +930,8 @@
     "ens_T2.0_zc550_s1.0"
    ]
   },
-  "definition": "Lambert & Burgard 2025 Eq. 1-3 with REF/+1/+2 = Tbot 0.0/1.0/2.0; M = shelf-mean melt (m a-1); final-fold model of each method (in-sample at 0.0 and 1.0, test at 2.0); DA_p1_p2 is Eq. 3 applied to the (+1, +2) interval (extension)"
+  "definition": "Lambert & Burgard 2025 Eq. 1-3 with REF/+1/+2 = Tbot 0.0/1.0/2.0; M = shelf-mean melt (m a-1); final-fold model of each method (in-sample at 0.0 and 1.0, test at 2.0); DA_p1_p2 is Eq. 3 applied to the (+1, +2) interval (extension)",
+  "caveat": "REF (Tbot 0.0) and +1 (1.0) are IN-SAMPLE maps of the final-fold model (trained on those runs); only +2 (Tbot 2.0) is held out. For the flexible methods (M4-M7) the REF/+1 values largely reproduce the training data, so dM/dT|(REF,+1) and DA_ref_p1 are not an independent test of learned sensitivity, and dM/dT|(+1,+2) restates the final-test error. DA_p1_p2 is an extension of LB25 Eq. 3 (defined over REF,+1 only). DA flagged *_small_denominator where |dM/dT| < 0.5 m a-1 degC-1 (post hoc display rule): a ratio of small numbers, e.g. M4 at z_c = 550, DA_ref_p1 = 25.4 with dM/dT = 0.36, a small-denominator artefact.",
+  "da_small_denominator_threshold": 0.5
  }
 }

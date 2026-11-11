@@ -66,6 +66,11 @@ def _write_json(rec: dict, stem: Path) -> None:
     Path(stem).with_suffix(".json").write_text(json.dumps(rec, indent=1) + "\n")
 
 
+def _signed(v: float) -> str:
+    """+1.2 / −1.2 with a typographic minus."""
+    return f"{v:+.1f}".replace("-", "−")
+
+
 def _floors(noise: dict) -> dict:
     return {"rmse_map": float(noise["pooled_median_rms"]),
             "abs_ire": float(noise["median_abs_integrated_rel_diff"])}
@@ -128,7 +133,8 @@ def fig1_method_errors(cv: dict, final: dict, noise: dict, out_dir: Path) -> dic
                       label="run failing N1"),
                Line2D([], [], color="k", lw=1.8, label="median"),
                plt.Rectangle((0, 0), 1, 1, color="0.85",
-                             label="noise floor (0.157 m a$^{-1}$; 1.3 %)")]
+                             label=f"noise floor ({floors['rmse_map']:.3f} m a$^{{-1}}$; "
+                                   f"{100 * floors['abs_ire']:.1f} %)")]
     fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False,
                bbox_to_anchor=(0.5, -0.01))
     fig.tight_layout(rect=(0, 0.04, 1, 1))
@@ -190,7 +196,7 @@ def fig2_maps(final: dict, maps: dict, run, out_dir: Path) -> dict:
         stats[m] = {"rmse_map": mt["rmse_map"], "integrated_rel_error":
                     mt["integrated_rel_error"], "rmse_gl": mt["rmse_gl"]}
         ax.set_title(f"({'abcdefg'[2 * i - 1]}) {t}\nRMSE {mt['rmse_map']:.1f} m a$^{{-1}}$, "
-                     f"integrated melt {100 * mt['integrated_rel_error']:+.1f} %",
+                     f"integrated melt {_signed(100 * mt['integrated_rel_error'])} %",
                      fontsize=8, loc="left")
         axd = axes[i, 1]
         pd_ = axd.pcolormesh(xe, ye, crop(f - truth), cmap=cmocean.cm.balance,
