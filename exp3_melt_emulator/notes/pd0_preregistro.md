@@ -1,6 +1,6 @@
-# PD0 — Preregistro del Exp. 3 (borrador, pendiente de aprobación de Esteban)
+# PD0 — Preregistro del Exp. 3 (aprobado por Esteban el 2026-11-10)
 
-Fecha: 2026-11-10. **Ninguna corrida del protocolo** (`run_protocol.py --cv` o `--final`) se ha hecho. No existe ninguna predicción de un emulador para las 3 corridas a Tbot = 2.0 ni para `ocean0_4km`. Lo que sí se vio antes de fijar los umbrales está en "Divulgación". Al aprobarse, se edita esta nota con las decisiones de Esteban, se corre `run_protocol.py --freeze-config` y `figures/protocol_config.json` queda congelado: el protocolo lo lee y nada se cambia después.
+Fecha: 2026-11-10. **Ninguna corrida del protocolo** (`run_protocol.py --cv` o `--final`) se ha hecho. No existe ninguna predicción de un emulador para las 3 corridas a Tbot = 2.0 ni para `ocean0_4km`. Lo que sí se vio antes de fijar los umbrales está en "Divulgación". Esteban aprobó el PD0 con las decisiones de abajo. La configuración quedó congelada con `run_protocol.py --freeze-config` en `figures/protocol_config.json`: el protocolo la lee, y nada se cambia después.
 
 **Fuentes**
 - Spec `2026-11-10-exp3-melt-emulator-design.md` y nota `rev_literatura.md` (§1–8).
@@ -43,9 +43,9 @@ Todo el ajuste se hace dentro de cada pliegue: la estandarización, las EOF, el 
 | M2 | K c² \|TF\| TF | B22 Ec. 14 (la misma forma funcional que F19 Ec. 4, salvo la constante, que K absorbe). Igual que M1 |
 | M3 | K c² TF \|⟨TF⟩\| | J20 Ec. 1 (F19 Ec. 5). Igual que M1 |
 | M4 | Regresión por celda | sobre (Tbot, z_c, s) estandarizados; grado 1 o 2 (10 términos), elegido por LORO interno con la media de `rmse_map`; un empate va al lineal |
-| M5 | GP sobre EOF | ML21 §3.1. Estandarización por celda, SVD y el menor k con ≥ 99 % de la varianza, con tope k ≤ m − 1. Núcleo: Constant(1; 1e-3–1e3) × RBF ARD(1; 1e-2–1e3) + White(1e-2; 1e-8–**1e1**), `normalize_y`, 5 reinicios, `random_state` 0. σ se propaga por las EOF; el error de truncamiento no se suma |
+| M5 | GP sobre EOF | ML21 §3.1. Estandarización por celda, SVD y el menor k con ≥ 99 % de la varianza, con tope k ≤ m − 1. Núcleo: Constant(1; 1e-3–1e3) × RBF ARD(1; 1e-2–1e3) + White(1e-3; **1e-8–1e-2**; un *nugget* pequeño y acotado, Decisión 4), `normalize_y`, 5 reinicios, `random_state` 0. σ se propaga por las EOF; el error de truncamiento no se suma |
 | M6 | Ensamble de redes | entradas: las 10 de `FEATURES`. MLP 32-64-32 ReLU con salidas (μ, σ²), NLL (L17 Ec. 1), sin *bagging*, mezcla gaussiana uniforme. M = 5 semillas, 0–4 |
-| M7 | Híbrido | m = K·b(TF)ⁿ·g_θ(x_g), con x_g = (draft, draft − z_c, dist_gl, dist_front, slope, s): sin ninguna temperatura. K y n se entrenan por miembro (n₀ = 2; K₀ sale de M2/M3 ajustado a los runs de entrenamiento del miembro). b = TF₊ ("local") o (TF₊\|⟨TF⟩\|)^½ ("nonlocal", R3). La elección es automática: CV interna por corrida con `tf_kind_folds = 5` grupos (permutación con semilla `split_seed + 1`) y la media de `rmse_map`; un empate va a local. La varianza sigue R11 (ver Decisiones) |
+| M7 | Híbrido | m = K·b(TF)ⁿ·g_θ(x_g), con x_g = (draft, draft − z_c, dist_gl, dist_front, slope, s): sin ninguna temperatura. K y n se entrenan por miembro (n₀ = 2; K₀ sale de M2/M3 ajustado a los runs de entrenamiento del miembro). b = TF₊ ("local") o (TF₊\|⟨TF⟩\|)^½ ("nonlocal", R3). La elección es automática, por **LORO interno completo** (`tf_kind_folds = None`, Decisión 3) con la media de `rmse_map`; un empate va a local. La varianza sigue R11 (Decisión 2) |
 
 **Comunes a M6 y M7:**
 - Adam con lr = 1e-3, lotes de 512 celdas, float64 en CPU, `torch.use_deterministic_algorithms(True)` y 1 hilo.
@@ -68,7 +68,7 @@ Todo el ajuste se hace dentro de cada pliegue: la estandarización, las EOF, el 
 - **Regla:** no se interpreta ninguna diferencia entre métodos menor que 0.157 m a⁻¹ en `rmse_map` o `rmse_gl`, ni menor que 1.3 % en `integrated_rel_error`.
 - Es una cota conservadora: la diferencia entre ventanas incluye la deriva residual, y vale √2 veces el ruido de una sola media. El piso es ~4 % de los errores vistos (~4 m a⁻¹), así que rara vez será el límite.
 
-## Hipótesis (umbrales: **propuesta — Esteban decide**)
+## Hipótesis (umbrales aprobados por Esteban, 2026-11-10)
 
 - **H3a (pregunta central).** En la prueba final, la media de \|`integrated_rel_error`\| de M7 sobre las 3 corridas es menor que la de M6, **y** M7 es mejor en ≥ 2 de las 3 corridas.
   - Si la diferencia de medias es < 1.3 % (el piso), el resultado es "no concluyente", no PASS.
@@ -104,38 +104,41 @@ Todo lo siguiente sale de las corridas de entrenamiento. Ninguna predicción toc
 6. **Exponente ajustado** de M7 local por miembro: n = **2.23–2.47** (mediana 2.39); K entre 16 y 34.
 7. **Piso de ruido** (esta tarea): 0.157 m a⁻¹ y 1.3 %.
 8. **Del Exp. 2** se conocen el H1 (exponente de 2.4–2.8) y el **melt medio de MITgcm de las 3 corridas a Tbot = 2.0**, que aparece en la Fig. 2a del README del Exp. 2 (círculos abiertos). Es el objetivo de la prueba final, pero ningún método se ha ajustado ni evaluado con él.
+9. **Orden de las decisiones:** el *nugget* del GP y el LORO completo para `tf_kind` (Decisiones 3 y 4) se decidieron **después** de ver los puntos 1–5.
 
-## Decisiones que Esteban debe confirmar
+## Decisiones de Esteban (2026-11-10)
 
-1. **Los umbrales de H3a–H3c:** 2 de 3 corridas y el piso de 1.3 % en H3a; 1.10 en H3b; 5 % y 20 % en H3c.
-2. **La varianza de M7 (R11):** σ² = softplus(h₀(x_g))² + (softplus(h₁(x_g))·stopgrad(μ))² + 1e-6, heterocedástica, sin que la red vea la temperatura (la temperatura entra solo por la media física, desacoplada). La alternativa es la varianza solo geométrica de la primera versión; revertir es un cambio de una línea. Cambia la interpretación de H3c.
-3. **`tf_kind_folds = 5` o LORO completo (`None`).**
-   - Costo: ~9 min por ajuste de M7 con 5 grupos, contra ~28 min o más con LORO completo.
-   - Fragilidad: la elección se invirtió entre reglas de parada (Divulgación 5), y el margen actual es de 13 %.
-4. **La cota superior del WhiteKernel de M5, 1e1.** El revisor sugirió ≤ 1e0, porque la varianza normalizada es ~1.
-5. **(Informativa.)** El docstring de M2 y el README no deben atribuir c² a F19 Ec. 4, porque F19 usa c a la primera potencia. La forma con c² es la de B22 Ec. 14; como K absorbe la constante, el resultado no cambia.
-6. **La repetición N1 excluye `final`.**
-   - Propuesta: la prueba final se evalúa una sola vez, sin repetición.
-   - Alternativa: dentro de la misma y única llamada a `--final`, ajustar también sin las corridas N1 y reportarlo como "sensibilidad".
-7. **La regla de parada de 6 h** (plan, Task 8 Step 5: "if the estimate exceeds 6 h, stop and report").
-   - Propuesta: se lee como tiempo de reloj con ≤ 5 procesos concurrentes de 1 hilo.
-   - Alternativa: tiempo de CPU en serie. Con esa lectura, la estimación actual (≈ 10.5 h) ya obliga a detenerse.
-8. **El piso de 1.3 % en `integrated_rel_error` para todas las comparaciones entre métodos**, no solo en H3a, junto con el de 0.157 m a⁻¹ para `rmse_map` y `rmse_gl`.
-   - Alternativa: aplicar el piso solo a la RMS de mapas y tratar el melt integrado sin piso.
-9. **H3c sobre 33 casos, por separado para M6 y para M7.**
-   - Propuesta: pasa para un método si ninguno de sus casos cae en la región de dispersión baja y error alto.
-   - Alternativa: solo M6 (la réplica literal de O26), con M7 como descripción.
+1. **Umbrales de H3a–H3c: aprobados tal como se propusieron.** H3a: ≥ 2 de 3 corridas, y "no concluyente" por debajo del piso de 1.3 %. H3b: 1.10. H3c: 5 % y 20 %.
+2. **Varianza de M7 (R11): aprobada.** σ² = softplus(h₀(x_g))² + (softplus(h₁(x_g))·stopgrad(μ))² + 1e-6, heterocedástica, y la red no ve la temperatura. Se consideró la alternativa de una varianza solo geométrica.
+3. **`tf_kind` por LORO interno completo** (`tf_kind_folds = None`, el nuevo valor por defecto de `Hybrid`). La razón es que la elección con 5 grupos fue frágil: se invirtió entre reglas de parada. La alternativa considerada eran 5 grupos (~9 min por ajuste).
+4. ***Nugget* del GP de M5: WhiteKernel con cotas [1e-8, 1e-2] y valor inicial 1e-3**, en unidades normalizadas. Reemplaza la cota superior de 1e1; el revisor había propuesto ≤ 1e0.
+   - ML21 Ec. 6–7 no tiene *nugget*.
+   - Berdahl et al. 2021 (§2.3) usan "a small nugget for numerical conditioning", con la cota inferior de Ranjan et al. 2011.
+   - Nuestras corridas tienen una deriva pequeña entre ventanas: el piso de ruido de 0.157 m a⁻¹ equivale a ≈ 1e-3 en unidades normalizadas de los coeficientes. Por eso el *nugget* es pequeño y acotado, y no puede absorber señal.
+5. **(Informativa, aceptada.)** El docstring de M2 y el README no atribuyen c² a F19 Ec. 4: F19 usa c a la primera potencia, y la forma con c² es la de B22 Ec. 14. Como K absorbe la constante, el resultado no cambia.
+6. **La repetición N1 excluye `final`: aceptado.** La alternativa considerada era repetirla dentro de la única llamada a `--final`.
+7. **Regla de parada: 8 h de reloj, con ≤ 5 procesos concurrentes de 1 hilo.**
+   - El plan (Task 8 Step 5) decía 6 h. Esteban subió el límite antes de cualquier corrida del protocolo, porque el LORO completo en `tf_kind` pone la estimación en ≈ 6 h o más.
+   - La alternativa considerada, leer el límite como tiempo de CPU en serie, se descartó.
+8. **Los pisos de 1.3 % (`integrated_rel_error`) y de 0.157 m a⁻¹ (`rmse_map`, `rmse_gl`) valen para todas las comparaciones entre métodos: aceptado.** La alternativa considerada era aplicar el piso solo a los mapas.
+9. **H3c sobre 33 casos, por separado para M6 y para M7: aceptado.** La alternativa considerada era evaluarla solo para M6.
 
 ## Cómputo estimado de `--cv` y regla de parada
 
 - **Ajustes por método:**
-  - 29 pliegues (25 `loro` + 3 `zc_out` + 1 `warm_out`), más `profile_test` para los métodos por celda: 30;
+  - 29 pliegues (25 `loro` + 3 `zc_out` + 1 `warm_out`), más `profile_test` para M0 y los métodos por celda: 30;
   - ×2 por la repetición N1: **60 ajustes** (58 para M4 y M5).
-- **Tiempos medidos** (Task 6, con hasta 5 procesos concurrentes, 1 hilo cada uno): M7 automático ~9.2 min; M6 ~1.1 min; M4 y M5 segundos; M0–M3 despreciable.
+- **Tiempos medidos** (Task 6, con hasta 5 procesos concurrentes, 1 hilo cada uno):
+  - un ajuste de M7 con `tf_kind` fijo tarda ~50 s (549 s para el automático con 5 grupos, que son 11 ajustes);
+  - M6 tarda ~1.1 min; M4 y M5, segundos; M0–M3, un tiempo despreciable.
+- **M7 con LORO completo:** con m corridas de entrenamiento son 2m + 1 ajustes, ≈ (2m + 1) × 50 s.
+  - `loro` (m = 24): ≈ 41 min;
+  - `zc_out` (16–17): ≈ 28–29 min;
+  - `warm_out` (20): ≈ 34 min;
+  - `profile_test` (25): ≈ 43 min.
+  - Pliegues principales ≈ 19.8 h de CPU; repetición N1 (m = 12–20) ≈ 15.9 h.
 - **Total:**
-  - M7: 60 × 9.2 ≈ 9.2 h de CPU, una cota superior porque los pliegues pequeños tardan menos;
-  - M6: ≈ 1.1 h;
-  - **≈ 10.5 h de CPU, ≈ 2.1–2.5 h de reloj** con 5 procesos.
-  - Con LORO completo en `tf_kind` (Decisión 3), M7 pasaría a ≈ 28 h de CPU, ≈ 6 h de reloj.
-- **Regla de parada:** el reloj se mide después de la primera tanda de pliegues. Si la estimación supera **6 h**, se detiene y se reporta, sin cambiar nada del protocolo para que quepa.
-- **`--final`:** 8 ajustes, una sola vez (~10 min).
+  - M7 ≈ 35.7 h de CPU; M6 ≈ 1.1 h;
+  - **≈ 37 h de CPU, ≈ 7.4 h de reloj** con 5 procesos. Está por debajo del límite, con poco margen.
+- **Regla de parada:** el reloj se mide después de la primera tanda de pliegues. Si la estimación supera **8 h**, se detiene y se reporta, sin cambiar nada del protocolo para que quepa.
+- **`--final`:** 8 ajustes, una sola vez; M7 ≈ 43 min.
