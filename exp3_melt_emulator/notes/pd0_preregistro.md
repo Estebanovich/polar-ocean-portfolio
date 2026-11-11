@@ -29,10 +29,10 @@ Todo el ajuste se hace dentro de cada pliegue: la estandarización, las EOF, el 
 | `loro` | 25 | 24 / 1, una vez por cada corrida de entrenamiento |
 | `zc_out` | 3 | tercios por z_c con cortes en 325 y 475 m: z_c < 325 (17/8), 325 ≤ z_c ≤ 475 (16/9), z_c > 475 (17/8). Incluyen las corridas de geometría |
 | `warm_out` | 1 | se entrena con Tbot ≤ 1.0 (20) y se prueba con Tbot ≥ 1.4 (5: tres a 1.5, una a 1.42 y una a 1.43; `T1.5_zc550` falla N1) |
-| `profile_test` | 1 | 25 / `ocean0_4km`. **Solo para los métodos por celda** (M1–M3, M6, M7); M4 y M5 no lo ven |
+| `profile_test` | 1 | 25 / `ocean0_4km`. **Solo para M0 y los métodos por celda** (M1–M3, M6, M7). M0 entra porque la destreza se mide contra él. M4 y M5 no lo ven, porque solo reciben (Tbot, z_c, s) y no pueden representar d = 720 m |
 | `final` | 1 | 25 / las 3 a Tbot = 2.0. **Se evalúa una sola vez**, con `--final`, que se niega a correr si existe `figures/final_test.json` |
 
-**Repetición de sensibilidad N1** (`drop_n1`): `--cv` repite todos los pliegues salvo `final` sin las 5 corridas que fallan N1 en el entrenamiento (la prueba no cambia). Se etiqueta "sensibilidad". La prueba final no se repite.
+**Repetición de sensibilidad N1** (`drop_n1`): `--cv` repite todos los pliegues salvo `final` sin las 5 corridas que fallan N1 en el entrenamiento (la prueba no cambia). Se etiqueta "sensibilidad". La prueba final no se repite (Decisión 6). **H3a–H3c usan solo los pliegues principales**, nunca los de `drop_n1`.
 
 ## Métodos e hiperparámetros congelados (valores por defecto del código)
 
@@ -73,7 +73,7 @@ Todo el ajuste se hace dentro de cada pliegue: la estandarización, las EOF, el 
 - **H3a (pregunta central).** En la prueba final, la media de \|`integrated_rel_error`\| de M7 sobre las 3 corridas es menor que la de M6, **y** M7 es mejor en ≥ 2 de las 3 corridas.
   - Si la diferencia de medias es < 1.3 % (el piso), el resultado es "no concluyente", no PASS.
   - Con 3 corridas, el resultado es un indicio, no una conclusión.
-- **H3b.** En `loro`, la media de `rmse_map` de M7 sobre los 25 pliegues es ≤ **1.10** × la de M6.
+- **H3b.** En `loro`, la media de `rmse_map` de M7 sobre los 25 pliegues principales (no los de `drop_n1`) es ≤ **1.10** × la de M6.
 - **H3c (réplica de O26).**
   - **Casos:** las corridas de prueba de `zc_out` (25), `warm_out` (5) y `final` (3), es decir, 33 casos, para M6 y para M7 por separado.
   - **Dispersión** = desviación estándar (ddof = 0) del melt integrado de los 5 miembros / \|melt integrado de la media del ensamble\|.
@@ -96,6 +96,11 @@ Todo lo siguiente sale de las corridas de entrenamiento. Ninguna predicción toc
    - regla actual (R12 + R13): gana **local, 4.51 contra nonlocal 5.18**.
 
    La elección **se invirtió** al cambiar la regla de parada.
+
+   Las reglas R10–R12 (validación con 3 corridas estratificadas por Tbot, elegidas por miembro) salieron de lo que el revisor de la Task 6 observó en las corridas de entrenamiento:
+   - n bimodal;
+   - la cola de TF alto subajustada;
+   - `ens_T1.5_zc250_s1.0` siempre quedaba fuera como validación.
 6. **Exponente ajustado** de M7 local por miembro: n = **2.23–2.47** (mediana 2.39); K entre 16 y 34.
 7. **Piso de ruido** (esta tarea): 0.157 m a⁻¹ y 1.3 %.
 8. **Del Exp. 2** se conocen el H1 (exponente de 2.4–2.8) y el **melt medio de MITgcm de las 3 corridas a Tbot = 2.0**, que aparece en la Fig. 2a del README del Exp. 2 (círculos abiertos). Es el objetivo de la prueba final, pero ningún método se ha ajustado ni evaluado con él.
@@ -109,6 +114,17 @@ Todo lo siguiente sale de las corridas de entrenamiento. Ninguna predicción toc
    - Fragilidad: la elección se invirtió entre reglas de parada (Divulgación 5), y el margen actual es de 13 %.
 4. **La cota superior del WhiteKernel de M5, 1e1.** El revisor sugirió ≤ 1e0, porque la varianza normalizada es ~1.
 5. **(Informativa.)** El docstring de M2 y el README no deben atribuir c² a F19 Ec. 4, porque F19 usa c a la primera potencia. La forma con c² es la de B22 Ec. 14; como K absorbe la constante, el resultado no cambia.
+6. **La repetición N1 excluye `final`.**
+   - Propuesta: la prueba final se evalúa una sola vez, sin repetición.
+   - Alternativa: dentro de la misma y única llamada a `--final`, ajustar también sin las corridas N1 y reportarlo como "sensibilidad".
+7. **La regla de parada de 6 h** (plan, Task 8 Step 5: "if the estimate exceeds 6 h, stop and report").
+   - Propuesta: se lee como tiempo de reloj con ≤ 5 procesos concurrentes de 1 hilo.
+   - Alternativa: tiempo de CPU en serie. Con esa lectura, la estimación actual (≈ 10.5 h) ya obliga a detenerse.
+8. **El piso de 1.3 % en `integrated_rel_error` para todas las comparaciones entre métodos**, no solo en H3a, junto con el de 0.157 m a⁻¹ para `rmse_map` y `rmse_gl`.
+   - Alternativa: aplicar el piso solo a la RMS de mapas y tratar el melt integrado sin piso.
+9. **H3c sobre 33 casos, por separado para M6 y para M7.**
+   - Propuesta: pasa para un método si ninguno de sus casos cae en la región de dispersión baja y error alto.
+   - Alternativa: solo M6 (la réplica literal de O26), con M7 como descripción.
 
 ## Cómputo estimado de `--cv` y regla de parada
 

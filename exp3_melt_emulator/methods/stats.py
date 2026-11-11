@@ -99,7 +99,7 @@ class MeanMap(_UnionMethod):
         self._fitted = True
 
     def hparams(self):
-        return dict(free_parameters=0, unseen_cells="pooled training mean")
+        return dict(free_parameters=0, input_features=[], unseen_cells="pooled training mean")
 
     def predict(self, run):
         self._need_fit()
@@ -136,7 +136,7 @@ class CellRegression(_UnionMethod):
     name = "M4"
 
     def hparams(self):
-        return dict(inputs=["Tbot", "z_c", "s"], standardised=True, degrees=list(M4_DEGREES),
+        return dict(input_features=["Tbot", "z_c", "s"], standardised=True, degrees=list(M4_DEGREES),
                     selection="inner leave-one-run-out over the fit's runs, mean rmse_map, "
                               "ties -> linear", min_runs_for_selection=3,
                     unseen_cells="pooled training mean")
@@ -201,7 +201,7 @@ class GPonEOF(_UnionMethod):
         self.info: dict = {}
 
     def hparams(self):
-        return dict(inputs=["Tbot", "z_c", "s"], standardised=True, var_fraction=VAR_FRACTION,
+        return dict(input_features=["Tbot", "z_c", "s"], standardised=True, var_fraction=VAR_FRACTION,
                     k_cap="m - 1", kernel="ConstantKernel * RBF(ARD) + WhiteKernel",
                     const_init=CONST_INIT, const_bounds=list(CONST_BOUNDS),
                     rbf_init=RBF_INIT, rbf_bounds=list(RBF_BOUNDS),
