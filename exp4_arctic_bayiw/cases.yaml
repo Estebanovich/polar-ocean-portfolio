@@ -1,0 +1,23 @@
+# Exp. 4 case registry (Van Mijenfjorden internal waves and the thesis rectangular bay).
+# Filled by later tasks; parses with yaml.safe_load.
+#
+# configs:   base parameters per MITgcm configuration
+#   bay_thesis   rectangular bay of the MSc thesis (BayIW_Rectan), f-plane
+#   fjord_vmf    Van Mijenfjorden, UTM 33N, 200 m grid, f at 78 N
+#
+# cases:   overrides per case (ID: configuration, profile, surface and forcing)
+#   R1    bay_thesis, thesis f, thesis "realistic" profile, open water, thesis wind patch
+#   R1k   as R1 with KPP
+#   R2    bay_thesis, f at 78 N, summer VMF profile, open water, thesis wind patch
+#   R3    as R2 without the bay
+#   F1    fjord_vmf, summer, open water, along-axis pulse
+#   F2    fjord_vmf, late winter, landfast ice
+#   F3    fjord_vmf, late winter, open water
+#   F4    fjord_vmf, late winter, drifting ice (optional)
+#   F5    fjord_vmf, summer, open water, cross-axis pulse
+#   F1c   as F1 with the thesis closure (constant 1e-5 vertical viscosity and diffusivity)
+#   F1g   as F1 with GGL90
+#   V3    fjord_vmf, summer, no wind, M2 only at the open boundaries
+#   V4    fjord_vmf at ~400 m, as F1
+configs: {}
+cases: {}

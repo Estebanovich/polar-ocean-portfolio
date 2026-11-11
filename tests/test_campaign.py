@@ -312,3 +312,19 @@ def test_run_stages_nonzero_exit_fails_even_with_ok_status(tmp_path):
     st = cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 1, lambda c: fake(c) or 1, "run_mitgcm.sh")
     assert st == "FAILED"
     assert "code 1" in json.loads((tmp_path / "r" / "run_status_final.json").read_text())["reason"]
+
+
+def test_paths_exp4_defaults_and_overrides(monkeypatch):
+    import pfcommon.paths as paths
+    for k in ("EXP4_RUNS", "EXP4_BUILDS"):
+        monkeypatch.delenv(k, raising=False)
+    paths = importlib.reload(paths)
+    assert paths.EXP4_RUNS == Path("/Volumes/LaCie/portfolio_runs/exp4")
+    assert paths.EXP4_BUILDS == Path("/Volumes/ESTEBAN_MIT/portfolio_builds/exp4")
+    monkeypatch.setenv("EXP4_RUNS", "/tmp/r4")
+    monkeypatch.setenv("EXP4_BUILDS", "/tmp/b4")
+    paths = importlib.reload(paths)
+    assert paths.EXP4_RUNS == Path("/tmp/r4") and paths.EXP4_BUILDS == Path("/tmp/b4")
+    monkeypatch.delenv("EXP4_RUNS")
+    monkeypatch.delenv("EXP4_BUILDS")
+    importlib.reload(paths)
