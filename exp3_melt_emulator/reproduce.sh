@@ -13,7 +13,6 @@
 #   PY       Python for the analysis, numpy/matplotlib/cmocean (default: the pyocean conda env)
 #   ANEMOI   Python with PyTorch and scikit-learn for the protocol (default: the anemoi conda env)
 #   SOURCE_DATE_EPOCH  timestamp written into the PDFs (default 0)
-#   VECTORCRAFT_CLI    optional: path to vectorcraft-cli v0.22.0 to redraw Figure 0
 # Data outside the repository (paths fixed in the code, as in the original runs):
 #   /Volumes/LaCie/portfolio_runs/exp2/exp3_dataset.npz   the Exp. 2 dataset (sha256 checked before use)
 #   /Volumes/LaCie/portfolio_runs/exp3/final_maps.npz     the final-test maps (sha256 in final_test.json)
@@ -106,10 +105,11 @@ if [ -f "$DATASET" ] && [ -f "$MAPS" ]; then
 else
   echo; echo "=== dataset or final-test maps not found: Figures 1-4 kept as committed"
 fi
-if [ -n "${VECTORCRAFT_CLI:-}" ]; then
-  step "Figure 0: protocol schematic (VectorCraft)"; "$PY" "$F/src/fig0_protocol.py" --cli "$VECTORCRAFT_CLI"
+GEOM_NC="$HERE/../exp2_isomip_cavity/data_external/Ocean1_input_geom_v1.01.nc"
+if [ -f "$GEOM_NC" ]; then
+  step "Figure 0: protocol schematic";          "$PY" "$F/src/fig0_protocol.py" > /dev/null
 else
-  echo; echo "=== Figure 0 kept as committed (set VECTORCRAFT_CLI to redraw it)"
+  echo; echo "=== ISOMIP+ geometry not found (exp2_isomip_cavity/data_external/SOURCES.md): Figure 0 kept as committed"
 fi
 step "README";                                  "$PY" "$HERE/scripts/render_readme.py"
 
