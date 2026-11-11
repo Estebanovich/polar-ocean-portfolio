@@ -28,7 +28,12 @@ VAR_FRACTION = 0.99   # Myren & Lawrence 2021 Sec. 3.1: keep EOFs explaining 99 
 # M5 GP kernel per EOF coefficient: ConstantKernel * RBF(ARD) + WhiteKernel (init, bounds)
 CONST_INIT, CONST_BOUNDS = 1.0, (1e-3, 1e3)
 RBF_INIT, RBF_BOUNDS = 1.0, (1e-2, 1e3)
-WHITE_INIT, WHITE_BOUNDS = 1e-2, (1e-8, 1e1)
+# White-noise nugget (normalised units, normalize_y=True), PD0 decision 4 (Esteban,
+# 2026-11-10): Myren & Lawrence 2021 Eq. 6-7 has no nugget; Berdahl et al. 2021 Sec. 2.3 use
+# "a small nugget for numerical conditioning" (lower bound following Ranjan et al. 2011).
+# Our runs carry a small window-to-window drift (noise floor 0.157 m/a, about 1e-3 in
+# normalised coefficient units), so the nugget is small and bounded, unable to absorb signal.
+WHITE_INIT, WHITE_BOUNDS = 1e-3, (1e-8, 1e-2)
 N_RESTARTS = 5
 M4_DEGREES = (1, 2)
 

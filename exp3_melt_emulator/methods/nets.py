@@ -60,7 +60,7 @@ cannot pull the mean (the mean's gradient comes only from the (y - mu)^2 / sigma
 Neither g_theta nor the variance heads receive a temperature variable; temperature enters
 the variance only through the detached physics mean.
 The choice local / nonlocal (``tf_kind="auto"``) is made by inner cross-validation by run
-on the fit's runs: ``tf_kind_folds`` groups (default 5; None = one per run, i.e. full
+on the fit's runs: ``tf_kind_folds`` groups (default None = one per run, i.e. full
 leave-one-run-out) from a seeded permutation (seed split_seed + 1); criterion = mean
 ``rmse_map`` over the held-out runs; ties -> local. Each inner fit is a complete Hybrid
 fit with the same hyperparameters.
@@ -441,7 +441,7 @@ class Hybrid(_Ensemble):
     name = "M7"
     input_features = HYBRID_G_FEATURES
 
-    def __init__(self, n_members=5, seeds=(0, 1, 2, 3, 4), tf_kind="auto", tf_kind_folds=5,
+    def __init__(self, n_members=5, seeds=(0, 1, 2, 3, 4), tf_kind="auto", tf_kind_folds=None,
                  **kw):
         super().__init__(n_members=n_members, seeds=seeds, **kw)
         if tf_kind not in TF_KINDS + ("auto",):
