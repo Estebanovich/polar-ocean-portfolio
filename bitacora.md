@@ -498,3 +498,18 @@
   - Banda de 0–10 m del fiordo interior: 49.5 km² en la malla frente a 41.8 km² en IBCAO. Volumen: +0.06 %. Dato interpolado: 50 %.
   - La falla del ancho de Mariasundet se reclasificó como (a), definición de la métrica, *post hoc* (R8).
   - `build` comprueba ahora que la esponja conserva ∂h/∂n = 0.
+
+## 2026-11-11 (noche, 8) — Exp. 4, Task 2: perfiles, números de la teoría y borrador del PD0
+
+- `gendata/profiles.py`: lectura de UNIS HD (profundidad desde la presión con gsw; 68 de los 1547 archivos no tienen salinidad), selección por polígono, meses y años, control de calidad y perfil representativo (mediana por nivel de la malla del fiordo, extensión bajo el último dato y ajuste mínimo de estabilidad con la EOS lineal del modelo, solo en S). Pruebas sintéticas primero (fallaban al importar) y luego en verde.
+- Polígono del fiordo interior en `cases.yaml`: contiene 13 167 de las 13 169 celdas del fiordo interior de la Task 1b y ninguna de Bellsund.
+- Perfiles (1990–2019): verano, 842 de 871 tras el control de calidad (2010 aporta el 41 %); invierno, 36 de 46 (5 años). La tolerancia de inversiones (0.004 kg m⁻³) se eligió después de ver que con 0.001 se rechazaba el 67 % del invierno, una columna casi homogénea. Queda declarado en el PD0, con la tabla de sensibilidad.
+- `analysis/theory_numbers.py` → `figures/theory.json`, `figures/profiles_vmf.{json,png,pdf}`. Fiordo interior: L = 62.8 km, W = 8.4 km, P = 176.7 km (contorno de la máscara), H máx. 119 m y medio 62.6 m.
+  - Verano: c₁ = 0.37–0.57 m s⁻¹ (S&F14: 0.42), R₁ = 2.6–4.0 km, circuito de Kelvin 86–131 h.
+  - Invierno: c₁ = 0.06–0.19 m s⁻¹ y R₁ = 0.4–1.3 km, mal resuelto a 200 m.
+  - Bahía de la tesis: c₁ = 0.48 m s⁻¹, T_i = 25.0 h. Con el perfil de verano a 78°N: c₁ = 0.70 m s⁻¹.
+- Hallazgo teórico: el fiordo es estrecho frente a πR₁, así que el primer modo de Poincaré está en 1.4–1.8 f. En la bahía de la tesis está en 1.03–1.06 f. Se predice menos energía del modo 1 en la banda cercana a la inercial en el fiordo real.
+- La EOS lineal de la tesis (α = 2×10⁻⁴) exagera α de 2 a 6 veces a estas temperaturas; sube c₁ de verano un 10 %. Se declara.
+- Lecturas: Frank et al. 2023 (canalización del viento, solo Isfjorden), Fer et al. 2022 y Kawaguchi et al. 2024 (arrastre hielo–agua), y de nuevo Støylen & Fer 2014, que usaron MITgcm en este fiordo con Smagorinsky 2.2 y arrastre de 0.0025. Los PDF no se guardaron. `readinglist.md` actualizado.
+- `notes/pd0_preregistro.md`: **BORRADOR**, pendiente de aprobación de Esteban. Nada del fiordo corre antes del PD0.
+- Para la Task 3: la suma del `delR` de la tesis es 599.9 m, pero su plataforma mide 1000 m.

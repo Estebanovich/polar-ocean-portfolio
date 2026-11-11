@@ -648,6 +648,24 @@ def _hyps(depths, areas, edges):
     return h
 
 
+def inner_fjord_mask(grid: dict):
+    """Inner fjord (model sea east of the two sounds): the wet cells 4-connected to the east seed
+    with both sounds closed by their ``closure_disks``. Returns (inner, outer, disks), where outer
+    is the sea connected to the west seed (Bellsund and the shelf) and disks the closure disks."""
+    b = grid["cfg"]["bathy"]
+    xc, yc, dx, wet = grid["xc"], grid["yc"], grid["dx_m"], grid["wet"]
+    west = _cell_of(b["seeds"]["west"], xc, yc, dx)
+    east = _cell_of(b["seeds"]["east"], xc, yc, dx)
+    disks = closure_disks(xc, yc, grid["sections"], b["closure_margin_m"])
+    both = np.logical_or.reduce(list(disks.values()))
+    lab, _ = ndimage.label(wet & ~both)
+    if lab[east] == 0 or lab[west] == 0:
+        raise RuntimeError("a seed is not in the sea")
+    if lab[east] == lab[west]:
+        raise RuntimeError("inner fjord and Bellsund still connected with both sounds closed")
+    return lab == lab[east], lab == lab[west], disks
+
+
 def report(src: dict, grid: dict) -> dict:
     """Controls of the model bathymetry (figures/bathy_report.json)."""
     cfg, b = grid["cfg"], grid["cfg"]["bathy"]
@@ -656,20 +674,12 @@ def report(src: dict, grid: dict) -> dict:
     secs = grid["sections"]
     west = _cell_of(b["seeds"]["west"], xc, yc, dx)
     east = _cell_of(b["seeds"]["east"], xc, yc, dx)
-    disks = closure_disks(xc, yc, secs, b["closure_margin_m"])
+    gin, outer, disks = inner_fjord_mask(grid)
     both = np.logical_or.reduce(list(disks.values()))
 
-    # inner fjord: model sea east of the two sounds, i.e. the wet cells 4-connected to the east seed
-    # with both sounds closed. For the IBCAO side the region is extended to the land cells within
+    # For the IBCAO side the inner region is extended to the land cells within
     # ``inner_buffer_cells`` whose nearest model sea cell is in the inner fjord (so IBCAO sea points
     # under NPI land along the fjord coast count, but none across Akseloya into Bellsund).
-    lab, _ = ndimage.label(wet & ~both)
-    if lab[east] == 0 or lab[west] == 0:
-        raise RuntimeError("a seed is not in the sea")
-    if lab[east] == lab[west]:
-        raise RuntimeError("inner fjord and Bellsund still connected with both sounds closed")
-    gin = lab == lab[east]
-    outer = (lab == lab[west])
     dist, (jn, in_) = ndimage.distance_transform_edt(~(wet & ~both), return_indices=True)
     inner = gin[jn, in_] & (dist <= b["inner_buffer_cells"]) & ~both
     cell_inner = np.concatenate([inner.ravel(), [False]])

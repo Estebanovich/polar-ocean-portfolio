@@ -1,0 +1,1165 @@
+{
+ "description": "Linear internal-wave scales for the Exp. 4 PD0 (analysis/theory_numbers.py)",
+ "lat_fjord_deg": 78.0,
+ "fjord_geometry": {
+  "area_m2": 526760000.0,
+  "staircase_coast_m": 206200.0,
+  "contour_total_m": 177281.2408671319,
+  "contour_coast_m": 170594.23509862306,
+  "contour_outer_m": 176715.55544218267,
+  "contour_outer_coast_m": 170028.5496736738,
+  "along_axis_length_m": 62801.428534987135,
+  "mean_width_m": 8387.707290870592,
+  "axis_angle_deg": 12.412001633485175,
+  "max_depth_m": 119.02507591247559,
+  "mean_depth_m": 62.55296589691626,
+  "volume_m3": 32950400315.85961,
+  "cells": 13169,
+  "dx_m": 200.0,
+  "method": "inner_fjord_mask of gendata/bathy.py (Task 1b); perimeters from mask_geometry (0.5 contour of the mask, marching squares)",
+  "polygon_control": {
+   "inner_cells_inside": 13167,
+   "inner_cells": 13169,
+   "other_sea_cells_inside_outside_disks": 0
+  }
+ },
+ "thesis_bay_geometry": {
+  "f0_s-1": 6.97e-05,
+  "eos": {
+   "tAlpha": 0.0002,
+   "sBeta": 0.00074
+  },
+  "length_m": 120983.6,
+  "width_m": 60631.6,
+  "max_depth_m": 164.00000000000006,
+  "mean_depth_m": 162.54257720170028,
+  "area_m2": 7335429241.76,
+  "coast_m": 302598.8,
+  "closed_loop_m": 363230.4,
+  "dx_bay_m": [
+   5052.5999999999985,
+   5052.700000000001
+  ],
+  "dy_bay_m": [
+   5040.899999999994,
+   5041.000000000002
+  ],
+  "source": "/Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan/input/bahia_01_expand_*.bin, feb_*_50zlev_560x352.bin (column 0,0); data.stage1"
+ },
+ "cases": {
+  "vmf_summer": {
+   "f_s-1": 0.0001426550023862197,
+   "inertial_period_h": 12.234616542005865,
+   "H_modes_m": 119.02507591247559,
+   "L_m": 62801.428534987135,
+   "perimeter_m": 176715.55544218267,
+   "H_merian_m": 62.55296589691626,
+   "c_n": [
+    0.5743421507369932,
+    0.33531441229618875,
+    0.21333391075607658,
+    0.16187005650363195
+   ],
+   "rossby_radius_m": [
+    4026.0919079587356,
+    2350.5268422930517,
+    1495.453416898084,
+    1134.6959713714773
+   ],
+   "burger": [
+    0.06410828546226095,
+    0.03742791998725883,
+    0.023812410828600118,
+    0.018067996188005975
+   ],
+   "kelvin_circuit_period_h": [
+    85.46761582186878,
+    146.39291509526663,
+    230.0977566835186,
+    303.25345743234345
+   ],
+   "c_barotropic_m_s-1": 24.771850868450436,
+   "merian_closed_open_h": [
+    2.81688136302104,
+    0.9389604543403466,
+    0.563376272604208
+   ],
+   "merian_closed_closed_h": [
+    1.40844068151052,
+    0.70422034075526,
+    0.4694802271701733
+   ],
+   "N_max_s-1": 0.040463527888952876,
+   "W_m": 8387.707290870592,
+   "burger_width": [
+    0.47999909490652387,
+    0.2802347245535653,
+    0.17829108301451768,
+    0.13528082609731876
+   ],
+   "poincare_cross_1_over_f": [
+    1.8094055041424797,
+    1.3323193484934501,
+    1.1461815411637954,
+    1.0865646147517536
+   ],
+   "c_n_teos10_eos": [
+    0.5200808854614133,
+    0.3075106169021683,
+    0.19038685028469993,
+    0.14523692734009724
+   ],
+   "c_n_year_balanced": [
+    0.588719599433791,
+    0.3309098203309349,
+    0.2128671112851056,
+    0.14757418572942196
+   ],
+   "profile": "vmf_summer"
+  },
+  "vmf_summer_Hmean": {
+   "f_s-1": 0.0001426550023862197,
+   "inertial_period_h": 12.234616542005865,
+   "H_modes_m": 62.55296589691626,
+   "L_m": 62801.428534987135,
+   "perimeter_m": 176715.55544218267,
+   "H_merian_m": 62.55296589691626,
+   "c_n": [
+    0.3741457592679086,
+    0.19168762858617086,
+    0.12715786918013142,
+    0.09532823813173447
+   ],
+   "rossby_radius_m": [
+    2622.731436048475,
+    1343.714734007026,
+    891.3663527611053,
+    668.2432199162969
+   ],
+   "burger": [
+    0.04176228944517293,
+    0.02139624472488604,
+    0.01419340886910747,
+    0.01064057355867333
+   ],
+   "kelvin_circuit_period_h": [
+    131.19928015633545,
+    256.0814938947843,
+    386.0370939368116,
+    514.9329857713384
+   ],
+   "c_barotropic_m_s-1": 24.771850868450436,
+   "merian_closed_open_h": [
+    2.81688136302104,
+    0.9389604543403466,
+    0.563376272604208
+   ],
+   "merian_closed_closed_h": [
+    1.40844068151052,
+    0.70422034075526,
+    0.4694802271701733
+   ],
+   "N_max_s-1": 0.040463527888952876,
+   "W_m": 8387.707290870592,
+   "burger_width": [
+    0.3126875253387928,
+    0.16020047998927686,
+    0.10627056021986993,
+    0.07966935382254349
+   ],
+   "poincare_cross_1_over_f": [
+    1.4017794592710067,
+    1.1195067842439805,
+    1.0542588419686305,
+    1.0308464539713256
+   ],
+   "c_n_teos10_eos": [
+    0.3526135012830163,
+    0.17912664017137747,
+    0.11877214107340253,
+    0.08862696928089994
+   ],
+   "c_n_year_balanced": [
+    0.3492167581508653,
+    0.16872775571513293,
+    0.1142591110185627,
+    0.08895398761077994
+   ],
+   "profile": "vmf_summer"
+  },
+  "vmf_winter": {
+   "f_s-1": 0.0001426550023862197,
+   "inertial_period_h": 12.234616542005865,
+   "H_modes_m": 119.02507591247559,
+   "L_m": 62801.428534987135,
+   "perimeter_m": 176715.55544218267,
+   "H_merian_m": 62.55296589691626,
+   "c_n": [
+    0.18461980865895053,
+    0.07456279082717798,
+    0.04199468353509749,
+    0.033756770407305584
+   ],
+   "rossby_radius_m": [
+    1294.1698893889234,
+    522.6791180116419,
+    294.3793265756107,
+    236.63222349478892
+   ],
+   "burger": [
+    0.02060733202379197,
+    0.00832272657174436,
+    0.004687462267066263,
+    0.0037679433257311874
+   ],
+   "kelvin_circuit_period_h": [
+    265.8850891790011,
+    658.3398199682574,
+    1168.901636048041,
+    1454.1573052519182
+   ],
+   "c_barotropic_m_s-1": 24.771850868450436,
+   "merian_closed_open_h": [
+    2.81688136302104,
+    0.9389604543403466,
+    0.563376272604208
+   ],
+   "merian_closed_closed_h": [
+    1.40844068151052,
+    0.70422034075526,
+    0.4694802271701733
+   ],
+   "N_max_s-1": 0.013433547265922899,
+   "W_m": 8387.707290870592,
+   "burger_width": [
+    0.15429364002693954,
+    0.062314897252141836,
+    0.035096518794357684,
+    0.028211788429043753
+   ],
+   "poincare_cross_1_over_f": [
+    1.1112879946870127,
+    1.0189823938579194,
+    1.0060601569973797,
+    1.0039199507698162
+   ],
+   "c_n_teos10_eos": [
+    0.1856725027555123,
+    0.06412862010983296,
+    0.039137055936540724,
+    0.0299970177439885
+   ],
+   "c_n_year_balanced": [
+    0.06261192544047814,
+    0.026386967553355973,
+    0.01436878999020641,
+    0.009519911315033125
+   ],
+   "profile": "vmf_winter"
+  },
+  "vmf_winter_Hmean": {
+   "f_s-1": 0.0001426550023862197,
+   "inertial_period_h": 12.234616542005865,
+   "H_modes_m": 62.55296589691626,
+   "L_m": 62801.428534987135,
+   "perimeter_m": 176715.55544218267,
+   "H_merian_m": 62.55296589691626,
+   "c_n": [
+    0.063163270799432,
+    0.030648233130947822,
+    0.021422600489617524,
+    0.015102294028489236
+   ],
+   "rossby_radius_m": [
+    442.7694069109875,
+    214.8416292333847,
+    150.1706924487558,
+    105.86585661820507
+   ],
+   "burger": [
+    0.007050307886934728,
+    0.0034209672334713673,
+    0.0023911986709839665,
+    0.00168572370227576
+   ],
+   "kelvin_circuit_period_h": [
+    777.155040709776,
+    1601.6471187674338,
+    2291.395683417872,
+    3250.3442322666588
+   ],
+   "c_barotropic_m_s-1": 24.771850868450436,
+   "merian_closed_open_h": [
+    2.81688136302104,
+    0.9389604543403466,
+    0.563376272604208
+   ],
+   "merian_closed_closed_h": [
+    1.40844068151052,
+    0.70422034075526,
+    0.4694802271701733
+   ],
+   "N_max_s-1": 0.013433547265922899,
+   "W_m": 8387.707290870592,
+   "burger_width": [
+    0.05278789442174618,
+    0.02561386822203776,
+    0.01790366392639925,
+    0.012621548767376794
+   ],
+   "poincare_cross_1_over_f": [
+    1.0136578626836228,
+    1.0032323528377645,
+    1.001580558248059,
+    1.0007858224707507
+   ],
+   "c_n_teos10_eos": [
+    0.05344293051884743,
+    0.029619030693883032,
+    0.02183045844260309,
+    0.01363709996436068
+   ],
+   "c_n_year_balanced": [
+    0.05145038868036496,
+    0.025830427015422975,
+    0.014333077520489375,
+    0.009462712711140771
+   ],
+   "profile": "vmf_winter"
+  },
+  "thesis_bay_thesis_f": {
+   "f_s-1": 6.97e-05,
+   "inertial_period_h": 25.040591850707738,
+   "H_modes_m": 164.00000000000006,
+   "L_m": 120983.6,
+   "perimeter_m": 302598.8,
+   "H_merian_m": 164.00000000000006,
+   "c_n": [
+    0.4804893361117463,
+    0.21546236635599444,
+    0.14090692014105746,
+    0.1054834849087335
+   ],
+   "rossby_radius_m": [
+    6893.67770605088,
+    3091.2821571878685,
+    2021.6200881069938,
+    1513.3928968254447
+   ],
+   "burger": [
+    0.05698026597035367,
+    0.025551249567609728,
+    0.016709868842611674,
+    0.01250907475745014
+   ],
+   "kelvin_circuit_period_h": [
+    174.93670702958886,
+    390.1155623778087,
+    596.5301217149392,
+    796.8567050562327
+   ],
+   "c_barotropic_m_s-1": 40.11034779205985,
+   "merian_closed_open_h": [
+    3.351410038105751,
+    1.1171366793685837,
+    0.6702820076211502
+   ],
+   "merian_closed_closed_h": [
+    1.6757050190528755,
+    0.8378525095264377,
+    0.5585683396842919
+   ],
+   "N_max_s-1": 0.01115080555617952,
+   "W_m": 60631.6,
+   "burger_width": [
+    0.11369776990959962,
+    0.050984670653386494,
+    0.03334268084805603,
+    0.02496046445789728
+   ],
+   "poincare_cross_1_over_f": [
+    1.0618786093852643,
+    1.0127464694180013,
+    1.0054712220610054,
+    1.0030697922724217
+   ],
+   "kelvin_circuit_period_closed_loop_h": [
+    209.98870474384032,
+    468.2828608993704,
+    716.0566225727466,
+    956.5225629455816
+   ],
+   "profile": "thesis realistic (feb_temp/feb_salt, column 0,0)"
+  },
+  "thesis_bay_78N_vmf_summer": {
+   "f_s-1": 0.0001426550023862197,
+   "inertial_period_h": 12.234616542005865,
+   "H_modes_m": 164.00000000000006,
+   "L_m": 120983.6,
+   "perimeter_m": 302598.8,
+   "H_merian_m": 164.00000000000006,
+   "c_n": [
+    0.6975737592686257,
+    0.3578964258823033,
+    0.22540617823639603,
+    0.16567987145137875
+   ],
+   "rossby_radius_m": [
+    4889.935491922228,
+    2508.8249265409263,
+    1580.0790330936898,
+    1161.4024652484477
+   ],
+   "burger": [
+    0.040418168180829696,
+    0.020736900923273287,
+    0.01306027455864836,
+    0.009599668593499016
+   ],
+   "kelvin_circuit_period_h": [
+    120.49653689718816,
+    234.85907135005687,
+    372.9055826236885,
+    507.3351487171421
+   ],
+   "c_barotropic_m_s-1": 40.11034779205985,
+   "merian_closed_open_h": [
+    3.351410038105751,
+    1.1171366793685837,
+    0.6702820076211502
+   ],
+   "merian_closed_closed_h": [
+    1.6757050190528755,
+    0.8378525095264377,
+    0.5585683396842919
+   ],
+   "N_max_s-1": 0.04046352788895299,
+   "W_m": 60631.6,
+   "burger_width": [
+    0.08064994972790142,
+    0.041378174525180375,
+    0.026060322226259737,
+    0.0191550687306363
+   ],
+   "poincare_cross_1_over_f": [
+    1.0315987577062307,
+    1.008413742474713,
+    1.0033458262368338,
+    1.0018090248462397
+   ],
+   "kelvin_circuit_period_closed_loop_h": [
+    144.64037959099778,
+    281.9176891319784,
+    447.62452441528325,
+    608.9896886656095
+   ],
+   "profile": "vmf_summer interpolated to the thesis levels",
+   "levels_adjusted_after_interp": 0
+  }
+ },
+ "bands": {
+  "fjord_78N": {
+   "df_cph": 0.004166666666666667,
+   "nyquist_cph": 1.5,
+   "record_h": 240.0,
+   "dt_out_s": 1200.0,
+   "f_cph": 0.08173529563159077,
+   "ni_factors": [
+    0.85,
+    1.2
+   ],
+   "seiche_factor": 0.5,
+   "merian_lowest_cph": 0.3550025262432505,
+   "bands": [
+    {
+     "name": "low",
+     "lo_cph": 0.0,
+     "hi_cph": 0.008333333333333333,
+     "n_bins": 2.0,
+     "period_h": [
+      120.0,
+      null
+     ]
+    },
+    {
+     "name": "kelvin_subinertial",
+     "lo_cph": 0.008333333333333333,
+     "hi_cph": 0.06947500128685215,
+     "n_bins": 14.674000308844516,
+     "period_h": [
+      14.3936665200069,
+      120.0
+     ]
+    },
+    {
+     "name": "near_inertial",
+     "lo_cph": 0.06947500128685215,
+     "hi_cph": 0.09808235475790891,
+     "n_bins": 6.865764833053624,
+     "period_h": [
+      10.195513785004888,
+      14.3936665200069
+     ]
+    },
+    {
+     "name": "superinertial",
+     "lo_cph": 0.09808235475790891,
+     "hi_cph": 0.17750126312162526,
+     "n_bins": 19.060538007291925,
+     "period_h": [
+      5.63376272604208,
+      10.195513785004888
+     ]
+    },
+    {
+     "name": "seiche",
+     "lo_cph": 0.17750126312162526,
+     "hi_cph": 1.5,
+     "n_bins": 317.39969685080996,
+     "period_h": [
+      0.6666666666666666,
+      5.63376272604208
+     ]
+    }
+   ]
+  },
+  "fjord_78N_free_decay_180h": {
+   "df_cph": 0.005555555555555556,
+   "nyquist_cph": 1.5,
+   "record_h": 180.0,
+   "dt_out_s": 1200.0,
+   "f_cph": 0.08173529563159077,
+   "ni_factors": [
+    0.85,
+    1.2
+   ],
+   "seiche_factor": 0.5,
+   "merian_lowest_cph": 0.3550025262432505,
+   "bands": [
+    {
+     "name": "low",
+     "lo_cph": 0.0,
+     "hi_cph": 0.011111111111111112,
+     "n_bins": 2.0,
+     "period_h": [
+      90.0,
+      null
+     ]
+    },
+    {
+     "name": "kelvin_subinertial",
+     "lo_cph": 0.011111111111111112,
+     "hi_cph": 0.06947500128685215,
+     "n_bins": 10.505500231633386,
+     "period_h": [
+      14.3936665200069,
+      90.0
+     ]
+    },
+    {
+     "name": "near_inertial",
+     "lo_cph": 0.06947500128685215,
+     "hi_cph": 0.09808235475790891,
+     "n_bins": 5.149323624790218,
+     "period_h": [
+      10.195513785004888,
+      14.3936665200069
+     ]
+    },
+    {
+     "name": "superinertial",
+     "lo_cph": 0.09808235475790891,
+     "hi_cph": 0.17750126312162526,
+     "n_bins": 14.295403505468942,
+     "period_h": [
+      5.63376272604208,
+      10.195513785004888
+     ]
+    },
+    {
+     "name": "seiche",
+     "lo_cph": 0.17750126312162526,
+     "hi_cph": 1.5,
+     "n_bins": 238.04977263810744,
+     "period_h": [
+      0.6666666666666666,
+      5.63376272604208
+     ]
+    }
+   ]
+  },
+  "bay_thesis_f_240h": {
+   "df_cph": 0.004166666666666667,
+   "nyquist_cph": 2.0,
+   "record_h": 240.0,
+   "dt_out_s": 900.0,
+   "f_cph": 0.03993515832061838,
+   "ni_factors": [
+    0.85,
+    1.2
+   ],
+   "seiche_factor": 0.5,
+   "merian_lowest_cph": 0.298381871698758,
+   "bands": [
+    {
+     "name": "low",
+     "lo_cph": 0.0,
+     "hi_cph": 0.008333333333333333,
+     "n_bins": 2.0,
+     "period_h": [
+      120.0,
+      null
+     ]
+    },
+    {
+     "name": "kelvin_subinertial",
+     "lo_cph": 0.008333333333333333,
+     "hi_cph": 0.03394488457252562,
+     "n_bins": 6.146772297406149,
+     "period_h": [
+      29.45951982436205,
+      120.0
+     ]
+    },
+    {
+     "name": "near_inertial",
+     "lo_cph": 0.03394488457252562,
+     "hi_cph": 0.04792218998474205,
+     "n_bins": 3.3545532989319433,
+     "period_h": [
+      20.867159875589785,
+      29.45951982436205
+     ]
+    },
+    {
+     "name": "superinertial",
+     "lo_cph": 0.04792218998474205,
+     "hi_cph": 0.149190935849379,
+     "n_bins": 24.304499007512874,
+     "period_h": [
+      6.702820076211503,
+      20.867159875589785
+     ]
+    },
+    {
+     "name": "seiche",
+     "lo_cph": 0.149190935849379,
+     "hi_cph": 2.0,
+     "n_bins": 444.19417539614903,
+     "period_h": [
+      0.5,
+      6.702820076211503
+     ]
+    }
+   ]
+  },
+  "bay_thesis_f_120h_check": "not resolved: band near_inertial has 1.68 < 2 bins of df = 0.008333 cph",
+  "bay_78N_240h": {
+   "df_cph": 0.004166666666666667,
+   "nyquist_cph": 1.5,
+   "record_h": 240.0,
+   "dt_out_s": 1200.0,
+   "f_cph": 0.08173529563159077,
+   "ni_factors": [
+    0.85,
+    1.2
+   ],
+   "seiche_factor": 0.5,
+   "merian_lowest_cph": 0.298381871698758,
+   "bands": [
+    {
+     "name": "low",
+     "lo_cph": 0.0,
+     "hi_cph": 0.008333333333333333,
+     "n_bins": 2.0,
+     "period_h": [
+      120.0,
+      null
+     ]
+    },
+    {
+     "name": "kelvin_subinertial",
+     "lo_cph": 0.008333333333333333,
+     "hi_cph": 0.06947500128685215,
+     "n_bins": 14.674000308844516,
+     "period_h": [
+      14.3936665200069,
+      120.0
+     ]
+    },
+    {
+     "name": "near_inertial",
+     "lo_cph": 0.06947500128685215,
+     "hi_cph": 0.09808235475790891,
+     "n_bins": 6.865764833053624,
+     "period_h": [
+      10.195513785004888,
+      14.3936665200069
+     ]
+    },
+    {
+     "name": "superinertial",
+     "lo_cph": 0.09808235475790891,
+     "hi_cph": 0.149190935849379,
+     "n_bins": 12.266059461952823,
+     "period_h": [
+      6.702820076211503,
+      10.195513785004888
+     ]
+    },
+    {
+     "name": "seiche",
+     "lo_cph": 0.149190935849379,
+     "hi_cph": 1.5,
+     "n_bins": 324.19417539614903,
+     "period_h": [
+      0.6666666666666666,
+      6.702820076211503
+     ]
+    }
+   ]
+  }
+ },
+ "placement": {
+  "vmf_summer": {
+   "bands": "fjord_78N",
+   "inertial": "near_inertial",
+   "kelvin_mode1_harmonics": {
+    "1": {
+     "period_h": 85.46761582186878,
+     "band": "kelvin_subinertial"
+    },
+    "2": {
+     "period_h": 42.73380791093439,
+     "band": "kelvin_subinertial"
+    },
+    "3": {
+     "period_h": 28.48920527395626,
+     "band": "kelvin_subinertial"
+    },
+    "4": {
+     "period_h": 21.366903955467194,
+     "band": "kelvin_subinertial"
+    },
+    "5": {
+     "period_h": 17.093523164373757,
+     "band": "kelvin_subinertial"
+    },
+    "6": {
+     "period_h": 14.24460263697813,
+     "band": "near_inertial"
+    },
+    "7": {
+     "period_h": 12.20965940312411,
+     "band": "near_inertial"
+    },
+    "8": {
+     "period_h": 10.683451977733597,
+     "band": "near_inertial"
+    },
+    "9": {
+     "period_h": 9.496401757985419,
+     "band": "superinertial"
+    },
+    "10": {
+     "period_h": 8.546761582186878,
+     "band": "superinertial"
+    }
+   },
+   "kelvin_circuits_in_record": 2.8080811391791594,
+   "merian_closed_open_1": "seiche",
+   "merian_closed_closed_1": "seiche"
+  },
+  "vmf_winter": {
+   "bands": "fjord_78N",
+   "inertial": "near_inertial",
+   "kelvin_mode1_harmonics": {
+    "1": {
+     "period_h": 265.8850891790011,
+     "band": "low"
+    },
+    "2": {
+     "period_h": 132.94254458950056,
+     "band": "low"
+    },
+    "3": {
+     "period_h": 88.62836305966704,
+     "band": "kelvin_subinertial"
+    },
+    "4": {
+     "period_h": 66.47127229475028,
+     "band": "kelvin_subinertial"
+    },
+    "5": {
+     "period_h": 53.17701783580022,
+     "band": "kelvin_subinertial"
+    },
+    "6": {
+     "period_h": 44.31418152983352,
+     "band": "kelvin_subinertial"
+    },
+    "7": {
+     "period_h": 37.98358416842873,
+     "band": "kelvin_subinertial"
+    },
+    "8": {
+     "period_h": 33.23563614737514,
+     "band": "kelvin_subinertial"
+    },
+    "9": {
+     "period_h": 29.54278768655568,
+     "band": "kelvin_subinertial"
+    },
+    "10": {
+     "period_h": 26.58850891790011,
+     "band": "kelvin_subinertial"
+    }
+   },
+   "kelvin_circuits_in_record": 0.9026455779866069,
+   "merian_closed_open_1": "seiche",
+   "merian_closed_closed_1": "seiche"
+  },
+  "vmf_summer_Hmean": {
+   "bands": "fjord_78N",
+   "inertial": "near_inertial",
+   "kelvin_mode1_harmonics": {
+    "1": {
+     "period_h": 131.19928015633545,
+     "band": "low"
+    },
+    "2": {
+     "period_h": 65.59964007816772,
+     "band": "kelvin_subinertial"
+    },
+    "3": {
+     "period_h": 43.73309338544515,
+     "band": "kelvin_subinertial"
+    },
+    "4": {
+     "period_h": 32.79982003908386,
+     "band": "kelvin_subinertial"
+    },
+    "5": {
+     "period_h": 26.239856031267088,
+     "band": "kelvin_subinertial"
+    },
+    "6": {
+     "period_h": 21.866546692722576,
+     "band": "kelvin_subinertial"
+    },
+    "7": {
+     "period_h": 18.74275430804792,
+     "band": "kelvin_subinertial"
+    },
+    "8": {
+     "period_h": 16.39991001954193,
+     "band": "kelvin_subinertial"
+    },
+    "9": {
+     "period_h": 14.577697795148383,
+     "band": "kelvin_subinertial"
+    },
+    "10": {
+     "period_h": 13.119928015633544,
+     "band": "near_inertial"
+    }
+   },
+   "kelvin_circuits_in_record": 1.8292783292257317,
+   "merian_closed_open_1": "seiche",
+   "merian_closed_closed_1": "seiche"
+  },
+  "vmf_winter_Hmean": {
+   "bands": "fjord_78N",
+   "inertial": "near_inertial",
+   "kelvin_mode1_harmonics": {
+    "1": {
+     "period_h": 777.155040709776,
+     "band": "low"
+    },
+    "2": {
+     "period_h": 388.577520354888,
+     "band": "low"
+    },
+    "3": {
+     "period_h": 259.051680236592,
+     "band": "low"
+    },
+    "4": {
+     "period_h": 194.288760177444,
+     "band": "low"
+    },
+    "5": {
+     "period_h": 155.4310081419552,
+     "band": "low"
+    },
+    "6": {
+     "period_h": 129.525840118296,
+     "band": "low"
+    },
+    "7": {
+     "period_h": 111.02214867282514,
+     "band": "kelvin_subinertial"
+    },
+    "8": {
+     "period_h": 97.144380088722,
+     "band": "kelvin_subinertial"
+    },
+    "9": {
+     "period_h": 86.350560078864,
+     "band": "kelvin_subinertial"
+    },
+    "10": {
+     "period_h": 77.7155040709776,
+     "band": "kelvin_subinertial"
+    }
+   },
+   "kelvin_circuits_in_record": 0.3088186879426374,
+   "merian_closed_open_1": "seiche",
+   "merian_closed_closed_1": "seiche"
+  },
+  "thesis_bay_thesis_f": {
+   "bands": "bay_thesis_f_240h",
+   "inertial": "near_inertial",
+   "kelvin_mode1_harmonics": {
+    "1": {
+     "period_h": 174.93670702958886,
+     "band": "low"
+    },
+    "2": {
+     "period_h": 87.46835351479443,
+     "band": "kelvin_subinertial"
+    },
+    "3": {
+     "period_h": 58.31223567652962,
+     "band": "kelvin_subinertial"
+    },
+    "4": {
+     "period_h": 43.734176757397215,
+     "band": "kelvin_subinertial"
+    },
+    "5": {
+     "period_h": 34.987341405917775,
+     "band": "kelvin_subinertial"
+    },
+    "6": {
+     "period_h": 29.15611783826481,
+     "band": "near_inertial"
+    },
+    "7": {
+     "period_h": 24.990958147084122,
+     "band": "near_inertial"
+    },
+    "8": {
+     "period_h": 21.867088378698607,
+     "band": "near_inertial"
+    },
+    "9": {
+     "period_h": 19.43741189217654,
+     "band": "superinertial"
+    },
+    "10": {
+     "period_h": 17.493670702958887,
+     "band": "superinertial"
+    }
+   },
+   "kelvin_circuits_in_record": 1.3719247611046337,
+   "merian_closed_open_1": "seiche",
+   "merian_closed_closed_1": "seiche"
+  },
+  "thesis_bay_78N_vmf_summer": {
+   "bands": "bay_78N_240h",
+   "inertial": "near_inertial",
+   "kelvin_mode1_harmonics": {
+    "1": {
+     "period_h": 120.49653689718816,
+     "band": "low"
+    },
+    "2": {
+     "period_h": 60.24826844859408,
+     "band": "kelvin_subinertial"
+    },
+    "3": {
+     "period_h": 40.16551229906272,
+     "band": "kelvin_subinertial"
+    },
+    "4": {
+     "period_h": 30.12413422429704,
+     "band": "kelvin_subinertial"
+    },
+    "5": {
+     "period_h": 24.099307379437633,
+     "band": "kelvin_subinertial"
+    },
+    "6": {
+     "period_h": 20.08275614953136,
+     "band": "kelvin_subinertial"
+    },
+    "7": {
+     "period_h": 17.213790985312595,
+     "band": "kelvin_subinertial"
+    },
+    "8": {
+     "period_h": 15.06206711214852,
+     "band": "kelvin_subinertial"
+    },
+    "9": {
+     "period_h": 13.388504099687573,
+     "band": "near_inertial"
+    },
+    "10": {
+     "period_h": 12.049653689718816,
+     "band": "near_inertial"
+    }
+   },
+   "kelvin_circuits_in_record": 1.991758486841629,
+   "merian_closed_open_1": "seiche",
+   "merian_closed_closed_1": "seiche"
+  }
+ },
+ "wind": {
+  "axis_angle_ccw_from_east_deg": 12.412001633485175,
+  "down_fjord_stress_unit_vector_xy": [
+   -0.9766272767240531,
+   -0.21493990406287922
+  ],
+  "down_fjord_from_direction_deg_true_utm": 77.58799836651482,
+  "note": "direction 'from' measured clockwise from UTM grid north; meteorological convention"
+ },
+ "profiles_summary": {
+  "summer": {
+   "months": [
+    8,
+    9
+   ],
+   "years_window": [
+    1990,
+    2019
+   ],
+   "n_selected": 871,
+   "n_selected_all_years": 878,
+   "n_qc_pass": 842,
+   "qc_rejections": {
+    "no_salinity": 5,
+    "inversions": 23,
+    "too_few_levels": 1
+   },
+   "qc_pass_vs_inversion_tol": {
+    "0.001": 821,
+    "0.002": 831,
+    "0.004": 842,
+    "0.01": 854
+   },
+   "years_present": [
+    1993,
+    1994,
+    1995,
+    1996,
+    1997,
+    1998,
+    2000,
+    2002,
+    2003,
+    2009,
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017
+   ],
+   "n_per_year": {
+    "1993": 2,
+    "1994": 20,
+    "1995": 76,
+    "1996": 58,
+    "1997": 63,
+    "1998": 13,
+    "2000": 2,
+    "2002": 1,
+    "2003": 1,
+    "2009": 49,
+    "2010": 344,
+    "2011": 24,
+    "2012": 37,
+    "2013": 43,
+    "2014": 34,
+    "2015": 14,
+    "2016": 55,
+    "2017": 6
+   },
+   "n_per_month": {
+    "8": 521,
+    "9": 321
+   },
+   "instrument_types": [
+    "B",
+    "C"
+   ],
+   "info": {
+    "n_profiles": 842,
+    "last_data_z_m": -107.85350000000003,
+    "first_data_z_m": -0.75,
+    "n_levels_extended_below": 8,
+    "n_levels_extended_above": 0,
+    "n_levels_interior_gap": 0,
+    "n_levels_adjusted": 0,
+    "max_abs_dS_adjust": 0.0
+   }
+  },
+  "winter": {
+   "months": [
+    3,
+    4
+   ],
+   "years_window": [
+    1990,
+    2019
+   ],
+   "n_selected": 46,
+   "n_selected_all_years": 53,
+   "n_qc_pass": 36,
+   "qc_rejections": {
+    "inversions": 10
+   },
+   "qc_pass_vs_inversion_tol": {
+    "0.001": 15,
+    "0.002": 22,
+    "0.004": 36,
+    "0.01": 44
+   },
+   "years_present": [
+    2000,
+    2007,
+    2008,
+    2016,
+    2017
+   ],
+   "n_per_year": {
+    "2000": 12,
+    "2007": 1,
+    "2008": 2,
+    "2016": 5,
+    "2017": 16
+   },
+   "n_per_month": {
+    "3": 9,
+    "4": 27
+   },
+   "instrument_types": [
+    "C"
+   ],
+   "info": {
+    "n_profiles": 36,
+    "last_data_z_m": -98.04450000000003,
+    "first_data_z_m": -0.75,
+    "n_levels_extended_below": 9,
+    "n_levels_extended_above": 0,
+    "n_levels_interior_gap": 0,
+    "n_levels_adjusted": 16,
+    "max_abs_dS_adjust": 0.003873794330630176
+   }
+  }
+ }
+}
