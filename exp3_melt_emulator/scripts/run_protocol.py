@@ -39,8 +39,13 @@ fold x method x test run with every Task 3 metric, skill against M0 of the same
 fold/variant, coverage (68/95 %) and CRPS for M5-M7 and the H3c spread quantities of
 ``predict_members`` for M6/M7, plus each unit's method ``info``.
 
-``--final`` refuses if ``figures/final_test.json`` exists or if a previous ``--final``
-started (marker ``FINAL_MARKER``); there is no override. It fits the 8 methods on the 25
+``--final`` refuses if ``figures/final_test.json`` exists, if a previous ``--final``
+started (marker ``FINAL_MARKER``) or if no complete ``cv_results.json`` for this config
+exists (protocol order: CV, then final). Every attempt is recorded in the marker before
+any fit; a crash (any exception, KeyboardInterrupt included) records the failure, the
+time, the error and the units completed so far, and is re-raised. Only after such a
+recorded failure, ``--final --resume-after-crash "<reason>"`` re-runs the whole final fit
+from scratch; final_test.json carries the full attempt history. It fits the 8 methods on the 25
 training runs, predicts the 3 test runs once, and writes ``figures/final_test.json`` and
 the maps (test runs, plus the in-sample maps of the 25 training runs for the Lambert
 diagnostics) to ``FINAL_MAPS``, whose sha256 is recorded in the JSON.
@@ -659,27 +664,145 @@ def run_cv(config_path=DEFAULT_CONFIG, expected_sha=CONFIG_SHA256, units_dir=UNI
 
 
 # --- --final --------------------------------------------------------------------------------
+def _check_cv_complete(cv_results, sha, overrides, cfg, runs):
+    """The protocol order (CV, then final): a complete cv_results.json for this config."""
+    cv_results = Path(cv_results)
+    if not cv_results.exists():
+        raise ProtocolError(f"cv_results {cv_results} missing: run --cv to completion first")
+    rec = json.loads(cv_results.read_text())
+    if rec.get("config_sha256") != sha or rec.get("test_overrides") != overrides:
+        raise ProtocolError(f"cv_results {cv_results} was produced with another config "
+                            f"or test overrides")
+    want = {u["unit"] for u in cv_units(cfg, runs)}
+    if {u["unit"] for u in rec.get("units", [])} != want:
+        raise ProtocolError(f"cv_results {cv_results} does not cover every --cv unit")
+
+
+def _read_marker(marker) -> dict:
+    try:
+        rec = json.loads(Path(marker).read_text())
+        if not isinstance(rec.get("attempts"), list):
+            raise ValueError("no attempts list")
+        return rec
+    except ValueError as exc:
+        raise ProtocolError(f"{marker}: unreadable --final marker ({exc}); not touched") from exc
+
+
+def _write_json_sync(path, obj, exclusive=False):
+    """JSON to ``path`` with fsync; exclusive -> never overwrite, else atomic replace."""
+    data = (json.dumps(_jsonable(obj), indent=1) + "\n").encode()
+    if not exclusive:
+        _atomic_write(path, data)
+        return
+    with open(path, "xb") as fh:
+        fh.write(data)
+        fh.flush()
+        os.fsync(fh.fileno())
+
+
+def _write_final_maps(maps_out, maps) -> str:
+    """Write the final maps (keys sorted, so the bytes do not depend on completion order),
+    fsync, atomic rename; returns the sha256."""
+    maps_out = Path(maps_out)
+    maps_out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = maps_out.with_name(f"{maps_out.stem}.tmp.{os.getpid()}.npz")
+    with open(tmp, "wb") as fh:
+        np.savez(fh, **{k: maps[k] for k in sorted(maps)})
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, maps_out)
+    return _sha256(maps_out)
+
+
+def _kill_pool(pool):
+    """Stop a pool after a failure without waiting for long fits (their results are unused)."""
+    pool.shutdown(wait=False, cancel_futures=True)
+    for p in list((getattr(pool, "_processes", None) or {}).values()):
+        try:
+            p.terminate()
+        except Exception:                    # pragma: no cover - already gone
+            pass
+
+
 def run_final(config_path=DEFAULT_CONFIG, expected_sha=CONFIG_SHA256, out=FINAL_TEST,
               maps_out=FINAL_MAPS, marker=FINAL_MARKER, progress_log=FINAL_PROGRESS_LOG,
-              workers=MAX_WORKERS, git_state=git_state) -> dict:
-    """The one-time final test (no override exists)."""
+              workers=MAX_WORKERS, git_state=git_state, cv_results=CV_RESULTS,
+              resume_after_crash=None) -> dict:
+    """The one-time final test.
+
+    Refuses if ``out`` exists. Without ``resume_after_crash`` it also refuses if the marker
+    exists (an earlier attempt started). Every attempt is appended to the marker before any
+    fit; any exception after that (KeyboardInterrupt included) records status "failed", the
+    time, the exception type and message and the units completed so far in the marker and
+    the progress log, and is re-raised. ``resume_after_crash="<reason>"`` is allowed only
+    when the marker's last attempt recorded such a failure and ``out`` does not exist: it
+    re-runs the whole final fit from scratch (no partial fit is reused). final_test.json
+    carries the full attempt history ("attempts"), so a crash and re-run stay visible."""
     out, marker = Path(out), Path(marker)
     if out.exists():
         raise FileExistsError(f"{out} exists: the final test has been evaluated")
-    if marker.exists():
-        raise ProtocolError(f"{marker} exists: a --final run started before "
-                            f"({marker.read_text().strip()}); it is not repeated")
+    if resume_after_crash is None:
+        if marker.exists():
+            raise ProtocolError(f"{marker} exists: a --final run started before "
+                                f"({marker.read_text().strip()[:500]}); it is not repeated. "
+                                "Use --resume-after-crash only if that attempt recorded a failure")
+        history = {"attempts": []}
+    else:
+        if not str(resume_after_crash).strip():
+            raise ProtocolError("--resume-after-crash needs a non-empty reason")
+        if not marker.exists():
+            raise ProtocolError(f"--resume-after-crash refused: no previous --final attempt ({marker} missing)")
+        history = _read_marker(marker)
+        last = history["attempts"][-1] if history["attempts"] else {}
+        if last.get("status") != "failed":
+            raise ProtocolError(f"--resume-after-crash refused: the last attempt in {marker} has no "
+                                f"recorded failure (status {last.get('status')!r})")
     cfg, runs = load_protocol(config_path, expected_sha)
     overrides = test_overrides(cfg, runs)
     git = git_state()
     (fold,) = [f for f in cfg["folds"] if f["kind"] == "final"]
     if not fold["test"] or any(runs[c].split != "test" for c in fold["test"]):
         raise ProtocolError("final fold: the test runs must be the split == 'test' runs")
+    _check_cv_complete(cv_results, expected_sha, overrides, cfg, runs)
+
+    # from here on the final test counts as used: every attempt is on record
+    attempt = {"attempt": len(history["attempts"]) + 1, "started": _now(),
+               "config_sha256": expected_sha, "commit": git["commit"], "pid": os.getpid(),
+               "resume_reason": None if resume_after_crash is None else str(resume_after_crash),
+               "status": "running", "completed_units": []}
+    history["attempts"].append(attempt)
     marker.parent.mkdir(parents=True, exist_ok=True)
-    with open(marker, "x") as fh:            # from here on the final test counts as used
-        fh.write(json.dumps({"started": _now(), "config_sha256": expected_sha,
-                             "commit": git["commit"]}) + "\n")
-    _log(progress_log, f"START --final config {expected_sha[:12]} commit {git['commit'][:7]}")
+    _write_json_sync(marker, history, exclusive=resume_after_crash is None)
+    _log(progress_log, f"START --final attempt {attempt['attempt']} config {expected_sha[:12]} "
+                       f"commit {git['commit'][:7]}")
+    if resume_after_crash is not None:
+        _log(progress_log, f"RESUME-AFTER-CRASH attempt {attempt['attempt']}: "
+                           f"{attempt['resume_reason']!r} (full refit, nothing reused)")
+    try:
+        res = _final_body(cfg, runs, fold, overrides, expected_sha, git, workers, maps_out,
+                          progress_log, attempt)
+        attempt.update(status="complete", finished=_now())
+        res["attempts"] = history["attempts"]
+        res = _jsonable(res)
+        _write_json_sync(out, res, exclusive=True)
+        _write_json_sync(marker, history)
+    except BaseException as exc:
+        if not out.exists():
+            attempt.update(status="failed", failed=_now(), error_type=type(exc).__name__,
+                           error=str(exc) or repr(exc))
+            try:
+                _write_json_sync(marker, history)
+            finally:
+                _log(progress_log, f"FAILED --final attempt {attempt['attempt']}: "
+                                   f"{type(exc).__name__}: {exc}; completed units "
+                                   f"{attempt['completed_units']}; recorded in {marker}")
+        raise
+    _log(progress_log, f"END wrote {out} and {res['maps']} (sha {res['maps_sha256'][:12]}) in "
+                       f"{res['wall_s']:.1f} s")
+    return res
+
+
+def _final_body(cfg, runs, fold, overrides, sha, git, workers, maps_out, progress_log, attempt):
     t_start = time.time()
     gl_frac = cfg["thresholds"]["gl_frac"]
     train = [runs[c] for c in fold["train"]]
@@ -689,21 +812,25 @@ def run_final(config_path=DEFAULT_CONFIG, expected_sha=CONFIG_SHA256, out=FINAL_
               "test": list(fold["test"]), "n_train": len(train)} for mid in sorted(cfg["methods"])]
     units.sort(key=lambda u: (u["method"] != "M7", -prior_seconds(u)))
     recs, maps = {}, {}
-    with _pool(min(workers, len(units))) as pool:
-        futs = {pool.submit(run_unit, u, train, test, overrides, gl_frac, expected_sha, None,
+    pool = _pool(min(workers, len(units)))
+    try:
+        futs = {pool.submit(run_unit, u, train, test, overrides, gl_frac, sha, None,
                             train, True): u for u in units}
-        for fut in futs:
-            u = futs[fut]
-            rec, mp = fut.result()
-            recs[u["method"]] = rec
-            maps.update({f"{u['method']}__{k}": np.asarray(v, float) for k, v in mp.items()})
-            _log(progress_log, f"DONE {u['unit']} wall {rec['wall_s']:.1f} s")
-    maps_out = Path(maps_out)
-    maps_out.parent.mkdir(parents=True, exist_ok=True)
-    tmp = maps_out.with_name(f"{maps_out.stem}.tmp.{os.getpid()}.npz")
-    np.savez(tmp, **maps)
-    os.replace(tmp, maps_out)
-    maps_sha = _sha256(maps_out)
+        pending = set(futs)
+        while pending:                       # in completion order: a failure surfaces at once
+            fin, pending = wait(pending, return_when=FIRST_COMPLETED)
+            for fut in fin:
+                u = futs[fut]
+                rec, mp = fut.result()
+                recs[u["method"]] = rec
+                maps.update({f"{u['method']}__{k}": np.asarray(v, float) for k, v in mp.items()})
+                attempt["completed_units"].append(u["unit"])
+                _log(progress_log, f"DONE {u['unit']} wall {rec['wall_s']:.1f} s")
+    except BaseException:
+        _kill_pool(pool)
+        raise
+    pool.shutdown(wait=True)
+    maps_sha = _write_final_maps(maps_out, maps)
     ref = {t["case"]: t["metrics"] for t in recs["M0"]["results"]}
     entries = []
     for mid in sorted(recs):
@@ -717,21 +844,16 @@ def run_final(config_path=DEFAULT_CONFIG, expected_sha=CONFIG_SHA256, out=FINAL_
                                           abs(mt["integrated_rel_error"]),
                                           abs(r0["integrated_rel_error"]))},
                             "prob": t["prob"], "members": t["members"]})
-    res = {"config_sha256": expected_sha, "dataset_sha256": cfg["dataset"]["sha256"],
-           "created": _now(), "git": git, "test_overrides": overrides, "gl_frac": gl_frac,
-           "train": fold["train"], "test": fold["test"],
-           "maps": str(maps_out), "maps_sha256": maps_sha,
-           "maps_keys": "<method>__<case>__mean | __sigma (M5-M7) | __members_mu (M6, M7) for "
-                        "the test runs; <method>__<case>__mean_in_sample for the training runs",
-           "wall_s": time.time() - t_start, "entries": entries,
-           "units": [{k: recs[m][k] for k in ("unit", "method", "started", "finished", "fit_s",
-                                              "wall_s", "info")} for m in sorted(recs)]}
-    res = _jsonable(res)
-    with open(out, "x") as fh:
-        fh.write(json.dumps(res, indent=1) + "\n")
-    _log(progress_log, f"END wrote {out} and {maps_out} (sha {maps_sha[:12]}) in "
-                       f"{time.time() - t_start:.1f} s")
-    return res
+    return {"config_sha256": sha, "dataset_sha256": cfg["dataset"]["sha256"],
+            "created": _now(), "git": git, "test_overrides": overrides, "gl_frac": gl_frac,
+            "train": fold["train"], "test": fold["test"],
+            "maps": str(maps_out), "maps_sha256": maps_sha,
+            "maps_keys": "<method>__<case>__mean | __sigma (M5-M7) | __members_mu (M6, M7) for "
+                         "the test runs; <method>__<case>__mean_in_sample for the training runs",
+            "wall_s": time.time() - t_start, "entries": entries,
+            "units": [{k: recs[m][k] for k in ("unit", "method", "started", "finished", "fit_s",
+                                               "wall_s", "hparams", "test_overrides", "info")}
+                      for m in sorted(recs)]}
 
 
 def main(argv=None) -> int:
@@ -747,25 +869,40 @@ def main(argv=None) -> int:
                     help="--cv only, with --amendment: replaces the frozen 8 h stop limit")
     ap.add_argument("--amendment", default=None,
                     help="--cv only, with --wall-limit-hours: text of the PD0 amendment")
-    ap.add_argument("--out", type=Path, default=DEFAULT_CONFIG,
-                    help="--freeze-config output path")
-    ap.add_argument("--dataset", type=Path, default=DATASET_PATH)
-    ap.add_argument("--dataset-sha", default=DATASET_SHA256)
-    ap.add_argument("--noise-json", default=str(DEFAULT_NOISE),
-                    help="noise-floor summary to record ('' = none)")
+    ap.add_argument("--resume-after-crash", default=None, metavar="REASON",
+                    help="--final only: re-run from scratch after an attempt that recorded a "
+                         "failure in the marker (the reason is recorded)")
+    ap.add_argument("--out", type=Path, default=None,
+                    help=f"--freeze-config only: output path (default {DEFAULT_CONFIG})")
+    ap.add_argument("--dataset", type=Path, default=None, help="--freeze-config only")
+    ap.add_argument("--dataset-sha", default=None, help="--freeze-config only")
+    ap.add_argument("--noise-json", default=None,
+                    help="--freeze-config only: noise-floor summary to record ('' = none)")
     a = ap.parse_args(argv)
     if (a.wall_limit_hours is None) != (a.amendment is None):
         ap.error("--wall-limit-hours and --amendment must be given together")
     if a.amendment is not None and not a.cv:
         ap.error("--wall-limit-hours/--amendment apply to --cv only")
+    if a.resume_after_crash is not None and not a.final:
+        ap.error("--resume-after-crash applies to --final only")
+    freeze_only = [f for f, v in (("--out", a.out), ("--dataset", a.dataset),
+                                  ("--dataset-sha", a.dataset_sha), ("--noise-json", a.noise_json))
+                   if v is not None]
+    if freeze_only and not a.freeze_config:
+        ap.error(f"{', '.join(freeze_only)} apply to --freeze-config only "
+                 "(--cv and --final use the frozen configuration)")
     if a.cv:
         st = run_cv(DEFAULT_CONFIG, CONFIG_SHA256, wall_limit_hours=a.wall_limit_hours,
                     amendment=a.amendment)
         return 0 if st["status"] == "complete" else EXIT_STOPPED
     if a.final:
-        res = run_final(DEFAULT_CONFIG, CONFIG_SHA256)
+        res = run_final(DEFAULT_CONFIG, CONFIG_SHA256, resume_after_crash=a.resume_after_crash)
         print(f"wrote {FINAL_TEST}: {len(res['entries'])} entries")
         return 0
+    a.out = DEFAULT_CONFIG if a.out is None else a.out
+    a.dataset = DATASET_PATH if a.dataset is None else a.dataset
+    a.dataset_sha = DATASET_SHA256 if a.dataset_sha is None else a.dataset_sha
+    a.noise_json = str(DEFAULT_NOISE) if a.noise_json is None else a.noise_json
     cfg = freeze_config(a.out, a.dataset, a.dataset_sha, a.noise_json, git_state=git_state)
     print(f"wrote {a.out}: {len(cfg['folds'])} folds, methods {sorted(cfg['methods'])}, "
           f"commit {cfg['git']['commit'][:7]}"
