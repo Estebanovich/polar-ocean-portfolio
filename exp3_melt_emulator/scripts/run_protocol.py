@@ -29,7 +29,11 @@ written atomically to ``UNITS_DIR/<unit>.json`` and logged with its wall time in
 ``CV_PROGRESS_LOG``; a restart skips the units already written with the same config sha.
 Stop rule (PD0, frozen): when the first batch (the first ``workers`` units) has finished,
 the total wall clock is estimated (``estimate_wall``); above 8 h no new unit is started,
-the estimate is logged and the run ends without results (exit code 3). At the end
+the estimate is logged and the run ends without results (exit code 3). The limit can
+be replaced only by ``--wall-limit-hours H`` together with ``--amendment "<text>"`` (a
+documented PD0 amendment, e.g. Enmienda 1: 20 h); the override is recorded in the log,
+in every unit written under it and in cv_results.json ("amendments"). Main-variant units
+are scheduled before any n1 unit (Enmienda 1; ordering does not change results). At the end
 ``figures/cv_results.json`` is assembled from the unit files: one entry per variant x
 fold x method x test run with every Task 3 metric, skill against M0 of the same
 fold/variant, coverage (68/95 %) and CRPS for M5-M7 and the H3c spread quantities of
@@ -345,7 +349,8 @@ def prior_seconds(unit) -> float:
 
 
 def cv_units(cfg, runs) -> list[dict]:
-    """All --cv work units, M7 first then the rest, each group longest (prior) first."""
+    """All --cv work units: every main-variant unit before any n1 unit (PD0 Enmienda 1);
+    within each variant M7 first, then the rest, each group longest (prior) first."""
     units = []
     for variant, folds in (("main", cfg["folds"]), ("n1", cfg["folds_sensitivity_n1"])):
         for f in folds:
@@ -366,7 +371,10 @@ def cv_units(cfg, runs) -> list[dict]:
                               "fold": f["name"], "kind": f["kind"], "method": mid,
                               "train": list(f["train"]), "test": list(f["test"]),
                               "n_train": len(f["train"])})
-    units.sort(key=lambda u: (u["method"] != "M7", -prior_seconds(u)))   # stable
+    # Scheduling order only: every unit is an independent, deterministic fit, so the order
+    # changes when results become available (main folds first, PD0 Enmienda 1), never
+    # the results themselves.
+    units.sort(key=lambda u: (u["variant"] != "main", u["method"] != "M7", -prior_seconds(u)))
     return units
 
 
@@ -390,7 +398,7 @@ def _method_info(m) -> dict:
 
 
 def run_unit(unit, train_runs, test_runs, overrides, gl_frac, config_sha, units_dir=None,
-             in_sample_runs=(), return_maps=False):
+             in_sample_runs=(), return_maps=False, amendment=None):
     """Fit one method on ``train_runs`` and evaluate ``test_runs`` (worker entry point).
     Writes ``units_dir/<unit>.json`` atomically when ``units_dir`` is given."""
     t0 = time.time()
@@ -430,6 +438,7 @@ def run_unit(unit, train_runs, test_runs, overrides, gl_frac, config_sha, units_
     out = {"unit": unit["unit"], "variant": unit["variant"], "fold": unit["fold"],
            "kind": unit["kind"], "method": unit["method"], "train": unit["train"],
            "test": unit["test"], "config_sha256": config_sha, "test_overrides": overrides,
+           "amendment": amendment,
            "started": started, "finished": _now(), "fit_s": t_fit, "wall_s": time.time() - t0,
            "hparams": _jsonable(m.hparams()), "info": _method_info(m), "results": _jsonable(tests)}
     if units_dir is not None:
@@ -502,7 +511,7 @@ def _load_unit(path, uid, sha, overrides):
     return rec
 
 
-def assemble_cv(cfg, units, units_dir, sha, overrides, git) -> dict:
+def assemble_cv(cfg, units, units_dir, sha, overrides, git, amendments=(), wall_limit_hours=STOP_HOURS) -> dict:
     """cv_results.json content from the unit files (skill against M0 of the same
     variant/fold; rmse_gl per run as in R8, the RMS over runs is taken when aggregating)."""
     recs = [_load_unit(Path(units_dir) / f"{u['unit']}.json", u["unit"], sha, overrides)
@@ -527,8 +536,14 @@ def assemble_cv(cfg, units, units_dir, sha, overrides, git) -> dict:
         unit_recs.append({k: r[k] for k in ("unit", "variant", "fold", "kind", "method", "train",
                                             "test", "started", "finished", "fit_s", "wall_s",
                                             "info")})
+    seen = list(amendments)
+    for r in recs:                       # amendments under which any unit was written
+        if r.get("amendment") and r["amendment"] not in seen:
+            seen.append(r["amendment"])
     return {"config_sha256": sha, "dataset_sha256": cfg["dataset"]["sha256"],
             "created": _now(), "git": git, "test_overrides": overrides,
+            "amendments": sorted(seen, key=lambda a: a["timestamp"]),
+            "wall_limit_hours": wall_limit_hours,
             "gl_frac": cfg["thresholds"]["gl_frac"],
             "cpu_s_total": float(sum(u["wall_s"] for u in unit_recs)),
             "n1_fail_cases": cfg["n1_fail_cases"],
@@ -540,8 +555,25 @@ def assemble_cv(cfg, units, units_dir, sha, overrides, git) -> dict:
 
 def run_cv(config_path=DEFAULT_CONFIG, expected_sha=CONFIG_SHA256, units_dir=UNITS_DIR,
            progress_log=CV_PROGRESS_LOG, out=CV_RESULTS, workers=MAX_WORKERS,
-           stop_hours=STOP_HOURS, estimate_fn=estimate_wall, git_state=git_state) -> dict:
-    """Run (or resume) --cv; returns {"status": "complete"|"stopped", "ran": [...], ...}."""
+           estimate_fn=estimate_wall, git_state=git_state, wall_limit_hours=None,
+           amendment=None) -> dict:
+    """Run (or resume) --cv; returns {"status": "complete"|"stopped", "ran": [...], ...}.
+
+    The frozen stop rule uses STOP_HOURS (8 h). ``wall_limit_hours`` replaces it only
+    together with ``amendment`` (the text of a documented PD0 amendment); the override is
+    recorded in the progress log, in every unit written under it and in cv_results.json."""
+    if (wall_limit_hours is None) != (amendment is None):
+        raise ProtocolError("--wall-limit-hours and --amendment must be given together")
+    am = None
+    if amendment is not None:
+        if not str(amendment).strip():
+            raise ProtocolError("the amendment text is empty")
+        if not float(wall_limit_hours) > 0:
+            raise ProtocolError(f"wall_limit_hours must be > 0, got {wall_limit_hours}")
+        am = {"text": str(amendment), "timestamp": _now(),
+              "wall_limit_hours": float(wall_limit_hours),
+              "frozen_wall_limit_hours": STOP_HOURS}
+    stop_hours = am["wall_limit_hours"] if am else STOP_HOURS
     cfg, runs = load_protocol(config_path, expected_sha)
     overrides = test_overrides(cfg, runs)
     git = git_state()
@@ -553,7 +585,12 @@ def run_cv(config_path=DEFAULT_CONFIG, expected_sha=CONFIG_SHA256, units_dir=UNI
     gl_frac = cfg["thresholds"]["gl_frac"]
     _log(progress_log, f"START --cv config {expected_sha[:12]} commit {git['commit'][:7]} "
                        f"units {len(units)} done {len(done)} pending {len(pending)} "
-                       f"workers {workers}" + (" TEST_OVERRIDES" if overrides else ""))
+                       f"workers {workers} stop limit {stop_hours:g} h"
+                       + (" TEST_OVERRIDES" if overrides else ""))
+    if am:
+        _log(progress_log, f"AMENDMENT wall-clock limit {am['wall_limit_hours']:g} h replaces the "
+                           f"frozen {STOP_HOURS:g} h for this session: {am['text']!r} "
+                           f"(recorded {am['timestamp']})")
     t_start = time.time()
     ran, completed, failures = [], [], []
     estimate, stopped = None, False
@@ -566,7 +603,7 @@ def run_cv(config_path=DEFAULT_CONFIG, expected_sha=CONFIG_SHA256, units_dir=UNI
                 u = pending.pop(0)
                 fut = pool.submit(run_unit, u, [runs[c] for c in u["train"]],
                                   [runs[c] for c in u["test"]], overrides, gl_frac,
-                                  expected_sha, str(units_dir))
+                                  expected_sha, str(units_dir), (), False, am)
                 in_flight[fut] = (u, time.time())
                 return u
 
@@ -611,7 +648,8 @@ def run_cv(config_path=DEFAULT_CONFIG, expected_sha=CONFIG_SHA256, units_dir=UNI
         _log(progress_log, f"END stopped by the stop rule; {len(units) - len(pending)}/{len(units)} "
                            f"units written; no cv_results.json")
         return {"status": "stopped", "ran": ran, "estimate": estimate}
-    res = assemble_cv(cfg, units, units_dir, expected_sha, overrides, git)
+    res = assemble_cv(cfg, units, units_dir, expected_sha, overrides, git,
+                      [am] if am else [], stop_hours)
     res["session"] = {"wall_s": time.time() - t_start, "units_run": len(ran),
                       "units_resumed": len(done), "workers": workers, "estimate": estimate}
     _atomic_write(out, (json.dumps(res, indent=1) + "\n").encode())
@@ -705,6 +743,10 @@ def main(argv=None) -> int:
                      help="cross-validation on every non-final fold (resumable)")
     act.add_argument("--final", action="store_true",
                      help="the one-time final test (refuses if it was run before)")
+    ap.add_argument("--wall-limit-hours", type=float, default=None,
+                    help="--cv only, with --amendment: replaces the frozen 8 h stop limit")
+    ap.add_argument("--amendment", default=None,
+                    help="--cv only, with --wall-limit-hours: text of the PD0 amendment")
     ap.add_argument("--out", type=Path, default=DEFAULT_CONFIG,
                     help="--freeze-config output path")
     ap.add_argument("--dataset", type=Path, default=DATASET_PATH)
@@ -712,8 +754,13 @@ def main(argv=None) -> int:
     ap.add_argument("--noise-json", default=str(DEFAULT_NOISE),
                     help="noise-floor summary to record ('' = none)")
     a = ap.parse_args(argv)
+    if (a.wall_limit_hours is None) != (a.amendment is None):
+        ap.error("--wall-limit-hours and --amendment must be given together")
+    if a.amendment is not None and not a.cv:
+        ap.error("--wall-limit-hours/--amendment apply to --cv only")
     if a.cv:
-        st = run_cv(DEFAULT_CONFIG, CONFIG_SHA256)
+        st = run_cv(DEFAULT_CONFIG, CONFIG_SHA256, wall_limit_hours=a.wall_limit_hours,
+                    amendment=a.amendment)
         return 0 if st["status"] == "complete" else EXIT_STOPPED
     if a.final:
         res = run_final(DEFAULT_CONFIG, CONFIG_SHA256)
