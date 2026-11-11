@@ -1,10 +1,10 @@
 # Running the experiments
 
-A portfolio of idealized, reproducible MITgcm polar-ocean experiments. Each experiment pairs a model configuration with theory, validation tests and analysis scripts. Experiment 1 (`exp1_fjord_plumes/`) studies subglacial plumes in a fjord; Experiment 2 (`exp2_isomip_cavity/`) an ISOMIP+ ice-shelf cavity.
+A portfolio of idealized, reproducible MITgcm polar-ocean experiments. Each experiment pairs a model configuration with theory, validation tests and analysis scripts. Experiment 1 (`exp1_fjord_plumes/`) studies subglacial plumes in a fjord; Experiment 2 (`exp2_isomip_cavity/`) an ISOMIP+ ice-shelf cavity; Experiment 3 (`exp3_melt_emulator/`) emulators of the Experiment 2 basal melt.
 
 ## Commands
 
-All Python runs in one conda environment (numpy, scipy, matplotlib, pyyaml, pytest):
+Experiments 1 and 2, and the analysis of Experiment 3, run in one conda environment (numpy, scipy, matplotlib, pyyaml, pytest); the Experiment 3 protocol needs a second one (below):
 
 ```bash
 PY=/path/to/env/bin/python
@@ -23,6 +23,7 @@ $PY exp1_fjord_plumes/scripts/run_campaign.py --config a_line2d --cases '<glob>'
 # Everything (figures, metrics and README) from existing run output
 bash exp1_fjord_plumes/reproduce.sh --quick
 bash exp2_isomip_cavity/reproduce.sh --quick      # also writes the Exp. 3 dataset (outside the repo)
+bash exp3_melt_emulator/reproduce.sh --quick      # hypotheses, figures and README from the JSON
 ```
 
 Experiment 2 uses the same scripts with its own configurations (`ocean0_2km`, MPI np 5; `ocean0_4km`, serial):
@@ -63,6 +64,27 @@ The same chain, `cases.yaml` → `gendata` → MITgcm run → `analysis`, with t
 - **Run suffix `_r21`.** Every valid run directory ends in `_r21`; runs made before the correction of the friction-velocity law (ruling R21) are void. `case.json` carries `melt_law`, and `analysis/metrics.load_run` refuses any run without the current one, as well as any run that is not OK.
 - **Analysis** (`analysis/`): `calibrate.py` and `pd1_calibration_eval.py` (K1, V1), `fig1_ocean0_validation.py` (Ocean1, V2, V3), `ensemble.py`, `fig2_melt_sensitivity.py` and `fig3_meltwater_export.py` (H1, H2), `h1_posthoc_tf.py` (post hoc R23, R24), `jpl_compare.py` (post hoc), `export_exp3.py` (dataset for Experiment 3, written to `$EXP2_RUNS/exp3_dataset.npz`).
 - **README:** rendered by `scripts/render_readme.py` from `README.template.md` and `figures/*.json` (`--check` verifies that it is up to date). `figures/void_pre_r21/` holds void records that nothing reads.
+
+## Pipeline (Experiment 3)
+
+The emulators are trained on the dataset that `exp2_isomip_cavity/analysis/export_exp3.py` writes outside the repository (`$EXP2_RUNS/exp3_dataset.npz`; its sha256 is checked before every use, and it is read with `allow_pickle=False`). Experiment 3 reads it at the fixed path `/Volumes/LaCie/portfolio_runs/exp2/exp3_dataset.npz` and keeps its run products (cross-validation units, logs, final-test maps) in `/Volumes/LaCie/portfolio_runs/exp3/`; `EXP2_RUNS` does not move them.
+
+- **Two environments.** The protocol (`scripts/run_protocol.py`, `methods/`) needs PyTorch and scikit-learn, which are in a second conda environment, `anemoi`; the analysis and figure scripts (`analysis/`) run under the main environment (`pyocean`). Nothing is installed into either.
+- **Tests under anemoi.** That environment has no pytest. `exp3_melt_emulator/scripts/pytest_anemoi.sh [pytest args]` symlinks the pure-Python pytest stack of the main environment into a temporary directory and runs it under anemoi; with no path among the arguments it tests `exp3_melt_emulator`. Under the main environment the modules that need PyTorch or scikit-learn skip themselves, so the whole suite still runs there.
+
+```bash
+export ANEMOI=/path/to/anemoi/bin/python                                      # pytest_anemoi.sh and reproduce.sh read ANEMOI (and PYOCEAN / PY)
+bash exp3_melt_emulator/scripts/pytest_anemoi.sh -q                       # Exp. 3 tests under anemoi
+$PY -m pytest -q                                                          # whole suite (Exp. 3 torch/sklearn modules skip)
+$ANEMOI exp3_melt_emulator/scripts/run_protocol.py --freeze-config       # once, at the pre-registration (refuses to overwrite)
+$ANEMOI exp3_melt_emulator/scripts/run_protocol.py --cv [--wall-limit-hours H --amendment "<text>"]   # resumable
+$ANEMOI exp3_melt_emulator/scripts/run_protocol.py --final               # the final test: runs once, then refuses
+bash exp3_melt_emulator/reproduce.sh [--quick]                            # full mode runs --cv (reusing finished units, so it refits nothing unless cv_units is moved aside) and compares with the committed record; never --final
+```
+
+- **`run_protocol.py`** has three modes. `--freeze-config` writes `figures/protocol_config.json` (dataset sha256, folds, every method's hyperparameters, thresholds, noise floor) and refuses to overwrite it. `--cv` verifies that frozen configuration, the dataset and the folds, fits every method on every non-final fold in up to 5 single-threaded processes, writes one file per unit to `/Volumes/LaCie/portfolio_runs/exp3/cv_units/` (a restart skips finished units) and assembles `figures/cv_results.json`; its frozen wall-clock stop rule can be replaced only together with the text of a documented amendment. `--final` refuses if `figures/final_test.json` or its start marker exists, or if the cross-validation is incomplete; once an attempt has completed there is no override (`--resume-after-crash` repeats, from scratch, only an attempt recorded as crashed).
+- **Analysis** (`analysis/`): `noise_floor.py` (noise floor from the Exp. 2 runs), `hypotheses.py` (H3a–H3c and the ranking), `figures.py` (Figures 1, 2, 4), `physics_diag.py` (Figure 3), `profile_test_diag.py` (post hoc, under anemoi), `bootstrap.py` (bootstrap intervals over runs, and the post hoc paired differences), `probabilistic.py` (coverage, CRPS and skill), `compare_records.py` (re-run against committed record, used by `reproduce.sh`).
+- **README:** rendered by `scripts/render_readme.py` from `README.template.md` and `figures/*.json` (`--check` verifies that it is up to date); a test fails if the template contains a number that does not come from a placeholder.
 
 ## Locations
 
