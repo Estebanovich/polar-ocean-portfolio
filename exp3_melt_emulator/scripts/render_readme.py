@@ -164,6 +164,7 @@ def values() -> dict[str, str]:
         v["M5_white0"] = g(m5["white_init"])
         v["M5_white_b"] = f"[{g(m5['white_bounds'][0])}, {g(m5['white_bounds'][1])}]"
         v["M5_restarts"] = str(m5["n_restarts"])
+        v["M5_kcap"] = m5["k_cap"].replace(" - ", " − ")
         m6, m7 = m["M6"], m["M7"]
         v["nn_members"] = str(m6["n_members"])
         v["nn_seeds"] = f"{m6['seeds'][0]}–{m6['seeds'][-1]}"
@@ -240,6 +241,23 @@ def values() -> dict[str, str]:
         assert hy["verdicts"] == {"H3a": "FAIL", "H3b": "PASS", "H3c_M6": "PASS",
                                   "H3c_M7": "FAIL"}, hy["verdicts"]
         n1 = hy["ranking"]["n1"]["kinds"]
+        n1_best = {k_: n1[k_]["order_by_mean_rmse_map"][0] for k_ in ("loro", "zc_out", "warm_out")}
+        assert n1_best == {"loro": "M6", "zc_out": "M2", "warm_out": "M5"}, n1_best   # abstract wording
+        for k_, short in (("loro", "loro"), ("warm_out", "warm"), ("zc_out", "zc")):
+            v[f"n1_{short}_best"] = n1_best[k_]
+            v[f"n1_{short}_best_rmse"] = f(n1[k_]["methods"][n1_best[k_]]["mean_rmse_map"])
+            v[f"n1_{short}_M4_rank"] = str(n1[k_]["order_by_mean_rmse_map"].index("M4") + 1)
+        # prose claims of section 3 (cheap self-checks: a change in the JSON fails the render)
+        for k_ in KINDS:
+            for key in ("mean_rmse_map", "mean_abs_ire"):
+                assert rk[k_]["methods"]["M3"][key] > rk[k_]["methods"]["M2"][key], (k_, key)
+            assert all(rk[k_][o][0] != "M7" for o in
+                       ("order_by_mean_rmse_map", "order_by_mean_abs_ire", "order_by_rms_rmse_gl"))
+        assert all(rk["zc_out"][o][0] == "M2" for o in
+                   ("order_by_mean_rmse_map", "order_by_mean_abs_ire", "order_by_rms_rmse_gl"))
+        assert rk["zc_out"]["order_by_mean_rmse_map"][-1] == "M4"
+        assert {x["case"] for x in hy["H3c"]["M7"]["violations"]} <= {
+            c for c in (x["case"] for x in hy["H3c"]["M7"]["cases"]) if "_zc550_" in c}
         rows = []
         for kind in ("loro", "zc_out", "warm_out"):
             rows.append([kind, " < ".join(n1[kind]["order_by_mean_rmse_map"][:3]) + " …",
@@ -254,6 +272,32 @@ def values() -> dict[str, str]:
         am = hy["amendments"][0]
         v["am_frozen_h"] = f"{am['frozen_wall_limit_hours']:g}"
         v["am_new_h"] = f"{am['wall_limit_hours']:g}"
+    # ---- bootstrap intervals over runs (R17) ------------------------------------------------
+    bs = _load("bootstrap.json")
+    if bs:
+        v["boot_B"], v["boot_seed"] = str(bs["n_boot"]), str(bs["seed"])
+        v["boot_level"] = pct(bs["level"], 0)
+        for variant, pre in (("main", ""), ("n1", "n1_")):
+            for kind, d in bs["variants"][variant].items():
+                for mm, x in d.items():
+                    ci = lambda st, sc, nd: "–".join(  # noqa: E731
+                        f"{sc * y:.{nd}f}" for y in x[st]["ci95"])
+                    v[f"{pre}rmse_ci_{kind}_{mm}"] = ci("rmse_map", 1, 2)
+                    v[f"{pre}ire_ci_{kind}_{mm}"] = ci("abs_integrated_rel_error", 100, 1)
+                    v[f"{pre}gl_ci_{kind}_{mm}"] = ci("rmse_gl_rms", 1, 2)
+                    if hy and variant == "main" and kind in KINDS:   # same runs as the ranking
+                        r = hy["ranking"]["main"][kind]["methods"][mm]
+                        assert abs(r["mean_rmse_map"] - x["rmse_map"]["mean"]) < 1e-9
+                        assert abs(r["mean_abs_ire"] - x["abs_integrated_rel_error"]["mean"]) < 1e-9
+                        assert abs(r["rms_rmse_gl"] - x["rmse_gl_rms"]["mean"]) < 1e-9
+        mains = bs["variants"]["main"]
+        for kind in ("loro", "warm_out", "final", "zc_out"):           # wording of 3.1 and abstract
+            iv = [mains[kind][mm]["rmse_map"]["ci95"] for mm in ("M4", "M5", "M6", "M7")]
+            common = max(x[0] for x in iv) <= min(x[1] for x in iv)
+            assert common == (kind != "zc_out"), kind
+        z = mains["zc_out"]
+        assert z["M2"]["rmse_map"]["ci95"][1] < z["M4"]["rmse_map"]["ci95"][0]
+        assert all(z["M4"]["rmse_map"]["ci95"][0] > z[mm]["rmse_map"]["ci95"][1] for mm in ("M5", "M6", "M7"))
     # ---- cross-validation record --------------------------------------------------------------
     cv = _load("cv_results.json")
     if cv:

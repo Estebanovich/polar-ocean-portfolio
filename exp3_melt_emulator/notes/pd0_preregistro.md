@@ -149,3 +149,7 @@ Todo lo siguiente sale de las corridas de entrenamiento. Ninguna predicción toc
 
 - Se aplica con `run_protocol.py --cv --wall-limit-hours 20 --amendment "…"`. `figures/protocol_config.json` no se modifica (sha256 `56a9ffe5…`). La enmienda queda registrada en `cv_progress.log`, en cada unidad escrita bajo ella y en `figures/cv_results.json` (lista `amendments`).
 - Las 9 unidades M7 escritas antes de la enmienda (5 de la primera tanda y 4 en vuelo) se conservan y se reanudan. El orden de ejecución no cambia los resultados: cada unidad es un ajuste independiente y determinista.
+
+## Erratas
+
+- **2026-11-11, Decisión 5.** La premisa de la Decisión 5 era errónea: Favier et al. (2019), Ec. 4, sí lleva la constante al cuadrado, (ρ_sw c_po / ρ_i L_i)², igual que B22 Ec. 14 (comprobado en el PDF local, p. 2259; también la Ec. 5). La forma de M2, K c² |TF| TF, coincide entonces con F19 Ec. 4 y con B22 Ec. 14. El texto de la Decisión 5 se deja como se aprobó. Ningún resultado cambia, porque K absorbe la constante.
