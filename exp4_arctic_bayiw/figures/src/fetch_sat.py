@@ -1,0 +1,62 @@
+"""Fetch the satellite images of Van Mijenfjorden used in Figure 0 of Experiment 4 (UTM 33N, EPSG:32633).
+
+  vmf_s2_2023-07-05.jpg   Sentinel-2 L2A true colour (B04, B03, B02), 5 Jul 2023, cloud-free summer, no ice.
+  vmf_s2_2024-03-25.jpg   Sentinel-2 L2A true colour, 25 Mar 2024, landfast ice in the inner fjord, open water
+                          off Bellsund.
+
+Each image is a mosaic of the Sentinel-2 granules listed in SCENES (tiles T33XVG and T33XWG meet inside the
+fjord). Scene selection: STAC search (Planetary Computer, collection sentinel-2-l2a, bbox 14-17.5 E, 77.5-78 N,
+tile cloud cover < 25 %), keeping dates on which the mosaic covers the whole box; chosen by eye among the
+cleanest dates.
+
+Sources and licences:
+  - Contains modified Copernicus Sentinel data (2023, 2024), processed by ESA. Free, full and open access
+    under the Copernicus Sentinel data terms; credit "Copernicus Sentinel data".
+  - Rendered by the Microsoft Planetary Computer data API (https://planetarycomputer.microsoft.com), reprojected
+    to EPSG:32633 with a plain linear stretch of the surface-reflectance integers (same for the three bands).
+BBOX is xmin,ymin,xmax,ymax in metres (EPSG:32633) of 14-17.5 E, 77.5-78 N.
+Usage: fetch_sat.py   (writes into data_external/sat/; git-ignored, record hashes in data_external/SOURCES.md)
+"""
+import io
+import urllib.request
+from pathlib import Path
+
+OUT = Path(__file__).resolve().parents[2] / "data_external" / "sat"
+PC = "https://planetarycomputer.microsoft.com/api/data/v1/item/bbox"
+BBOX = (475839, 8602776, 560386, 8659607)       # 84.5 x 56.8 km
+SIZE = (1800, 1000)
+
+SCENES = {
+    "vmf_s2_2023-07-05.jpg": (5000, [
+        "S2B_MSIL2A_20230705T124709_R138_T33XWG_20240910T235031",
+        "S2B_MSIL2A_20230705T124709_R138_T33XVG_20240910T235031",
+        "S2A_MSIL2A_20230705T115651_R066_T33XWG_20240817T041720",
+        "S2A_MSIL2A_20230705T115651_R066_T33XVG_20240817T041720"]),
+    "vmf_s2_2024-03-25.jpg": (9000, [
+        "S2B_MSIL2A_20240325T122649_R052_T33XWG_20240325T164435",
+        "S2B_MSIL2A_20240325T122649_R052_T33XVG_20240325T163818",
+        "S2A_MSIL2A_20240325T113721_R123_T33XWG_20240325T160834"]),
+}
+
+
+def render(item, rescale):
+    url = (PC + "/%d,%d,%d,%d/%dx%d.png?collection=sentinel-2-l2a&item=%s&assets=B04&assets=B03&assets=B02"
+           "&rescale=0,%d&coord_crs=EPSG:32633&dst_crs=EPSG:32633&nodata=0" % (BBOX + SIZE + (item, rescale)))
+    from PIL import Image
+    with urllib.request.urlopen(url, timeout=180) as r:
+        return Image.open(io.BytesIO(r.read())).convert("RGBA")
+
+
+if __name__ == "__main__":
+    from PIL import Image
+    OUT.mkdir(parents=True, exist_ok=True)
+    for name, (rescale, items) in SCENES.items():
+        mosaic = Image.new("RGBA", SIZE, (0, 0, 0, 0))
+        for it in items:
+            mosaic = Image.alpha_composite(mosaic, render(it, rescale))
+        import numpy as np
+        a = np.asarray(mosaic.getchannel("A"))
+        assert (a > 0).mean() > 0.99, f"{name}: mosaic leaves part of the box empty"
+        im = mosaic.convert("RGB")
+        im.save(OUT / name, quality=90, optimize=True)
+        print("wrote", OUT / name, im.size)

@@ -465,3 +465,13 @@
   - corridas de ~10 días.
 
   Spec (§3.6, H4d) y plan actualizados. En `readinglist.md`: Large et al. 1994 y Pollard & Millard 1970, ambos ya en la biblioteca de la tesis.
+
+## 2026-11-11 (noche, 6) — Exp. 4, Task 0: datos externos, copia de la tesis y paquete
+
+- **IBCAO v5.2** (junio de 2026, CEDA/GEBCO; la versión vigente es 5.2, no 5.0). El mosaico y las 16 losas pesan 12 GB (> 2 GB), así que no se bajaron completos. Como los GeoTIFF de CEDA no están comprimidos y tienen una franja por fila, `scripts/fetch_ibcao_window.py` baja solo las filas de la ventana de Svalbard (2050 × 2600 celdas de 100 m, EPSG:3996) con peticiones HTTP por rango: profundidad, `sid` y `tid`. La tabla de fuentes (`ibcao-2026-source-data.csv`) se extrajo del zip de Bolin con el mismo método. Los bytes son los del original; el script reproduce los archivos bit a bit.
+- **Licencia IBCAO:** CEDA, Open Government Licence v3; Bolin Centre, ODC-By. Ambas permiten redistribuir con atribución; "no usar para navegación". Aun así, `data_external/` no se sube (regla del repositorio).
+- **Costa del NPI:** S100 Kartdata (SHP, 290 MB, sin registro), CC BY 4.0, con el texto de licencia que debe acompañar a las copias. Se extrajeron `S100_Land_f/l`.
+- **UNIS HD:** 1547 perfiles NetCDF dentro de 77.5–78.0°N y 13.5–17.5°E, de un total de 82 352 archivos (la base es por perfil, no por archivo grande); cada uno se verificó contra el sha256 de la API de NPI. Licencia CC BY 4.0; DOI 10.21334/unis-hydrography.
+- **Satélite:** dos mosaicos Sentinel-2 L2A (5 de julio de 2023, sin hielo; 25 de marzo de 2024, con hielo fijo en el fiordo interior y agua abierta frente a Bellsund) con `figures/src/fetch_sat.py`.
+- **Copia de la tesis:** `thesis_copy/` (archivos verbatim, comparados con `cmp`) más cuatro módulos auxiliares que importan los scripts de `Output_IWBay`. Ningún archivo supera 1 MB; los binarios de entrada no se copiaron.
+- `EXP4_RUNS` y `EXP4_BUILDS` en `pfcommon/paths.py`, con su prueba; `cases.yaml` es un esqueleto vacío.

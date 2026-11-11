@@ -12,3 +12,7 @@ runs/
 # Exp. 2 external data (documented in SOURCES.md)
 exp2_isomip_cavity/data_external/*
 !exp2_isomip_cavity/data_external/SOURCES.md
+
+# Exp. 4 external data (documented in SOURCES.md)
+exp4_arctic_bayiw/data_external/*
+!exp4_arctic_bayiw/data_external/SOURCES.md
