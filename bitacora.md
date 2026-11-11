@@ -444,3 +444,12 @@
 - Nueva Figura 0 en matplotlib, con el estilo y los colores de método de las Figuras 1–4: (a) corte real de ISOMIP+ por la línea central coloreado por un perfil rampa, y el mapa de derretimiento; (b) el plano (Tbot, z_c) con cada prueba rotulada en su sitio y la hipótesis que sirve; (c) los métodos en un eje física → datos y la factorización de M7 (curva × patrón = mapa); (d) H3c como "honesto" frente a "seguro y equivocado". Los mapas y curvas son una ilustración calculada con la geometría de entrada (melt = TF₊² × patrón), declarada en el pie; no es salida de ningún modelo.
 - Ya no usa VectorCraft: se borró `fig0_protocol.commands.json`; `reproduce.sh` redibuja la figura si existe la geometría de ISOMIP+. Pie de figura reescrito por panel. `readinglist.md`: Rougier 2014 y Wong 2010 (este último por verificar).
 - Pruebas: 663 pasan y 3 se omiten bajo pyocean; 160 pasan y 1 se omite bajo anemoi.
+
+## 2026-11-11 (noche, 4) — Exp. 4: revisión de literatura
+
+- Revisión estándar (10 búsquedas en Consensus más la de reconocimiento; 218 artículos únicos) sobre ondas cercanas a la inercial en el Ártico, generación costera, transmisión del viento a través del hielo, teoría a latitud alta y modelado. Nota en `exp4_arctic_bayiw/notes/rev_literatura.md`. Se agregaron 47 artículos a `readinglist.md`, sección Exp. 4, con DOI.
+- Esteban recordó que su tesis tiene una biblioteca grande (`~/Documents/TESIS_InternalWaves-2/Literatura/`, 268 `.md`). Se buscó después de Consensus: tiene 12 de los citados y 11 pertinentes más (Davidson 2001, Alford 2020a, Pollard 1970, Gill 1984…), pero nada del Ártico ni del hielo.
+- **Hueco principal:** la generación costera de ondas cercanas a la inercial está estudiada en latitudes medias (Kelly 2019; Kelly et al. 2024), pero en el Ártico solo apareció Carmack & Kulikov (1998), con ondas de Kelvin internas. Ningún estudio de una costa o bahía ártica con y sin hielo.
+- **Corrección propia:** en el checkpoint dije que a 75–80°N la seiche podría quedar por debajo de f. Con los periodos de la tesis (seiche 3.4–4.3 h; modo baroclínico 4.5–6.5 h; periodo inercial 25 h a 28.6°N y 12.2–12.4 h a 75–80°N), la seiche sigue por encima de f: las bandas se acercan, pero no se cruzan.
+- **Propuesta para el diseño:** separar hielo fijo y hielo libre. Las observaciones muestran que el hielo libre también puede generar ondas.
+- El Exp. 3 se fusionó en `main` (433ebde) y se subió a GitHub; el Exp. 4 sigue en la rama `exp4-arctic-bayiw`, creada desde `main`.

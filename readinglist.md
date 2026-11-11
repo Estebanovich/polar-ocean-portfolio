@@ -147,6 +147,55 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ★✔ | Dosser et al. (2016). Dynamics of the changing near-inertial internal wave field in the Arctic Ocean. *JPO* | https://doi.org/10.1175/JPO-D-15-0056.1 |
 | ✔ | Kawaguchi et al. (2019). Year-round observations of sea-ice drift and near-inertial internal waves in the Northwind Abyssal Plain. *Polar Science* | https://doi.org/10.1016/j.polar.2019.01.004 |
 | ✔ | Fang et al. (2026). Upper-ocean variability in the Amundsen Basin during early winter: insights from MOSAiC. *Elementa* (abierto; hielo amortiguando el viento) | https://doi.org/10.1525/elementa.2023.00095 |
+| 📁 ★ | Alford, MacKinnon, Simmons & Nash (2016). Near-inertial internal gravity waves in the ocean. *Annu. Rev. Mar. Sci.* 8 (revisión; ya en la biblioteca de la tesis) | https://doi.org/10.1146/annurev-marine-010814-015746 |
+| ⬜ ★ | Rippeth & Fine (2022). Turbulent mixing in a changing Arctic Ocean. *Oceanography* 35 (revisión, acceso abierto: plataformas frente a cuencas) | https://doi.org/10.5670/oceanog.2022.103 |
+| 📁 ★ | Kelly (2019). Coastally generated near-inertial waves. *JPO* (teoría de la generación costera) | https://doi.org/10.1175/JPO-D-18-0148.1 |
+| 📁 ★ | Kelly, Green et al. (2024). Direct observations of coastally generated near-inertial waves during a wind event. *JGR Oceans* (lago Superior; flujo forzado frente a flujo de onda) | https://doi.org/10.1029/2024JC020932 |
+| 📁 | Green, Kelly et al. (2025). Synoptic observations of near-inertial motions in an enclosed basin. *JGR Oceans* | https://doi.org/10.1029/2024JC021828 |
+| 📁 | Stokes, Kelly & Lucas (2025). Low-mode near-inertial wave generation. *JPO* | https://doi.org/10.1175/JPO-D-25-0050.1 |
+| 📁 | Chen, Chen & Xing (2017). A study on some basic features of inertial oscillations and near-inertial internal waves. *Ocean Sci.* 13:829 (cuenca 2D con seiches e inercia) | https://doi.org/10.5194/os-13-829-2017 |
+| 📁 | Kundu, Chao & McCreary (1983). Transient coastal currents and inertio-gravity waves. *Deep-Sea Res.* 30 | https://doi.org/10.1016/0198-0149(83)90061-4 |
+| ⬜ | Kundu (1984). Generation of coastal inertial oscillations by time-varying wind. *JPO* 14 | https://doi.org/10.1175/1520-0485(1984)014<1901:GOCIOB>2.0.CO;2 |
+| ⬜ | Davies & Xing (2002). Influence of coastal fronts on near-inertial internal waves. *GRL* | https://doi.org/10.1029/2002GL015904 |
+| ⬜ | Xing & Davies (2004). On the influence of a surface coastal front on near-inertial wind-induced internal wave generation. *JGR* | https://doi.org/10.1029/2003JC001794 |
+| ⬜ | Davies & Xing (2005). The effect of a bottom shelf front upon the generation and propagation of near-inertial internal waves in the coastal ocean. *JPO* | https://doi.org/10.1175/JPO2732.1 |
+| ⬜ | MacKinnon & Gregg (2005). Near-inertial waves on the New England shelf. *JPO* | https://doi.org/10.1175/JPO2822.1 |
+| ⬜ ★ | Carmack & Kulikov (1998). Wind-forced upwelling and internal Kelvin wave generation in Mackenzie Canyon, Beaufort Sea. *JGR* (único caso ártico costero encontrado) | https://doi.org/10.1029/98JC00113 |
+| ⬜ ★ | Martini, Simmons, Stoudt & Hutchings (2014). Near-inertial internal waves and sea ice in the Beaufort Sea. *JPO* | https://doi.org/10.1175/JPO-D-13-0160.1 |
+| ⬜ ★ | Guthrie & Morison (2021). Not just sea ice: other factors important to near-inertial wave generation in the Arctic Ocean. *GRL* | https://doi.org/10.1029/2020GL090508 |
+| ⬜ | Guthrie, Morison & Fer (2013). Revisiting internal waves and mixing in the Arctic Ocean. *JGR* | https://doi.org/10.1002/jgrc.20294 |
+| ⬜ | Fer (2014). Near-inertial mixing in the central Arctic Ocean. *JPO* | https://doi.org/10.1175/JPO-D-13-0133.1 |
+| ⬜ | Lincoln et al. (2016). Wind-driven mixing at intermediate depths in an ice-free Arctic Ocean. *GRL* | https://doi.org/10.1002/2016GL070454 |
+| ⬜ | Dosser, Chanona, Waterman et al. (2021). Changes in internal wave-driven mixing across the Arctic Ocean. *GRL* | https://doi.org/10.1029/2020GL091747 |
+| ⬜ | Fine & Cole (2022). Decadal observations of internal wave energy, shear, and mixing in the western Arctic Ocean. *JGR Oceans* | https://doi.org/10.1029/2021JC018056 |
+| ⬜ | Cole, Toole, Rainville & Lee (2018). Internal waves in the Arctic: influence of ice concentration, ice roughness, and surface layer stratification. *JGR Oceans* | https://doi.org/10.1029/2018JC014096 |
+| ⬜ | Pinkel (2005). Near-inertial wave propagation in the western Arctic. *JPO* | https://doi.org/10.1175/JPO2715.1 |
+| ⬜ ★ | McPhee (1978). A simulation of inertial oscillation in drifting pack ice. *Dyn. Atmos. Oceans* 2 | https://doi.org/10.1016/0377-0265(78)90005-2 |
+| ⬜ | Martin, Steele & Zhang (2014). Seasonality and long-term trend of Arctic Ocean surface stress in a model. *JGR* | https://doi.org/10.1002/2013JC009425 |
+| ⬜ | Martin, Tsamados, Schroeder & Feltham (2016). The impact of variable sea ice roughness on changes in Arctic Ocean surface stress. *JGR* | https://doi.org/10.1002/2015JC011186 |
+| ⬜ | Muilwijk et al. (2024). Future sea ice weakening amplifies wind-driven trends in surface stress and Arctic Ocean spin-up. *Nat. Commun.* | https://doi.org/10.1038/s41467-024-50874-0 |
+| ⬜ | Cole et al. (2017). Ice and ocean velocity in the Arctic marginal ice zone: ice roughness and momentum transfer. *Elementa* | https://doi.org/10.1525/elementa.241 |
+| ⬜ | Heorton et al. (2019). Retrieving sea ice drag coefficients and turning angles from in situ and satellite observations. *JGR Oceans* | https://doi.org/10.1029/2018JC014881 |
+| ⬜ | Inall et al. (2021). Landfast ice controls on turbulence in Antarctic coastal seas. *JGR Oceans* | https://doi.org/10.1029/2021JC017963 |
+| ⬜ | De Abreu & Timmermans (2026). Mixed-layer deepening and internal wave generation under sea ice in free drift. *JPO* | https://doi.org/10.1175/JPO-D-25-0165.1 |
+| ⬜ | Kawaguchi et al. (2024). Dependency of the drag coefficient on boundary layer stability beneath drifting sea ice in the central Arctic Ocean. *Sci. Rep.* | https://doi.org/10.1038/s41598-024-66124-8 |
+| ⬜ | Fer et al. (2022). Upper-ocean turbulence structure and ocean-ice drag coefficient estimates during the MOSAiC drift. *JGR Oceans* | https://doi.org/10.1029/2022JC018751 |
+| ⬜ ★ | Antenucci & Imberger (2001). Energetics of long internal gravity waves in large lakes. *Limnol. Oceanogr.* 46 (número de Burger; Kelvin y Poincaré) | https://doi.org/10.4319/lo.2001.46.7.1760 |
+| 📁 | Antenucci, Imberger & Saggio (2000). Seasonal evolution of the basin-scale internal wave field in a large stratified lake. *Limnol. Oceanogr.* 45 | https://doi.org/10.4319/lo.2000.45.7.1621 |
+| ⬜ | Shimizu & Imberger (2009). Damping mechanisms of internal waves in continuously stratified rotating basins. *JFM* | https://doi.org/10.1017/S0022112009008039 |
+| ⬜ | Ulloa, Winters, de la Fuente & Niño (2015). Degeneration of internal Kelvin waves in a continuous two-layer stratification. *JFM* | https://doi.org/10.1017/jfm.2015.311 |
+| ⬜ ★ | Hughes & Klymak (2019). Tidal conversion and dissipation at steep topography in a channel poleward of the critical latitude. *JPO* (ondas de Kelvin en canales árticos) | https://doi.org/10.1175/JPO-D-18-0132.1 |
+| ⬜ | Rippeth et al. (2017). Tidal conversion and mixing poleward of the critical latitude (an Arctic case study). *GRL* | https://doi.org/10.1002/2017GL075310 |
+| ⬜ | Vlasenko, Stashchuk, Hutter & Sabinin (2003). Nonlinear internal waves forced by tides near the critical latitude. *Deep-Sea Res. I* | https://doi.org/10.1016/S0967-0637(03)00018-9 |
+| ⬜ | Zemskova & Lerczak (2025). Internal tide generation in semi-enclosed ocean basins. *JPO* | https://doi.org/10.1175/JPO-D-24-0212.1 |
+| 📁 | Raja, Buijsman et al. (2022). Near-inertial wave energetics modulated by background flows in a global model simulation. *JPO* | https://doi.org/10.1175/JPO-D-21-0130.1 |
+| 📁 | Alford (2020). Global calculations of local and remote near-inertial-wave dissipation. *JPO* | https://doi.org/10.1175/JPO-D-20-0106.1 |
+| ⬜ | Voelker, Myers, Walter & Sutherland (2019). Generation of oceanic internal gravity waves by a cyclonic surface stress disturbance. *Dyn. Atmos. Oceans* | https://doi.org/10.1016/j.dynatmoce.2019.03.005 |
+| ⬜ | Olbers, Jurgenowski & Eden (2020). A wind-driven model of the ocean surface layer with wave radiation physics. *Ocean Dyn.* | https://doi.org/10.1007/s10236-020-01376-2 |
+| ⬜ | Bracamontes-Ramírez, Walter & Losch (2024). Near-inertial wave propagation in the deep Canadian Basin. *JGR Oceans* | https://doi.org/10.1029/2023JC020228 |
+| ⬜ | MacKinnon et al. (2017). Climate Process Team on internal wave-driven ocean mixing. *BAMS* | https://doi.org/10.1175/BAMS-D-16-0030.1 |
+
+📁 = ya está en la biblioteca de la tesis (`~/Documents/TESIS_InternalWaves-2/Literatura/`), no en `literatura/`. Detalle en `exp4_arctic_bayiw/notes/rev_literatura.md`.
 
 ## Exp. 5 (opcional) — Adjunto (Mazloff)
 
