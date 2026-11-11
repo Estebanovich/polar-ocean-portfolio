@@ -212,6 +212,7 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ⬜ | Klinck, O'Brien & Svendsen (1981). A simple model of fjord and coastal circulation interaction. *JPO* 11 | https://doi.org/10.1175/1520-0485(1981)011<1612:ASMOFA>2.0.CO;2 |
 | dato | Jakobsson et al. (2024). The International Bathymetric Chart of the Arctic Ocean Version 5.0. *Sci. Data* (malla de 100 m; revisar términos de uso de GEBCO antes de redistribuir) | https://repository.library.noaa.gov/view/noaa/66918 |
 | dato | UNIS Hydrographic Database (UNIS HD), perfiles CTD 75–83°N; la calibración no está revisada en todos los datos | https://b2find.eudat.eu/dataset/b3f1b0cb-9afb-5265-ab2e-bd8d6a586a31 |
+| dato | Norwegian Polar Institute, S100 Kartdata (línea de costa oficial de Svalbard, 1:100 000; licencia abierta [verificar términos]) | https://geodata.npolar.no |
 
 📁 = ya está en la biblioteca de la tesis (`~/Documents/TESIS_InternalWaves-2/Literatura/`), no en `literatura/`. Detalle en `exp4_arctic_bayiw/notes/rev_literatura.md`.
 
