@@ -139,3 +139,289 @@ def test_git_state_of_this_repo():
     st = rp.git_state()
     assert len(st["commit"]) == 40 and all(c in "0123456789abcdef" for c in st["commit"])
     assert isinstance(st["dirty_paths"], list)
+
+
+# --- Task 8: --cv and --final ------------------------------------------------------------
+import dataclasses  # noqa: E402
+
+import numpy as np  # noqa: E402
+
+from exp3_melt_emulator.metrics import integrated_rel_error, rmse_gl, rmse_map  # noqa: E402
+
+PROTO_CASES = {   # i: (Tbot, z_c, group); index 6 is the split == "test" run (synth: last index)
+    0: (-0.5, 250.0, "factorial"), 1: (0.0, 400.0, "factorial"), 2: (0.5, 550.0, "factorial"),
+    3: (1.5, 400.0, "factorial"), 4: (1.0, 300.0, "geometry"), 5: (0.0, 400.0, "reference"),
+    6: (2.0, 400.0, "factorial"),
+}
+
+
+def _proto_runs():
+    """7 synthetic runs giving non-empty loro (5), zc_out (3), warm_out, profile_test and
+    final folds; run 2 fails N1, run 5 is the reference, run 6 the split == "test" run."""
+    runs = synthetic_runs(n=7)
+    out = []
+    for i, r in enumerate(runs):
+        tb, zc, grp = PROTO_CASES[i]
+        out.append(dataclasses.replace(r, Tbot=tb, z_c=zc, group=grp,
+                                       split="reference" if grp == "reference" else r.split))
+    return out
+
+
+@pytest.fixture(scope="module")
+def proto(tmp_path_factory):
+    """Synthetic dataset + frozen config; EXP3_TEST_MODE=1 for the module (tiny methods)."""
+    d = tmp_path_factory.mktemp("proto")
+    runs = _proto_runs()
+    ds = d / "ds.npz"
+    write_npz(runs, ds)
+    sha = hashlib.sha256(ds.read_bytes()).hexdigest()
+    cfg = d / "protocol_config.json"
+    rp.freeze_config(cfg, dataset_path=ds, dataset_sha=sha, noise_json=None,
+                     git_state=lambda: dict(FAKE_GIT))
+    csha = hashlib.sha256(cfg.read_bytes()).hexdigest()
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv("EXP3_TEST_MODE", "1")
+        yield {"dir": d, "runs": runs, "ds": ds, "cfg": cfg, "csha": csha}
+
+
+def _cv(proto, root, **kw):
+    kw.setdefault("workers", 2)
+    return rp.run_cv(proto["cfg"], proto["csha"], units_dir=root / "units",
+                     progress_log=root / "progress.log", out=root / "cv_results.json",
+                     git_state=lambda: dict(FAKE_GIT), **kw)
+
+
+@pytest.fixture(scope="module")
+def cv_done(proto):
+    root = proto["dir"] / "cv"
+    status = _cv(proto, root)
+    return root, status
+
+
+def _expected_units(proto):
+    cfg = json.loads(proto["cfg"].read_text())
+    exp = []
+    for variant, folds in (("main", cfg["folds"]), ("n1", cfg["folds_sensitivity_n1"])):
+        for f in folds:
+            if f["kind"] == "final":
+                continue
+            for mid in sorted(cfg["methods"]):
+                if f["kind"] == "profile_test" and mid not in cfg["profile_test_methods"]:
+                    continue
+                exp.append((variant, f["name"], mid, tuple(f["test"])))
+    return exp
+
+
+def test_cv_results_schema(proto, cv_done):
+    root, status = cv_done
+    assert status["status"] == "complete"
+    res = json.loads((root / "cv_results.json").read_text())
+    assert res["config_sha256"] == proto["csha"]
+    assert res["dataset_sha256"] == hashlib.sha256(proto["ds"].read_bytes()).hexdigest()
+    assert res["test_overrides"] == rp.TEST_OVERRIDES
+    exp = _expected_units(proto)
+    want = {(v, f, m, c) for v, f, m, cases in exp for c in cases}
+    got = [(e["variant"], e["fold"], e["method"], e["case"]) for e in res["entries"]]
+    assert len(got) == len(set(got)) and set(got) == want          # one entry each
+    assert not any(f == "final" for _, f, _, _ in got)
+    test_cases = {r.case for r in proto["runs"] if r.split == "test"}
+    assert not {c for *_, c in got} & test_cases                   # never the final test runs
+    assert {u["unit"] for u in res["units"]} == {f"{v}__{f}__{m}" for v, f, m, _ in exp}
+    assert {"M4", "M5"}.isdisjoint({m for _, f, m, _ in got if f == "profile_test"})
+    runs = {r.case: r for r in proto["runs"]}
+    for e in res["entries"]:
+        mt = e["metrics"]
+        assert set(mt) >= {"rmse_map", "integrated_rel_error", "rmse_gl", "integrated_pred",
+                           "integrated_true"}
+        assert all(np.isfinite(v) for v in mt.values())
+        assert set(e["skill"]) == {"rmse_map", "rmse_gl", "abs_integrated_rel_error"}
+        assert e["n1_pass"] == runs[e["case"]].n1_pass
+        assert e["label"] == ("sensitivity" if e["variant"] == "n1" else "main")
+        if e["method"] == "M0":
+            assert all(v == 0.0 for v in e["skill"].values())
+        if e["method"] in ("M5", "M6", "M7"):
+            assert set(e["prob"]) == {"coverage_68", "coverage_95", "crps", "mean_sigma"}
+            assert 0 <= e["prob"]["coverage_68"] <= e["prob"]["coverage_95"] <= 1
+        else:
+            assert e["prob"] is None
+        if e["method"] in ("M6", "M7"):
+            mb = e["members"]
+            assert len(mb["integrated"]) == rp.TEST_OVERRIDES[e["method"]]["n_members"]
+            assert mb["integrated_mixture"] == pytest.approx(np.mean(mb["integrated"]))
+            assert mb["integrated_mixture"] == pytest.approx(mt["integrated_pred"])
+            assert mb["spread_rel"] == pytest.approx(
+                np.std(mb["integrated"]) / abs(mb["integrated_mixture"]))
+            assert mb["mean_aleatoric"] >= 0 and mb["mean_epistemic"] >= 0
+        else:
+            assert e["members"] is None
+    infos = {u["unit"]: u for u in res["units"]}
+    m7 = infos["main__loro_synth_0__M7"]["info"]
+    assert m7["tf_kind"] in ("local", "nonlocal") and "members" in m7
+    assert {"K", "n", "epochs_run", "hit_max_epochs"} <= set(m7["members"][0])
+    assert "gp" in infos["main__loro_synth_0__M5"]["info"]
+    assert infos["main__loro_synth_0__M4"]["info"]["degree"] in (1, 2)
+    u = infos["n1__loro_synth_0__M1"]
+    assert "synth_2" not in u["train"] and u["wall_s"] > 0
+
+
+def test_cv_metrics_recomputable(proto, cv_done):
+    """Spot check: the M1 entry equals metrics recomputed from an in-process fit."""
+    root, _ = cv_done
+    res = json.loads((root / "cv_results.json").read_text())
+    runs = {r.case: r for r in proto["runs"]}
+    e = next(e for e in res["entries"] if (e["variant"], e["fold"], e["method"])
+             == ("main", "zc_out_400", "M1") and e["case"] == "synth_3")
+    u = next(u for u in res["units"] if u["unit"] == "main__zc_out_400__M1")
+    m = REGISTRY["M1"]()
+    m.fit([runs[c] for c in u["train"]])
+    p = m.predict(runs["synth_3"])
+    assert e["metrics"]["rmse_map"] == pytest.approx(rmse_map(p, runs["synth_3"]), rel=1e-12)
+    assert e["metrics"]["rmse_gl"] == pytest.approx(rmse_gl(p, runs["synth_3"]), rel=1e-12)
+    assert e["metrics"]["integrated_rel_error"] == pytest.approx(
+        integrated_rel_error(p, runs["synth_3"]), rel=1e-12)
+
+
+def test_cv_progress_log(cv_done):
+    root, _ = cv_done
+    log = (root / "progress.log").read_text().splitlines()
+    done = [ln for ln in log if " DONE " in ln]
+    assert len(done) == len(list((root / "units").glob("*.json")))
+    assert all("wall" in ln for ln in done)
+    assert any("ESTIMATE" in ln for ln in log)
+    first = [ln for ln in done[:2]]
+    assert all("__M7 " in ln for ln in first)                    # M7 units scheduled first
+
+
+def test_resume_skips_completed_units(proto, cv_done):
+    root, _ = cv_done
+    units = sorted((root / "units").glob("*.json"))
+    before = {p.name: p.read_bytes() for p in units}
+    redo = root / "units" / "main__loro_synth_1__M2.json"
+    redo.unlink()
+    status = _cv(proto, root)
+    assert status["status"] == "complete" and status["ran"] == ["main__loro_synth_1__M2"]
+    after = {p.name: p.read_bytes() for p in (root / "units").glob("*.json")}
+    assert set(after) == set(before)
+    assert all(after[k] == v for k, v in before.items() if k != redo.name)
+    status = _cv(proto, root)
+    assert status["ran"] == []
+    assert not list((root / "units").glob("*.tmp*"))
+
+
+def test_resume_refuses_stale_unit(proto, tmp_path):
+    units = tmp_path / "units"
+    units.mkdir()
+    (units / "main__loro_synth_1__M2.json").write_text(json.dumps(
+        {"unit": "main__loro_synth_1__M2", "config_sha256": "f" * 64,
+         "test_overrides": rp.TEST_OVERRIDES}))
+    with pytest.raises(rp.ProtocolError, match="config"):
+        _cv(proto, tmp_path)
+
+
+def test_stop_rule_triggers(proto, tmp_path):
+    calls = []
+
+    def estimate(**kw):
+        calls.append(kw)
+        return {"estimate_h": 99.0}
+    status = _cv(proto, tmp_path, estimate_fn=estimate)
+    assert status["status"] == "stopped" and status["estimate"]["estimate_h"] == 99.0
+    assert len(calls) == 1 and len(calls[0]["completed"]) >= 2      # after the first batch
+    assert not (tmp_path / "cv_results.json").exists()
+    n = len(list((tmp_path / "units").glob("*.json")))
+    assert 2 <= n <= 3                                             # no new units after the check
+    log = (tmp_path / "progress.log").read_text()
+    assert "STOP" in log and "99.0" in log
+    # below the limit: runs on (resume from the stopped state)
+    status = _cv(proto, tmp_path, estimate_fn=lambda **kw: {"estimate_h": 1.0})
+    assert status["status"] == "complete"
+
+
+def test_default_estimate_lpt():
+    pend = [{"method": "M7", "n_train": 24}] * 4 + [{"method": "M1", "n_train": 24}]
+    done = [({"method": "M7", "n_train": 24}, 490.0)]                 # 10 s per inner fit
+    est = rp.estimate_wall(completed=done, in_flight=[({"method": "M7", "n_train": 24}, 100.0)],
+                           pending=pend, elapsed_s=500.0, workers=2)
+    # in flight: 390 s left; pending M7 490 s each, LPT on 2 workers -> 390+490+490 = 1370
+    assert est["estimate_h"] == pytest.approx((500.0 + 1370.0) / 3600, rel=1e-9)
+
+
+def test_config_mismatch_refuses(proto, tmp_path):
+    cfg = proto["cfg"]
+    with pytest.raises(rp.ProtocolError, match="sha256"):
+        rp.load_protocol(cfg, "0" * 64)
+    # an edited config whose sha is "expected" still fails if hparams differ from the code
+    rec = json.loads(cfg.read_text())
+    rec["methods"]["M6"]["patience"] = 1
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps(rec))
+    with pytest.raises(rp.ProtocolError, match="M6"):
+        rp.load_protocol(bad, hashlib.sha256(bad.read_bytes()).hexdigest())
+    # folds that differ from make_folds
+    rec = json.loads(cfg.read_text())
+    rec["folds"][0]["train"] = rec["folds"][0]["train"][:-1]
+    bad.write_text(json.dumps(rec))
+    with pytest.raises(rp.ProtocolError, match="folds"):
+        rp.load_protocol(bad, hashlib.sha256(bad.read_bytes()).hexdigest())
+    # dataset sha
+    rec = json.loads(cfg.read_text())
+    rec["dataset"]["sha256"] = "e" * 64
+    bad.write_text(json.dumps(rec))
+    with pytest.raises(ValueError, match="sha256"):
+        rp.load_protocol(bad, hashlib.sha256(bad.read_bytes()).hexdigest())
+    for fn in (rp.run_cv, rp.run_final):
+        with pytest.raises(rp.ProtocolError, match="sha256"):
+            fn(cfg, "0" * 64, git_state=lambda: dict(FAKE_GIT), **(
+                {"units_dir": tmp_path / "u", "progress_log": tmp_path / "l",
+                 "out": tmp_path / "o.json"} if fn is rp.run_cv else
+                {"out": tmp_path / "f.json", "maps_out": tmp_path / "m.npz",
+                 "marker": tmp_path / "started.json", "progress_log": tmp_path / "l"}))
+    assert not (tmp_path / "f.json").exists() and not (tmp_path / "started.json").exists()
+
+
+def test_cli_uses_frozen_sha(monkeypatch, tmp_path):
+    assert rp.CONFIG_SHA256 == "56a9ffe5b57fd69da0462e63cb79cb1cbc7538e8444946e9bde5101f9a462486"
+    seen = {}
+    monkeypatch.setattr(rp, "run_cv", lambda cfg, sha, **kw: seen.update(sha=sha) or
+                        {"status": "complete", "ran": []})
+    assert rp.main(["--cv"]) == 0 and seen["sha"] == rp.CONFIG_SHA256
+
+
+def test_test_mode_refused_on_real_dataset(monkeypatch):
+    from exp3_melt_emulator.data import DATASET_SHA256
+    runs = _proto_runs()
+    monkeypatch.setenv("EXP3_TEST_MODE", "1")
+    with pytest.raises(rp.ProtocolError, match="EXP3_TEST_MODE"):
+        rp.test_overrides({"dataset": {"sha256": DATASET_SHA256}}, runs)
+    real_like = [dataclasses.replace(r, case="ens_" + r.case) for r in runs]
+    with pytest.raises(rp.ProtocolError, match="EXP3_TEST_MODE"):
+        rp.test_overrides({"dataset": {"sha256": "a" * 64}}, real_like)
+    assert rp.test_overrides({"dataset": {"sha256": "a" * 64}}, runs) == rp.TEST_OVERRIDES
+    monkeypatch.delenv("EXP3_TEST_MODE")
+    assert rp.test_overrides({"dataset": {"sha256": "a" * 64}}, runs) == {}
+
+
+def test_final_refuses_second_run(proto, tmp_path):
+    kw = dict(out=tmp_path / "final_test.json", maps_out=tmp_path / "final_maps.npz",
+              marker=tmp_path / "final_started.json", progress_log=tmp_path / "final.log",
+              git_state=lambda: dict(FAKE_GIT), workers=2)
+    rec = rp.run_final(proto["cfg"], proto["csha"], **kw)
+    res = json.loads((tmp_path / "final_test.json").read_text())
+    assert res == json.loads(json.dumps(rec))
+    assert res["maps_sha256"] == hashlib.sha256((tmp_path / "final_maps.npz").read_bytes()).hexdigest()
+    got = {(e["method"], e["case"]) for e in res["entries"]}
+    assert got == {(m, "synth_6") for m in REGISTRY}
+    assert all(e["fold"] == "final" for e in res["entries"])
+    with np.load(tmp_path / "final_maps.npz", allow_pickle=False) as z:
+        assert "M7__synth_6__mean" in z.files and "M7__synth_6__sigma" in z.files
+        assert z["M7__synth_6__members_mu"].shape[0] == rp.TEST_OVERRIDES["M7"]["n_members"]
+        assert "M2__synth_0__mean_in_sample" in z.files
+    before = (tmp_path / "final_test.json").read_bytes()
+    with pytest.raises(FileExistsError):
+        rp.run_final(proto["cfg"], proto["csha"], **kw)
+    assert (tmp_path / "final_test.json").read_bytes() == before
+    # a started-but-unfinished run (marker present) also refuses
+    (tmp_path / "final_test.json").unlink()
+    with pytest.raises(rp.ProtocolError, match="started"):
+        rp.run_final(proto["cfg"], proto["csha"], **kw)
+    assert not (tmp_path / "final_test.json").exists()
