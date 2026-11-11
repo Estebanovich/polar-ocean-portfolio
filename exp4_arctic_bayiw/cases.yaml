@@ -64,6 +64,23 @@ configs:
       inner_buffer_cells: 3       # IBCAO inner-fjord volume: coastal land cells within 600 m of the inner sea
       seeds: {west: [465000, 8620000], east: [510000, 8632000]}   # Bellsund/shelf, inner fjord
       vallunden_point: [543500, 8648000]
+      # PD1 mask edits (applied after the NPI mask, before clean). Regions: polygon (EPSG:32633
+      # vertices; cells whose centre is inside) and/or seed (flood fill of the 4-connected cells).
+      # force_sea fills the IBCAO sea from the seed; force_land fills the current sea from the seed.
+      force_land:
+        # ruling R6: Vallunden closed by default. Polygon = the lagoon north of its mouth west of
+        # the sand spit (y >= 8646.6 km) and east of the spit (x >= 542.3 km, y >= 8644.2 km)
+        Vallunden: {seed: [543500, 8648000],
+                    polygon: [[539800, 8646600], [542300, 8646600], [542300, 8644200],
+                              [547500, 8644200], [547500, 8652500], [539800, 8652500]]}
+      force_sea:
+        # ruling R7: Van Keulenfjorden head, IBCAO sea under the old S100 glacier front; only
+        # cells with measured IBCAO data (TID 10-17) deeper than 2 model levels (3.0 m). The
+        # polygon stops at y = 8598 km (2 km north of the southern sponge band) so the fjord head
+        # does not reach the open boundary; IBCAO sea continues south of the box.
+        VanKeulen_head: {seed: [528400, 8600000], require_measured_tid: true, min_depth_cells: 2,
+                         polygon: [[523000, 8598000], [534000, 8598000], [534000, 8606000],
+                                   [523000, 8606000]]}
       # Controls (tolerances fixed before running the pipeline). Stoylen and Fer (2014), NPG 21:87,
       # read in the online version: Mariasundet 0.7 km wide (p. 96, Sect. 5); Akselsundet
       # cross-section similar to 20 m x 1300 m (p. 93, Sect. 4.2); deepest CTD section depth in the
@@ -92,10 +109,10 @@ configs:
       # the control itself stays failed in bathy_report.json)
       classifications:
         mariasundet_width_npi: >-
-          (d) reference not comparable as stated: Stoylen and Fer give one rounded width (0.7 km)
-          without its section; the NPI S100 coastline splits Mariasundet with a 0.35 km2 islet into
-          two passages of 0.50 and 0.48 km, and the shortest Akseloya-mainland line has 1.26 km of water
+          (a) metric definition, post hoc: the control measures the water on the shortest
+          Akseloya-mainland line across the 0.35 km2 islet (1.26 km), not the two NPI passages
+          (0.50 and 0.48 km); the larger passage (0.50 km) is 0.20 km narrower than 0.7 km
         mariasundet_width_grid: >-
-          (d) as mariasundet_width_npi; the grid itself reproduces the NPI section within 73 m
-          (1.33 km of wet cells on the line vs 1.26 km of NPI water)
+          (a) metric definition, post hoc, as mariasundet_width_npi; the grid reproduces the NPI
+          section within 73 m (1.33 km of wet cells on the line vs 1.26 km of NPI water)
 cases: {}

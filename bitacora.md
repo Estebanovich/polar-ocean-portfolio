@@ -492,3 +492,9 @@
 - Vallunden no se quitó: su boca tiene ≥ 3 celdas en la costa del NPI. Pero IBCAO no tiene su profundidad, así que en el modelo mide 3 m.
 - La cabeza de Van Keulenfjorden tiene 42 km² de mar en IBCAO bajo tierra del NPI (frente de glaciar antiguo en el S100), y esa área se pierde.
 - Todo queda en `notes/pd1_batimetria.md` y `figures/bathy_report.{json,png,pdf}`. El `bathyFile` (1.2 MB) no se versiona.
+- **Corrección de la revisión de la Task 1b.** Las ediciones de máscara del PD1 ahora se escriben en `cases.yaml` (`force_land` / `force_sea`: polígono en UTM, semilla de relleno o ambos; `force_sea` puede exigir dato medido y profundidad mayor que 2 niveles) y se cuentan en el JSON.
+  - Vallunden queda cerrada por omisión (R6, 453 celdas).
+  - En la cabeza de Van Keulenfjorden se abre el mar de IBCAO con dato medido de más de 3 m, hasta 2 km de la esponja sur (R7, 455 celdas, 18.2 km²).
+  - Banda de 0–10 m del fiordo interior: 49.5 km² en la malla frente a 41.8 km² en IBCAO. Volumen: +0.06 %. Dato interpolado: 50 %.
+  - La falla del ancho de Mariasundet se reclasificó como (a), definición de la métrica, *post hoc* (R8).
+  - `build` comprueba ahora que la esponja conserva ∂h/∂n = 0.
