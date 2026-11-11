@@ -1,0 +1,2131 @@
+{
+ "dataset": {
+  "path": "/Volumes/LaCie/portfolio_runs/exp2/exp3_dataset.npz",
+  "sha256": "3d2eceb18be2d21c785b175e5a569dd2edbadd0b5437d9aba16ac71ae8d6200f"
+ },
+ "git": {
+  "commit": "59c7ef368f7e20e8c105d851a6ad1ded9b17c660",
+  "dirty_paths": [
+   "exp3_melt_emulator/notes/pd0_preregistro.md"
+  ]
+ },
+ "folds": [
+  {
+   "name": "loro_ens_T-0.5_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.5_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.5_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.0_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.0_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.0_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.0_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.0_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.0_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.5_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.5_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.5_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.5_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.5_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.5_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.0_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.0_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.0_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.0_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.0_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.0_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.5_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.5_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.5_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.5_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.5_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.5_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.75_zc527_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.75_zc527_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.43_zc295_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.43_zc295_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.05_zc328_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.05_zc328_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.42_zc402_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.42_zc402_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.34_zc444_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.34_zc444_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.42_zc481_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.42_zc481_s1.2"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.02_zc291_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.02_zc291_s1.2"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.39_zc503_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.39_zc503_s1.2"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.97_zc386_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.97_zc386_s1.2"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.66_zc311_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2"
+   ],
+   "test": [
+    "ens_T0.66_zc311_s1.2"
+   ]
+  },
+  {
+   "name": "zc_out_250",
+   "kind": "zc_out",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ]
+  },
+  {
+   "name": "zc_out_400",
+   "kind": "zc_out",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T0.97_zc386_s1.2"
+   ]
+  },
+  {
+   "name": "zc_out_550",
+   "kind": "zc_out",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T-0.39_zc503_s1.2"
+   ]
+  },
+  {
+   "name": "warm_out",
+   "kind": "warm_out",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T1.42_zc481_s1.2"
+   ]
+  },
+  {
+   "name": "profile_test",
+   "kind": "profile_test",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ocean0_4km"
+   ]
+  },
+  {
+   "name": "final",
+   "kind": "final",
+   "train": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T-0.39_zc503_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T2.0_zc250_s1.0",
+    "ens_T2.0_zc400_s1.0",
+    "ens_T2.0_zc550_s1.0"
+   ]
+  }
+ ],
+ "folds_sensitivity_n1": [
+  {
+   "name": "loro_ens_T-0.5_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.5_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.5_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.0_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.0_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.0_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.0_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.0_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.0_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.5_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.5_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.5_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.5_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.5_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.5_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.0_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.0_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.0_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.0_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.0_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.0_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.5_zc250_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.5_zc250_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.5_zc400_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.5_zc400_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.5_zc550_s1.0",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.5_zc550_s1.0"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.75_zc527_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.75_zc527_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.43_zc295_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.43_zc295_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.05_zc328_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.05_zc328_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.42_zc402_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.42_zc402_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.34_zc444_s0.8",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.34_zc444_s0.8"
+   ]
+  },
+  {
+   "name": "loro_ens_T1.42_zc481_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.42_zc481_s1.2"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.02_zc291_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.02_zc291_s1.2"
+   ]
+  },
+  {
+   "name": "loro_ens_T-0.39_zc503_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.39_zc503_s1.2"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.97_zc386_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T0.97_zc386_s1.2"
+   ]
+  },
+  {
+   "name": "loro_ens_T0.66_zc311_s1.2",
+   "kind": "loro",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2"
+   ],
+   "test": [
+    "ens_T0.66_zc311_s1.2"
+   ]
+  },
+  {
+   "name": "zc_out_250",
+   "kind": "zc_out",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.97_zc386_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc250_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ]
+  },
+  {
+   "name": "zc_out_400",
+   "kind": "zc_out",
+   "train": [
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T-0.42_zc402_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T0.97_zc386_s1.2"
+   ]
+  },
+  {
+   "name": "zc_out_550",
+   "kind": "zc_out",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T-0.5_zc550_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T-0.39_zc503_s1.2"
+   ]
+  },
+  {
+   "name": "warm_out",
+   "kind": "warm_out",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T1.5_zc550_s1.0",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T1.42_zc481_s1.2"
+   ]
+  },
+  {
+   "name": "profile_test",
+   "kind": "profile_test",
+   "train": [
+    "ens_T-0.5_zc400_s1.0",
+    "ens_T0.0_zc250_s1.0",
+    "ens_T0.0_zc400_s1.0",
+    "ens_T0.0_zc550_s1.0",
+    "ens_T0.5_zc250_s1.0",
+    "ens_T0.5_zc400_s1.0",
+    "ens_T0.5_zc550_s1.0",
+    "ens_T1.0_zc250_s1.0",
+    "ens_T1.0_zc400_s1.0",
+    "ens_T1.0_zc550_s1.0",
+    "ens_T1.5_zc250_s1.0",
+    "ens_T1.5_zc400_s1.0",
+    "ens_T0.75_zc527_s0.8",
+    "ens_T1.43_zc295_s0.8",
+    "ens_T-0.05_zc328_s0.8",
+    "ens_T0.34_zc444_s0.8",
+    "ens_T1.42_zc481_s1.2",
+    "ens_T0.02_zc291_s1.2",
+    "ens_T0.97_zc386_s1.2",
+    "ens_T0.66_zc311_s1.2"
+   ],
+   "test": [
+    "ocean0_4km"
+   ]
+  }
+ ],
+ "n1_fail_cases": [
+  "ens_T-0.5_zc250_s1.0",
+  "ens_T-0.5_zc550_s1.0",
+  "ens_T1.5_zc550_s1.0",
+  "ens_T-0.42_zc402_s0.8",
+  "ens_T-0.39_zc503_s1.2"
+ ],
+ "profile_test_methods": [
+  "M0",
+  "M1",
+  "M2",
+  "M3",
+  "M6",
+  "M7"
+ ],
+ "methods": {
+  "M0": {
+   "free_parameters": 0,
+   "input_features": [],
+   "unseen_cells": "pooled training mean"
+  },
+  "M1": {
+   "free_parameters": 1,
+   "fit": "closed-form least squares, pooled over the training runs' shelf cells (uniform grid = area-weighted)",
+   "signed": true,
+   "input_features": [
+    "TF"
+   ],
+   "constants": {
+    "rho_sw": 1028.0,
+    "c_p": 3974.0,
+    "rho_i": 917.0,
+    "L_i": 334000.0,
+    "c": 0.013338444158574889
+   }
+  },
+  "M2": {
+   "free_parameters": 1,
+   "fit": "closed-form least squares, pooled over the training runs' shelf cells (uniform grid = area-weighted)",
+   "signed": true,
+   "input_features": [
+    "TF"
+   ],
+   "constants": {
+    "rho_sw": 1028.0,
+    "c_p": 3974.0,
+    "rho_i": 917.0,
+    "L_i": 334000.0,
+    "c": 0.013338444158574889
+   }
+  },
+  "M3": {
+   "free_parameters": 1,
+   "fit": "closed-form least squares, pooled over the training runs' shelf cells (uniform grid = area-weighted)",
+   "signed": true,
+   "input_features": [
+    "TF",
+    "TF_mean"
+   ],
+   "constants": {
+    "rho_sw": 1028.0,
+    "c_p": 3974.0,
+    "rho_i": 917.0,
+    "L_i": 334000.0,
+    "c": 0.013338444158574889
+   }
+  },
+  "M4": {
+   "input_features": [
+    "Tbot",
+    "z_c",
+    "s"
+   ],
+   "standardised": true,
+   "degrees": [
+    1,
+    2
+   ],
+   "selection": "inner leave-one-run-out over the fit's runs, mean rmse_map, ties -> linear",
+   "min_runs_for_selection": 3,
+   "unseen_cells": "pooled training mean"
+  },
+  "M5": {
+   "input_features": [
+    "Tbot",
+    "z_c",
+    "s"
+   ],
+   "standardised": true,
+   "var_fraction": 0.99,
+   "k_cap": "m - 1",
+   "kernel": "ConstantKernel * RBF(ARD) + WhiteKernel",
+   "const_init": 1.0,
+   "const_bounds": [
+    0.001,
+    1000.0
+   ],
+   "rbf_init": 1.0,
+   "rbf_bounds": [
+    0.01,
+    1000.0
+   ],
+   "white_init": 0.001,
+   "white_bounds": [
+    1e-08,
+    0.01
+   ],
+   "normalize_y": true,
+   "n_restarts": 5,
+   "random_state": 0,
+   "sigma": "EOF propagation of independent coefficient variances; truncation error not added"
+  },
+  "M6": {
+   "n_members": 5,
+   "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "hidden": [
+    32,
+    64,
+    32
+   ],
+   "max_epochs": 5000,
+   "patience": 250,
+   "lr": 0.001,
+   "batch_size": 512,
+   "split_seed": 0,
+   "threads": 1,
+   "optimiser": "Adam",
+   "var_floor": 1e-06,
+   "dtype": "float64",
+   "input_features": [
+    "draft",
+    "T",
+    "S",
+    "TF",
+    "TF_mean",
+    "draft_minus_zc",
+    "dist_gl",
+    "dist_front",
+    "slope",
+    "s"
+   ],
+   "n_val": 3,
+   "validation_rule": "per member (R10, R12): one run drawn at random at each of the Tbot levels [highest, levels[(L - 1) // 2], lowest] with np.random.default_rng([split_seed, member_seed]); fewer than n_val + 1 runs -> highest level only; validation runs excluded from gradients, standardiser, y_scale and K0",
+   "stopping": "mean rmse_map over the member's validation runs; stop after patience epochs without improvement; best weights restored",
+   "loss": "Gaussian NLL (Lakshminarayanan 2017 Eq. 1)",
+   "bagging": false,
+   "variance": "sigma^2 = softplus(second output) + var_floor"
+  },
+  "M7": {
+   "n_members": 5,
+   "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "hidden": [
+    32,
+    64,
+    32
+   ],
+   "max_epochs": 5000,
+   "patience": 250,
+   "lr": 0.001,
+   "batch_size": 512,
+   "split_seed": 0,
+   "threads": 1,
+   "optimiser": "Adam",
+   "var_floor": 1e-06,
+   "dtype": "float64",
+   "input_features": [
+    "draft",
+    "draft_minus_zc",
+    "dist_gl",
+    "dist_front",
+    "slope",
+    "s"
+   ],
+   "n_val": 3,
+   "validation_rule": "per member (R10, R12): one run drawn at random at each of the Tbot levels [highest, levels[(L - 1) // 2], lowest] with np.random.default_rng([split_seed, member_seed]); fewer than n_val + 1 runs -> highest level only; validation runs excluded from gradients, standardiser, y_scale and K0",
+   "stopping": "mean rmse_map over the member's validation runs; stop after patience epochs without improvement; best weights restored",
+   "loss": "Gaussian NLL (Lakshminarayanan 2017 Eq. 1)",
+   "bagging": false,
+   "variance": "sigma_m^2 = softplus(h0(x_g))^2 + (softplus(h1(x_g)) stopgrad(mu_m))^2 + var_floor (ruling R11; heads see x_g only)",
+   "tf_kind": "auto",
+   "tf_kind_folds": null,
+   "form": "m = K b^n g_theta(x_g); b = TF+ (local) or (TF+ |<TF>|)^(1/2) (nonlocal, R3); K, n trainable per member",
+   "n0": 2.0,
+   "K0_rule": "K0 = coef * c^2 of the closed-form M2 (local) or M3 (nonlocal) fit on the member's training runs",
+   "tf_kind_rule": "inner CV by run: tf_kind_folds groups (None = one per run) from np.random.default_rng(split_seed + 1).permutation; criterion mean rmse_map over held-out runs; tie -> local"
+  }
+ },
+ "thresholds": {
+  "gl_frac": 0.1,
+  "hypothesis_folds": "H3a-H3c use the main folds only; drop_n1 results are sensitivity",
+  "H3a": {
+   "cases": "final test (3 runs, Tbot = 2.0)",
+   "metric": "|integrated_rel_error| per run",
+   "rule": "mean over the 3 runs: M7 < M6, and M7 < M6 in >= 2 of the 3 runs",
+   "min_runs_better": 2,
+   "inconclusive_if": "|mean difference| < noise_floor.median_abs_integrated_rel_diff"
+  },
+  "H3b": {
+   "cases": "leave-one-run-out (25 main folds, not the drop_n1 sensitivity folds)",
+   "metric": "mean rmse_map over folds",
+   "rule": "mean_M7 <= max_ratio_M7_over_M6 * mean_M6",
+   "max_ratio_M7_over_M6": 1.1
+  },
+  "H3c": {
+   "cases": "zc_out + warm_out test runs + final test runs, for M6 and M7",
+   "spread": "std (ddof = 0) over the 5 members of the integrated melt / |integrated melt of the ensemble mean| (Ockenden et al. 2026)",
+   "rule": "no case with spread < spread_max AND |integrated_rel_error| > error_min",
+   "spread_max": 0.05,
+   "error_min": 0.2,
+   "ockenden_flag": 0.1,
+   "ockenden_report": "confusion table spread > 10 % vs |integrated_rel_error| > 20 %"
+  },
+  "noise_floor_rule": "a difference between methods smaller than the pooled noise RMS (rmse_map, rmse_gl) or than the median |N1 drift| (integrated_rel_error) is not interpreted",
+  "ranking": "reported, not hypothesised",
+  "stop_rule": "--cv: if the wall-clock estimate (<= 5 concurrent processes, 1 thread each, measured after the first batch of folds) exceeds 8 h, stop and report",
+  "stop_rule_note": "limit raised from the plan's 6 h to 8 h by Esteban (2026-11-10), before any protocol run, because full-LORO tf_kind selection puts the estimate at about 6 h"
+ },
+ "noise_floor": {
+  "json": "/Users/estebancruz/Phd_project/portfolio/exp3_melt_emulator/figures/noise_floor.json",
+  "json_sha256": "6c68f30c6e81828622563d165acf0b59be197dd5f6f843e47121a84b52b2628b",
+  "npz_sha256": "2146fc7250bfb93d7f6741046c638974506d94ae2958af047a4b1998953cd035",
+  "pooled_median_rms": 0.15746153362418314,
+  "median_abs_integrated_rel_diff": 0.012952615332095534
+ }
+}

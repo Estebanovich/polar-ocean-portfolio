@@ -364,3 +364,83 @@
 - **§1 reescrita al estilo de artículo** (sin subsecciones): lo que está en juego (Rignot et al. 2013; Holland et al. 2008) → el CDW y la termoclina (De Rydt 2014, Rintoul 2016, Nakayama 2023, Jenkins 2018, Park 2024) → recorrido de la Figura 0c (procesos 1–6) → lo conocido y el hueco en sensibilidad (Holland 2008, Favier 2019, Burgard 2022, De Rydt 2014, Hattermann 2014) y en el destino del agua de deshielo (Sheehan 2023) → ISOMIP+ y Figura 0d (proceso 7) → "aquí" con H1 y H2 neutrales. Se quitó la cita a la página ARIES; §1.2 → §1 en dos referencias cruzadas. Cinco referencias nuevas (Consensus, verificadas en el resumen o en `literatura/`); todos los resultados de las búsquedas van a `readinglist.md`.
 - **Figura 0a:** los puntos de Pine Island y Thwaites coinciden con las entradas US-ACAN del SCAR Composite Gazetteer (placenames.aq); se rotula la segunda zona de agua abierta como Amundsen Sea Polynya (73.0–74.2° S, 110–118° O, al norte del Dotson; Jenkins et al. 2018).
 - **Figura 0d:** el rótulo de la pared y = 80 km apunta ahora a la cara de la pared en el océano abierto; el hielo apoyado se dibuja recortado a 200 m sobre el nivel del mar (encuadre de cámara sin cambio), anotado en la figura y en el pie.
+
+## 2026-11-10 (noche, 3) — Merge del Exp. 2, correos y revisión de literatura del Exp. 3
+
+- **Merge del Exp. 2 en `main` y push** (ab87c33), con la aprobación de Esteban (PD3). Se verificó que el link `tree/main/exp2_isomip_cavity` responde.
+- **Correos a Nakayama y Sheehan** actualizados con el Exp. 2, fuera del repo. Sheehan et al. (2023) se leyó completo: la frase citada está en sus *Key Points*. Esteban enviará los correos después del Exp. 3.
+- **Revisión de literatura del Exp. 3** (`exp3_melt_emulator/notes/rev_literatura.md`): 11 búsquedas en Consensus, ~153 artículos únicos, 30 citados.
+- **Hallazgo principal:** DeepMelt-GL (Ockenden et al. 2026) ya publicó el ensamble de redes como indicador de confianza y la sensibilidad fuera de la distribución de entrenamiento. El Exp. 3 lo reproduce y lo cita, no lo reclama.
+- **Aporte propuesto:**
+  - la cuadrática local frente a la no local en un caso donde la cuadrática falla de forma conocida (H1 del Exp. 2);
+  - una comparación con líneas base simples: regresión lineal, proceso gaussiano y las dos cuadráticas, siguiendo a Lütjens et al. 2024 y a Myren & Lawrence 2021.
+- `readinglist.md` con 18 entradas nuevas en la sección del Exp. 3.
+
+## 2026-11-11 — Exp. 3: validación cruzada y prueba final (evaluada una sola vez)
+
+- **Validación cruzada:**
+  - Comando: `run_protocol.py --cv --wall-limit-hours 20 --amendment "Enmienda 1 del PD0 …"` (entorno anemoi, 5 procesos, 1 hilo cada uno).
+  - El primer intento (19:20 del 10-nov) se detuvo a las 21:04 por la regla congelada de 8 h, con una proyección de 14.1 h y 9 unidades escritas.
+  - Esteban aprobó la Enmienda 1: el presupuesto de reloj pasa a 20 h y el protocolo científico no cambia.
+  - Se relanzó a las 22:06 y terminó a las 09:14 del 11-nov: 476/476 unidades, 892 entradas, 40 100 s en esta sesión.
+  - Resultados en `cv_results.json` (4b020d0). Las 9 unidades anteriores a la enmienda no llevan la clave `amendment`; el registro de la enmienda está en el nivel superior del JSON.
+- **Revisión antes de la prueba final:** había un hallazgo importante: una caída durante `--final` habría gastado la prueba sin dejar registro. Se corrigió en 4b6e3a7:
+  - cualquier falla queda escrita en el marcador;
+  - `--resume-after-crash` solo se acepta después de una falla registrada;
+  - todos los intentos aparecen en `final_test.json`.
+  - La re-revisión no dejó hallazgos.
+- **Prueba final:**
+  - Comando: `run_protocol.py --final`, intento 1, de 09:42 a 10:33, 3061 s (M7 tomó 3052 s).
+  - Se entrenó con las 25 corridas y se predijeron las 3 corridas con Tbot = 2.0.
+  - Resultado en `final_test.json` (9d79dae). Mapas en LaCie (`final_maps.npz`, sha 20ada7e54cbc).
+- La evaluación formal de H3a–H3c y las figuras van en la Tarea 9.
+
+## 2026-11-11 — Exp. 3: diagnóstico post hoc de `profile_test` (M7 en `ocean0_4km`)
+
+- **Pregunta:** si el +413 % de M7 en `ocean0_4km` es un error nuestro o un comportamiento fuera de distribución. Nota: `exp3_melt_emulator/notes/diag_profile_test.md`; números: `figures/profile_test_diag.json`; script: `analysis/profile_test_diag.py`.
+- **Comprobaciones de entrada:** el perfil, el TF, el `draft`, la máscara y las unidades coinciden exactamente. El reajuste de M7 reproduce bit a bit los integrados de la unidad. **No se encontró ningún error.**
+- **Mecanismo:**
+  - el 58 % de las celdas de Ocean0 tiene un TF mayor que cualquier TF del entrenamiento a la misma distancia de z_c, porque d = 720 frente a 300 m;
+  - en esas celdas, g_θ ≈ 4, cuando haría falta ≈ 0.14;
+  - el 84 % del exceso integrado está en ellas, y por debajo de z_c − 50 m el error integrado por banda es de −6 % a +1 %.
+- **Clasificación:** (c) elección del método, con un componente de (b). No cambia ningún resultado preregistrado.
+
+## 2026-11-11 — Exp. 3: README, `reproduce.sh` y documentación general (Tarea 10)
+
+- **README del Exp. 3** en formato IMRaD, generado por `scripts/render_readme.py` desde `README.template.md` y los JSON de `figures/` (mismo mecanismo que el Exp. 2). Una prueba nueva (`test_every_number_from_json`) falla si la plantilla tiene un dígito fuera de los marcadores, salvo etiquetas (M0–M7, H3a–c, Ec., §, Figura), años de citas y dos constantes de diseño del Exp. 2 (4 km, d = 300 m). `--check` sale con 0.
+- **Resultado principal, como estaba preregistrado:** ganan los métodos simples. Por `rmse_map`, M4 (regresión por celda) gana en `loro`, `warm_out` y la prueba final, y M2 en `zc_out`, donde M4 es el peor. Por \|error integrado\|, M6 gana en `loro`, `warm_out` y la final. H3a FALLA, H3b PASA, H3c PASA para M6 y FALLA para M7 (2 casos). DeepMelt-GL se cita como el resultado que se replica; no se dice "el primero".
+- **Matices escritos en el README:** el diagnóstico post hoc de `profile_test` (M7 +413 %, M2 −4.8 % con signo, M6 +53 %; M7, como M4/M5, hereda d = 300 m por `draft_minus_zc`); las advertencias de la Figura 3c (REF y +1 dentro de la muestra, DA sobre (+1, +2) como extensión de LB25 Ec. 3, el punto de M4 a z_c = 550 mal condicionado, umbrales de despliegue post hoc); los ajustes de potencia de (b) como post hoc respecto al Exp. 2; la sección de divulgación del PD0, la Enmienda 1 y la prueba final evaluada una vez. La sensibilidad sin las corridas N1 cambia el orden por mapa dentro del rango (M4 pierde la ventaja): se reporta como tal.
+- **Hallazgos al redactar:** (1) Favier et al. 2019 Ec. 4 sí lleva (ρ_sw c_p/ρ_i L_i)² según el PDF (p. 2259), contra lo que dice la Decisión 5 del PD0; el README solo atribuye la forma de M2 a Burgard 2022 Ec. 14 y no afirma nada sobre la potencia de c en Favier. Pendiente de que Esteban lo revise; el resultado no cambia porque K absorbe la constante. (2) El PD0 pedía intervalos *bootstrap* sobre las corridas y no se calcularon: se declara como limitación. (3) Lütjens et al. es de 2025 (JAMES 17), no 2024: corregido en el README y en `readinglist.md`.
+- **`reproduce.sh`:** `--quick` regenera `hypotheses.json`, las Figuras 1–4 y el README desde los JSON (con LaCie montado los JSON y PNG salen idénticos byte a byte; los PDF solo cambian la fecha de creación); el modo completo recalcula el piso de ruido en un archivo aparte y lo compara, corre `--cv` con la Enmienda 1 y el diagnóstico post hoc, y nunca `--final`; comprueba al final que `final_test.json` y el marcador no cambiaron.
+- **Otros:** `pytest_anemoi.sh` añade la ruta por defecto también cuando solo se pasan opciones (`-q`); `RUNNING.md` documenta el entorno anemoi, el shim de pytest, los modos de `run_protocol.py` y `reproduce.sh`; el README general tiene la entrada del Exp. 3; `readinglist.md` con Berdahl et al. 2021 (*The Cryosphere* 15:2683, DOI verificado en la copia local).
+- Pruebas: 145 pasan y 1 se omite bajo anemoi; 648 pasan y 3 se omiten bajo pyocean.
+
+## 2026-11-11 (tarde) — Exp. 3: correcciones del README, intervalos *bootstrap* y errata de Favier (ronda 1 de la Tarea 10)
+
+- **Intervalos *bootstrap* (R17).** Estaban preregistrados (PD0, "Métricas") y no se habían calculado. `analysis/bootstrap.py` remuestrea las corridas de prueba con reemplazo, sin reajustar nada, con los mismos índices para todos los métodos: B = 10 000 y semilla 0 (elección del analista, hecha al analizar, porque el PD0 no los fijaba). Resultado en `figures/bootstrap.json`; intervalo percentil del 95 % de la media por método de `rmse_map`, \|error integrado\| y `rmse_gl`, por tipo de pliegue y variante. En `loro`, `warm_out` y la final los intervalos de M4–M7 se solapan; solo en `zc_out` el de M2 queda entero por debajo del de M4. Los de la final (3 corridas) son indicativos. H3a–H3c no cambian: se definen sobre medias.
+- **Matiz N1 en el resumen, la conclusión 1, §4.1 y el README general:** sin las 5 corridas N1, M4 pierde la ventaja (en `loro` gana M6, en `warm_out` M5).
+- **`reproduce.sh`, modo completo:** `--cv` y el diagnóstico de `profile_test` reescriben `cv_results.json` y `profile_test_diag.json` con metadatos de sesión nuevos (el README habría dicho "0.0 h"). Ahora `scripts/rerun_compare_restore.sh` respalda el archivo, re-ejecuta, compara con `analysis/compare_records.py` (ignorando tiempos) y restaura el registro versionado. Con pruebas sintéticas.
+- **Errata R16:** Favier 2019 Ec. 4 sí lleva (ρ_sw c_po/ρ_i L_i)² (PDF local, p. 2259). El README cita M2 como F19 Ec. 4 = B22 Ec. 14; el PD0 tiene una sección "Erratas" con la línea fechada (la Decisión 5 no se reescribe). El docstring de `QuadLocal` ya era consistente.
+- **Menores:** §2.6 completa (ajustes dentro de la muestra, n y K de M7, H1 del Exp. 2); orden de `zc_out` rotulado; "sin override" precisado (`--resume-after-crash` tras una falla registrada); tope k ≤ m − 1 de M5 y Berdahl 2021 §2.3 citado por el *nugget*; `pytest_anemoi.sh` respeta `PYOCEAN`/`ANEMOI`; `-h` de `reproduce.sh`; más `assert` sobre las frases del README; Lütjens 2025 en `rev_literatura.md`; marcas ✅ de `readinglist.md` para los PDF ya en `literatura/`.
+
+## 2026-11-11 (noche) — Exp. 3: revisión final de la rama; afirmaciones ajustadas a lo resuelto (R18)
+
+- **Diferencias pareadas (post hoc, R18).** `bootstrap.py` añade a `bootstrap.json` la clave `paired_differences_post_hoc`: la diferencia entre métodos sobre las mismas corridas remuestreadas (B = 10 000, semilla 0), si su intervalo excluye 0 y si supera el piso de ruido (leído de `noise_floor.json`). Los intervalos marginales no cambian (mismo flujo aleatorio, comprobado).
+- **Lo que queda resuelto:** en `zc_out` M2 es el mejor por las tres métricas y M4 es peor que el mapa medio; dentro del rango, ninguno de M2, M5, M6 o M7 se separa de M4 (que tiene la media más baja), aunque las dos redes sí son mejores que M2; ninguna red es mejor que M5 en ningún conjunto; M6 lidera el melt integrado en `loro` (empata con M2 sin las corridas N1); en la final (indicativo, 3 corridas) M4, M5 y M6 son mejores que M7 y que M1–M3. El resumen, §3.1, las conclusiones y el README general se reescribieron con esto; "ganan los métodos simples" ya no se dice sin matiz.
+- **Métricas preregistradas que faltaban:** cobertura al 68/95 %, CRPS y destreza por método y tipo de pliegue (`analysis/probabilistic.py`, `figures/probabilistic.json`; tablas 2 y 6). M7 tiene intervalos demasiado estrechos fuera de rango (cobertura del 95 % de 0.41 en `warm_out`).
+- **Ocean0 y M6:** la dispersión de M6 (9.3 %) quedó bajo el umbral de 10 % con un error de +53 %; ya no se generaliza "la dispersión avisó de sus errores".
+- **Otros:** "fijadas antes de evaluar en las corridas de prueba" en vez de "antes de cualquier ajuste"; los pisos de `hypotheses.py` se leen de `noise_floor.json` (redondeados como en el PD0; `hypotheses.json` idéntico byte a byte); conteo de épocas (600 entrenamientos de miembros) y reloj de la validación cruzada precisados; divulgación de los errores internos de `tf_kind` impresos para 5 unidades; d²M/dT² en la tabla de Lambert & Burgard; secciones 3.3/3.4 intercambiadas para que la Figura 3 vaya antes que la 4; `reproduce.sh` avisa cuando el modo completo no reajusta nada y usa `caffeinate` solo si existe.
+
+## 2026-11-11 (noche, 2) — Exp. 3: Figura 0 rehecha
+
+- Esteban no quedó conforme con la Figura 0 (una tabla de texto en cuatro cajas). Se rehízo con VectorCraft como una guía que se lee sola, en el estilo de la Figura 0 del Exp. 2: (1) qué hace un emulador: perfil de temperatura (Tbot, z_c) y corte de la plataforma (calado × s) → MITgcm (horas) o emulador (fracción de segundo) → mapa de derretimiento, comparados con las métricas de Burgard 2022; (2) dónde se prueba cada método: el plano (Tbot, z_c) con el rango de entrenamiento sombreado y cada prueba explicada en palabras, separando "dentro del rango" (loro) de "extrapolación" (zc_out, warm_out, profile_test, final); (3) los ocho métodos en un eje física → datos y la idea del híbrido M7 (la ley de potencia fija cuánto derrite y sigue a aguas más cálidas; la red solo ve geometría y fija dónde); (4) las tres preguntas preregistradas como tarjetas, con un dibujo de "ensamble honesto" frente a "seguro y equivocado" para H3c.
+- Sin resultados del Exp. 3: mapas, curvas y miembros del ensamble son bocetos; el contorno de la plataforma es la línea de apoyo de ISOMIP+ (`isomip_outline.json` del Exp. 2). Pie de figura reescrito panel por panel; los números del pie vienen de los JSON.
+- Esteban ya había escrito a Nakayama y Sheehan antes del Exp. 3; no hay correo pendiente para ellos.
+- Pruebas: 663 pasan y 3 se omiten bajo pyocean; 160 pasan y 1 se omite bajo anemoi.
+
+## 2026-11-11 (noche, 3) — Exp. 3: Figura 0 rehecha otra vez, con referencias de diseño
+
+- Esteban: la versión de tarjetas "se ve muy IA". Se revisaron las figuras 1 de Rosier 2023, Burgard 2023, Lütjens 2025, Reese 2018, Lambert & Burgard 2025 y Ockenden 2026 (copias locales), y Rougier et al. 2014 ("Ten simple rules for better figures"). Lo común: fondo blanco sin cajas ni texturas, letras de panel (a)–(d), etiquetas directas sobre los elementos en vez de listas, dibujos con datos reales o con un modelo de juguete (Lütjens Fig. 1), pocos colores con significado.
+- Nueva Figura 0 en matplotlib, con el estilo y los colores de método de las Figuras 1–4: (a) corte real de ISOMIP+ por la línea central coloreado por un perfil rampa, y el mapa de derretimiento; (b) el plano (Tbot, z_c) con cada prueba rotulada en su sitio y la hipótesis que sirve; (c) los métodos en un eje física → datos y la factorización de M7 (curva × patrón = mapa); (d) H3c como "honesto" frente a "seguro y equivocado". Los mapas y curvas son una ilustración calculada con la geometría de entrada (melt = TF₊² × patrón), declarada en el pie; no es salida de ningún modelo.
+- Ya no usa VectorCraft: se borró `fig0_protocol.commands.json`; `reproduce.sh` redibuja la figura si existe la geometría de ISOMIP+. Pie de figura reescrito por panel. `readinglist.md`: Rougier 2014 y Wong 2010 (este último por verificar).
+- Pruebas: 663 pasan y 3 se omiten bajo pyocean; 160 pasan y 1 se omite bajo anemoi.
