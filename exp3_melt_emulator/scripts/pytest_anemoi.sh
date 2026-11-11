@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Run pytest under the anemoi interpreter, which has no pytest installed.
 # A throw-away shim directory symlinks the pure-Python pytest stack from the
-# pyocean env; nothing is installed. Default target: exp3_melt_emulator.
+# pyocean env; nothing is installed. Default target: exp3_melt_emulator, added
+# whenever no path is given (also when only options are given, e.g. -q).
 set -euo pipefail
 
 PYOCEAN=/opt/anaconda3/envs/pyocean/bin/python
@@ -16,7 +17,16 @@ for name in pytest _pytest pluggy iniconfig py.py; do
 done
 
 cd "$(dirname "$0")/../.."
-if [ "$#" -eq 0 ]; then
-    set -- exp3_melt_emulator
+# Add the default target unless a path (file, directory or node id file::test) is given;
+# option values such as "-k expr" are not mistaken for paths because they do not exist.
+has_path=0
+for arg in "$@"; do
+    case "$arg" in
+        -*) ;;
+        *) [ -e "${arg%%::*}" ] && has_path=1 ;;
+    esac
+done
+if [ "$has_path" -eq 0 ]; then
+    set -- "$@" exp3_melt_emulator
 fi
 PYTHONPATH="$SHIM" "$ANEMOI" -m pytest -p no:cacheprovider "$@"
