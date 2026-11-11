@@ -194,7 +194,7 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ⬜ | Olbers, Jurgenowski & Eden (2020). A wind-driven model of the ocean surface layer with wave radiation physics. *Ocean Dyn.* | https://doi.org/10.1007/s10236-020-01376-2 |
 | ⬜ | Bracamontes-Ramírez, Walter & Losch (2024). Near-inertial wave propagation in the deep Canadian Basin. *JGR Oceans* | https://doi.org/10.1029/2023JC020228 |
 | ⬜ | MacKinnon et al. (2017). Climate Process Team on internal wave-driven ocean mixing. *BAMS* | https://doi.org/10.1175/BAMS-D-16-0030.1 |
-| ⬜ ★ | Støylen & Fer (2014). Tidally induced internal motion in an Arctic fjord. *Nonlin. Processes Geophys.* 21:87 (Van Mijenfjorden con topografía real; ondas de Kelvin internas forzadas por marea; acceso abierto) | https://doi.org/10.5194/npg-21-87-2014 |
+| ⬜ ★ | Støylen & Fer (2014). Tidally induced internal motion in an Arctic fjord. *Nonlin. Processes Geophys.* 21:87 (Van Mijenfjorden con topografía real; ondas de Kelvin internas forzadas por marea; acceso abierto; leído en línea para la Task 1b, valores en `exp4_arctic_bayiw/notes/pd1_batimetria.md`) | https://doi.org/10.5194/npg-21-87-2014 |
 | ⬜ ★ | Skarðhamar & Svendsen (2010). Short-term hydrographic variability in a stratified Arctic fjord. *Geol. Soc. Spec. Publ.* 344 (Van Mijenfjorden responde al viento en horas; rotación dominante) | https://doi.org/10.1144/SP344.5 |
 | ⬜ ★ | Høyland (2009). Ice thickness, growth and salinity in Van Mijenfjorden, Svalbard. *Polar Research* 28 (hielo fijo 0.7–1.3 m; en 2006 sin hielo fijo en la cuenca exterior) | https://doi.org/10.1111/j.1751-8369.2009.00133.x |
 | ⬜ | Morozov & Marchenko (2012). Short-period internal waves in an Arctic fjord (Spitsbergen). *Izv. Atmos. Ocean. Phys.* 48 (con hielo, el viento no excita las ondas internas) | https://doi.org/10.1134/S0001433812040123 |
@@ -213,6 +213,7 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | dato | Jakobsson et al. (2024). The International Bathymetric Chart of the Arctic Ocean Version 5.0. *Sci. Data* (malla de 100 m; revisar términos de uso de GEBCO antes de redistribuir) | https://repository.library.noaa.gov/view/noaa/66918 |
 | dato | UNIS Hydrographic Database (UNIS HD), perfiles CTD 75–83°N; la calibración no está revisada en todos los datos | https://b2find.eudat.eu/dataset/b3f1b0cb-9afb-5265-ab2e-bd8d6a586a31 |
 | dato | Norwegian Polar Institute, S100 Kartdata (línea de costa oficial de Svalbard, 1:100 000; licencia abierta [verificar términos]) | https://geodata.npolar.no |
+| dato | GEBCO, tabla de códigos TID (tipo de dato por celda: 10–17 medido, 40–46 indirecto, 70–72 desconocido); IBCAO usa además 47 y 100 [verificar] | https://www.gebco.net/gebco-tid-grid |
 | 📁 ★ | Large, McWilliams & Doney (1994). Oceanic vertical mixing: a review and a model with a nonlocal boundary layer parameterization. *Rev. Geophys.* 32 (KPP; cierre del Exp. 4, propuesto en la discusión de la tesis) | https://doi.org/10.1029/94RG01872 |
 | 📁 | Pollard & Millard (1970). Comparison between observed and simulated wind-generated inertial oscillations. *Deep-Sea Res.* 17 (viento como fuerza de cuerpo en la capa de mezcla; alternativa propuesta en la tesis) | https://doi.org/10.1016/0011-7471(70)90043-4 |
 

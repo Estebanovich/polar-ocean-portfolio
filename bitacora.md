@@ -475,3 +475,20 @@
 - **Satélite:** dos mosaicos Sentinel-2 L2A (5 de julio de 2023, sin hielo; 25 de marzo de 2024, con hielo fijo en el fiordo interior y agua abierta frente a Bellsund) con `figures/src/fetch_sat.py`.
 - **Copia de la tesis:** `thesis_copy/` (archivos verbatim, comparados con `cmp`) más cuatro módulos auxiliares que importan los scripts de `Output_IWBay`. Ningún archivo supera 1 MB; los binarios de entrada no se copiaron.
 - `EXP4_RUNS` y `EXP4_BUILDS` en `pfcommon/paths.py`, con su prueba; `cases.yaml` es un esqueleto vacío.
+
+## 2026-11-11 (noche, 7) — Exp. 4, Task 1b: batimetría de Van Mijenfjorden para MITgcm
+
+- Se leyó completo Støylen & Fer (2014) en la versión en línea; no está en `literatura/`. Dan el ancho de Mariasundet (0.7 km, p. 96), un área de Akselsundet "parecida" a 20 m × 1300 m (p. 93) y las profundidades de sus secciones CTD (hasta 117 m, Tabla 1). No dan la profundidad del umbral ni la fuente de su batimetría. Con eso se fijaron los controles en `cases.yaml` antes de correr.
+- `gendata/bathy.py`: IBCAO v5.2 (100 m, EPSG:3996) → promedio de área en UTM 33N a 200 m → máscara con la costa del NPI S100 (manda el NPI si difieren) → limpieza (charcos, lagos, ensenadas de una celda, profundidad mínima de 3 m y celdas parciales como `ini_masks_etc.F`) → esponja con ∂h/∂n = 0. `gendata/vgrid.py`: 40 niveles, 1.5 m arriba, 25 niveles en 0–60 m, H = 240 m.
+- **Caja de 100 × 60 km**, no de 45: con 45 km la frontera sur cruzaría Van Keulenfjorden o Recherchefjorden. Queda para el PD1.
+- Resultados:
+  - los dos estrechos quedan abiertos con ≥ 3 celdas;
+  - umbral de Akselsundet: 22.4 m en la malla frente a 21.0 m en IBCAO;
+  - umbral de Mariasundet: 10.6 m frente a 11.2 m;
+  - profundidad máxima del fiordo interior: 119.0 m (S&F, 117 m);
+  - volumen del fiordo interior: +0.18 % frente a IBCAO.
+- **Falla** el ancho de Mariasundet frente a los 0.7 km de S&F. El NPI muestra dos pasos de 0.50 y 0.48 km separados por un islote, y la sección tiene 1.26 km de agua. Se clasificó (d) *post hoc*.
+- El 51 % del fiordo interior es dato interpolado de IBCAO: es una limitación para el README.
+- Vallunden no se quitó: su boca tiene ≥ 3 celdas en la costa del NPI. Pero IBCAO no tiene su profundidad, así que en el modelo mide 3 m.
+- La cabeza de Van Keulenfjorden tiene 42 km² de mar en IBCAO bajo tierra del NPI (frente de glaciar antiguo en el S100), y esa área se pierde.
+- Todo queda en `notes/pd1_batimetria.md` y `figures/bathy_report.{json,png,pdf}`. El `bathyFile` (1.2 MB) no se versiona.
