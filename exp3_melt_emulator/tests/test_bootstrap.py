@@ -83,3 +83,36 @@ def test_write(tmp_path):
     rec = bs.write(tmp_path / "cv.json", tmp_path / "fin.json", tmp_path / "b.json", n_boot=100)
     assert json.loads((tmp_path / "b.json").read_text()) == rec
     assert rec["n_boot"] == 100 and rec["seed"] == bs.SEED and "analyst" in rec["choice"]
+
+
+def test_paired_differences_are_post_hoc_and_consistent():
+    cv, fin = _cv_final()
+    r = bs.bootstrap(cv, fin, n_boot=400, seed=0, floors={"rmse": 0.157, "ire": 0.013})
+    pd = r["paired_differences_post_hoc"]
+    assert "POST HOC" in pd["label"]
+    d = pd["variants"]["main"]["loro"]["rmse_map"]
+    m = r["variants"]["main"]["loro"]
+    x = d["pairs"]["M5-M4"]
+    assert x["mean_diff"] == pytest.approx(m["M5"]["rmse_map"]["mean"] - m["M4"]["rmse_map"]["mean"])
+    assert x["resolved"] == (x["ci95"][0] > 0 or x["ci95"][1] < 0)
+    assert x["below_floor"] == (abs(x["mean_diff"]) < 0.157)
+    best = min(METHODS, key=lambda k: m[k]["rmse_map"]["mean"])
+    assert d["best"] == best and best in d["leaders"]
+    for k in METHODS:          # a leader is the best or not separable from it
+        if k != best:
+            y = d["pairs"][f"{k}-{best}"] if f"{k}-{best}" in d["pairs"] else d["pairs"][f"{best}-{k}"]
+            assert (k in d["leaders"]) == (not y["resolved"] or y["below_floor"])
+    # the marginal intervals are unchanged by the paired part (same random stream)
+    assert r["variants"] == bs.bootstrap(cv, fin, n_boot=400, seed=0)["variants"]
+
+
+def test_identical_methods_are_tied():
+    cv, fin = _cv_final()
+    for e in cv["entries"]:
+        if e["kind"] == "warm_out" and e["variant"] == "main" and e["method"] == "M1":
+            twin = next(t for t in cv["entries"] if t["kind"] == "warm_out" and
+                        t["variant"] == "main" and t["method"] == "M0" and t["case"] == e["case"])
+            e["metrics"] = dict(twin["metrics"])
+    r = bs.bootstrap(cv, fin, n_boot=200, seed=0, floors={"rmse": 0.157, "ire": 0.013})
+    x = r["paired_differences_post_hoc"]["variants"]["main"]["warm_out"]["rmse_map"]["pairs"]["M1-M0"]
+    assert x["ci95"] == [0.0, 0.0] and not x["resolved"]

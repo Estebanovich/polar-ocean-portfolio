@@ -39,13 +39,18 @@ REPO = Path(__file__).resolve().parents[2]
 FIG_DIR = REPO / "exp3_melt_emulator" / "figures"
 
 # pd0_preregistro.md, Hipotesis (thresholds approved by Esteban 2026-11-10)
-H3A_FLOOR = 0.013          # 1.3 %: noise floor of integrated_rel_error (median |N1 drift|)
+# The two noise floors are read from figures/noise_floor.json (the single source, also
+# recorded in protocol_config.json) and rounded to the precision at which the PD0 states
+# them (0.157 m a-1, 1.3 %).
+_NOISE = json.loads((FIG_DIR / "noise_floor.json").read_text())
+H3A_FLOOR = round(_NOISE["median_abs_integrated_rel_diff"], 3)   # 1.3 %: median |N1 drift|
 H3A_MIN_BETTER = 2         # M7 better in >= 2 of 3 final runs
 H3B_RATIO = 1.10           # loro mean rmse_map M7 <= 1.10 x M6
 H3C_SPREAD = 0.05          # violation: spread < 5 % ...
 H3C_ERROR = 0.20           # ... and |integrated_rel_error| > 20 %
 O26_SPREAD = 0.10          # Ockenden et al. 2026: spread > 10 % flags low confidence
-RMSE_FLOOR = 0.157         # m a-1, noise floor of rmse_map / rmse_gl (figures/noise_floor.json)
+RMSE_FLOOR = round(_NOISE["pooled_median_rms"], 3)   # 0.157 m a-1, rmse_map / rmse_gl
+assert (H3A_FLOOR, RMSE_FLOOR) == (0.013, 0.157), "floors differ from the PD0 values"
 H3C_KINDS = ("zc_out", "warm_out", "final")
 KINDS = ("loro", "zc_out", "warm_out", "profile_test", "final")
 METHODS = tuple(f"M{i}" for i in range(8))
