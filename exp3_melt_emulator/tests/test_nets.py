@@ -1,4 +1,5 @@
 import dataclasses
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -8,6 +9,7 @@ torch = pytest.importorskip("torch")
 from exp3_melt_emulator.data import FEATURES, cell_features  # noqa: E402
 from exp3_melt_emulator.metrics import rmse_map  # noqa: E402
 from exp3_melt_emulator.methods import REGISTRY, Method, ProbMethod  # noqa: E402
+from exp3_melt_emulator.methods.physics import C, QuadLocal, QuadNonLocal  # noqa: E402
 from exp3_melt_emulator.methods.nets import (  # noqa: E402
     HYBRID_G_FEATURES, NET_FEATURES, N_VAL, DeepEnsemble, Hybrid, select_validation_runs,
 )
@@ -149,7 +151,7 @@ def test_hybrid_recovers_n(split_seed):
     runs = _factorial_runs(_power_law)
     m = Hybrid(tf_kind="local", batch_size=16, split_seed=split_seed)
     m.fit(runs)
-    assert len(m.info["val_runs"]) == N_VAL
+    assert all(len(mem["val_runs"]) == N_VAL for mem in m.info["members"])
     ns = [mem["n"] for mem in m.info["members"]]
     assert len(ns) == 5
     assert 2.4 <= float(np.median(ns)) <= 2.8, ns
@@ -185,64 +187,113 @@ def test_mixture_moments(make):
 
 @pytest.mark.parametrize("make", [lambda: DeepEnsemble(**FAST), lambda: Hybrid(tf_kind="local", **FAST)])
 def test_inner_validation_by_run_and_standardiser(make):
+    # per member (R12): validation runs, standardiser, y_scale and restored weights
     runs = synthetic_runs()
     m = make(); m.fit(runs)
-    vi = select_validation_runs(runs, m.split_seed)
-    val = [runs[i] for i in vi]
-    train = [r for i, r in enumerate(runs) if i not in vi]
-    assert len(val) == N_VAL
-    assert m.info["val_runs"] == [r.case for r in val]
-    assert sorted(m.info["train_runs"]) == sorted(r.case for r in train)
-    # standardiser fitted on the training cells only (the validation runs excluded)
     names = m.input_features
-    X = np.concatenate([np.stack([_cells(r)[k] for k in names], 1) for r in train])
-    sd = X.std(0)
-    np.testing.assert_allclose(m.scaler.mean, X.mean(0), rtol=1e-12)
-    np.testing.assert_allclose(m.scaler.std, np.where(sd > 0, sd, 1.0), rtol=1e-12)
-    y = np.concatenate([r.melt[r.shelf_mask] for r in train])
-    assert m.info["y_scale"] == pytest.approx(y.std(), rel=1e-12)
-    # early stopping restored the best weights: mean val RMSE equals the recorded best
-    per_val = [m.member_predictions(_cells(r))[0] for r in val]
-    for k, mem in enumerate(m.info["members"]):
+    for k, (st, mem) in enumerate(zip(m.members_, m.info["members"])):
+        vi = select_validation_runs(runs, st.seed, m.split_seed)
+        val = [runs[i] for i in vi]
+        train = [r for i, r in enumerate(runs) if i not in vi]
+        assert len(val) == N_VAL
+        assert mem["val_runs"] == [r.case for r in val]
+        assert sorted(mem["train_runs"]) == sorted(r.case for r in train)
+        X = np.concatenate([np.stack([_cells(r)[f] for f in names], 1) for r in train])
+        sd = X.std(0)
+        np.testing.assert_allclose(st.scaler.mean, X.mean(0), rtol=1e-12)
+        np.testing.assert_allclose(st.scaler.std, np.where(sd > 0, sd, 1.0), rtol=1e-12)
+        y = np.concatenate([r.melt[r.shelf_mask] for r in train])
+        assert mem["y_scale"] == pytest.approx(y.std(), rel=1e-12)
         errs = []
-        for r, mus in zip(val, per_val):
+        for r in val:
             pred = np.full(r.shelf_mask.shape, np.nan)
-            pred[r.shelf_mask] = mus[k]
+            pred[r.shelf_mask] = m.member_predictions(_cells(r))[0][k]
             errs.append(rmse_map(pred, r))
         assert np.mean(errs) == pytest.approx(mem["best_val_rmse"], rel=1e-10)
         assert 1 <= mem["best_epoch"] <= mem["epochs_run"] <= FAST["max_epochs"]
+        assert mem["hit_max_epochs"] == (mem["epochs_run"] - mem["best_epoch"] < FAST["patience"])
+    assert m.info["n_hit_max_epochs"] == sum(mem["hit_max_epochs"] for mem in m.info["members"])
 
 
-def _tbot_runs(tbots, melts=None):
+def test_epoch_budget_bookkeeping():
+    runs = synthetic_runs()
+    m = DeepEnsemble(n_members=2, seeds=(0, 1), max_epochs=5, patience=1000); m.fit(runs)
+    assert all(mem["hit_max_epochs"] and mem["epochs_run"] == 5 for mem in m.info["members"])
+    assert m.info["n_hit_max_epochs"] == 2
+    m = DeepEnsemble(n_members=2, seeds=(0, 1), max_epochs=10_000, patience=3); m.fit(runs)
+    for mem in m.info["members"]:
+        assert not mem["hit_max_epochs"] and mem["epochs_run"] == mem["best_epoch"] + 3
+        assert mem["val_gain_last_window"] == 0.0 and mem["val_gain_window_before_best"] >= 0.0
+    assert DeepEnsemble().max_epochs == Hybrid().max_epochs >= 3000     # shared cap (R13)
+
+
+def test_hybrid_K0_from_member_training_runs():
+    runs = synthetic_runs()
+    for kind, cls in (("local", QuadLocal), ("nonlocal", QuadNonLocal)):
+        m = Hybrid(tf_kind=kind, **FAST); m.fit(runs)
+        for st, mem in zip(m.members_, m.info["members"]):
+            ref = cls(); ref.fit(st.train)
+            assert mem["K0"] == pytest.approx(ref.coef * C**2, rel=1e-12)
+            allr = cls(); allr.fit(runs)
+            assert mem["K0"] != pytest.approx(allr.coef * C**2, rel=1e-6)   # validation runs excluded
+
+
+def _tbot_runs(tbots):
     base = synthetic_runs(n=6)
-    out = []
-    for i, t in enumerate(tbots):
-        r = base[i % 6]
-        melt = r.melt if melts is None else np.where(r.shelf_mask, melts[i], np.nan)
-        out.append(dataclasses.replace(r, case=f"r{i}", Tbot=float(t), melt=melt))
-    return out
+    return [dataclasses.replace(base[i % 6], case=f"r{i}", Tbot=float(t)) for i, t in enumerate(tbots)]
+
+
+# (case, Tbot) of the 25 training runs of the 'final' fold (exp3 dataset, sha 3d2eceb1...)
+REAL_TRAIN = [("ens_T-0.5_zc250_s1.0", -0.5), ("ens_T-0.5_zc400_s1.0", -0.5), ("ens_T-0.5_zc550_s1.0", -0.5),
+              ("ens_T0.0_zc250_s1.0", 0.0), ("ens_T0.0_zc400_s1.0", 0.0), ("ens_T0.0_zc550_s1.0", 0.0),
+              ("ens_T0.5_zc250_s1.0", 0.5), ("ens_T0.5_zc400_s1.0", 0.5), ("ens_T0.5_zc550_s1.0", 0.5),
+              ("ens_T1.0_zc250_s1.0", 1.0), ("ens_T1.0_zc400_s1.0", 1.0), ("ens_T1.0_zc550_s1.0", 1.0),
+              ("ens_T1.5_zc250_s1.0", 1.5), ("ens_T1.5_zc400_s1.0", 1.5), ("ens_T1.5_zc550_s1.0", 1.5),
+              ("ens_T0.75_zc527_s0.8", 0.75), ("ens_T1.43_zc295_s0.8", 1.43), ("ens_T-0.05_zc328_s0.8", -0.05),
+              ("ens_T-0.42_zc402_s0.8", -0.42), ("ens_T0.34_zc444_s0.8", 0.34), ("ens_T1.42_zc481_s1.2", 1.42),
+              ("ens_T0.02_zc291_s1.2", 0.02), ("ens_T-0.39_zc503_s1.2", -0.39), ("ens_T0.97_zc386_s1.2", 0.97),
+              ("ens_T0.66_zc311_s1.2", 0.66)]
 
 
 def test_select_validation_runs_stratified():
-    runs = synthetic_runs()                       # Tbot = -0.5, -0.1, 0.3, 0.7, 1.1, 1.5
+    runs = synthetic_runs()                       # Tbot = -0.5, -0.1, 0.3, 0.7, 1.1, 1.5 (one run each)
     for seed in range(5):
+        assert select_validation_runs(runs, seed) == [5, 2, 0]   # highest, lower-median, lowest
+    runs = _tbot_runs([0, 0, 1, 1, 2, 2, 2])
+    picks = []
+    for seed in range(20):
         vi = select_validation_runs(runs, seed)
-        assert vi == [5, 2, 0]                    # highest, lower-median level, lowest
-        assert vi == select_validation_runs(runs, seed)
-    # ties at the highest Tbot -> highest mean melt, whatever the seed
-    runs = _tbot_runs([0, 0, 1, 1, 2, 2, 2], melts=[1, 2, 3, 4, 5, 9, 7])
-    for seed in range(10):
+        assert vi == select_validation_runs(runs, seed)              # deterministic
+        assert len(set(vi)) == 3
+        assert runs[vi[0]].Tbot == 2 and runs[vi[1]].Tbot == 1 and runs[vi[2]].Tbot == 0
+        picks.append(vi[0])
+    assert set(picks) == {4, 5, 6}               # the top-level pick is random over that level
+    assert select_validation_runs(runs, 0, split_seed=1) != select_validation_runs(runs, 0) or \
+        select_validation_runs(runs, 1, split_seed=1) != select_validation_runs(runs, 1)
+    # a single Tbot level: three distinct runs; < N_VAL + 1 runs: one run at the highest level
+    assert len(set(select_validation_runs(_tbot_runs([1.0] * 5), 0))) == 3
+    assert select_validation_runs(_tbot_runs([0, 2, 1]), 0) == [1]
+    assert select_validation_runs(_tbot_runs([0, 2]), 3) == [1]
+
+
+def test_every_run_trains_in_some_member_real_fold():
+    # R12 on the real final-fold training list: with the default member seeds no run is held
+    # out by every member, and the top-Tbot validation run differs between members
+    runs = [SimpleNamespace(case=c, Tbot=t) for c, t in REAL_TRAIN]
+    sets = [set(select_validation_runs(runs, seed)) for seed in (0, 1, 2, 3, 4)]
+    assert not set.intersection(*sets)
+    assert len({select_validation_runs(runs, seed)[0] for seed in (0, 1, 2, 3, 4)}) > 1
+    for seed in (0, 1, 2, 3, 4):
         vi = select_validation_runs(runs, seed)
-        assert vi[0] == 5 and len(set(vi)) == 3
-        assert runs[vi[1]].Tbot == 1 and runs[vi[2]].Tbot == 0
-    # ties within a lower level -> split_seed permutation (deterministic, seed-dependent)
-    picks = {tuple(select_validation_runs(runs, seed)) for seed in range(10)}
-    assert len(picks) > 1
-    # a single Tbot level: three distinct runs; < N_VAL + 1 runs: only the highest-Tbot run
-    vi = select_validation_runs(_tbot_runs([1.0] * 5, melts=[1, 2, 3, 4, 5]), 0)
-    assert vi[0] == 4 and len(set(vi)) == 3
-    assert select_validation_runs(_tbot_runs([0, 2, 1], melts=[1, 1, 1]), 0) == [1]
-    assert select_validation_runs(_tbot_runs([0, 2], melts=[1, 1]), 0) == [1]
+        assert [runs[i].Tbot for i in vi] == [1.5, 0.5, -0.5]
+
+
+def test_every_run_trains_in_some_member_synthetic():
+    runs = _tbot_runs([0, 0, 1, 1, 2, 2, 2])
+    m = DeepEnsemble(**dict(FAST, n_members=5, seeds=(0, 1, 2, 3, 4))); m.fit(runs)
+    assert m.info["never_trained"] == []
+    trained = set().union(*[set(mem["train_runs"]) for mem in m.info["members"]])
+    assert trained == {r.case for r in runs}
 
 
 @pytest.mark.parametrize("n", [2, 3])
@@ -250,8 +301,9 @@ def test_fit_with_few_runs_uses_one_val_run(n):
     runs = synthetic_runs()[:n]
     for m in (DeepEnsemble(**FAST), Hybrid(tf_kind="local", **FAST)):
         m.fit(runs)
-        assert m.info["val_runs"] == [runs[-1].case]          # highest Tbot
-        assert len(m.info["train_runs"]) == n - 1
+        for mem in m.info["members"]:
+            assert mem["val_runs"] == [runs[-1].case]          # the only run at the highest Tbot
+            assert len(mem["train_runs"]) == n - 1
 
 
 def test_hybrid_variance_mean_detached():
@@ -259,7 +311,7 @@ def test_hybrid_variance_mean_detached():
     runs = synthetic_runs()
     m = Hybrid(tf_kind="local", **FAST); m.fit(runs)
     net = m.nets[0]
-    xg, b = m._tensors(_cells(runs[0]))
+    xg, b = m._tensors(_cells(runs[0]), m.members_[0])
     mu, var = net(xg, b)
     net.zero_grad()
     var.sum().backward(retain_graph=True)
@@ -301,7 +353,7 @@ def test_fit_restores_rng_state():
 
 def test_non_finite_validation_raises():
     class Broken(DeepEnsemble):
-        def _val_error(self, net, val_inputs, val):
+        def _val_error(self, st, val_inputs):
             return float("nan")
     with pytest.raises(RuntimeError, match="not finite"):
         Broken(**FAST).fit(synthetic_runs())

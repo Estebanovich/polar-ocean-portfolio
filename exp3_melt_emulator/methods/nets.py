@@ -5,16 +5,16 @@ own ``shelf_mask``, and the target is that run's melt there (m a-1, negative val
 Both methods predict cell by cell, so they work on any run's mask.
 
 Training (shared by M6 and M7)
-- Inner validation BY RUN (ruling R10): N_VAL = 3 runs of the fit, chosen by
-  ``select_validation_runs``, stratified over the fit's distinct Tbot values: (i) the run
-  with the highest Tbot (ties -> highest shelf-mean melt), (ii) a run at the median Tbot
-  level (lower median of the sorted distinct values), (iii) a run at the lowest Tbot level;
-  remaining ties go to the earliest run in ``default_rng(split_seed).permutation``. A level
-  with no unchosen run left falls back to the earliest unchosen run of the permutation.
-  With fewer than N_VAL + 1 runs only run (i) validates. Validation runs are used only for
-  early stopping: never for gradients, the input standardiser, y_scale or the M7 K0.
-- Input standardisation (mean, std; std 0 -> 1) is fitted on the remaining training cells.
-  Targets are divided by ``y_scale`` (std of the training melt); M6 also subtracts the mean,
+- Inner validation BY RUN, per member (rulings R10, R12): each member holds out N_VAL = 3
+  runs chosen by ``select_validation_runs(runs, member_seed, split_seed)``, stratified over
+  the fit's distinct Tbot values (a random run at the highest, the lower-median and the
+  lowest Tbot level, drawn with the member's seed), so different members hold out
+  different runs and the ensemble as a whole trains on every run. With fewer than
+  N_VAL + 1 runs a member holds out one run at the highest Tbot level. A member's
+  validation runs are used only for its early stopping: never for its gradients, input
+  standardiser, y_scale or (M7) K0, which are all per member.
+- Input standardisation (mean, std; std 0 -> 1) is fitted on the member's training cells.
+  Targets are divided by ``y_scale`` (std of the member's training melt); M6 also subtracts the mean,
   M7 does not (that would break m = K TF+^n g). This only rescales the loss.
 - Loss: Gaussian negative log-likelihood, Lakshminarayanan et al. 2017 Eq. 1,
   0.5 log sigma^2 + (y - mu)^2 / (2 sigma^2), with a softplus variance and a minimum
@@ -22,17 +22,18 @@ Training (shared by M6 and M7)
 - Adam, minibatches of ``batch_size`` cells reshuffled every epoch by a torch Generator
   seeded with the member's seed. Each epoch, the criterion is the mean over the validation
   runs of the area-weighted RMSE of the mean (``metrics.rmse_map``); training stops after
-  ``patience`` epochs without improvement (or ``max_epochs``) and the best weights are
+  ``patience`` epochs without improvement (or at the cap ``max_epochs``) and the best weights are
   restored. A non-finite validation prediction counts as no improvement; if no epoch is
   finite, fit raises. Model selection thus uses the area-weighted error, never the NLL.
 - Ensemble: M members, random initialisation (CPU generator seeded with the member's seed),
-  all trained on the same cells, no bagging (Lakshminarayanan 2017 Sec. 2.4: "We observed
+  each on all fit runs except its own validation runs, no bootstrap bagging (Lakshminarayanan 2017 Sec. 2.4: "We observed
   that bagging deteriorated performance"). The prediction is the uniformly weighted
   Gaussian mixture, summarised by its mean and variance (Lakshminarayanan 2017 Sec. 2.4;
   these two formulas are unnumbered in the paper, whose only numbered equation is Eq. 1):
   mu* = M^-1 sum_m mu_m,  sigma*^2 = M^-1 sum_m (sigma_m^2 + mu_m^2) - mu*^2.
-- Defaults (to be frozen in PD0): hidden (32, 64, 32) ReLU, Adam lr 1e-3, batch 512,
-  max_epochs 1000, patience 250.
+- Defaults (to be frozen in PD0), shared by M6 and M7: hidden (32, 64, 32) ReLU, Adam lr
+  1e-3, batch 512, patience 250 and a cap max_epochs = 5000 meant never to bind (ruling R13);
+  ``info["members"]`` records epochs_run, best_epoch and hit_max_epochs per member.
 - Determinism: CPU, float64, ``torch.use_deterministic_algorithms(True)`` and a fixed
   thread count inside ``fit``/``predict``; member initialisation seeds the CPU generator
   inside ``torch.random.fork_rng`` (the global torch settings and RNG state are restored).
@@ -48,7 +49,7 @@ Burgard 2022 Eq. 14) or b = (TF+ |<TF>|)^(1/2) ("nonlocal", ruling R3: the TF |<
 Jourdain 2020 Eq. 1, raised to n/2 so both variants scale as alpha^n). Cells with TF <= 0
 (refreezing) therefore have a mean of exactly 0. log K and log n are trainable scalars per
 member, initialised with n0 = 2 and K0 from the closed-form M2 fit (local) or M3 fit
-(nonlocal) on the training runs: at n = 2 and g = 1 the hybrid is K0 TF+^2 (resp. K0 TF+ |<TF>|),
+(nonlocal) on the member's training runs: at n = 2 and g = 1 the hybrid is K0 TF+^2 (resp. K0 TF+ |<TF>|),
 the positive part of M2 (M3), so K0 = coef * c^2. Note K is degenerate with the overall
 scale of g (only K * g is identified); n is identified by the cross-run variation of TF at
 fixed geometry. M6 variance: sigma^2 = softplus(second output) + 1e-6.
@@ -90,22 +91,26 @@ DTYPE = torch.float64
 N_VAL = 3                  # inner-validation runs (ruling R10)
 
 
-def select_validation_runs(runs, split_seed) -> list[int]:
-    """Indices of the inner-validation runs (ruling R10; see module docstring)."""
+def select_validation_runs(runs, seed, split_seed=0) -> list[int]:
+    """Indices of one member's inner-validation runs (rulings R10, R12).
+
+    Stratified over the distinct Tbot values of ``runs``: one run drawn at random among the
+    runs at the highest Tbot level, one at the lower-median level ``levels[(L - 1) // 2]``,
+    one at the lowest level, each drawn without replacement by
+    ``np.random.default_rng([split_seed, seed])`` (``seed`` = the member's seed). A level
+    with no unchosen run left draws from all unchosen runs. With fewer than N_VAL + 1 runs
+    only the highest-level draw is made. Only ``Tbot`` of the runs is read."""
     m = len(runs)
-    rank = {int(i): p for p, i in enumerate(np.random.default_rng(split_seed).permutation(m))}
-    mean_melt = [float(np.mean(r.melt[r.shelf_mask])) for r in runs]
+    rng = np.random.default_rng([int(split_seed), int(seed)])
     tb = [float(r.Tbot) for r in runs]
-    hi = max(tb)
-    chosen = [min((i for i in range(m) if tb[i] == hi), key=lambda i: (-mean_melt[i], rank[i]))]
-    if m < N_VAL + 1:
-        return chosen
     levels = sorted(set(tb))
-    for lev in (levels[(len(levels) - 1) // 2], levels[0]):
+    targets = [levels[-1]] if m < N_VAL + 1 else [levels[-1], levels[(len(levels) - 1) // 2], levels[0]]
+    chosen: list[int] = []
+    for lev in targets:
         cand = [i for i in range(m) if tb[i] == lev and i not in chosen]
         if not cand:
             cand = [i for i in range(m) if i not in chosen]
-        chosen.append(min(cand, key=rank.__getitem__))
+        chosen.append(int(cand[int(rng.integers(len(cand)))]))
     return chosen
 
 
@@ -184,13 +189,25 @@ def _nll(mu, var, y):
     return torch.mean(0.5 * torch.log(var) + 0.5 * (y - mu) ** 2 / var)
 
 
+class _Member:
+    """One ensemble member: network plus everything fitted on its own training runs."""
+
+    def __init__(self, seed, val, train):
+        self.seed, self.val, self.train = seed, val, train
+        self.net = None
+        self.scaler = None
+        self.y_shift = 0.0
+        self.y_scale = 1.0
+        self.K0 = None
+
+
 class _Ensemble:
     """Shared fit/predict machinery; subclasses define inputs and the member network."""
     name = ""
     input_features: tuple = ()
 
     def __init__(self, n_members=5, seeds=(0, 1, 2, 3, 4), hidden=(32, 64, 32),
-                 max_epochs=1000, patience=250, lr=1e-3, batch_size=512, split_seed=0,
+                 max_epochs=5000, patience=250, lr=1e-3, batch_size=512, split_seed=0,
                  threads=1):
         seeds = tuple(int(s) for s in seeds)
         if len(seeds) != n_members:
@@ -198,9 +215,13 @@ class _Ensemble:
         self.n_members, self.seeds, self.hidden = n_members, seeds, tuple(hidden)
         self.max_epochs, self.patience, self.lr = int(max_epochs), int(patience), float(lr)
         self.batch_size, self.split_seed, self.threads = int(batch_size), int(split_seed), int(threads)
-        self.nets: list[nn.Module] = []
+        self.members_: list[_Member] = []
         self.info: dict = {}
         self._fitted = False
+
+    @property
+    def nets(self) -> list[nn.Module]:
+        return [st.net for st in self.members_]
 
     def hparams(self):
         return dict(n_members=self.n_members, seeds=list(self.seeds), hidden=list(self.hidden),
@@ -208,17 +229,17 @@ class _Ensemble:
                     batch_size=self.batch_size, split_seed=self.split_seed, threads=self.threads,
                     optimiser="Adam", var_floor=VAR_FLOOR, dtype="float64")
 
-    # --- hooks -------------------------------------------------------------------------
-    def _prepare(self, train, pooled, y):     # sets y_shift, y_scale and any physics init
+    # --- hooks (st = the member being fitted / used) ----------------------------------
+    def _prepare(self, st, train, pooled, y):   # sets st.y_shift, st.y_scale (and st.K0)
         raise NotImplementedError
 
-    def _tensors(self, cells):                 # dict of 1-D cell arrays -> tuple of tensors
+    def _tensors(self, cells, st):               # dict of 1-D cell arrays -> tuple of tensors
         raise NotImplementedError
 
-    def _new_net(self):
+    def _new_net(self, st):
         raise NotImplementedError
 
-    def _member_info(self, net):
+    def _member_info(self, st):
         return {}
 
     # --- data --------------------------------------------------------------------------
@@ -236,54 +257,60 @@ class _Ensemble:
         if len(runs) < 2:
             raise ValueError(f"{self.name}: fit needs at least 2 runs (inner validation is by run)")
         self._fitted = False
-        vi = select_validation_runs(runs, self.split_seed)
-        val = [runs[i] for i in vi]
-        train = [r for i, r in enumerate(runs) if i not in vi]
+        cells = [self._cells(r) for r in runs]
+        for r in runs:
+            if not np.isfinite(r.melt[r.shelf_mask]).all():
+                raise ValueError(f"{self.name}: non-finite melt on a shelf cell of {r.case!r}")
+        self.members_ = []
+        records = []
         with _deterministic(self.threads), torch.random.fork_rng(devices=[]):
-            self._fit_split(train, val)
-        self._fitted = True
-
-    def _fit_split(self, train, val):
-        cells = [self._cells(r) for r in train]
-        pooled = {k: np.concatenate([c[k] for c in cells]) for k in cells[0]}
-        y = np.concatenate([r.melt[r.shelf_mask] for r in train])
-        if not np.isfinite(y).all():
-            raise ValueError(f"{self.name}: non-finite melt on a training shelf cell")
-        self.scaler = _Scaler(self._X(pooled))
-        self._prepare(train, pooled, y)
-        inputs = self._tensors(pooled)
-        yt = torch.as_tensor((y - self.y_shift) / self.y_scale, dtype=DTYPE)
-        val_inputs = [self._tensors(self._cells(r)) for r in val]
-        members = []
-        self.nets = []
-        for seed in self.seeds:
-            torch.random.default_generator.manual_seed(seed)
-            net = self._new_net().to(DTYPE)
-            rec = self._train(net, inputs, yt, val_inputs, val, seed)
-            rec.update(self._member_info(net))
-            self.nets.append(net)
-            members.append(rec)
+            for seed in self.seeds:
+                vi = select_validation_runs(runs, seed, self.split_seed)
+                ti = [i for i in range(len(runs)) if i not in vi]
+                st = _Member(seed, [runs[i] for i in vi], [runs[i] for i in ti])
+                records.append(self._fit_member(st, [cells[i] for i in ti], [cells[i] for i in vi]))
+                self.members_.append(st)
         self.info = {
             "device": "cpu", "torch_version": torch.__version__, "hparams": self.hparams(),
-            "input_features": list(self.input_features), "val_runs": [r.case for r in val],
-            "train_runs": [r.case for r in train], "n_train_cells": int(len(y)),
-            "y_shift": float(self.y_shift), "y_scale": float(self.y_scale), "members": members,
+            "input_features": list(self.input_features), "members": records,
+            "n_hit_max_epochs": int(sum(r["hit_max_epochs"] for r in records)),
+            "never_trained": sorted(set.intersection(*[set(r["val_runs"]) for r in records])),
         }
+        self._fitted = True
 
-    def _val_error(self, net, val_inputs, val):
+    def _fit_member(self, st, train_cells, val_cells):
+        pooled = {k: np.concatenate([c[k] for c in train_cells]) for k in train_cells[0]}
+        y = np.concatenate([r.melt[r.shelf_mask] for r in st.train])
+        st.scaler = _Scaler(self._X(pooled))
+        self._prepare(st, st.train, pooled, y)
+        inputs = self._tensors(pooled, st)
+        yt = torch.as_tensor((y - st.y_shift) / st.y_scale, dtype=DTYPE)
+        val_inputs = [self._tensors(c, st) for c in val_cells]
+        torch.random.default_generator.manual_seed(st.seed)
+        st.net = self._new_net(st).to(DTYPE)
+        rec = self._train(st, inputs, yt, val_inputs)
+        rec.update({"val_runs": [r.case for r in st.val], "train_runs": [r.case for r in st.train],
+                    "n_train_cells": int(len(y)), "y_shift": float(st.y_shift),
+                    "y_scale": float(st.y_scale)})
+        rec.update(self._member_info(st))
+        return rec
+
+    def _val_error(self, st, val_inputs):
         errs = []
-        for inp, r in zip(val_inputs, val):
-            mu = self._mean_phys(net, inp)
+        for inp, r in zip(val_inputs, st.val):
+            mu = self._phys(st, inp)[0]
             if not np.isfinite(mu).all():
                 return float("nan")
             errs.append(rmse_map(self._map(mu, r), r))
         return float(np.mean(errs))
 
-    def _train(self, net, inputs, yt, val_inputs, val, seed):
+    def _train(self, st, inputs, yt, val_inputs):
+        net = st.net
         opt = torch.optim.Adam(net.parameters(), lr=self.lr)
-        gen = torch.Generator().manual_seed(seed)
+        gen = torch.Generator().manual_seed(st.seed)
         n = len(yt)
         best, best_state, best_epoch, epoch, stale = np.inf, None, 0, 0, 0
+        best_so_far = []                          # running best after each epoch
         for epoch in range(1, self.max_epochs + 1):
             net.train()
             order = torch.randperm(n, generator=gen)
@@ -294,30 +321,36 @@ class _Ensemble:
                 opt.zero_grad()
                 loss.backward()
                 opt.step()
-            err = self._val_error(net, val_inputs, val)
+            net.eval()
+            err = self._val_error(st, val_inputs)
             if err < best:                       # False for NaN
                 best, best_epoch, stale = err, epoch, 0
                 best_state = copy.deepcopy(net.state_dict())
             else:
                 stale += 1
-                if stale >= self.patience:
-                    break
+            best_so_far.append(best)
+            if stale >= self.patience:
+                break
         if best_state is None:
-            raise RuntimeError(f"{self.name}: member seed {seed}: validation RMSE not finite at any epoch")
+            raise RuntimeError(f"{self.name}: member seed {st.seed}: validation RMSE not finite at any epoch")
         net.load_state_dict(best_state)
         net.eval()
-        return {"seed": seed, "epochs_run": epoch, "best_epoch": best_epoch,
-                "best_val_rmse": float(best)}
+        w = self.patience
+
+        def gain(end):                           # best at (end - w) minus best at end
+            a = best_so_far[max(end - w, 1) - 1]
+            return float(a - best_so_far[end - 1]) if np.isfinite(a) else float("nan")
+        return {"seed": st.seed, "epochs_run": epoch, "best_epoch": best_epoch,
+                "hit_max_epochs": bool(stale < self.patience),
+                "best_val_rmse": float(best),
+                "val_gain_last_window": gain(epoch),
+                "val_gain_window_before_best": gain(best_epoch)}
 
     # --- predict -----------------------------------------------------------------------
-    def _phys(self, net, inputs):
+    def _phys(self, st, inputs):
         with torch.no_grad():
-            mu, var = net(*inputs)
-        return (mu.numpy() * self.y_scale + self.y_shift, var.numpy() * self.y_scale**2)
-
-    def _mean_phys(self, net, inputs):
-        net.eval()
-        return self._phys(net, inputs)[0]
+            mu, var = st.net(*inputs)
+        return (mu.numpy() * st.y_scale + st.y_shift, var.numpy() * st.y_scale**2)
 
     @staticmethod
     def _map(v, run):
@@ -331,8 +364,7 @@ class _Ensemble:
         if not self._fitted:
             raise RuntimeError(f"{self.name}: predict called before fit")
         with _deterministic(self.threads):
-            inputs = self._tensors(cells)
-            out = [self._phys(net, inputs) for net in self.nets]
+            out = [self._phys(st, self._tensors(cells, st)) for st in self.members_]
         return np.stack([o[0] for o in out]), np.stack([o[1] for o in out])
 
     def predict_dist(self, run: Run) -> tuple[np.ndarray, np.ndarray]:
@@ -372,18 +404,18 @@ class DeepEnsemble(_Ensemble):
     name = "M6"
     input_features = NET_FEATURES
 
-    def _prepare(self, train, pooled, y):
-        self.y_shift = float(y.mean())
+    def _prepare(self, st, train, pooled, y):
+        st.y_shift = float(y.mean())
         sd = float(y.std())
-        self.y_scale = sd if sd > 0 else 1.0
+        st.y_scale = sd if sd > 0 else 1.0
 
-    def _tensors(self, cells):
-        return (torch.as_tensor(self.scaler(self._X(cells)), dtype=DTYPE),)
+    def _tensors(self, cells, st):
+        return (torch.as_tensor(st.scaler(self._X(cells)), dtype=DTYPE),)
 
-    def _new_net(self):
+    def _new_net(self, st):
         return _MeanVarNet(len(self.input_features), self.hidden)
 
-    def _member_info(self, net):
+    def _member_info(self, st):
         return {"K": None, "n": None}
 
 
@@ -421,7 +453,7 @@ class Hybrid(_Ensemble):
     def fit(self, runs):
         runs = list(runs)
         if len(runs) < 2:
-            raise ValueError(f"{self.name}: fit needs at least 2 runs (one is the inner-validation run)")
+            raise ValueError(f"{self.name}: fit needs at least 2 runs (inner validation is by run)")
         self._fitted = False
         selection = None
         if self.tf_kind == "auto":
@@ -456,38 +488,38 @@ class Hybrid(_Ensemble):
         kind = "nonlocal" if rmse["nonlocal"] < rmse["local"] else "local"
         return kind, {"folds": k, "rmse": rmse, "per_run_rmse": per_run}
 
-    def _prepare(self, train, pooled, y):
-        self.y_shift = 0.0
+    def _prepare(self, st, train, pooled, y):
+        st.y_shift = 0.0
         sd = float(y.std())
-        self.y_scale = sd if sd > 0 else 1.0
+        st.y_scale = sd if sd > 0 else 1.0
         m2 = QuadLocal() if self.tf_kind_ == "local" else QuadNonLocal()
-        m2.fit(train)
+        m2.fit(train)          # the member's training runs only (its validation runs excluded)
         # M2: m = coef c^2 |TF| TF ; M3: m = coef c^2 TF |<TF>|; hybrid at n = 2, g = 1:
         # m = K b^2 with b^2 = TF+^2 resp. TF+ |<TF>|, so K0 = coef * c^2 (C from physics.py).
-        self.K0 = float(m2.coef * C**2)
-        if not self.K0 > 0:
-            raise ValueError(f"{self.name}: M2/M3 initial K0 = {self.K0} is not positive")
+        st.K0 = float(m2.coef * C**2)
+        if not st.K0 > 0:
+            raise ValueError(f"{self.name}: M2/M3 initial K0 = {st.K0} is not positive")
 
-    def _tensors(self, cells):
-        xg = torch.as_tensor(self.scaler(self._X(cells)), dtype=DTYPE)
+    def _tensors(self, cells, st):
+        xg = torch.as_tensor(st.scaler(self._X(cells)), dtype=DTYPE)
         b = torch.as_tensor(self.basis(cells, self.tf_kind_), dtype=DTYPE)
         return xg, b
 
-    def _new_net(self):
-        return _HybridNet(len(self.input_features), self.hidden, self.K0, self.y_scale)
+    def _new_net(self, st):
+        return _HybridNet(len(self.input_features), self.hidden, st.K0, st.y_scale)
 
     def variance_heads(self, cells: dict) -> tuple[np.ndarray, np.ndarray, float]:
-        """Per-member (s0, s1, floor) in physical units, each (M, n_cells) except floor:
-        sigma_m^2 = s0^2 + (s1 mu_m)^2 + floor (ruling R11). s0, s1 depend on x_g only."""
+        """Per-member (s0, s1, floor) in physical units: s0, s1 are (M, n_cells), floor is
+        (M, 1); sigma_m^2 = s0^2 + (s1 mu_m)^2 + floor (ruling R11). s0, s1 depend on x_g only."""
         if not self._fitted:
             raise RuntimeError(f"{self.name}: predict called before fit")
         with _deterministic(self.threads), torch.no_grad():
-            xg = self._tensors(cells)[0]
-            hs = [net.heads(xg) for net in self.nets]
-        s0 = np.stack([h[1].numpy() for h in hs]) * self.y_scale
+            hs = [st.net.heads(self._tensors(cells, st)[0]) for st in self.members_]
+        ys = np.array([[st.y_scale] for st in self.members_])
+        s0 = np.stack([h[1].numpy() for h in hs]) * ys
         s1 = np.stack([h[2].numpy() for h in hs])
-        return s0, s1, VAR_FLOOR * self.y_scale**2
+        return s0, s1, VAR_FLOOR * ys**2
 
-    def _member_info(self, net):
-        return {"K": float(torch.exp(net.log_K.detach())), "n": float(torch.exp(net.log_n.detach())),
-                "K0": self.K0, "n0": N0}
+    def _member_info(self, st):
+        return {"K": float(torch.exp(st.net.log_K.detach())), "n": float(torch.exp(st.net.log_n.detach())),
+                "K0": st.K0, "n0": N0}
