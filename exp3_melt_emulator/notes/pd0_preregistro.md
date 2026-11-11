@@ -142,3 +142,10 @@ Todo lo siguiente sale de las corridas de entrenamiento. Ninguna predicción toc
   - **≈ 37 h de CPU, ≈ 7.4 h de reloj** con 5 procesos. Está por debajo del límite, con poco margen.
 - **Regla de parada:** el reloj se mide después de la primera tanda de pliegues. Si la estimación supera **8 h**, se detiene y se reporta, sin cambiar nada del protocolo para que quepa.
 - **`--final`:** 8 ajustes, una sola vez; M7 ≈ 43 min.
+
+## Enmiendas
+
+**Enmienda 1** (2026-11-10, Esteban, después de que la regla de 8 h se activó a las 21:04 y antes de mirar ninguna métrica): se amplía el presupuesto de reloj a 20 h; el protocolo científico (métodos, pliegues, hiperparámetros, umbrales) no cambia; se ejecutan primero los pliegues principales y después la sensibilidad N1. Motivo: cada ajuste interno de M7 tardó ~96 s y no los 50 s estimados (proyección 14.1 h).
+
+- Se aplica con `run_protocol.py --cv --wall-limit-hours 20 --amendment "…"`. `figures/protocol_config.json` no se modifica (sha256 `56a9ffe5…`). La enmienda queda registrada en `cv_progress.log`, en cada unidad escrita bajo ella y en `figures/cv_results.json` (lista `amendments`).
+- Las 9 unidades M7 escritas antes de la enmienda (5 de la primera tanda y 4 en vuelo) se conservan y se reanudan. El orden de ejecución no cambia los resultados: cada unidad es un ajuste independiente y determinista.

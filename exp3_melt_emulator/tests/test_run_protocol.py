@@ -382,9 +382,12 @@ def test_config_mismatch_refuses(proto, tmp_path):
 def test_cli_uses_frozen_sha(monkeypatch, tmp_path):
     assert rp.CONFIG_SHA256 == "56a9ffe5b57fd69da0462e63cb79cb1cbc7538e8444946e9bde5101f9a462486"
     seen = {}
-    monkeypatch.setattr(rp, "run_cv", lambda cfg, sha, **kw: seen.update(sha=sha) or
+    monkeypatch.setattr(rp, "run_cv", lambda cfg, sha, **kw: seen.update(sha=sha, **kw) or
                         {"status": "complete", "ran": []})
     assert rp.main(["--cv"]) == 0 and seen["sha"] == rp.CONFIG_SHA256
+    assert seen["wall_limit_hours"] is None and seen["amendment"] is None   # frozen 8 h rule
+    assert rp.main(["--cv", "--wall-limit-hours", "20", "--amendment", "E1"]) == 0
+    assert seen["wall_limit_hours"] == 20.0 and seen["amendment"] == "E1"
 
 
 def test_test_mode_refused_on_real_dataset(monkeypatch):
@@ -425,3 +428,64 @@ def test_final_refuses_second_run(proto, tmp_path):
     with pytest.raises(rp.ProtocolError, match="started"):
         rp.run_final(proto["cfg"], proto["csha"], **kw)
     assert not (tmp_path / "final_test.json").exists()
+
+
+# --- Enmienda 1 (PD0): wall-clock budget override, main-first scheduling -------------------
+def test_cv_units_main_before_n1(proto):
+    cfg = json.loads(proto["cfg"].read_text())
+    units = rp.cv_units(cfg, {r.case: r for r in proto["runs"]})
+    variants = [u["variant"] for u in units]
+    assert variants == sorted(variants, key=lambda v: v != "main")    # all main, then all n1
+    for v in ("main", "n1"):
+        grp = [u for u in units if u["variant"] == v]
+        meth = [u["method"] for u in grp]
+        assert meth == sorted(meth, key=lambda m: m != "M7")           # M7 first within each
+        for sub in ([u for u in grp if u["method"] == "M7"], [u for u in grp if u["method"] != "M7"]):
+            costs = [rp.prior_seconds(u) for u in sub]
+            assert costs == sorted(costs, reverse=True)                # longest first
+
+
+def test_wall_limit_requires_amendment(proto, tmp_path):
+    for kw in ({"wall_limit_hours": 20.0}, {"amendment": "text"}):
+        with pytest.raises(rp.ProtocolError, match="together"):
+            _cv(proto, tmp_path, **kw)
+    assert not (tmp_path / "units").exists()
+    with pytest.raises(rp.ProtocolError, match="amendment"):
+        _cv(proto, tmp_path, wall_limit_hours=20.0, amendment="  ")
+    with pytest.raises(SystemExit):
+        rp.main(["--cv", "--wall-limit-hours", "20"])
+    with pytest.raises(SystemExit):
+        rp.main(["--cv", "--amendment", "x"])
+    with pytest.raises(SystemExit):
+        rp.main(["--final", "--wall-limit-hours", "20", "--amendment", "x"])
+
+
+def test_wall_limit_amendment_recorded(proto, tmp_path):
+    text = "Enmienda de prueba: presupuesto 20 h"
+    # 9 h: above the frozen 8 h limit, so the frozen rule stops ...
+    st = _cv(proto, tmp_path / "a", estimate_fn=lambda **kw: {"estimate_h": 9.0})
+    assert st["status"] == "stopped"
+    # ... and under the amendment it runs on; the earlier units are resumed
+    st = _cv(proto, tmp_path / "a", estimate_fn=lambda **kw: {"estimate_h": 9.0},
+             wall_limit_hours=20.0, amendment=text)
+    assert st["status"] == "complete"
+    root = tmp_path / "a"
+    log = (root / "progress.log").read_text()
+    assert "AMENDMENT" in log and text in log and "frozen 8 h" in log and "limit 20 h" in log
+    res = json.loads((root / "cv_results.json").read_text())
+    (am,) = res["amendments"]
+    assert am["text"] == text and am["wall_limit_hours"] == 20.0
+    assert am["frozen_wall_limit_hours"] == rp.STOP_HOURS == 8.0 and am["timestamp"]
+    recs = [json.loads(p.read_text()) for p in (root / "units").glob("*.json")]
+    under = [r for r in recs if r.get("amendment")]
+    assert under and all(r["amendment"] == am for r in under)
+    assert len(under) == len(st["ran"])                       # every unit written under it
+    assert len(recs) - len(under) >= 2                        # pre-amendment units kept
+
+
+def test_default_has_no_amendment(cv_done):
+    root, _ = cv_done
+    res = json.loads((root / "cv_results.json").read_text())
+    assert res["amendments"] == [] and res["wall_limit_hours"] == 8.0
+    assert all(json.loads(p.read_text())["amendment"] is None
+               for p in (root / "units").glob("*.json"))
