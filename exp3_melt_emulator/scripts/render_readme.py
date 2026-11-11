@@ -41,6 +41,7 @@ NUMBER_WHITELIST = (
     r"\b[a-d][12]\b(?=\)| and)",                       # panel labels "(b1) and (b2)"
     r"\([1-4]\) (?=[A-Z])",                            # numbered panels of Figure 0
     r"max\(TF, 0\)",                                   # TF+ = max(TF, 0)
+    r"\b1 − error/error",                              # skill = 1 - err/err_M0
     r"(?<![0-9.])\+[12](?![0-9.%])",                  # the +1 / +2 scenarios of LB25
     r"\b(?:" + "|".join(CITATION_YEARS) + r")[a-b]?\b",
 )
@@ -258,14 +259,6 @@ def values() -> dict[str, str]:
         assert rk["zc_out"]["order_by_mean_rmse_map"][-1] == "M4"
         assert {x["case"] for x in hy["H3c"]["M7"]["violations"]} <= {
             c for c in (x["case"] for x in hy["H3c"]["M7"]["cases"]) if "_zc550_" in c}
-        rows = []
-        for kind in ("loro", "zc_out", "warm_out"):
-            rows.append([kind, " < ".join(n1[kind]["order_by_mean_rmse_map"][:3]) + " …",
-                         ", ".join(n1[kind]["within_rmse_floor_of_best"]),
-                         " < ".join(n1[kind]["order_by_mean_abs_ire"][:3]) + " …"])
-        v["table_n1"] = _md_table(["Held-out set", "rmse_map, best three",
-                                   "within the noise floor of the best",
-                                   "\\|integrated error\\|, best three"], rows)
         v["n1_loro_M4"] = f(n1["loro"]["methods"]["M4"]["mean_rmse_map"])
         v["n1_zc_M4"] = f(n1["zc_out"]["methods"]["M4"]["mean_rmse_map"])
         v["n1_warm_M4"] = f(n1["warm_out"]["methods"]["M4"]["mean_rmse_map"])
@@ -298,6 +291,98 @@ def values() -> dict[str, str]:
         z = mains["zc_out"]
         assert z["M2"]["rmse_map"]["ci95"][1] < z["M4"]["rmse_map"]["ci95"][0]
         assert all(z["M4"]["rmse_map"]["ci95"][0] > z[mm]["rmse_map"]["ci95"][1] for mm in ("M5", "M6", "M7"))
+    # ---- POST HOC paired differences (R18): which differences are resolved ---------------------
+    if bs and "paired_differences_post_hoc" in bs:
+        pdv = bs["paired_differences_post_hoc"]["variants"]
+        short = {"rmse_map": "rmse", "abs_integrated_rel_error": "ire", "rmse_gl_rms": "gl"}
+        for variant, pre in (("main", ""), ("n1", "n1_")):
+            for kind, d in pdv[variant].items():
+                for st, sh in short.items():
+                    v[f"{pre}lead_{sh}_{kind}"] = ", ".join(sorted(d[st]["leaders"]))
+        L = lambda variant, kind, st: set(pdv[variant][kind][st]["leaders"])  # noqa: E731
+        P = lambda kind, pair, st="rmse_map": pdv["main"][kind][st]["pairs"][pair]  # noqa: E731
+        # every sentence of the abstract, 3.1 and the conclusions that rests on these
+        assert all(L("main", "zc_out", st) == {"M2"} for st in short)
+        assert all(L("n1", "zc_out", st) == {"M2"} for st in short)
+        assert P("zc_out", "M4-M0")["resolved"] and P("zc_out", "M4-M0")["mean_diff"] > 0
+        assert {"M2", "M4", "M5", "M6", "M7"} <= L("main", "loro", "rmse_map")
+        assert L("main", "loro", "abs_integrated_rel_error") == {"M6"}
+        assert "M2" in L("n1", "loro", "abs_integrated_rel_error")
+        assert {"M1", "M2", "M4", "M5", "M6", "M7"} <= L("main", "warm_out", "rmse_map")
+        assert L("main", "warm_out", "abs_integrated_rel_error") == {"M4", "M5", "M6", "M7"}
+        assert L("main", "final", "rmse_map") == {"M4", "M5", "M6"}
+        assert all(P("final", f"M7-{m}")["resolved"] and P("final", f"M7-{m}")["mean_diff"] > 0
+                   for m in ("M4", "M5", "M6"))
+        assert L("main", "final", "abs_integrated_rel_error") == {"M4", "M5", "M6", "M7"}
+        assert P("loro", "M7-M6")["resolved"] and P("loro", "M7-M6")["mean_diff"] > 0
+        for variant in ("main", "n1"):          # a method without a network always leads the map
+            assert all(L(variant, k, "rmse_map") - {"M6", "M7"} for k in pdv[variant])
+        assert pdv["main"]["warm_out"]["rmse_map"]["best"] == "M4"
+        oth = sorted(L("main", "warm_out", "rmse_map") - {"M4"})
+        v["lead_rmse_warm_out_others"] = ", ".join(oth[:-1]) + " or " + oth[-1]
+        lo = [bs["variants"]["main"]["loro"][m]["rmse_map"]["mean"] for m in L("main", "loro", "rmse_map")]
+        v["lead_rmse_loro_range"] = f"{min(lo):.2f}–{max(lo):.2f}"
+        wo = [bs["variants"]["main"]["warm_out"][m]["rmse_map"]["mean"] for m in L("main", "warm_out", "rmse_map")]
+        v["lead_rmse_warm_range"] = f"{min(wo):.2f}–{max(wo):.2f}"
+        x = P("loro", "M7-M6")
+        v["loro_M7_M6_diff"] = f(x["mean_diff"])
+        v["loro_M7_M6_ci"] = f"{x['ci95'][0]:.2f}–{x['ci95'][1]:.2f}"
+        x = P("zc_out", "M7-M2")
+        v["zc_M7_M2_ci"] = f"{x['ci95'][0]:.2f}–{x['ci95'][1]:.2f}"
+        x = P("loro", "M6-M4")
+        v["loro_M6_M4_ci"] = typographic_minus(f"{x['ci95'][0]:.2f} to {x['ci95'][1]:.2f}")
+        for a_, b_ in (("M1", "M4"), ("M1", "M5"), ("M1", "M6"), ("M2", "M4"), ("M2", "M5"),
+                       ("M2", "M6"), ("M3", "M4"), ("M3", "M5"), ("M3", "M6")):
+            y = P("final", f"{b_}-{a_}")
+            assert y["resolved"] and y["mean_diff"] < 0, (a_, b_)   # "each resolved better than M1-M3"
+        assert L("main", "warm_out", "rmse_map") | {"M0", "M3"} == set(METHODS)
+        def better(kind, a_, b_, st="rmse_map", variant="main"):     # a_ resolved better than b_
+            pr = pdv[variant][kind][st]["pairs"]
+            y = pr.get(f"{a_}-{b_}") or {**pr[f"{b_}-{a_}"], "mean_diff": -pr[f"{b_}-{a_}"]["mean_diff"]}
+            return y["resolved"] and not y["below_floor"] and y["mean_diff"] < 0
+        for nn in ("M6", "M7"):
+            assert not any(better(k, nn, "M5") for k in pdv["main"])         # never better than M5
+            for o in ("M1", "M2", "M3"):
+                assert better("loro", nn, o) and better("final", nn, o)
+                assert better("warm_out", "M6", o)
+            assert better("zc_out", "M2", nn)
+        among = [(a_, b_) for a_ in ("M4", "M5", "M6", "M7") for b_ in ("M4", "M5", "M6", "M7")
+                 if a_ < b_ and (better("loro", a_, b_) or better("loro", b_, a_))]
+        assert among == [("M6", "M7")], among                                  # only M7 worse than M6
+        assert better("final", "M5", "M6") and not better("final", "M4", "M6")
+        assert all(better("loro", "M6", o, "abs_integrated_rel_error") for o in METHODS if o != "M6")
+        rows = []
+        n1v, n1p = hy["ranking"]["n1"]["kinds"], pdv["n1"]
+        for kind in ("loro", "zc_out", "warm_out"):
+            rows.append([f"`{kind}`", n1v[kind]["order_by_mean_rmse_map"][0],
+                         ", ".join(sorted(n1p[kind]["rmse_map"]["leaders"])),
+                         n1v[kind]["order_by_mean_abs_ire"][0],
+                         ", ".join(sorted(n1p[kind]["abs_integrated_rel_error"]["leaders"]))])
+        v["table_n1"] = _md_table(["Held-out set", "lowest mean rmse_map", "leading (rmse_map)",
+                                   "lowest mean \\|integrated error\\|", "leading (\\|integrated error\\|)"], rows)
+    pb = _load("probabilistic.json")
+    if pb:
+        d = pb["variants"]["main"]
+        kinds = ("loro", "zc_out", "warm_out", "final", "profile_test")
+        rows = []
+        for mm in ("M5", "M6", "M7"):
+            rows.append([mm] + [f"{f(d[k][mm]['coverage_68'])} / {f(d[k][mm]['coverage_95'])} / "
+                                f"{f(d[k][mm]['crps'])}" if mm in d[k] else "—" for k in kinds])
+        v["table_prob"] = _md_table(["Method"] + [f"`{k}`" for k in kinds], rows)
+        rows = []
+        for mm in METHODS[1:]:
+            rows.append([mm] + [f"{f(d[k][mm]['skill_rmse_map'])} / {f(d[k][mm]['skill_abs_integrated_rel_error'])}"
+                                if mm in d[k] else "—" for k in kinds])
+        v["table_skill"] = _md_table(["Method"] + [f"`{k}`" for k in kinds], rows)
+        cov = sorted(int(k.split("_")[1]) for k in d["loro"]["M6"] if k.startswith("coverage_"))
+        v["cov_lo"], v["cov_hi"] = str(cov[0]), str(cov[1])
+        v["prof_M7_c95"] = f(d["profile_test"]["M7"]["coverage_95"])
+        v["prof_M7_crps"] = f(d["profile_test"]["M7"]["crps"], 1)
+        v["warm_M7_c95"] = f(d["warm_out"]["M7"]["coverage_95"])
+        v["final_M7_c95"] = f(d["final"]["M7"]["coverage_95"])
+        v["loro_M6_c95"], v["loro_M6_c68"] = f(d["loro"]["M6"]["coverage_95"]), f(d["loro"]["M6"]["coverage_68"])
+        assert d["warm_out"]["M7"]["coverage_95"] < min(d["warm_out"][m]["coverage_95"] for m in ("M5", "M6"))
+        assert d["final"]["M7"]["coverage_95"] < min(d["final"][m]["coverage_95"] for m in ("M5", "M6"))
     # ---- cross-validation record --------------------------------------------------------------
     cv = _load("cv_results.json")
     if cv:
@@ -316,6 +401,8 @@ def values() -> dict[str, str]:
         nn = [u for u in cv["units"] if u["method"] in ("M6", "M7")]
         v["nn_hit_max"] = str(sum(u["info"]["n_hit_max_epochs"] for u in nn))
         v["nn_units"] = str(len(nn))
+        v["nn_members_trained"] = str(sum(len(u["info"]["members"]) for u in nn))
+        assert all(not mb["hit_max_epochs"] for u in nn for mb in u["info"]["members"])
         m4 = [u for u in cv["units"] if u["method"] == "M4" and u["variant"] == "main"]
         v["M4_main_units"] = str(len(m4))
         v["M4_main_quad"] = str(sum(u["info"]["degree"] == 2 for u in m4))
@@ -391,7 +478,7 @@ def values() -> dict[str, str]:
             row = [mm]
             for z in ZC:
                 x = cl[z][mm]
-                row.append(f"{f(x['dMdT_ref_p1'])} / {f(x['dMdT_p1_p2'])}")
+                row.append(f"{f(x['dMdT_ref_p1'])} / {f(x['dMdT_p1_p2'])} ({f(x['d2MdT2'])})")
             for z in ZC:
                 x = cl[z][mm]
                 flag = lambda b: " ×" if b else ""  # noqa: E731

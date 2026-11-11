@@ -3,7 +3,7 @@
 # the cross-validation. The final test is NEVER re-run: it was evaluated once, and figures/final_test.json
 # and its start marker are never touched by this script.
 #
-#   bash exp3_melt_emulator/reproduce.sh --quick   # hypotheses.json, bootstrap.json, Figures 1-4 and README
+#   bash exp3_melt_emulator/reproduce.sh --quick   # hypotheses, bootstrap, probabilistic JSON, Figures 1-4, README
 #                                                  # from figures/*.json
 #   bash exp3_melt_emulator/reproduce.sh           # full: re-run the noise floor, run_protocol.py --cv and the
 #                                                  # post hoc profile-test diagnosis, compare each with the
@@ -22,7 +22,9 @@
 # The full mode also needs the Exp. 2 run output (/Volumes/LaCie/portfolio_runs/exp2, for the noise floor)
 # and about 11 h of wall clock on 5 cores. run_protocol.py --cv verifies the frozen configuration
 # (figures/protocol_config.json), the dataset and the folds, and reuses the finished units in
-# /Volumes/LaCie/portfolio_runs/exp3/cv_units: move that directory aside to refit every unit. It is run
+# /Volumes/LaCie/portfolio_runs/exp3/cv_units: with the recorded units in place NOTHING is refitted and the
+# --cv check only shows that cv_results.json reassembles identically (a notice says so); move that
+# directory aside to refit every unit (the script never deletes it). It is run
 # under Amendment 1 of the pre-registration (wall-clock budget 20 h instead of 8 h, protocol unchanged),
 # exactly as the recorded run. No committed record is changed by the full mode: the noise floor is
 # recomputed to a scratch file and compared with figures/noise_floor.json (an input of the frozen
@@ -54,6 +56,7 @@ A="$HERE/analysis"
 F="$HERE/figures"
 DATASET=/Volumes/LaCie/portfolio_runs/exp2/exp3_dataset.npz
 RUNS3=/Volumes/LaCie/portfolio_runs/exp3
+KEEPAWAKE=""; command -v caffeinate > /dev/null && KEEPAWAKE="caffeinate -is"   # macOS: keep the machine awake
 AMENDMENT="Enmienda 1 del PD0 (Esteban 2026-11-10): presupuesto de reloj 20 h; protocolo científico sin cambios"
 
 # The final test is evaluated once; nothing below may create, change or remove its record.
@@ -79,9 +82,14 @@ EOF
   step "cross-validation: run_protocol.py --cv (Amendment 1; never --final)"
   export RERUN_DIR="$RUNS3/reproduce"
   st=0; bash "$HERE/scripts/rerun_compare_restore.sh" cv "$F/cv_results.json" -- \
-    caffeinate -is "$ANEMOI" "$HERE/scripts/run_protocol.py" --cv --wall-limit-hours 20 \
+    $KEEPAWAKE "$ANEMOI" "$HERE/scripts/run_protocol.py" --cv --wall-limit-hours 20 \
     --amendment "$AMENDMENT" || st=$?
   [ "$st" -eq 0 ] || CHECKS+=("cv_results differs or --cv failed (exit $st)")
+  if grep "START --cv" "$RUNS3/cv_progress.log" | tail -1 | grep -q " pending 0 "; then
+    echo; echo "=== NOTE: every cross-validation unit already existed in $RUNS3/cv_units, so NOTHING WAS REFITTED:"
+    echo "=== the check above only shows that cv_results.json reassembles identically from the recorded units."
+    echo "=== For a refit from scratch, move that directory aside yourself (this script never deletes it), ~11 h."
+  fi
   step "post hoc profile-test diagnosis (one M7 refit)"
   st=0; bash "$HERE/scripts/rerun_compare_restore.sh" profile "$F/profile_test_diag.json" -- \
     "$ANEMOI" "$A/profile_test_diag.py" > /dev/null || st=$?
@@ -90,6 +98,7 @@ fi
 
 step "hypotheses (H3a-H3c) and ranking";        "$PY" "$A/hypotheses.py" > /dev/null
 step "bootstrap intervals over runs";           "$PY" "$A/bootstrap.py" > /dev/null
+step "coverage, CRPS and skill";                "$PY" "$A/probabilistic.py" > /dev/null
 MAPS="$RUNS3/final_maps.npz"
 if [ -f "$DATASET" ] && [ -f "$MAPS" ]; then
   step "Figures 1, 2 and 4";                    "$PY" "$A/figures.py" > /dev/null
