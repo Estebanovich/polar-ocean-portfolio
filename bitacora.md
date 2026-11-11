@@ -437,3 +437,10 @@
 - Sin resultados del Exp. 3: mapas, curvas y miembros del ensamble son bocetos; el contorno de la plataforma es la línea de apoyo de ISOMIP+ (`isomip_outline.json` del Exp. 2). Pie de figura reescrito panel por panel; los números del pie vienen de los JSON.
 - Esteban ya había escrito a Nakayama y Sheehan antes del Exp. 3; no hay correo pendiente para ellos.
 - Pruebas: 663 pasan y 3 se omiten bajo pyocean; 160 pasan y 1 se omite bajo anemoi.
+
+## 2026-11-11 (noche, 3) — Exp. 3: Figura 0 rehecha otra vez, con referencias de diseño
+
+- Esteban: la versión de tarjetas "se ve muy IA". Se revisaron las figuras 1 de Rosier 2023, Burgard 2023, Lütjens 2025, Reese 2018, Lambert & Burgard 2025 y Ockenden 2026 (copias locales), y Rougier et al. 2014 ("Ten simple rules for better figures"). Lo común: fondo blanco sin cajas ni texturas, letras de panel (a)–(d), etiquetas directas sobre los elementos en vez de listas, dibujos con datos reales o con un modelo de juguete (Lütjens Fig. 1), pocos colores con significado.
+- Nueva Figura 0 en matplotlib, con el estilo y los colores de método de las Figuras 1–4: (a) corte real de ISOMIP+ por la línea central coloreado por un perfil rampa, y el mapa de derretimiento; (b) el plano (Tbot, z_c) con cada prueba rotulada en su sitio y la hipótesis que sirve; (c) los métodos en un eje física → datos y la factorización de M7 (curva × patrón = mapa); (d) H3c como "honesto" frente a "seguro y equivocado". Los mapas y curvas son una ilustración calculada con la geometría de entrada (melt = TF₊² × patrón), declarada en el pie; no es salida de ningún modelo.
+- Ya no usa VectorCraft: se borró `fig0_protocol.commands.json`; `reproduce.sh` redibuja la figura si existe la geometría de ISOMIP+. Pie de figura reescrito por panel. `readinglist.md`: Rougier 2014 y Wong 2010 (este último por verificar).
+- Pruebas: 663 pasan y 3 se omiten bajo pyocean; 160 pasan y 1 se omite bajo anemoi.

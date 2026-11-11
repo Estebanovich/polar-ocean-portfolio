@@ -135,6 +135,8 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ✅ | Olbers & Hellmer (2010). A box model of circulation and melting in ice shelf caverns. *Ocean Dyn.* (melt cuadrático para T pequeña y lineal para T grande) | https://doi.org/10.1007/s10236-009-0252-z |
 | ✅ | Mathiot & Jourdain (2023). Southern Ocean warming and Antarctic ice shelf melting in conditions plausible by late 23rd century. *Ocean Sci.* 19:1595 | https://doi.org/10.5194/os-19-1595-2023 |
 | ✅ | Ross et al. (2023). Benchmarking of machine learning ocean subgrid parameterizations in an idealized model. *JAMES* (las redes con restricciones físicas generalizan mal a regímenes nuevos) | https://doi.org/10.1029/2022MS003258 |
+| ⬜ | Rougier, Droettboom & Bourne (2014). Ten simple rules for better figures. *PLoS Comput. Biol.* 10:e1003833 (diseño de figuras; referencia para rehacer la Figura 0 del Exp. 3; acceso abierto, CC0) | https://doi.org/10.1371/journal.pcbi.1003833 |
+| ⬜ | Wong (2010). Points of view: Design of data figures. *Nature Methods* 7:665 (serie de columnas de diseño; título y DOI tomados de los metadatos de una copia, [verificar]) | https://doi.org/10.1038/nmeth0910-665 |
 
 ## Exp. 4 — BayIW ártico (MacKinnon, Maksym)
 
