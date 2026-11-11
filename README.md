@@ -11,7 +11,11 @@ Idealized, reproducible MITgcm experiments on polar ocean processes (ice–ocean
 2. **[An ISOMIP+ ice-shelf cavity: melt sensitivity to warm deep water and the destination of meltwater](exp2_isomip_cavity/README.md)**. Three parts:
    - the ISOMIP+ protocol, calibrated as prescribed and checked against the published results and the MITgcm-JPL output: melt and barotropic circulation in range, cavity overturning below the pre-registered range;
    - a 28-run ensemble at 4 km varying the deep-water temperature, the thermocline depth and the ice draft: the melt is a near-exact quadratic in temperature but steeper than the pre-registered power law (that hypothesis fails), and the meltwater leaves the cavity at shallower depths as the deep water warms (that hypothesis holds);
-   - the ensemble exported as the training and test data of a melt emulator (Experiment 3, not yet built).
+   - the ensemble exported as the training and test data of a melt emulator (Experiment 3).
+3. **[Emulating ice-shelf basal melt from a small cavity ensemble](exp3_melt_emulator/README.md)**. Eight methods, from a one-parameter quadratic melt law to a deep ensemble of neural networks and a physics hybrid, trained on the Experiment 2 runs and scored only on runs they had not seen, under a pre-registered protocol with a final test at warmer deep water evaluated once:
+   - simple methods win on the melt map: a per-cell regression on the three forcing parameters inside the range and in temperature extrapolation, the local quadratic law when the thermocline depth is held out;
+   - the deep ensemble is best on the integrated melt, and its spread flagged its large out-of-range errors, replicating a published result (DeepMelt-GL) in a controlled case;
+   - the physics hybrid did not extrapolate better than the deep ensemble (that hypothesis fails) and, in a post hoc diagnosis, failed on a profile shape it had not seen because its geometry network had learned the training profile shape.
 
 How to run the model, the tests and the analysis: [RUNNING.md](RUNNING.md).
 
