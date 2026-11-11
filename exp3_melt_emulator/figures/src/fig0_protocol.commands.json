@@ -1,0 +1,3508 @@
+[
+ {
+  "command": "file.new",
+  "params": {
+   "width": 1100,
+   "height": 755,
+   "units": "Points",
+   "backgroundContents": "white",
+   "name": "fig0_protocol"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 30,
+   "y": 36,
+   "text": "Experiment 3: can a melt emulator trained on 25 cavity runs extrapolate?",
+   "size": 15,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 33,
+   "y": 64,
+   "width": 360,
+   "height": 430,
+   "radius": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#000000"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 10
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 30,
+   "y": 60,
+   "width": 360,
+   "height": 430,
+   "radius": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#f7f4ee"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#9a8f80"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "texture.texturizer",
+   "params": {
+    "texture": "canvas",
+    "scaling": 70,
+    "relief": 2,
+    "lightDirection": "topLeft"
+   }
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 38,
+   "y": 70,
+   "width": 20,
+   "height": 20
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 48,
+   "y": 84.4,
+   "text": "1",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66,
+   "y": 85,
+   "text": "The runs: 29 MITgcm simulations (Exp. 2)",
+   "size": 12,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 92,
+   "y": 122,
+   "width": 268,
+   "height": 230
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 278.73548387096776,
+   "y": 122,
+   "width": 20.748387096774195,
+   "height": 230
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#f6d7cf"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 92,
+   "y1": 189.08333333333334,
+   "x2": 360,
+   "y2": 189.08333333333334
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#7d6f6a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round",
+   "dash": [
+    3,
+    3
+   ]
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 92,
+   "y1": 284.9166666666667,
+   "x2": 360,
+   "y2": 284.9166666666667
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#7d6f6a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round",
+   "dash": [
+    3,
+    3
+   ]
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 356,
+   "y": 185.08333333333334,
+   "text": "zc_out cut 325 m",
+   "size": 7.5,
+   "font": "Helvetica",
+   "color": "#555555",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 356,
+   "y": 280.9166666666667,
+   "text": "zc_out cut 475 m",
+   "size": 7.5,
+   "font": "Helvetica",
+   "color": "#555555",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 289.1096774193549,
+   "y": 134,
+   "text": "warm_out",
+   "size": 7.5,
+   "font": "Helvetica",
+   "color": "#b8322a",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 117.93548387096774,
+   "y1": 352,
+   "x2": 117.93548387096774,
+   "y2": 356
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 117.93548387096774,
+   "y": 367,
+   "text": "-0.5",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 161.16129032258067,
+   "y1": 352,
+   "x2": 161.16129032258067,
+   "y2": 356
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 161.16129032258067,
+   "y": 367,
+   "text": "0",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 204.38709677419357,
+   "y1": 352,
+   "x2": 204.38709677419357,
+   "y2": 356
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 204.38709677419357,
+   "y": 367,
+   "text": "0.5",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 247.61290322580646,
+   "y1": 352,
+   "x2": 247.61290322580646,
+   "y2": 356
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 247.61290322580646,
+   "y": 367,
+   "text": "1",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 290.8387096774194,
+   "y1": 352,
+   "x2": 290.8387096774194,
+   "y2": 356
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 290.8387096774194,
+   "y": 367,
+   "text": "1.5",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 334.0645161290323,
+   "y1": 352,
+   "x2": 334.0645161290323,
+   "y2": 356
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 334.0645161290323,
+   "y": 367,
+   "text": "2",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 88,
+   "y1": 141.16666666666666,
+   "x2": 92,
+   "y2": 141.16666666666666
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 85,
+   "y": 144.16666666666666,
+   "text": "250",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 88,
+   "y1": 237.0,
+   "x2": 92,
+   "y2": 237.0
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 85,
+   "y": 240.0,
+   "text": "400",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 88,
+   "y1": 332.8333333333333,
+   "x2": 92,
+   "y2": 332.8333333333333
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 85,
+   "y": 335.8333333333333,
+   "text": "550",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 226.0,
+   "y": 383,
+   "text": "Tbot: CDW temperature below the thermocline (\u00b0C)",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 1,
+   "end": 4,
+   "size": 6.3,
+   "baselineShift": -1.98
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 52,
+   "y": 237.0,
+   "text": "zc: thermocline depth (m)",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222",
+   "justify": "center",
+   "rotation": -90
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 1,
+   "end": 2,
+   "size": 6.3,
+   "baselineShift": -1.98
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 113.33548387096775,
+   "y": 136.56666666666666,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 156.56129032258067,
+   "y": 136.56666666666666,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 199.78709677419357,
+   "y": 136.56666666666666,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 243.01290322580647,
+   "y": 136.56666666666666,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 286.23870967741937,
+   "y": 136.56666666666666,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 113.33548387096775,
+   "y": 232.4,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 156.56129032258067,
+   "y": 232.4,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 199.78709677419357,
+   "y": 232.4,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 243.01290322580647,
+   "y": 232.4,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 286.23870967741937,
+   "y": 232.4,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 113.33548387096775,
+   "y": 328.2333333333333,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 156.56129032258067,
+   "y": 328.2333333333333,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 199.78709677419357,
+   "y": 328.2333333333333,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 243.01290322580647,
+   "y": 328.2333333333333,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 286.23870967741937,
+   "y": 328.2333333333333,
+   "width": 9.2,
+   "height": 9.2
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 226.00000000000003 312.85888888888894 L 230.84000000000003 321.6588888888889 L 221.16000000000003 321.6588888888889 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 284.78709677419357 164.63666666666668 L 289.62709677419355 173.4366666666667 L 279.9470967741936 173.4366666666667 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 156.83870967741936 185.72 L 161.67870967741936 194.52 L 151.99870967741936 194.52 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 124.85161290322581 232.99777777777777 L 129.6916129032258 241.79777777777778 L 120.01161290322581 241.79777777777778 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 190.55483870967745 259.8311111111111 L 195.39483870967746 268.63111111111107 L 185.71483870967745 268.63111111111107 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 283.9225806451613 283.47 L 288.7625806451613 292.27 L 279.08258064516133 292.27 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 162.89032258064518 162.0811111111111 L 167.73032258064518 170.88111111111112 L 158.05032258064517 170.88111111111112 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 127.44516129032259 297.52555555555557 L 132.28516129032258 306.3255555555555 L 122.60516129032258 306.3255555555555 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 245.0193548387097 222.77555555555554 L 249.8593548387097 231.57555555555555 L 240.17935483870968 231.57555555555555 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 218.2193548387097 174.85888888888888 L 223.0593548387097 183.6588888888889 L 213.3793548387097 183.6588888888889 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.star",
+  "params": {
+   "cx": 334.0645161290323,
+   "cy": 141.16666666666666,
+   "radius1": 6.8999999999999995,
+   "radius2": 2.9899999999999998,
+   "points": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.star",
+  "params": {
+   "cx": 334.0645161290323,
+   "cy": 237.0,
+   "radius1": 6.8999999999999995,
+   "radius2": 2.9899999999999998,
+   "points": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.star",
+  "params": {
+   "cx": 334.0645161290323,
+   "cy": 332.8333333333333,
+   "radius1": 6.8999999999999995,
+   "radius2": 2.9899999999999998,
+   "points": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 247.61290322580646 205.72444444444446 L 252.45290322580647 211.44444444444446 L 247.61290322580646 217.16444444444446 L 242.77290322580646 211.44444444444446 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 55.6,
+   "y": 399.6,
+   "width": 8.8,
+   "height": 8.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 74,
+   "y": 407.5,
+   "text": "15 factorial runs, s = 1 (training)",
+   "size": 8.8,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 60 414.72 L 64.84 423.52 L 55.16 423.52 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5aa0d8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 74,
+   "y": 423.5,
+   "text": "10 geometry runs, s = 0.8, 1.2 (training)",
+   "size": 8.8,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.star",
+  "params": {
+   "cx": 60,
+   "cy": 436,
+   "radius1": 6.6000000000000005,
+   "radius2": 2.8600000000000003,
+   "points": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 74,
+   "y": 439.5,
+   "text": "3 final-test runs, Tbot = 2.0 (held out)",
+   "size": 8.8,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 20,
+   "end": 23,
+   "size": 6.16,
+   "baselineShift": -1.94
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 60 446.28 L 64.84 452 L 60 457.72 L 55.16 452 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 74,
+   "y": 455.5,
+   "text": "Ocean0 reference, linear profile (profile test)",
+   "size": 8.8,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 48,
+   "y": 480,
+   "text": "s scales the ice draft; 4 km ISOMIP+ cavity; melt = mean of months 19\u201324",
+   "size": 7.8,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 408,
+   "y": 64,
+   "width": 300,
+   "height": 430,
+   "radius": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#000000"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 10
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 405,
+   "y": 60,
+   "width": 300,
+   "height": 430,
+   "radius": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#f7f4ee"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#9a8f80"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "texture.texturizer",
+   "params": {
+    "texture": "canvas",
+    "scaling": 70,
+    "relief": 2,
+    "lightDirection": "topLeft"
+   }
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 413,
+   "y": 70,
+   "width": 20,
+   "height": 20
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 423,
+   "y": 84.4,
+   "text": "2",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 441,
+   "y": 85,
+   "text": "What each method is tested on",
+   "size": 12,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 423,
+   "y": 110,
+   "text": "Each fit sees only its training runs; standardisation,",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 423,
+   "y": 122,
+   "text": "EOFs, kernels and K, n are refitted inside each fold.",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 421,
+   "y": 142,
+   "width": 268,
+   "height": 50,
+   "radius": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 431,
+   "y": 173,
+   "width": 67.2,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 498.2,
+   "y": 173,
+   "width": 2.8000000000000025,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 431,
+   "y": 160,
+   "text": "loro",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 161,
+   "text": "25 folds: train 24 / test 1",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 178,
+   "text": "in range: leave one run out",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 421,
+   "y": 200,
+   "width": 268,
+   "height": 50,
+   "radius": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 431,
+   "y": 231,
+   "width": 47.6,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 478.6,
+   "y": 231,
+   "width": 22.399999999999995,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 431,
+   "y": 218,
+   "text": "zc_out",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 219,
+   "text": "3 folds: thirds of zc",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 20,
+   "end": 21,
+   "size": 6.02,
+   "baselineShift": -1.89
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 236,
+   "text": "train 17/16/17, test 8/9/8",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 421,
+   "y": 258,
+   "width": 268,
+   "height": 50,
+   "radius": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 431,
+   "y": 289,
+   "width": 56.0,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 487.0,
+   "y": 289,
+   "width": 13.999999999999996,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 431,
+   "y": 276,
+   "text": "warm_out",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 277,
+   "text": "1 fold: train Tbot \u2264 1.0 (20)",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 15,
+   "end": 18,
+   "size": 6.02,
+   "baselineShift": -1.89
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 294,
+   "text": "test Tbot \u2265 1.4 (5)",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 6,
+   "end": 9,
+   "size": 6.02,
+   "baselineShift": -1.89
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 421,
+   "y": 316,
+   "width": 268,
+   "height": 50,
+   "radius": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 431,
+   "y": 347,
+   "width": 67.3076923076923,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 498.3076923076923,
+   "y": 347,
+   "width": 2.6923076923076907,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 431,
+   "y": 334,
+   "text": "profile_test",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 335,
+   "text": "train 25 / test Ocean0",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 352,
+   "text": "different profile; per-cell methods",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 421,
+   "y": 374,
+   "width": 268,
+   "height": 50,
+   "radius": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#f6d7cf"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 431,
+   "y": 405,
+   "width": 62.5,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 493.5,
+   "y": 405,
+   "width": 7.4999999999999964,
+   "height": 9
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 431,
+   "y": 392,
+   "text": "final",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#b8322a",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 393,
+   "text": "train 25 / test Tbot = 2.0 (3)",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 17,
+   "end": 20,
+   "size": 6.02,
+   "baselineShift": -1.89
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 513,
+   "y": 410,
+   "text": "evaluated once, frozen config",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 431,
+   "y": 440,
+   "width": 10,
+   "height": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#2c6ea3"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 445,
+   "y": 448,
+   "text": "training runs",
+   "size": 8.2,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 525,
+   "y": 440,
+   "width": 10,
+   "height": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 539,
+   "y": 448,
+   "text": "held-out runs",
+   "size": 8.2,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 423,
+   "y": 468,
+   "text": "Sensitivity repeat: all folds but final without the",
+   "size": 8.2,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 423,
+   "y": 480,
+   "text": "5 runs failing N1 (never used for the hypotheses).",
+   "size": 8.2,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 723,
+   "y": 64,
+   "width": 350,
+   "height": 430,
+   "radius": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#000000"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 10
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 720,
+   "y": 60,
+   "width": 350,
+   "height": 430,
+   "radius": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#f7f4ee"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#9a8f80"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "texture.texturizer",
+   "params": {
+    "texture": "canvas",
+    "scaling": 70,
+    "relief": 2,
+    "lightDirection": "topLeft"
+   }
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 728,
+   "y": 70,
+   "width": 20,
+   "height": 20
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 738,
+   "y": 84.4,
+   "text": "3",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 756,
+   "y": 85,
+   "text": "Eight ways to predict the melt map",
+   "size": 12,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 734,
+   "y": 106,
+   "width": 322,
+   "height": 52,
+   "radius": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#d9d9d9"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.7
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 744,
+   "y": 121,
+   "text": "Baseline",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 746,
+   "y": 141,
+   "text": "M0",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 778,
+   "y": 141,
+   "text": "mean of the training maps",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 734,
+   "y": 166,
+   "width": 322,
+   "height": 112,
+   "radius": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#cfe3f2"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.7
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 744,
+   "y": 181,
+   "text": "Physics: one fitted constant",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 746,
+   "y": 201,
+   "text": "M1",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 778,
+   "y": 201,
+   "text": "\u03b3 c TF",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 1046,
+   "y": 213,
+   "text": "Favier et al. 2019, Eq. 2",
+   "size": 7.8,
+   "font": "Helvetica",
+   "color": "#555555",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 746,
+   "y": 231,
+   "text": "M2",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 778,
+   "y": 231,
+   "text": "K c2 |TF| TF",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 3,
+   "end": 4,
+   "size": 6.58,
+   "baselineShift": 3.57
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 1046,
+   "y": 243,
+   "text": "Burgard et al. 2022, Eq. 14",
+   "size": 7.8,
+   "font": "Helvetica",
+   "color": "#555555",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 746,
+   "y": 261,
+   "text": "M3",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 778,
+   "y": 261,
+   "text": "K c2 TF |\u27e8TF\u27e9|",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 3,
+   "end": 4,
+   "size": 6.58,
+   "baselineShift": 3.57
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 1046,
+   "y": 273,
+   "text": "Jourdain et al. 2020, Eq. 1",
+   "size": 7.8,
+   "font": "Helvetica",
+   "color": "#555555",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 734,
+   "y": 286,
+   "width": 322,
+   "height": 82,
+   "radius": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#d6ecd9"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.7
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 744,
+   "y": 301,
+   "text": "Statistics on (Tbot, zc, s)",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 16,
+   "end": 19,
+   "size": 6.58,
+   "baselineShift": -2.07
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 22,
+   "end": 23,
+   "size": 6.58,
+   "baselineShift": -2.07
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 746,
+   "y": 321,
+   "text": "M4",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 778,
+   "y": 321,
+   "text": "per-cell regression, degree 1 or 2",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 746,
+   "y": 351,
+   "text": "M5",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 778,
+   "y": 351,
+   "text": "Gaussian process on EOFs",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 1046,
+   "y": 363,
+   "text": "Myren & Lawrence 2021",
+   "size": 7.8,
+   "font": "Helvetica",
+   "color": "#555555",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 734,
+   "y": 376,
+   "width": 322,
+   "height": 82,
+   "radius": 5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#f6dcc8"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b5ab9c"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.7
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 744,
+   "y": 391,
+   "text": "Neural networks, 5 members",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 746,
+   "y": 411,
+   "text": "M6",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 778,
+   "y": 411,
+   "text": "deep ensemble on 10 cell features",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 1046,
+   "y": 423,
+   "text": "Lakshminarayanan et al. 2017",
+   "size": 7.8,
+   "font": "Helvetica",
+   "color": "#555555",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 746,
+   "y": 441,
+   "text": "M7",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#b8322a",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 778,
+   "y": 441,
+   "text": "hybrid: K TF+n g\u03b8(geometry)",
+   "size": 9.4,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 12,
+   "end": 13,
+   "size": 6.58,
+   "baselineShift": -2.07
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 13,
+   "end": 14,
+   "size": 6.58,
+   "baselineShift": 3.57
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 16,
+   "end": 18,
+   "size": 6.58,
+   "baselineShift": -2.07
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 1046,
+   "y": 453,
+   "text": "g\u03b8 sees no temperature",
+   "size": 7.8,
+   "font": "Helvetica",
+   "color": "#555555",
+   "justify": "right"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 1,
+   "end": 3,
+   "size": 5.46,
+   "baselineShift": -1.72
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 738,
+   "y": 480,
+   "text": "c = \u03c1swcp/(\u03c1iLi); TF: thermal forcing at the ice base",
+   "size": 7.8,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 6,
+   "end": 8,
+   "size": 5.46,
+   "baselineShift": -1.72
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 9,
+   "end": 10,
+   "size": 5.46,
+   "baselineShift": -1.72
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 14,
+   "end": 15,
+   "size": 5.46,
+   "baselineShift": -1.72
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 16,
+   "end": 17,
+   "size": 5.46,
+   "baselineShift": -1.72
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 33,
+   "y": 514,
+   "width": 1040,
+   "height": 200,
+   "radius": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#000000"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 10
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 30,
+   "y": 510,
+   "width": 1040,
+   "height": 200,
+   "radius": 8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#f7f4ee"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#9a8f80"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "texture.texturizer",
+   "params": {
+    "texture": "canvas",
+    "scaling": 70,
+    "relief": 2,
+    "lightDirection": "topLeft"
+   }
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 38,
+   "y": 520,
+   "width": 20,
+   "height": 20
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 48,
+   "y": 534.4,
+   "text": "4",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66,
+   "y": 535,
+   "text": "How the predictions are scored (fixed before any fit on real data)",
+   "size": 12,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 52,
+   "y": 564,
+   "text": "Metrics, per held-out run (Burgard et al. 2022):",
+   "size": 9.6,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 62,
+   "y": 584,
+   "text": "\u2022 RMSE of the melt map over the run's own ice shelf (Eq. 32)",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 62,
+   "y": 601,
+   "text": "\u2022 relative error of the integrated melt (Eq. 33\u201334)",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 62,
+   "y": 618,
+   "text": "\u2022 error of the mean melt near the grounding line (Eq. 35)",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 62,
+   "y": 635,
+   "text": "\u2022 spread of the 5 network members (M5\u2013M7: also coverage, CRPS)",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 62,
+   "y": 652,
+   "text": "\u2022 noise floor: no difference below 0.157 m a-1 or 1.3 % is read",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 46,
+   "end": 48,
+   "size": 6.3,
+   "baselineShift": 3.42
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 480,
+   "y": 564,
+   "text": "Pre-registered hypotheses:",
+   "size": 9.6,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 480,
+   "y": 573,
+   "width": 34,
+   "height": 15,
+   "radius": 3
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 497,
+   "y": 584,
+   "text": "H3a",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 522,
+   "y": 584,
+   "text": "On the 3 final-test runs, the hybrid M7 has a smaller integrated-melt error than M6,",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 522,
+   "y": 598,
+   "text": "on average and in at least 2 of the 3 runs (a difference below 1.3 % is inconclusive).",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 480,
+   "y": 607,
+   "width": 34,
+   "height": 15,
+   "radius": 3
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 497,
+   "y": 618,
+   "text": "H3b",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 522,
+   "y": 618,
+   "text": "Inside the training range (loro), the hybrid costs little: RMSE of M7 \u2264 1.10 \u00d7 that of M6.",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 480,
+   "y": 641,
+   "width": 34,
+   "height": 15,
+   "radius": 3
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 497,
+   "y": 652,
+   "text": "H3c",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 522,
+   "y": 652,
+   "text": "Out of range (zc_out, warm_out, final: 33 cases), the ensemble is never confidently wrong:",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 522,
+   "y": 666,
+   "text": "no case with spread < 5 % and integrated error > 20 % (Ockenden et al. 2026 replication).",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 480,
+   "y": 696,
+   "text": "The ranking of all 8 methods is reported as found, whichever wins.",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 392,
+   "y1": 275,
+   "x2": 403,
+   "y2": 275
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#9a8f80"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.0,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 707,
+   "y1": 275,
+   "x2": 718,
+   "y2": 275
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#9a8f80"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.0,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 30,
+   "y": 739,
+   "text": "A schematic of the protocol: no model output or result is drawn in this figure.",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ }
+]

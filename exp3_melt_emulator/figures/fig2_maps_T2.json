@@ -1,0 +1,36 @@
+{
+ "figure": "fig2_maps_T2",
+ "case": "ens_T2.0_zc400_s1.0",
+ "Tbot": 2.0,
+ "z_c": 400.0,
+ "best_physics": "M2",
+ "best_physics_rule": "lowest rmse_map on this run among M1-M3 (final_test.json)",
+ "physics_rmse_map": {
+  "M1": 15.537914015099581,
+  "M2": 14.622078715300495,
+  "M3": 21.511547659732766
+ },
+ "methods": {
+  "M2": {
+   "rmse_map": 14.622078715300495,
+   "integrated_rel_error": -0.36186295665005075,
+   "rmse_gl": 3.5442793949816895
+  },
+  "M6": {
+   "rmse_map": 10.804379848253896,
+   "integrated_rel_error": -0.08775208749468695,
+   "rmse_gl": 0.8480203476772381
+  },
+  "M7": {
+   "rmse_map": 12.232031780352845,
+   "integrated_rel_error": -0.1961830419219838,
+   "rmse_gl": 2.4398811865133325
+  }
+ },
+ "colour_scale": {
+  "vmin": -0.10615189541189127,
+  "vmax": 143.98058217928914,
+  "diff_absmax": 93.31164081951408
+ },
+ "mitgcm_shelf_mean": 16.65612143703169
+}
