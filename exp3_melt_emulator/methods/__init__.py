@@ -42,11 +42,12 @@ REGISTRY["M2"] = _physics.QuadLocal
 REGISTRY["M3"] = _physics.QuadNonLocal
 
 
-def _lazy(cls_name: str) -> Callable[[], Method]:
-    """Factory importing methods.stats (needs scikit-learn) only when called."""
+def _lazy(cls_name: str, module: str = "stats") -> Callable[[], Method]:
+    """Factory importing methods.<module> (stats: scikit-learn; nets: torch) only when called."""
     def factory() -> Method:
-        from exp3_melt_emulator.methods import stats
-        return getattr(stats, cls_name)()
+        import importlib
+        mod = importlib.import_module(f"exp3_melt_emulator.methods.{module}")
+        return getattr(mod, cls_name)()
     factory.__name__ = f"make_{cls_name}"
     return factory
 
@@ -54,3 +55,5 @@ def _lazy(cls_name: str) -> Callable[[], Method]:
 REGISTRY["M0"] = _lazy("MeanMap")
 REGISTRY["M4"] = _lazy("CellRegression")
 REGISTRY["M5"] = _lazy("GPonEOF")
+REGISTRY["M6"] = _lazy("DeepEnsemble", "nets")
+REGISTRY["M7"] = _lazy("Hybrid", "nets")
