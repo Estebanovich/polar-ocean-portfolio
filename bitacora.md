@@ -375,3 +375,22 @@
   - la cuadrática local frente a la no local en un caso donde la cuadrática falla de forma conocida (H1 del Exp. 2);
   - una comparación con líneas base simples: regresión lineal, proceso gaussiano y las dos cuadráticas, siguiendo a Lütjens et al. 2024 y a Myren & Lawrence 2021.
 - `readinglist.md` con 18 entradas nuevas en la sección del Exp. 3.
+
+## 2026-11-11 — Exp. 3: validación cruzada y prueba final (evaluada una sola vez)
+
+- **Validación cruzada:**
+  - Comando: `run_protocol.py --cv --wall-limit-hours 20 --amendment "Enmienda 1 del PD0 …"` (entorno anemoi, 5 procesos, 1 hilo cada uno).
+  - El primer intento (19:20 del 10-nov) se detuvo a las 21:04 por la regla congelada de 8 h, con una proyección de 14.1 h y 9 unidades escritas.
+  - Esteban aprobó la Enmienda 1: el presupuesto de reloj pasa a 20 h y el protocolo científico no cambia.
+  - Se relanzó a las 22:06 y terminó a las 09:14 del 11-nov: 476/476 unidades, 892 entradas, 40 100 s en esta sesión.
+  - Resultados en `cv_results.json` (4b020d0). Las 9 unidades anteriores a la enmienda no llevan la clave `amendment`; el registro de la enmienda está en el nivel superior del JSON.
+- **Revisión antes de la prueba final:** había un hallazgo importante: una caída durante `--final` habría gastado la prueba sin dejar registro. Se corrigió en 4b6e3a7:
+  - cualquier falla queda escrita en el marcador;
+  - `--resume-after-crash` solo se acepta después de una falla registrada;
+  - todos los intentos aparecen en `final_test.json`.
+  - La re-revisión no dejó hallazgos.
+- **Prueba final:**
+  - Comando: `run_protocol.py --final`, intento 1, de 09:42 a 10:33, 3061 s (M7 tomó 3052 s).
+  - Se entrenó con las 25 corridas y se predijeron las 3 corridas con Tbot = 2.0.
+  - Resultado en `final_test.json` (9d79dae). Mapas en LaCie (`final_maps.npz`, sha 20ada7e54cbc).
+- La evaluación formal de H3a–H3c y las figuras van en la Tarea 9.
