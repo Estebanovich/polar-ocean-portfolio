@@ -394,3 +394,13 @@
   - Se entrenó con las 25 corridas y se predijeron las 3 corridas con Tbot = 2.0.
   - Resultado en `final_test.json` (9d79dae). Mapas en LaCie (`final_maps.npz`, sha 20ada7e54cbc).
 - La evaluación formal de H3a–H3c y las figuras van en la Tarea 9.
+
+## 2026-11-11 — Exp. 3: diagnóstico post hoc de `profile_test` (M7 en `ocean0_4km`)
+
+- **Pregunta:** si el +413 % de M7 en `ocean0_4km` es un error nuestro o un comportamiento fuera de distribución. Nota: `exp3_melt_emulator/notes/diag_profile_test.md`; números: `figures/profile_test_diag.json`; script: `analysis/profile_test_diag.py`.
+- **Comprobaciones de entrada:** el perfil, el TF, el `draft`, la máscara y las unidades coinciden exactamente. El reajuste de M7 reproduce bit a bit los integrados de la unidad. **No se encontró ningún error.**
+- **Mecanismo:**
+  - el 58 % de las celdas de Ocean0 tiene un TF mayor que cualquier TF del entrenamiento a la misma distancia de z_c, porque d = 720 frente a 300 m;
+  - en esas celdas, g_θ ≈ 4, cuando haría falta ≈ 0.14;
+  - el 84 % del exceso integrado está en ellas, y por debajo de z_c − 50 m el error integrado por banda es de −6 % a +1 %.
+- **Clasificación:** (c) elección del método, con un componente de (b). No cambia ningún resultado preregistrado.
