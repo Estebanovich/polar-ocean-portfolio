@@ -30,6 +30,7 @@ C = RHO_SW * CP_O / (RHO_I * L_I)
 
 class _OneCoef:
     name = ""
+    input_features: tuple = ()
 
     def __init__(self):
         self.coef: float | None = None
@@ -41,7 +42,7 @@ class _OneCoef:
         """Frozen settings (PD0): one coefficient, closed-form least squares."""
         return dict(free_parameters=1, fit="closed-form least squares, pooled over the "
                     "training runs' shelf cells (uniform grid = area-weighted)",
-                    signed=True, constants=dict(rho_sw=RHO_SW, c_p=CP_O, rho_i=RHO_I, L_i=L_I,
+                    signed=True, input_features=list(self.input_features), constants=dict(rho_sw=RHO_SW, c_p=CP_O, rho_i=RHO_I, L_i=L_I,
                                                 c=C))
 
     def fit(self, runs: list[Run]) -> None:
@@ -65,6 +66,7 @@ class _OneCoef:
 class LinearLocal(_OneCoef):
     """M1: m = gamma * c * TF (Favier 2019 Eq. 2, linear local). Signed."""
     name = "M1"
+    input_features = ("TF",)
 
     def _basis(self, run):
         return C * cell_features(run)["TF"]
@@ -74,6 +76,7 @@ class QuadLocal(_OneCoef):
     """M2: m = K * c^2 * |TF| * TF (Burgard 2022 Eq. 14 with the constant slope and
     far-field factors folded into K; same form as Favier 2019 Eq. 4). Signed."""
     name = "M2"
+    input_features = ("TF",)
 
     def _basis(self, run):
         TF = cell_features(run)["TF"]
@@ -84,6 +87,7 @@ class QuadNonLocal(_OneCoef):
     """M3: m = K * c^2 * TF * |<TF>| (Jourdain 2020 Eq. 1 with delta T = 0;
     Favier 2019 Eq. 5, M+). <TF> is the shelf mean of the run (TF_mean)."""
     name = "M3"
+    input_features = ("TF", "TF_mean")
 
     def _basis(self, run):
         f = cell_features(run)

@@ -227,7 +227,20 @@ class _Ensemble:
         return dict(n_members=self.n_members, seeds=list(self.seeds), hidden=list(self.hidden),
                     max_epochs=self.max_epochs, patience=self.patience, lr=self.lr,
                     batch_size=self.batch_size, split_seed=self.split_seed, threads=self.threads,
-                    optimiser="Adam", var_floor=VAR_FLOOR, dtype="float64")
+                    optimiser="Adam", var_floor=VAR_FLOOR, dtype="float64",
+                    input_features=list(self.input_features), n_val=N_VAL,
+                    validation_rule="per member (R10, R12): one run drawn at random at each of "
+                                    "the Tbot levels [highest, levels[(L - 1) // 2], lowest] "
+                                    "with np.random.default_rng([split_seed, member_seed]); "
+                                    "fewer than n_val + 1 runs -> highest level only; "
+                                    "validation runs excluded from gradients, standardiser, "
+                                    "y_scale and K0",
+                    stopping="mean rmse_map over the member's validation runs; stop after "
+                             "patience epochs without improvement; best weights restored",
+                    loss="Gaussian NLL (Lakshminarayanan 2017 Eq. 1)", bagging=False,
+                    variance=self.variance_form)
+
+    variance_form = ""
 
     # --- hooks (st = the member being fitted / used) ----------------------------------
     def _prepare(self, st, train, pooled, y):   # sets st.y_shift, st.y_scale (and st.K0)
@@ -403,6 +416,7 @@ class DeepEnsemble(_Ensemble):
     """M6: deep ensemble of per-cell MLPs on all NET_FEATURES (Lakshminarayanan 2017)."""
     name = "M6"
     input_features = NET_FEATURES
+    variance_form = "sigma^2 = softplus(second output) + var_floor"
 
     def _prepare(self, st, train, pooled, y):
         st.y_shift = float(y.mean())
@@ -439,8 +453,18 @@ class Hybrid(_Ensemble):
         self.tf_kind_: str | None = None
         self._kw = kw
 
+    variance_form = ("sigma_m^2 = softplus(h0(x_g))^2 + (softplus(h1(x_g)) stopgrad(mu_m))^2 "
+                     "+ var_floor (ruling R11; heads see x_g only)")
+
     def hparams(self):
-        return dict(super().hparams(), tf_kind=self.tf_kind, tf_kind_folds=self.tf_kind_folds)
+        return dict(super().hparams(), tf_kind=self.tf_kind, tf_kind_folds=self.tf_kind_folds,
+                    form="m = K b^n g_theta(x_g); b = TF+ (local) or (TF+ |<TF>|)^(1/2) "
+                         "(nonlocal, R3); K, n trainable per member",
+                    n0=N0, K0_rule="K0 = coef * c^2 of the closed-form M2 (local) or M3 "
+                                   "(nonlocal) fit on the member's training runs",
+                    tf_kind_rule="inner CV by run: tf_kind_folds groups (None = one per run) "
+                                 "from np.random.default_rng(split_seed + 1).permutation; "
+                                 "criterion mean rmse_map over held-out runs; tie -> local")
 
     @staticmethod
     def basis(cells, kind):

@@ -11,7 +11,8 @@ PD0 before any protocol run:
 * every method's hyperparameters, read from the constructor defaults (``hparams()`` of
   each ``methods.REGISTRY`` factory's instance);
 * the PD0 thresholds (``PD0_THRESHOLDS``) and the noise floor (figures/noise_floor.json);
-* the git commit and the paths that differed from it at freeze time.
+* the git commit and the paths that differed from it at freeze time; any changed tracked
+  path outside ``exp3_melt_emulator/notes/`` makes it refuse.
 
 It refuses to overwrite an existing file; there is no override.
 
@@ -44,12 +45,13 @@ DEFAULT_NOISE = FIGURES / "noise_floor.json"
 # this dict must agree when --freeze-config is run.
 PD0_THRESHOLDS = {
     "gl_frac": 0.10,
+    "hypothesis_folds": "H3a-H3c use the main folds only; drop_n1 results are sensitivity",
     "H3a": {"cases": "final test (3 runs, Tbot = 2.0)",
             "metric": "|integrated_rel_error| per run",
             "rule": "mean over the 3 runs: M7 < M6, and M7 < M6 in >= 2 of the 3 runs",
             "min_runs_better": 2,
             "inconclusive_if": "|mean difference| < noise_floor.median_abs_integrated_rel_diff"},
-    "H3b": {"cases": "leave-one-run-out (25 folds)", "metric": "mean rmse_map over folds",
+    "H3b": {"cases": "leave-one-run-out (25 main folds, not the drop_n1 sensitivity folds)", "metric": "mean rmse_map over folds",
             "rule": "mean_M7 <= max_ratio_M7_over_M6 * mean_M6", "max_ratio_M7_over_M6": 1.10},
     "H3c": {"cases": "zc_out + warm_out test runs + final test runs, for M6 and M7",
             "spread": "std (ddof = 0) over the 5 members of the integrated melt / "
@@ -62,7 +64,16 @@ PD0_THRESHOLDS = {
                         "(rmse_map, rmse_gl) or than the median |N1 drift| "
                         "(integrated_rel_error) is not interpreted",
     "ranking": "reported, not hypothesised",
+    "stop_rule": "--cv: if the wall-clock estimate (<= 5 concurrent processes, 1 thread "
+                 "each, measured after the first batch of folds) exceeds 6 h, stop and report",
 }
+
+# Methods fitted per fold kind: M4 and M5 see only (Tbot, z_c, s) and cannot represent the
+# d = 720 m profile of ocean0_4km; M0 is kept there because skill is relative to M0.
+PROFILE_TEST_METHODS = ("M0", "M1", "M2", "M3", "M6", "M7")
+# Paths that may differ from HEAD when the configuration is frozen (the PD0 note is edited
+# with Esteban's decisions in the same Step-5 commit).
+ALLOWED_DIRTY_PREFIX = "exp3_melt_emulator/notes/"
 
 
 def git_state() -> dict:
@@ -98,14 +109,20 @@ def freeze_config(out=DEFAULT_CONFIG, dataset_path=DATASET_PATH, dataset_sha=DAT
     out = Path(out)
     if out.exists():
         raise FileExistsError(f"{out} exists: the protocol configuration is frozen")
+    git = git_state()
+    bad = [p for p in git["dirty_paths"] if not p.startswith(ALLOWED_DIRTY_PREFIX)]
+    if bad:
+        raise RuntimeError(f"uncommitted changes outside {ALLOWED_DIRTY_PREFIX}: {bad}; "
+                           "commit them before freezing the protocol")
     runs = load_runs(dataset_path, dataset_sha)            # ValueError on sha mismatch
     folds = make_folds(runs)
     cfg = {
         "dataset": {"path": str(dataset_path), "sha256": dataset_sha},
-        "git": git_state(),
+        "git": git,
         "folds": [_fold(f) for f in folds],
         "folds_sensitivity_n1": [_fold(drop_n1(f, runs)) for f in folds if f.kind != "final"],
         "n1_fail_cases": [r.case for r in runs if not r.n1_pass],
+        "profile_test_methods": list(PROFILE_TEST_METHODS),
         "methods": {mid: REGISTRY[mid]().hparams() for mid in sorted(REGISTRY)},
         "thresholds": PD0_THRESHOLDS,
         "noise_floor": _noise(noise_json),

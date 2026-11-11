@@ -137,3 +137,13 @@ def test_integrated_rel_diff(monkeypatch, tmp_path):
     for p, r in zip(res["summary"]["per_run"], runs):
         mean = r.melt[r.shelf_mask].mean()
         assert p["integrated_rel_diff"] == pytest.approx(-0.5 / mean, rel=1e-9)
+
+
+def test_build_refuses_nonpositive_mean_melt(monkeypatch, tmp_path):
+    runs = [dataclasses.replace(r, split="train") for r in synthetic_runs(n=2)]
+    r0 = runs[0]
+    runs[0] = dataclasses.replace(r0, melt=np.where(r0.shelf_mask, -1.0, r0.melt))
+    stubs = _stub_runs(runs, lambda r: 0.0)
+    monkeypatch.setattr(nf.mt, "load_run", lambda d: stubs[Path(d).name.removesuffix("_r21")])
+    with pytest.raises(ValueError, match="relative noise undefined"):
+        nf.build(runs, tmp_path, "_r21")

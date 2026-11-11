@@ -94,6 +94,9 @@ def build(runs, runs_root=RUNS_ROOT, suffix: str = RUN_SUFFIX) -> dict:
         a = rd.rA[r.shelf_mask]
         mean_last = float(np.sum(last[r.shelf_mask] * a) / np.sum(a))
         mean_prev = float(np.sum(prev[r.shelf_mask] * a) / np.sum(a))
+        if not mean_last > 0:
+            raise ValueError(f"{r.case}: shelf-mean melt of months 19-24 is {mean_last:g} "
+                             "m/a; relative noise undefined")
         per_run.append({"case": r.case, "group": r.group, "Tbot": r.Tbot, "z_c": r.z_c,
                         "s": r.s, "N1_pass": r.n1_pass, "rms": rms,
                         "mean_melt_19_24": mean_last, "rms_over_mean": rms / mean_last,

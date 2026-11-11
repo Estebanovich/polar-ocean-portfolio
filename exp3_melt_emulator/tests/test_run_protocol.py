@@ -51,6 +51,24 @@ def test_freeze_records_folds_methods_thresholds(tmp_path, dataset):
     assert cfg["methods"]["M7"]["tf_kind_folds"] == 5
     assert cfg["methods"]["M5"]["var_fraction"] == 0.99 and cfg["methods"]["M5"]["n_restarts"] == 5
     assert cfg["methods"]["M4"]["degrees"] == [1, 2]
+    from exp3_melt_emulator.methods.nets import HYBRID_G_FEATURES, N0, N_VAL, NET_FEATURES
+    m6, m7 = cfg["methods"]["M6"], cfg["methods"]["M7"]
+    assert m6["input_features"] == list(NET_FEATURES)
+    assert m7["input_features"] == list(HYBRID_G_FEATURES)
+    assert m6["n_val"] == m7["n_val"] == N_VAL == 3
+    assert "default_rng([split_seed, member_seed])" in m6["validation_rule"]
+    assert m7["n0"] == N0 == 2.0 and "M2" in m7["K0_rule"] and "M3" in m7["K0_rule"]
+    assert "stopgrad" in m7["variance"] and "R11" in m7["variance"]
+    assert "softplus" in m6["variance"]
+    assert "tie -> local" in m7["tf_kind_rule"] and "split_seed + 1" in m7["tf_kind_rule"]
+    assert cfg["methods"]["M1"]["input_features"] == ["TF"]
+    assert cfg["methods"]["M2"]["input_features"] == ["TF"]
+    assert cfg["methods"]["M3"]["input_features"] == ["TF", "TF_mean"]
+    for mid in ("M4", "M5"):
+        assert cfg["methods"][mid]["input_features"] == ["Tbot", "z_c", "s"]
+    assert cfg["methods"]["M5"]["white_bounds"] == [1e-8, 1e1]
+    assert cfg["profile_test_methods"] == ["M0", "M1", "M2", "M3", "M6", "M7"]
+    assert "drop_n1" in cfg["thresholds"]["H3b"]["cases"]
     assert cfg["thresholds"] == json.loads(json.dumps(rp.PD0_THRESHOLDS))
     assert cfg["thresholds"]["H3b"]["max_ratio_M7_over_M6"] == 1.10
     assert cfg["thresholds"]["gl_frac"] == 0.10
@@ -62,6 +80,21 @@ def test_freeze_refuses_to_overwrite(tmp_path, dataset):
     with pytest.raises(FileExistsError):
         _freeze(tmp_path, dataset, out=out)
     assert out.read_bytes() == before
+
+
+def test_freeze_refuses_dirty_tree_outside_notes(tmp_path, dataset):
+    _, path, sha = dataset
+    out = tmp_path / "c.json"
+    dirty = {"commit": "0" * 40, "dirty_paths": ["exp3_melt_emulator/notes/pd0_preregistro.md",
+                                                  "exp3_melt_emulator/methods/nets.py"]}
+    with pytest.raises(RuntimeError, match="methods/nets.py"):
+        rp.freeze_config(out, dataset_path=path, dataset_sha=sha, noise_json=None,
+                         git_state=lambda: dict(dirty))
+    assert not out.exists()
+    notes_only = {"commit": "0" * 40, "dirty_paths": ["exp3_melt_emulator/notes/pd0_preregistro.md"]}
+    rp.freeze_config(out, dataset_path=path, dataset_sha=sha, noise_json=None,
+                     git_state=lambda: dict(notes_only))
+    assert json.loads(out.read_text())["git"] == notes_only
 
 
 def test_freeze_checks_dataset_sha(tmp_path, dataset):
@@ -99,6 +132,7 @@ def test_cli_freeze_and_refuse(tmp_path, dataset, monkeypatch):
         rp.main(["--out", str(tmp_path / "q.json")])   # no action requested
 
 
+@pytest.mark.skipif(not (rp.REPO / ".git").exists(), reason="not a git checkout")
 def test_git_state_of_this_repo():
     st = rp.git_state()
     assert len(st["commit"]) == 40 and all(c in "0123456789abcdef" for c in st["commit"])
