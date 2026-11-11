@@ -19,5 +19,83 @@
 #   F1g   as F1 with GGL90
 #   V3    fjord_vmf, summer, no wind, M2 only at the open boundaries
 #   V4    fjord_vmf at ~400 m, as F1
-configs: {}
+configs:
+  fjord_vmf:
+    # Model box (Task 1b; approved or changed in PD1, then Task 1b is re-run). UTM 33N (EPSG:32633),
+    # not rotated, [x0, x1, y0, y1] in m, 100 km x 60 km at 200 m (500 x 300 cells). It holds
+    # Van Mijenfjorden with Vallunden (head at y ~ 8 651.5 km), Akseloya, Bellsund, Van Keulenfjorden,
+    # Recherchefjorden and a 10-20 km strip of the shelf. The plan's ~45 km N-S cannot hold both
+    # Van Mijenfjorden and the two side fjords of Bellsund (Van Keulenfjorden reaches y ~ 8 599.5 km
+    # in the NPI coastline), and a narrower box would put an open boundary across a fjord; so the
+    # box is 60 km N-S. Open boundaries W (all water), N (water for x < 467.8 km) and S (water for
+    # x < 474.4 km), land elsewhere; the east edge is land. The NW and SW corners are water.
+    bbox_utm: [455000, 555000, 8594000, 8654000]
+    dx_m: 200
+    ob_sides: [W, N, S]
+    n_sponge: 10
+    # partial cells, also rendered into the data namelist by Task 4 (ruling R1)
+    hFacMin: 0.2
+    hFacMinDr: 2.0
+    # minimum depth (m); clean() uses max(min_depth_m, bottom of level 2) = 3.0 m, > 3x the tidal
+    # amplitude outside Akseloya (0.3-0.8 m, Stoylen and Fer 2014, p. 89)
+    min_depth_m: 3.0
+    max_step_cells: null        # smooth_if_needed is off unless PD1 asks for it
+    # vertical grid (ruling R2): delR = gendata/vgrid.stretched_delR(nz, dz_top, H_m, p),
+    # dz_k = dz_top + (dz_bot - dz_top) (k/(nz-1))^p, rounded to 1 mm, sum = H_m exactly.
+    # H_m is the maximum depth of the final model sea cells (238.8 m after the sponge copy, which
+    # replaces the deepest IBCAO cells, 261.7 m, in the southern sponge band; bathy_report.json
+    # max_depth.box_grid_m) rounded up to the next bin_m. 25 levels in the top 60 m (1.5-5.1 m),
+    # 21.1 m at the bottom, neighbour ratio <= 1.11.
+    vgrid: {nz: 40, dz_top: 1.5, H_m: 240.0, bin_m: 10.0, p: 3.5}
+    delR: [1.5, 1.5, 1.501, 1.502, 1.507, 1.515, 1.528, 1.548, 1.577, 1.616, 1.667, 1.734, 1.817, 1.92, 2.044, 2.192, 2.368, 2.573, 2.81, 3.084, 3.395, 3.748, 4.145, 4.59, 5.087, 5.638, 6.247, 6.917, 7.652, 8.456, 9.333, 10.285, 11.318, 12.434, 13.638, 14.934, 16.327, 17.819, 19.415, 21.119]
+    bathy:
+      ibcao_dir: ibcao                                            # relative to data_external/
+      coastline: npi_coast/extracted/NP_S100_SHP/S100_Land_f.shp  # NPI S100 land polygons
+      mask_rule: npi                                              # the NPI coastline decides
+      # sound sections: shortest segment between the island polygon and the shore polygon, both
+      # clipped to search_box [x0, x1, y0, y1]; points are on land inside each polygon
+      sounds:
+        Akselsundet: {island_point: [492000, 8627300], shore_point: [489000, 8632500],
+                      search_box: [488500, 492500, 8629000, 8633000]}
+        Mariasundet: {island_point: [492000, 8627300], shore_point: [497000, 8621000],
+                      search_box: [494000, 497000, 8621500, 8624500],
+                      islet_points: [[495400, 8622700]]}   # 0.35 km2 islet splitting the sound
+      closure_margin_m: 600       # a sound is closed by a disk of radius half its section + this
+      inner_buffer_cells: 3       # IBCAO inner-fjord volume: coastal land cells within 600 m of the inner sea
+      seeds: {west: [465000, 8620000], east: [510000, 8632000]}   # Bellsund/shelf, inner fjord
+      vallunden_point: [543500, 8648000]
+      # Controls (tolerances fixed before running the pipeline). Stoylen and Fer (2014), NPG 21:87,
+      # read in the online version: Mariasundet 0.7 km wide (p. 96, Sect. 5); Akselsundet
+      # cross-section similar to 20 m x 1300 m (p. 93, Sect. 4.2); deepest CTD section depth in the
+      # basin 117 m (Table 1, p. 89). They give no sill depth, so sill depths are checked against
+      # IBCAO at 100 m.
+      controls:
+        mariasundet_width_npi: {value: sounds.Mariasundet.width_npi_m, reference: 700.0, abs_tol: 200.0,
+                                source: "Stoylen and Fer 2014, p. 96"}
+        mariasundet_width_grid: {value: sounds.Mariasundet.grid.wet_length_m, reference: 700.0, abs_tol: 200.0,
+                                 source: "Stoylen and Fer 2014, p. 96; tolerance one 200 m cell"}
+        akselsundet_area_grid: {value: sounds.Akselsundet.grid.area_m2, reference: 26000.0, rel_tol: 0.5,
+                                source: "Stoylen and Fer 2014, p. 93 (idealised sound of equal area)"}
+        akselsundet_sill_grid_vs_ibcao: {value: sounds.Akselsundet.sill_depth_grid_m,
+                                         reference: sounds.Akselsundet.sill_depth_ibcao_m, rel_tol: 0.2,
+                                         source: "IBCAO v5.2 100 m (no sill depth in Stoylen and Fer 2014)"}
+        mariasundet_sill_grid_vs_ibcao: {value: sounds.Mariasundet.sill_depth_grid_m,
+                                         reference: sounds.Mariasundet.sill_depth_ibcao_m, rel_tol: 0.2,
+                                         source: "IBCAO v5.2 100 m (no sill depth in Stoylen and Fer 2014)"}
+        inner_max_depth_vs_stoylen_fer: {value: max_depth.inner_grid_m, reference: 117.0, rel_tol: 0.1,
+                                         source: "Stoylen and Fer 2014, Table 1, p. 89"}
+        inner_max_depth_grid_vs_ibcao: {value: max_depth.inner_grid_m, reference: max_depth.inner_ibcao_m,
+                                        rel_tol: 0.05, source: "IBCAO v5.2 100 m"}
+        inner_volume_grid_vs_ibcao: {value: inner_fjord.volume_grid_m3, reference: inner_fjord.volume_ibcao_m3,
+                                     rel_tol: 0.05, source: "IBCAO v5.2 100 m"}
+      # classification (a)-(d) of any failed control, written after the run (post hoc labels;
+      # the control itself stays failed in bathy_report.json)
+      classifications:
+        mariasundet_width_npi: >-
+          (d) reference not comparable as stated: Stoylen and Fer give one rounded width (0.7 km)
+          without its section; the NPI S100 coastline splits Mariasundet with a 0.35 km2 islet into
+          two passages of 0.50 and 0.48 km, and the shortest Akseloya-mainland line has 1.26 km of water
+        mariasundet_width_grid: >-
+          (d) as mariasundet_width_npi; the grid itself reproduces the NPI section within 73 m
+          (1.33 km of wet cells on the line vs 1.26 km of NPI water)
 cases: {}
