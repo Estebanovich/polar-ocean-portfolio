@@ -194,6 +194,24 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ⬜ | Olbers, Jurgenowski & Eden (2020). A wind-driven model of the ocean surface layer with wave radiation physics. *Ocean Dyn.* | https://doi.org/10.1007/s10236-020-01376-2 |
 | ⬜ | Bracamontes-Ramírez, Walter & Losch (2024). Near-inertial wave propagation in the deep Canadian Basin. *JGR Oceans* | https://doi.org/10.1029/2023JC020228 |
 | ⬜ | MacKinnon et al. (2017). Climate Process Team on internal wave-driven ocean mixing. *BAMS* | https://doi.org/10.1175/BAMS-D-16-0030.1 |
+| ⬜ ★ | Støylen & Fer (2014). Tidally induced internal motion in an Arctic fjord. *Nonlin. Processes Geophys.* 21:87 (Van Mijenfjorden con topografía real; ondas de Kelvin internas forzadas por marea; acceso abierto) | https://doi.org/10.5194/npg-21-87-2014 |
+| ⬜ ★ | Skarðhamar & Svendsen (2010). Short-term hydrographic variability in a stratified Arctic fjord. *Geol. Soc. Spec. Publ.* 344 (Van Mijenfjorden responde al viento en horas; rotación dominante) | https://doi.org/10.1144/SP344.5 |
+| ⬜ ★ | Høyland (2009). Ice thickness, growth and salinity in Van Mijenfjorden, Svalbard. *Polar Research* 28 (hielo fijo 0.7–1.3 m; en 2006 sin hielo fijo en la cuenca exterior) | https://doi.org/10.1111/j.1751-8369.2009.00133.x |
+| ⬜ | Morozov & Marchenko (2012). Short-period internal waves in an Arctic fjord (Spitsbergen). *Izv. Atmos. Ocean. Phys.* 48 (con hielo, el viento no excita las ondas internas) | https://doi.org/10.1134/S0001433812040123 |
+| ⬜ | Morozov, Muzylev et al. (2011). Short-period internal waves under an ice cover in Van Mijen Fjord, Svalbard. *Adv. Meteorol.* | https://doi.org/10.1155/2011/573269 |
+| ⬜ | Morozov, Marchenko et al. (2019). Sea ice evolution and internal wave generation due to a tidal jet in a frozen sea. *Appl. Ocean Res.* (Van Mijenfjorden) | https://doi.org/10.1016/j.apor.2019.03.024 |
+| ⬜ ★ | Divya David et al. (2022). Near-inertial waves in an Arctic fjord and their impact on vertical mixing of Atlantic Water mass. *Prog. Oceanogr.* (Kongsfjorden con ROMS; ~45 % de la energía cercana a la inercial se disipa en los 150 m superiores) | https://doi.org/10.1016/j.pocean.2022.102844 |
+| ⬜ | Fraser, Skogseth, Nilsen & Inall (2018). Circulation and exchange in a broad Arctic fjord using glider-based observations. *Polar Research* (Isfjorden) | https://doi.org/10.1080/17518369.2018.1485417 |
+| ⬜ | Skogseth et al. (2020). Variability and decadal trends in the Isfjorden (Svalbard) ocean climate and circulation. *Prog. Oceanogr.* (DOI devuelto por Consensus es el del resumen de EGU [verificar el del artículo]) | https://doi.org/10.5194/egusphere-egu2020-118 |
+| ⬜ | Nilsen, Skogseth, Vaardal-Lunde & Inall (2016). A simple shelf circulation model: intrusion of Atlantic Water on the West Spitsbergen Shelf. *JPO* | https://doi.org/10.1175/JPO-D-15-0058.1 |
+| ⬜ | Skogseth, Sandvik & Asplin (2007). Wind and tidal forcing on the meso-scale circulation in Storfjorden, Svalbard. *Cont. Shelf Res.* | https://doi.org/10.1016/j.csr.2006.10.001 |
+| ⬜ | Jardon et al. (2011). Internal waves and vertical mixing in the Storfjorden polynya, Svalbard. *JGR* (ondas de Kelvin internas diurnas) | https://doi.org/10.1029/2010JC006918 |
+| ⬜ | Fer, Skogseth & Geyer (2010). Internal waves and mixing in the marginal ice zone near the Yermak Plateau. *JPO* | https://doi.org/10.1175/2010JPO4371.1 |
+| ⬜ | Fer et al. (2020). Tidally forced lee waves drive turbulent mixing along the Arctic Ocean margins. *GRL* | https://doi.org/10.1029/2020GL088083 |
+| ⬜ | Svendsen et al. (2002). The physical environment of Kongsfjorden–Krossfjorden, an Arctic fjord system in Svalbard. *Polar Research* | https://doi.org/10.3402/polar.v21i1.6479 |
+| ⬜ | Klinck, O'Brien & Svendsen (1981). A simple model of fjord and coastal circulation interaction. *JPO* 11 | https://doi.org/10.1175/1520-0485(1981)011<1612:ASMOFA>2.0.CO;2 |
+| dato | Jakobsson et al. (2024). The International Bathymetric Chart of the Arctic Ocean Version 5.0. *Sci. Data* (malla de 100 m; revisar términos de uso de GEBCO antes de redistribuir) | https://repository.library.noaa.gov/view/noaa/66918 |
+| dato | UNIS Hydrographic Database (UNIS HD), perfiles CTD 75–83°N; la calibración no está revisada en todos los datos | https://b2find.eudat.eu/dataset/b3f1b0cb-9afb-5265-ab2e-bd8d6a586a31 |
 
 📁 = ya está en la biblioteca de la tesis (`~/Documents/TESIS_InternalWaves-2/Literatura/`), no en `literatura/`. Detalle en `exp4_arctic_bayiw/notes/rev_literatura.md`.
 
