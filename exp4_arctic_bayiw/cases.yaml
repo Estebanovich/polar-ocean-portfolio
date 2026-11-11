@@ -115,8 +115,26 @@ configs:
         mariasundet_width_grid: >-
           (a) metric definition, post hoc, as mariasundet_width_npi; the grid reproduces the NPI
           section within 73 m (1.33 km of wet cells on the line vs 1.26 km of NPI water)
-    # Representative T/S profiles (Task 2; proposed in notes/pd0_preregistro.md, fixed at PD0).
-    # gendata/profiles.py: select -> qc -> representative on the delR cell centres above.
+    # Linear EOS of all fjord runs and of the bridge runs R2/R3 (PD0 decision 3, Esteban 2026-11-11);
+    # R1/R1k keep the thesis EOS (tAlpha 2e-4, sBeta 7.4e-4, rhoNil 999.8; data.stage1:15-17).
+    # MITgcm eosType='LINEAR': rho = rhoNil (sBeta (S - sRef) - tAlpha (T - tRef)) + rhoNil - rhoConst
+    # (model/src/find_rho.F:104-107): use these tAlpha, sBeta, rhoNil and tRef/sRef = tRef/sRef below.
+    eos:
+      tAlpha: 3.0456e-05      # K^-1
+      sBeta: 8.4068e-04       # PSU^-1
+      tRef: 0.4676            # deg C
+      sRef: 33.6395           # PSU
+      rhoNil: 1026.96         # kg m^-3 (= 1000 + sigma0 at tRef, sRef)
+      fit_lon: 15.310         # deg E, mean of the QC casts (absolute salinity anomaly)
+      fit_lat: 77.768
+      provenance: >-
+        analysis/theory_numbers.py --fit-eos (2026-11-11): least-squares fit of TEOS-10 sigma0
+        (gsw 3.6.21, p = 0) to in-situ T and practical S at the 66 levels above 120 m of the summer
+        and winter representative profiles (T -1.60 to 4.74 C, S 30.81 to 34.76; profiles
+        stabilised with the thesis EOS for the fit). Residual max 0.0156, rms 0.0055 kg m^-3.
+    # Representative T/S profiles (Task 2; approved at the PD0, notes/pd0_preregistro.md).
+    # gendata/profiles.py: select -> qc -> representative on the delR cell centres above, made
+    # statically stable with the fitted EOS above.
     profiles:
       source: unis_hd/profiles                # relative to data_external/
       # Inner Van Mijenfjorden, east of Akseloya. Vertices chosen in EPSG:32633 (polygon_utm) and
@@ -132,9 +150,9 @@ configs:
       seasons:
         summer: {months: [8, 9], years: [1990, 2019]}    # spec 3.3: August-September
         winter: {months: [3, 4], years: [1990, 2019]}    # spec 3.3: March-April (late winter, ice)
+      # inversion_tol_kg_m3 = 0.004 is post hoc (chosen after seeing the data; see PD0 1.1)
       qc: {s_range: [0.0, 35.5], t_range: [-2.1, 10.0], smooth_m: 3.0, max_inversion_fraction: 0.10,
            inversion_tol_kg_m3: 0.004, min_levels: 5}
       min_profiles: 20            # per season, after QC
       min_count_per_level: 5      # a level enters the median if >= 5 casts reach it
-      eos: {tAlpha: 2.0e-4, sBeta: 7.4e-4}   # linear EOS of the thesis (data.stage1:15-16)
 cases: {}
