@@ -25,6 +25,12 @@ from exp3_melt_emulator.metrics import rmse_map
 
 SEED = 0
 VAR_FRACTION = 0.99   # Myren & Lawrence 2021 Sec. 3.1: keep EOFs explaining 99 % of variance
+# M5 GP kernel per EOF coefficient: ConstantKernel * RBF(ARD) + WhiteKernel (init, bounds)
+CONST_INIT, CONST_BOUNDS = 1.0, (1e-3, 1e3)
+RBF_INIT, RBF_BOUNDS = 1.0, (1e-2, 1e3)
+WHITE_INIT, WHITE_BOUNDS = 1e-2, (1e-8, 1e1)
+N_RESTARTS = 5
+M4_DEGREES = (1, 2)
 
 
 def _check(runs):
@@ -92,6 +98,9 @@ class MeanMap(_UnionMethod):
         self._begin(runs)
         self._fitted = True
 
+    def hparams(self):
+        return dict(free_parameters=0, unseen_cells="pooled training mean")
+
     def predict(self, run):
         self._need_fit()
         return self._to_map(self.cell_mean, run, self.pooled_mean)
@@ -126,6 +135,12 @@ class CellRegression(_UnionMethod):
     """
     name = "M4"
 
+    def hparams(self):
+        return dict(inputs=["Tbot", "z_c", "s"], standardised=True, degrees=list(M4_DEGREES),
+                    selection="inner leave-one-run-out over the fit's runs, mean rmse_map, "
+                              "ties -> linear", min_runs_for_selection=3,
+                    unseen_cells="pooled training mean")
+
     def _fit_degree(self, runs, degree):
         self._begin(runs)
         self.scaler = _InputScaler(runs)
@@ -140,7 +155,7 @@ class CellRegression(_UnionMethod):
         degree = 1
         self.loro_rmse = {}
         if len(runs) >= 3:
-            for deg in (1, 2):
+            for deg in M4_DEGREES:
                 errs = []
                 for j in range(len(runs)):
                     inner = CellRegression()
@@ -185,6 +200,16 @@ class GPonEOF(_UnionMethod):
         super().__init__()
         self.info: dict = {}
 
+    def hparams(self):
+        return dict(inputs=["Tbot", "z_c", "s"], standardised=True, var_fraction=VAR_FRACTION,
+                    k_cap="m - 1", kernel="ConstantKernel * RBF(ARD) + WhiteKernel",
+                    const_init=CONST_INIT, const_bounds=list(CONST_BOUNDS),
+                    rbf_init=RBF_INIT, rbf_bounds=list(RBF_BOUNDS),
+                    white_init=WHITE_INIT, white_bounds=list(WHITE_BOUNDS),
+                    normalize_y=True, n_restarts=N_RESTARTS, random_state=SEED,
+                    sigma="EOF propagation of independent coefficient variances; "
+                          "truncation error not added")
+
     def fit(self, runs):
         self._fitted = False
         self._begin(runs)
@@ -208,11 +233,11 @@ class GPonEOF(_UnionMethod):
         for h in range(k):
             with warnings.catch_warnings(record=True) as caught:
                 warnings.simplefilter("always")
-                kern = (ConstantKernel(1.0, (1e-3, 1e3))
-                        * RBF(np.ones(X.shape[1]), (1e-2, 1e3))
-                        + WhiteKernel(1e-2, (1e-8, 1e1)))
-                gp = GaussianProcessRegressor(kern, normalize_y=True, n_restarts_optimizer=5,
-                                              random_state=SEED)
+                kern = (ConstantKernel(CONST_INIT, CONST_BOUNDS)
+                        * RBF(np.full(X.shape[1], RBF_INIT), RBF_BOUNDS)
+                        + WhiteKernel(WHITE_INIT, WHITE_BOUNDS))
+                gp = GaussianProcessRegressor(kern, normalize_y=True,
+                                              n_restarts_optimizer=N_RESTARTS, random_state=SEED)
                 self.gps.append(gp.fit(X, W[:, h]))
             th, bd = gp.kernel_.theta, gp.kernel_.bounds
             gp_diag.append({

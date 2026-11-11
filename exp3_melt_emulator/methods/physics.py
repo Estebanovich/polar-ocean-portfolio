@@ -37,6 +37,13 @@ class _OneCoef:
     def _basis(self, run: Run) -> np.ndarray:
         raise NotImplementedError
 
+    def hparams(self) -> dict:
+        """Frozen settings (PD0): one coefficient, closed-form least squares."""
+        return dict(free_parameters=1, fit="closed-form least squares, pooled over the "
+                    "training runs' shelf cells (uniform grid = area-weighted)",
+                    signed=True, constants=dict(rho_sw=RHO_SW, c_p=CP_O, rho_i=RHO_I, L_i=L_I,
+                                                c=C))
+
     def fit(self, runs: list[Run]) -> None:
         if not len(runs):
             raise ValueError("fit requires at least one run")
