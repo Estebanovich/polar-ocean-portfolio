@@ -111,6 +111,19 @@ R1 → R2 cambia a la vez f (y β), perfil, EOS y mezcla; está declarado en el 
   - R2/R3 usan plano f a 78°N (`beta = 0`, plan, "Latitud y f"). El cambio R1 → R2 incluye, entonces, quitar β; se declara.
   - Los números de la teoría de la bahía de la tesis (`theory.json`, T_i = 25.0 h) usan f0; el f local de la bahía es un 1–3 % mayor. No cambia ninguna banda ni ningún umbral del PD0, pero se declara para el PD1.
 
-## 8. R1k
+## 8. R1k y costo medido
 
-(pendiente)
+- **R1k corrió completa:** 240 h, 28 800 pasos en dos etapas (60 h forzadas y 180 h libres; build `bay_thesis_kpp`, 4 procesos), estado OK, `require_ok` en las dos etapas. Reloj: 4097 s + 12 242 s = 4.5 h. Tras cada corrida, `pgrep` no encontró ningún proceso de MPI ni del modelo.
+- **Descriptivo**, no es H4d: η en la boca (Seiche2), 0–120 h:
+  - desviación típica de 4.49×10⁻⁴ m en R1 frente a 4.50×10⁻⁴ m en R1k;
+  - diferencia máxima entre las dos: 4.8×10⁻⁵ m.
+- KPPhbl: la capa límite llega a 16 m durante el pulso (máximo en el dominio), baja a < 2 m en ~30 h y queda en 0.5–0.6 m en la fase libre.
+- H4d (η = F_bc,out/W_viento, R1k frente a R1, 0–120 h) se evalúa en la Task 7 con `flux.section_flux` (Task 5). Las salidas que necesita están en las dos corridas: U, V, T, RHOAnoma y η cada 900 s, en todo el dominio.
+- **Costo medido** (4 procesos, núcleos de rendimiento):
+  - R1: 0.47 s por paso; 1.9 h para 120 h;
+  - R1k: 0.57 s por paso; 4.5 h para 240 h;
+  - corridas cortas de 2 h (R1, R1b, R1k): 124, 128 y 188 s. Incluyen el arranque y la E/S de 440 MB de entradas.
+
+  Total de la Task 3: ~6.6 h de las 30 h del presupuesto.
+  Para R2/R3 a 280 h, con KPP y la mezcla del PD0: ~5.3 h cada una, por extrapolación de R1k, que no lleva la mezcla del PD0. Están por debajo de las 8 h por corrida.
+- **Disco:** R1 ocupa 150 GB y R1k 308 GB en LaCie (snapshots 3D cada 900 s, como la tesis). R2/R3 a 280 h ocuparán ~360 GB cada una.
