@@ -119,12 +119,15 @@ def test_check_free_space(tmp_path):
 
 # ---- concurrency -------------------------------------------------------------------
 
-@pytest.mark.parametrize("np_each,mc", [(1, 1), (1, 3), (1, 5), (5, 1)])
+@pytest.mark.parametrize("np_each,mc", [(1, 1), (1, 3), (1, 5), (5, 1), (4, 1), (2, 1), (3, 1)])
 def test_concurrency_allowed(np_each, mc):
+    # one MPI run of 2..5 ranks uses no more than the np = 5 run of the global constraints
+    # (Exp. 4 bay_thesis: the thesis tiles 4 x 2 of 140 x 176 need np = 4, see
+    # exp4_arctic_bayiw/notes/pd1_puente.md)
     cp.check_concurrency(np_each, mc)
 
 
-@pytest.mark.parametrize("np_each,mc", [(1, 0), (1, 6), (5, 2), (2, 1), (3, 1), (6, 1), (0, 1)])
+@pytest.mark.parametrize("np_each,mc", [(1, 0), (1, 6), (5, 2), (4, 2), (2, 2), (6, 1), (0, 1)])
 def test_concurrency_rejected(np_each, mc):
     with pytest.raises(ValueError):
         cp.check_concurrency(np_each, mc)
@@ -200,13 +203,17 @@ class FakeModel:
                 (run / f.name).write_bytes(f.read_bytes())
         d = (run / "data").read_text()
         n0, n = cp.nml_int(d, "nIter0"), cp.nml_int(d, "nTimeSteps")
-        dt, ck = cp.nml_float(d, "deltaT"), cp.nml_float(d, "pChkptFreq")
+        dt = cp.nml_float(d, "deltaT")
+        try:
+            ck = cp.nml_float(d, "pChkptFreq")
+        except RuntimeError:              # a free stage without permanent checkpoints
+            ck = 0.0
         x = 1.0 if n0 == 0 else struct.unpack(">d", (run / f"pickup.{n0:010d}.data").read_bytes())[0]
         it = n0
         for _ in range(n):
             x = x * 1.0001 + 1e-3
             it += 1
-            if (it * dt) % ck == 0:
+            if ck > 0 and (it * dt) % ck == 0:
                 for stem in ("pickup",) + (("pickup_ptracers",) if self.extra else ()):
                     (run / f"{stem}.{it:010d}.data").write_bytes(struct.pack(">d", x))
                     (run / f"{stem}.{it:010d}.meta").write_text("meta")
@@ -328,3 +335,48 @@ def test_paths_exp4_defaults_and_overrides(monkeypatch):
     monkeypatch.delenv("EXP4_RUNS")
     monkeypatch.delenv("EXP4_BUILDS")
     importlib.reload(paths)
+
+
+# ---- explicit stage plans and per-stage namelists (Exp. 4 thesis two-stage runs) -------------
+
+FREE = DATA.replace(" pChkptFreq = 4000.,\n", " chkptFreq = 4000.,\n")
+
+
+def test_run_stages_explicit_plan_and_stage_data(tmp_path):
+    """Unequal stages (forced 40 steps, then free 80) and a different namelist after stage 1,
+    as the thesis runs (data.stage1 forced, data.stage2 free)."""
+    inp = _inp(tmp_path, DATA.replace("nTimeSteps = 120", "nTimeSteps = 40"))
+    (inp / "data.free").write_text(FREE)
+    fake = FakeModel()
+    texts = {1: (inp / "data").read_text(), 2: FREE}
+    st = cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 2, fake, "run_mitgcm.sh",
+                       plan=[(0, 40), (40, 80)], stage_data=lambda k: texts[k])
+    assert st == "OK"
+    d = [(i / "data").read_text() for i, _ in fake.calls]
+    assert [cp.nml_int(x, "nIter0") for x in d] == [0, 40]
+    assert [cp.nml_int(x, "nTimeSteps") for x in d] == [40, 80]
+    assert "pChkptFreq" in d[0] and "pChkptFreq" not in d[1] and "chkptFreq" in d[1]
+    fin = json.loads((tmp_path / "r" / "run_status_final.json").read_text())
+    assert fin["state"] == "OK" and fin["last_iter"] == fin["expected_last_iter"] == 120
+
+
+def test_run_stages_explicit_plan_must_be_contiguous(tmp_path):
+    inp = _inp(tmp_path)
+    for plan in ([(0, 40), (50, 70)], [(10, 40), (50, 70)], [(0, 0)]):
+        with pytest.raises(ValueError, match="plan"):
+            cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, len(plan), FakeModel(),
+                          "run_mitgcm.sh", plan=plan)
+    with pytest.raises(ValueError, match="plan"):
+        cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 3, FakeModel(), "run_mitgcm.sh",
+                      plan=[(0, 40), (40, 80)])
+
+
+def test_run_stages_last_stage_end_need_not_be_on_checkpoint(tmp_path):
+    """Only intermediate stage ends need the permanent pickup; the run may end anywhere."""
+    inp = _inp(tmp_path, DATA.replace("nTimeSteps = 120", "nTimeSteps = 40"))
+    st = cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh",
+                       plan=[(0, 40), (40, 75)])
+    assert st == "OK"
+    with pytest.raises(ValueError, match="pChkptFreq"):
+        cp.run_stages(tmp_path / "r2", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh",
+                      plan=[(0, 35), (35, 80)])
