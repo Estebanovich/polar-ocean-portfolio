@@ -596,3 +596,9 @@ Verificación:
   - Reinicio 10 + 10 frente a 20: idéntico bit a bit en los dos.
 - **V3:** con η₀ = 0.2 m diverge a los 1.7 ciclos; **con η₀ = 0.1 m es estable 2 ciclos** (corrientes de 0.56 m s⁻¹ en Mariasundet; CFL vertical 0.55 una vez). La amplitud no es realista y se declara. V3 se evalúa por la velocidad de fase de la onda de Kelvin interna frente al umbral congelado.
 - La campaña no se ha lanzado.
+- **Task 4, ronda de correcciones 2** (revisión del PD1):
+  - **V3 con η₀ = 0.15 m** (2 ciclos, Δt 120 s): completa, pero con CFL vertical 0.93 (0.2 m divergió con 1.14; 0.1 m llega a 0.55). Se queda **η₀ = 0.1 m**, la más cercana al CFL ≤ 0.5 del plan; 0.15 m está probada por si se prefiere.
+  - La estabilidad más allá de 2 ciclos no está probada. Regla R18: si V3 diverge, se repite una vez con 0.05 m, y si vuelve a diverger, validación no realizada.
+  - **Comprobación de F4** con la deriva libre del propio paso recalculada: en el interior del hielo, error ≤ 2.7 % del máximo de |τ|.
+  - **Nueva comprobación obligatoria tras F2/F4:** el hielo a ≥ 10 celdas de las fronteras abiertas, porque con `DISABLE_SEAICE_OBCS` el contacto sería silencioso (`OBCS_APPLY_UVICE` sigue poniendo u_hielo = 0 en la frontera en deriva libre).
+  - Prueba de que F4 parte del mismo hielo que F2 (R15). Citas de `gad_check.F` unificadas en 94-107.

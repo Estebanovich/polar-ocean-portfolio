@@ -39,3 +39,15 @@ def test_stage_info_cfl_and_noise_onset(tmp_path):
     assert s["cfl_max"] == 0.7 and s["cfl_max_iter"] == 40 and s["cfl_max_key"] == "advcfl_W_hf_max"
     assert s["noise_onset_iter"] == 40 and s["noise_onset_h"] == 40 * 60 / 3600
     assert s["s_per_step"] == 0.5
+
+
+def test_ob_distance_field_uses_only_wet_open_boundary_cells():
+    import numpy as np
+    wet = np.ones((20, 30), bool)
+    wet[-1, 10:] = False                      # north edge is land east of i = 10
+    d = pt.ob_distance_field(wet, ("W", "N", "S"))
+    assert d[5, 0] == 0 and d[0, 15] == 0 and d[-1, 5] == 0
+    assert d[-1, 25] > 0                      # land on the north edge is not an OB
+    assert d[10, 15] == min(10.0, 15.0)       # nearest: south row (10 cells) or west column (15)
+    d2 = pt.ob_distance_field(wet, ("W",))
+    assert d2[10, 15] == 15.0

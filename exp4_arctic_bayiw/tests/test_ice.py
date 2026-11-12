@@ -140,3 +140,14 @@ def test_make_case_f4_free_drift(f2_f3):
     assert si["seaiceusedynamics"] == ".TRUE." and si["seaiceusefreedrift"] == ".TRUE."
     assert si["usepw79thermodynamics"] == ".FALSE."
     assert meta["actual"]["ice"]["mode"] == "free_drift"
+
+
+@have_data
+def test_f4_ice_equals_f2_ice(f2_f3):
+    """Ruling R15: F4 (free drift) starts from the same ice as F2 (same polygon, h and A)."""
+    d2, m2 = f2_f3["F2"]
+    d4, m4 = f2_f3["F4"]
+    for f in ("HEFF.bin", "AREA.bin"):
+        assert (d2 / f).read_bytes() == (d4 / f).read_bytes()
+    for k in ("cells", "area_km2", "h_m", "A", "polygon"):
+        assert m2["actual"]["ice"][k] == m4["actual"]["ice"][k]

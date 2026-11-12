@@ -11,21 +11,30 @@ Fecha: 2026-11-12. Material para el PD1. Esteban aprueba aquí la configuración
 ## 0. Decisiones del PD1 (Esteban, 2026-11-12)
 
 1. **Paso de tiempo:** `staggerTimeStep = .TRUE.` y **Δt = 120 s** en todas las corridas del fiordo (F1–F5, F1c, F1g, V3, V4); `cases.yaml` y la plantilla `data`.
-   - Es un cambio numérico, clase (c). Motivo: el aviso de `gad_check.F:95-105` sobre las ondas internas con un esquema de trazador sin AB (§2).
+   - Es un cambio numérico, clase (c). Motivo: el aviso de `gad_check.F:94-107` sobre las ondas internas con un esquema de trazador sin AB (§2).
    - **Comprobación con la configuración final** (escalonado, 120 s, `tracForcingOutAB = 1`, copias modificadas de `seaice` y `obcs` compiladas; `F1_pd1final_48h`, diagnóstico): **limpia**. 1440 pasos en 888 s (0.62 s/paso); máx |w| = 1.6×10⁻³ m s⁻¹, que baja a 6.0×10⁻⁴ a las 48 h, por debajo del umbral *post hoc* de 5×10⁻³ de §2; máx CFL 0.129 (W_hf, a las 4.3 h). `STDERR.0000` vacío: ya no aparece el aviso de `gad_check`.
 2. **Hielo:** la opción 2 de `pd1_seaice.md` §6 (`DWATN` también sin reología) y la opción 1 de §7 (`obcs_check.F` relajado con `DISABLE_SEAICE_OBCS`), como copias de MITgcm en `config/fjord_vmf/code`.
    - F4 usa el mismo polígono que F2 (ruling R15).
-   - Verificación en `pd1_seaice.md` §8: F2 y F4 arrancan con Orlanski; el esfuerzo bajo A = 1 coincide con ρ₀ C_w|Δu|Δu con el piso `SEAICEdWatMin`; el reinicio es idéntico bit a bit.
+   - Verificación en `pd1_seaice.md` §8: F2 y F4 arrancan con Orlanski; el esfuerzo bajo A = 1 coincide con ρ₀ C_w|Δu|Δu con el piso `SEAICEdWatMin` (F2 exacto; F4 ≤ 2.7 % del máximo de |τ| en el interior del hielo); el reinicio es idéntico bit a bit.
+   - Comprobación obligatoria tras F2 y F4 (Task 6): el hielo a ≥ 10 celdas de toda frontera abierta durante las 280 h (`pd1_seaice.md` §8).
 3. **T_fin = 280 h** en todas las corridas, sin recortes.
    - El presupuesto de cómputo sube a **~31–32 h en total**: Task 3 6.6 h, cronometraje y verificación de esta Task ~1.5 h, y campaña con Δt 120 s ≈ 23.0 h (9 corridas del fiordo 12.4 h + R2/R3 10.6 h; §3).
    - El límite de 8 h por corrida se cumple: la más larga del fiordo es F1g, ≈ 1.8 h.
 4. **V3:** forzamiento suave con Δt 120 s escalonado: η₀ = **0.1 m** (U₀ = 0.34 cm s⁻¹) y rampa de medio coseno durante un ciclo M2 (12.42 h; `obcs_add_tides.F` modificado, `EXP4_TIDE_RAMP_S`).
-   - **Estabilidad** (corridas de diagnóstico de 25 h, 2 ciclos M2, Δt 120 s escalonado):
-     - **η₀ = 0.2 m (`V3_pd1final_eta02_25h`): diverge** en el paso ~640 (21.3 h, 1.7 ciclos), con CFL_W 1.14 y corrientes de 0.9 m s⁻¹ en Mariasundet.
-     - **η₀ = 0.1 m (`V3_pd1final_eta01_25h`): estable los 2 ciclos** (OK, 469 s).
-       - Máx CFL horizontal 0.27. CFL vertical (W_hf) 0.548 una vez, a las 16 h, y ≤ 0.38 el resto: pasa del 0.5 de una vez y se declara.
-       - Corrientes máximas: 0.56 m s⁻¹ en Mariasundet (x 495.9, y 8622.3 km) y 0.45 m s⁻¹ en Akselsundet.
-       - η medio entre −0.12 y +0.08 m.
+   - **Estabilidad en 2 ciclos M2** (corridas de diagnóstico de 25 h, 750 pasos):
+
+     | η₀ | Corrida | Resultado | Máx CFL horiz. | Máx CFL vertical (W_hf) | Máx corriente (Mariasundet / Akselsundet) |
+     |---|---|---|---|---|---|
+     | 0.2 m | `V3_pd1final_eta02_25h` | **diverge** en el paso ~640 (21.3 h, 1.7 ciclos) | 0.44 | 1.14 antes del NaN | 0.92 m s⁻¹ y creciendo |
+     | 0.15 m | `V3_pd1final_eta015_25h` | completa los 2 ciclos | 0.41 | **0.93** (paso 480, 16 h) | 0.76 / 0.67 m s⁻¹ |
+     | **0.1 m** | `V3_pd1final_eta01_25h` | completa los 2 ciclos | 0.27 | **0.548** (paso 480), ≤ 0.38 el resto | 0.56 / 0.45 m s⁻¹ |
+
+   - **Elección.** Las dos amplitudes menores completan los 2 ciclos. Ninguna cumple estrictamente el CFL ≤ 0.5 del plan, pero 0.15 m llega a 0.93, cerca del 1.14 con el que divergió 0.2 m, y 0.1 m se queda en 0.55. Tomo **0.1 m** por ser la más cercana al criterio de CFL, con menos riesgo en 22 ciclos. Si se prefiere la lectura literal ("la mayor que completa 2 ciclos"), 0.15 m también está probada y es un cambio de una línea en `cases.yaml`.
+   - **La estabilidad más allá de 2 ciclos no está probada.** La corrida de 280 h tiene ~22 ciclos M2: es un riesgo.
+   - **Regla de respaldo fijada de antemano (ruling R18):**
+     - si V3 diverge en la campaña, se repite una vez con el siguiente η₀ más bajo probado o la mitad del elegido (con 0.1 m: **0.05 m**), y se declara;
+     - si vuelve a diverger, V3 se reporta como validación no realizada, declarada.
+     - V3 no entra en ningún cociente de H4.
    - **La amplitud no es realista** (S&F14: 0.3–0.8 m fuera de Akseløya, p. 89). Con η₀ = 0.5 m V3 divergía por las corrientes de los estrechos (§1).
    - V3 mide la velocidad de fase de la onda de Kelvin interna frente al umbral congelado del PD0 (§4: 0.21–0.84 m s⁻¹, alrededor de 0.42 m s⁻¹, sin cambios), además de la presencia y el sentido ciclónico. La amplitud no es un criterio.
 5. **Lo que queda como estaba** (regla del PD0):
