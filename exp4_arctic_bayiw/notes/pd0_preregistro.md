@@ -349,4 +349,24 @@ Cada diferencia contra la referencia se clasifica como (a) error nuestro, (b) f�
 
 ## Enmiendas
 
-(ninguna)
+### Enmienda 1 (2026-11-12)
+
+**Qué cambia.**
+
+1. Todos los flujos de H4a–H4d y el balance de energía usan la descomposición hidrostática de Kang y Fringer (2012, ecs. 13–17), la misma de la tesis en `Output_IWBay/balance_kang_fringer.py` (copia literal en `thesis_copy/Output_IWBay/`, con su sha256 en `thesis_copy/SOURCES.md`):
+   - ū es la media vertical **instantánea** de la columna, u′ = u − ū;
+   - ρ′ = ρ − ρ_b(z), con ρ_b el perfil inicial de reposo, el mismo en todos los términos;
+   - el flujo por una cara es el trabajo de presión F (F_bt = H ū_n p_bt, F_bc = Σ u_n′ p′ dz) **más** la advección de energía A (ecs. 15–16), evaluados en las caras de la malla; el flujo de cada estrecho es la suma sobre sus caras;
+   - la APE es la exacta (ec. 12); la APE lineal ½g²ρ′²/(ρ₀N_b²) se reporta solo como comparación;
+   - C = Σ ρ′ g W_bt dV, con W_bt = −∇·((H + z) ū) en la forma discreta de la malla C;
+   - P_bt = Σ τ·ū dA y P_bc = Σ τ·(u_sup − ū) dA;
+   - D es el residuo; en el fiordo incluye el arrastre de fondo, Smagorinsky y KPP.
+
+   Para el fiordo, la caja es el fiordo interior cerrado por secciones en escalera sobre las caras de la malla en Akselsundet y Mariasundet (`analysis/budget.py`, `box_from_sections`, con las líneas de sección de `figures/bathy_report.json`).
+2. **H4d:** el umbral (factor 1.5, sin cambio) se evalúa con W_viento = P_bt + P_bc, es decir, η = F_bc,out / (P_bt + P_bc), con F_bc,out el flujo baroclínico de Kang y Fringer (F_bc + A_bc) que sale. El cociente con P_bc en el denominador, η′ = F_bc,out / P_bc, se reporta solo como descriptivo.
+3. **Ningún umbral ni tolerancia cambia.** Los umbrales de H4a–H4d, V1–V4 y la regla del factor 1.5 quedan como están en §4–§5.
+4. El flujo de Nash et al. (2005) de `energy_flux_IWBay.py` se conserva como contraste con la tesis: Task 5, paso 5, sección j = 323, i = 274–285, < 1 %. Fuera de eso es descriptivo.
+
+**Por qué.** La tesis tiene dos definiciones de flujo: Nash et al. (2005), en `energy_flux_IWBay.py`, con medias temporales de ρ y u en la sección; y Kang y Fringer (2012), en `balance_kang_fringer.py`, con ū instantánea y ρ_b inicial. Solo la segunda entra en un balance que cierra, porque ρ′ y la separación barotrópica–baroclínica son las mismas en E, F, C y P. Un flujo de Nash, con otra referencia, no cierra el balance (`fondo_kang_fringer.py`). H4b(i) usa la energía del fiordo con su residuo, y H4d compara un flujo con el trabajo del viento. Por eso los dos necesitan las definiciones del balance. Lo decidió Esteban el 2026-11-12.
+
+**Cuándo.** La decisión se tomó el 2026-11-12, antes de correr la campaña del fiordo (F1–F5, F1c, F1g, V3, V4 y R2/R3). R1 y R1k ya habían corrido (Task 3), pero no se había calculado ningún flujo sobre ellos. Esta enmienda se escribe en la Task 5. En esa misma tarea se calcula sobre R1 el contraste del método con los scripts de la tesis (`figures/flux_vs_thesis.json`, `figures/budget_vs_thesis.json`). Ese contraste reproduce números que ya estaban en la tesis, porque R1 es idéntico bit a bit a la corrida de la tesis. No se calculó H4d sobre R1/R1k: eso es de la Task 7.

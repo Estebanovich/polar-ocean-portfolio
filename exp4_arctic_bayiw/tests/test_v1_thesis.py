@@ -23,3 +23,12 @@ def test_mds_field_reads_one_record(tmp_path):
         " nDims = [   3 ];\n nrecords = [          3 ];\n nFlds = [    3 ];\n")
     np.testing.assert_array_equal(v.mds_field(tmp_path, "state3d", 30, rec=2), a[2])
     np.testing.assert_array_equal(v.mds_field(tmp_path, "state3d", 30, rec=1, level=0), a[1, 0])
+
+
+def test_pickup_check_records_missing(tmp_path):
+    a, b = tmp_path / "a.data", tmp_path / "b.data"
+    r = v.pickup_check(a, b)
+    assert r["status"] == "missing" and r["bitwise_equal"] is None and len(r["missing"]) == 2
+    np.arange(4.0).astype(">f8").tofile(a)
+    np.arange(4.0).astype(">f8").tofile(b)
+    assert v.pickup_check(a, b)["bitwise_equal"] is True

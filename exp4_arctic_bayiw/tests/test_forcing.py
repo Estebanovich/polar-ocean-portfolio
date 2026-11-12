@@ -7,7 +7,6 @@ be 0.1 N m^-2.
 """
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
@@ -16,17 +15,14 @@ import pytest
 import yaml
 
 from exp4_arctic_bayiw.gendata import forcing
+from exp4_arctic_bayiw.tests.thesis_helpers import thesis_wind_patch_module
 
 PKG = Path(__file__).resolve().parents[1]
-WIND_PATCH = PKG / "thesis_copy" / "BayIW_Rectan" / "input" / "wind_patch.py"
 SPEC = yaml.safe_load((PKG / "cases.yaml").read_text())
 
 
 def _thesis_module():
-    spec = importlib.util.spec_from_file_location("thesis_wind_patch", WIND_PATCH)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    return thesis_wind_patch_module()
 
 
 def test_pulse_matches_thesis_make_meridional_wind_patch():

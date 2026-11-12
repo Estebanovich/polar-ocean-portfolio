@@ -1,0 +1,231 @@
+{
+ "run": "/Volumes/LaCie/portfolio_runs/exp4/R1",
+ "thesis_run": "/Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan/run_expand",
+ "final_record": "pickup pickup.ckptA.data (iteration 14400) for the last record",
+ "how_the_thesis_ran": "thesis functions imported from the verbatim copies in thesis_copy/Output_IWBay and called on the thesis MNC output (MITgcmutils stubbed: not installed in pyocean and not used by the called functions); main() not called; reference cached in /Volumes/LaCie/portfolio_runs/exp4/analysis_cache",
+ "tolerance_rel": 0.01,
+ "script": "thesis_copy/Output_IWBay/balance_kang_fringer.py",
+ "sign": "project F, A + into the bay = - thesis (+ out of the bay); D identical",
+ "box": {
+  "j": [
+   324,
+   347
+  ],
+  "i": [
+   274,
+   285
+  ]
+ },
+ "n_records": 481,
+ "terms": {
+  "ke_bt": {
+   "series_max_rel_diff": 2.1033753850788329e-16,
+   "value_120h_J": [
+    11314770.495095776,
+    11314770.495095776
+   ],
+   "rel_diff_120h": 0.0
+  },
+  "pe_bt": {
+   "series_max_rel_diff": 2.738028496217601e-16,
+   "value_120h_J": [
+    141129.19290050055,
+    141129.19290050058
+   ],
+   "rel_diff_120h": 2.0622119250162928e-16
+  },
+  "ke_bc": {
+   "series_max_rel_diff": 3.8372525944685e-16,
+   "value_120h_J": [
+    39320538895.47376,
+    39320538895.47377
+   ],
+   "rel_diff_120h": 1.94030772353637e-16
+  },
+  "ape": {
+   "series_max_rel_diff": 7.125294327112209e-09,
+   "value_120h_J": [
+    1313064664.2918448,
+    1313064673.9040656
+   ],
+   "rel_diff_120h": 7.320447313216225e-09
+  },
+  "ape_linear": {
+   "series_max_rel_diff": 1.95311793784956e-11,
+   "value_120h_J": [
+    1433387192.5184736,
+    1433387192.4915857
+   ],
+   "rel_diff_120h": 1.8758290723959885e-11
+  },
+  "F_bt": {
+   "series_max_rel_diff": 1.940977301803222e-12,
+   "integral_0_120h_J": [
+    -852104009.0407363,
+    -852104009.0398972
+   ],
+   "rel_diff_integral": 9.847555935025066e-13
+  },
+  "F_bc": {
+   "series_max_rel_diff": 4.684979176829816e-11,
+   "integral_0_120h_J": [
+    -283601668.2597841,
+    -283601668.2635475
+   ],
+   "rel_diff_integral": 1.3269941920708762e-11
+  },
+  "A_bt": {
+   "series_max_rel_diff": 4.802752762120114e-16,
+   "integral_0_120h_J": [
+    -162818.53342431618,
+    -162818.5334243162
+   ],
+   "rel_diff_integral": 1.7875010813963749e-16
+  },
+  "A_bc": {
+   "series_max_rel_diff": 4.171969395239313e-13,
+   "integral_0_120h_J": [
+    5682843509.171249,
+    5682843509.168953
+   ],
+   "rel_diff_integral": 4.041018814262717e-13
+  },
+  "C": {
+   "series_max_rel_diff": 2.868070120012972e-10,
+   "integral_0_120h_J": [
+    -9380850.558568753,
+    -9380850.558500042
+   ],
+   "rel_diff_integral": 7.324614807739501e-12
+  },
+  "P_bt": {
+   "series_max_rel_diff": 4.6721992139098185e-17,
+   "integral_0_120h_J": [
+    1034813039.8774455,
+    1034813039.8774455
+   ],
+   "rel_diff_integral": 0.0
+  },
+  "P_bc": {
+   "series_max_rel_diff": 0.0,
+   "integral_0_120h_J": [
+    345277895647.70264,
+    345277895647.70264
+   ],
+   "rel_diff_integral": 0.0
+  },
+  "dE_bt_cumulative": {
+   "value_120h_J": [
+    11455899.687996278,
+    11455899.687996278
+   ],
+   "rel_diff": 0.0
+  },
+  "F_bt_cumulative": {
+   "value_120h_J": [
+    -852266827.5741606,
+    -852266827.5733215
+   ],
+   "rel_diff": 9.845674640853709e-13
+  },
+  "D_bt_cumulative": {
+   "value_120h_J": [
+    180471163.17385733,
+    180471163.17462778
+   ],
+   "rel_diff": 4.2691010841504665e-12
+  },
+  "dE_bc_cumulative": {
+   "value_120h_J": [
+    40633603561.359116,
+    40633603563.51887
+   ],
+   "rel_diff": 5.315186699387115e-11
+  },
+  "F_bc_cumulative": {
+   "value_120h_J": [
+    5399241840.911466,
+    5399241840.905405
+   ],
+   "rel_diff": 1.122490982872034e-12
+  },
+  "D_bc_cumulative": {
+   "value_120h_J": [
+    310034153076.69635,
+    310034153074.5307
+   ],
+   "rel_diff": 6.985196284300615e-12
+  },
+  "C_escalon": {
+   "series_max_rel_diff": 4.559114914319114e-11,
+   "integral_0_120h_J": [
+    223762586.83337823,
+    223762586.83285463
+   ],
+   "rel_diff_integral": 2.339966700601891e-12
+  }
+ },
+ "rho_b_max_abs_diff_kg_m-3": 6.821210263296962e-13,
+ "stored_thesis_npz": {
+  "file": "/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/npz_energy/realistic_balance_kf_bahia.npz",
+  "series_max_rel_diff_vs_rerun": {
+   "ke_bt": 0.0,
+   "pe_bt": 0.0,
+   "ke_bc": 3.8372525944685e-16,
+   "ape": 7.877095724514246e-09,
+   "ape_linear": 4.807930445847779e-11,
+   "F_bt": 3.810777386069294e-12,
+   "F_bc": 9.167591831367397e-11,
+   "A_bt": 0.0,
+   "A_bc": 1.7696339622803086e-13,
+   "C": 6.42445383331527e-10,
+   "P_bt": 0.0,
+   "P_bc": 0.0
+  }
+ },
+ "max_rel_diff": 7.125294327112209e-09,
+ "pass_lt_1pct": true,
+ "explicit_dissipation_descriptive": {
+  "nu_h_m2_s-1": 100.0,
+  "nu_v_m2_s-1": 1e-05,
+  "terms": {
+   "bt": {
+    "series_max_rel_diff": 0.0,
+    "integral_0_120h_J": [
+     123739552.05003512,
+     123739552.05003512
+    ],
+    "rel_diff_integral": 0.0
+   },
+   "bc_h": {
+    "series_max_rel_diff": 0.0,
+    "integral_0_120h_J": [
+     52141376154.24113,
+     52141376154.24113
+    ],
+    "rel_diff_integral": 0.0
+   },
+   "bc_v": {
+    "series_max_rel_diff": 0.0,
+    "integral_0_120h_J": [
+     251895338200.96017,
+     251895338200.96017
+    ],
+    "rel_diff_integral": 0.0
+   },
+   "sup": {
+    "series_max_rel_diff": 0.0,
+    "integral_0_120h_J": [
+     232464556786.80295,
+     232464556786.80295
+    ],
+    "rel_diff_integral": 0.0
+   }
+  },
+  "share_of_residual": {
+   "eps_bt_over_D_bt": 0.6856472240433799,
+   "eps_bc_over_D_bc": 0.9806555546800962
+  },
+  "max_rel_diff": 0.0
+ }
+}

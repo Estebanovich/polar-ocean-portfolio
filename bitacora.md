@@ -602,3 +602,24 @@ Verificación:
   - **Comprobación de F4** con la deriva libre del propio paso recalculada: en el interior del hielo, error ≤ 2.7 % del máximo de |τ|.
   - **Nueva comprobación obligatoria tras F2/F4:** el hielo a ≥ 10 celdas de las fronteras abiertas, porque con `DISABLE_SEAICE_OBCS` el contacto sería silencioso (`OBCS_APPLY_UVICE` sigue poniendo u_hielo = 0 en la frontera en deriva libre).
   - Prueba de que F4 parte del mismo hielo que F2 (R15). Citas de `gad_check.F` unificadas en 94-107.
+
+## 2026-11-12 (tarde, 13) — Exp. 4, Task 5: biblioteca de análisis y contraste con la tesis
+
+- **Biblioteca** en `exp4_arctic_bayiw/analysis/`:
+  - `load.py`: lee una corrida MDS como `xarray.Dataset` perezoso y llama a `require_ok` en cada etapa. ρ = rhoConst + RHOAnoma. El último estado se toma del pickup, porque el diagnóstico de la iteración final nunca se escribe (`forward_step.F:509-510`). Con eso R1 tiene los mismos 481 registros que la tesis, idénticos bit a bit en U, V, T, η y ρ.
+  - `spectra.py`: PSD y espectro rotatorio con una sola ventana de Hann; bandas que se solapan o con menos de 2Δf dan error.
+  - `flux.py`: Nash et al. (2005), réplica exacta de `energy_flux_IWBay.py` (R16).
+  - `budget.py`: balance de Kang y Fringer (2012), réplica de `balance_kang_fringer.py`, generalizado a una caja en escalera. El fiordo interior se cierra con las líneas de Akselsundet y Mariasundet de `bathy_report.json`, alargadas una celda. Con 0 m la caja no cierra (13 290 celdas). Incluye además la disipación laplaciana explícita de la tesis, solo como descriptiva.
+  - `modal.py`: modos de u = dφ/dz (R4) y la fracción local q de Alford (2020).
+- **Enmienda 1 del PD0** escrita en `notes/pd0_preregistro.md`: los flujos de H4 y el balance pasan a Kang y Fringer; H4d se evalúa con W = P_bt + P_bc. Ningún umbral cambia.
+- **Contraste con la tesis sobre R1** (los scripts de la tesis corren sobre la salida MNC de la tesis, importados de `thesis_copy/`):
+  - Nash, j = 323, i = 274–285: diferencia relativa máxima 1.1×10⁻⁹. ⟨F_bc⟩ = −283.66 W (etapa forzada) y −963.13 W (etapa libre); el signo + es hacia la bahía.
+  - Kang y Fringer en la caja de la bahía (0–120 h): todos los términos coinciden con `balance_kang_fringer.py`. El máximo es 7×10⁻⁹, en la APE exacta (redondeo de ρ amplificado en el nivel de reposo); el resto queda ≤ 3×10⁻¹⁰, incluidos D_bt y D_bc.
+  - La disipación viscosa explícita es idéntica a la de la tesis, y es el 69 % de D_bt y el 98 % de D_bc.
+  - Leer R1 desde LaCie lleva unos 20–25 min por pasada, porque los accesos son pequeños y dispersos. Las series de la biblioteca quedan guardadas en `analysis_cache`.
+- **Pendientes menores de la Task 3, resueltos:**
+  - nota R11 en `theory.json`;
+  - un pickup ausente queda registrado como "missing";
+  - doble import;
+  - la máscara de la bahía usa `bay_cells`;
+  - el helper de `wind_patch` está compartido.
