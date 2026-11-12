@@ -118,3 +118,17 @@ def test_section_T_point_velocity_like_thesis():
                                0.5 * (V[:, 1, 2:5] + V[:, 2, 2:5]))
     np.testing.assert_allclose(flux.t_point_normal(V, "x", 1, slice(2, 4)),
                                0.5 * (V[:, 2:4, 1] + V[:, 2:4, 2]))
+
+
+def test_dry_column_contributes_zero_not_nan():
+    u, rho, eta, _ = _mode1()
+    r2 = flux.section_flux(u, rho, eta, DZ, DL, T, rho0=RHO0, g=G)["stages"][0]
+    dz3 = np.stack([DZ, DZ, np.zeros(NZ)], axis=1)                         # third column dry
+    u3 = np.concatenate([u, u[:, :, :1]], axis=2)
+    rho3 = np.concatenate([rho, np.zeros_like(rho[:, :, :1])], axis=2)
+    eta3 = np.concatenate([eta, eta[:, :1]], axis=1)
+    r3 = flux.section_flux(u3, rho3, eta3, dz3, np.append(DL, 50.0), T, rho0=RHO0, g=G)["stages"][0]
+    assert np.isfinite(r3["F_bc_total"]).all() and np.isfinite(r3["F_bt_total"]).all()
+    assert np.all(r3["F_bc"][:, 2] == 0) and np.all(r3["F_bt"][:, 2] == 0)
+    np.testing.assert_allclose(r3["F_bc_total"], r2["F_bc_total"], rtol=1e-12)
+    np.testing.assert_allclose(r3["F_bt_total"], r2["F_bt_total"], rtol=1e-12)
