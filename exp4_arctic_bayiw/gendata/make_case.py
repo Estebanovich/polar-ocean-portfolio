@@ -131,6 +131,18 @@ def parse_namelist_list(text: str, name: str) -> list[float]:
     raise KeyError(name)
 
 
+def bay_cells(bathy: np.ndarray, frac: float = 0.5) -> np.ndarray:
+    """Wet cells of the thesis bay: sea (bathy < 0) shallower than ``frac`` times the deepest
+    (shelf) depth. The thesis bathymetry has two depths only, the shelf (1000 m, stored with
+    round-off: several values within 1e-12 m of -1000) and the bay (164 m), so any frac between
+    0.17 and 0.99 gives the same 288 cells (rows 324-347, columns 274-285); the old test
+    -999 < bathy < 0 depended on the shelf being exactly 1000 m. Empty without a bay (R3)."""
+    b = np.asarray(bathy, float)
+    if not (b < 0).any():
+        return np.zeros(b.shape, bool)
+    return (b < 0) & (-b < frac * float(-b.min()))
+
+
 def set_nml_key(text: str, group: str, key: str, value: str | None) -> str:
     """Set ``key = value`` in namelist ``group`` of ``text`` (replace its line and its
     continuation lines, or insert it before the group terminator); ``value=None`` removes
@@ -366,7 +378,7 @@ def make_case(name: str, out_dir: Path, *, cases_file: Path | None = None,
     yg0 = parse_namelist_list(rendered["data"], "ygOrigin")[0]
     yc = yg0 + np.cumsum(dy) - 0.5 * dy                        # Cartesian yC (m)
     fy = f0 + beta * yc                                        # model/src/ini_cori.F:77
-    bay = (bathy < 0) & (bathy > -999.0)                       # bay: shallower than the 1000 m shelf
+    bay = bay_cells(bathy)
     jb = np.unique(np.nonzero(bay)[0]) if bay.any() else np.array([], int)
     actual = {
         "f0_s-1": f0, "beta_m-1s-1": beta,

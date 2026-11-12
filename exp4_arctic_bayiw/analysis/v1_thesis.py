@@ -61,14 +61,13 @@ class ThesisMNC:
     """Index of the thesis state.<iter>.t<tile>.nc files: (var, iteration) -> global field."""
 
     def __init__(self, run_dir: Path = THESIS_RUN):
-        import netCDF4  # noqa: F401  (only needed here)
+        import netCDF4  # only needed for the thesis MNC files
         self.files: dict[int, list[tuple[np.ndarray, Path]]] = {}
         for f in sorted(Path(run_dir).glob("mnc_*/state.*.t*.nc")):
             tile = int(re.search(r"\.t(\d+)\.nc$", f.name).group(1))
             self.files.setdefault(tile, []).append((None, f))
         if sorted(self.files) != list(range(1, 9)):
             raise RuntimeError(f"thesis run: expected tiles 1..8, found {sorted(self.files)}")
-        import netCDF4
         for tile, lst in self.files.items():
             out = []
             for _, f in lst:
@@ -202,14 +201,7 @@ def compare(run: Path, every_3d: int = 12, thesis_run: Path = THESIS_RUN) -> dic
     pk = {}
     for name, ours in (("pickup.0000007200.data", run / "pickup.0000007200.data"),
                        ("pickup.ckptA.data", run / "stage2" / "pickup.ckptA.data")):
-        theirs = Path(thesis_run) / name
-        if ours.exists() and theirs.exists():
-            pk[name] = {"bitwise_equal": ours.read_bytes() == theirs.read_bytes(),
-                        "iter_ours": _meta_iter(ours), "iter_thesis": _meta_iter(theirs)}
-            if not pk[name]["bitwise_equal"]:
-                x = np.fromfile(ours, ">f8")
-                y = np.fromfile(theirs, ">f8")
-                pk[name]["max_abs_diff"] = float(np.max(np.abs(x - y)))
+        pk[name] = pickup_check(ours, Path(thesis_run) / name)
     out["pickups"] = pk
 
     # V1-espectral at the mouth station and spectra at all stations
@@ -232,6 +224,21 @@ def compare(run: Path, every_3d: int = 12, thesis_run: Path = THESIS_RUN) -> dic
                            "pass": bool(m["seiche_peak_bin"][0] == m["seiche_peak_bin"][1]
                                         and m["psd_rel_diff"] is not None and m["psd_rel_diff"] <= PSD_TOL)}
     return out
+
+
+def pickup_check(ours: Path, theirs: Path) -> dict:
+    """Byte-for-byte comparison of two pickups. An absent file is recorded as status "missing"
+    (bitwise_equal None), never skipped."""
+    if not (ours.exists() and theirs.exists()):
+        return {"bitwise_equal": None, "status": "missing",
+                "missing": [str(p) for p in (ours, theirs) if not p.exists()]}
+    r = {"bitwise_equal": ours.read_bytes() == theirs.read_bytes(), "status": "compared",
+         "iter_ours": _meta_iter(ours), "iter_thesis": _meta_iter(theirs)}
+    if not r["bitwise_equal"]:
+        x = np.fromfile(ours, ">f8")
+        y = np.fromfile(theirs, ">f8")
+        r["max_abs_diff"] = float(np.max(np.abs(x - y)))
+    return r
 
 
 def _meta_iter(data_file: Path):

@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import os
 import re
 from pathlib import Path
 
@@ -17,6 +16,7 @@ import yaml
 
 from exp4_arctic_bayiw.gendata import make_case as mc
 from exp4_arctic_bayiw.gendata import profiles, vgrid
+from exp4_arctic_bayiw.tests.thesis_helpers import thesis_wind_patch_module
 
 PKG = Path(__file__).resolve().parents[1]
 SPEC = yaml.safe_load((PKG / "cases.yaml").read_text())
@@ -52,6 +52,23 @@ def _thesis_column(case_dir: Path, name: str, nz=50, ny=352, nx=560):
     a = np.fromfile(case_dir / name, ">f8").reshape(nz, ny, nx)
     assert np.ptp(a, axis=(1, 2)).max() == 0.0          # horizontally uniform
     return a[:, 0, 0]
+
+
+def test_bay_cells_two_depth_bathymetry():
+    b = np.full((6, 8), -1000.0)
+    b[0] = 0.0                                              # land
+    b[3:5, 2:6] = -164.0                                    # bay
+    b[1, 1] = -1000.0 - 1e-13                               # shelf round-off
+    m = mc.bay_cells(b)
+    assert m.sum() == 8 and m[3:5, 2:6].all()
+    assert not mc.bay_cells(np.where(b == -164.0, -1000.0, b)).any()
+
+
+@real
+def test_bay_cells_of_the_thesis_bathymetry():
+    b = np.fromfile(THESIS_IN / "bahia_01_expand_bat.bin", ">f8").reshape(352, 560)
+    jj, ii = np.nonzero(mc.bay_cells(b))
+    assert (jj.min(), jj.max(), ii.min(), ii.max(), jj.size) == (324, 347, 274, 285, 288)
 
 
 # ---- namelist helpers (synthetic) -----------------------------------------------------------
@@ -132,12 +149,7 @@ def test_r1_bathymetry_byte_identical_to_thesis(cases):
 
 
 def _thesis_wind_function():
-    os.environ.setdefault("MPLBACKEND", "Agg")
-    spec = importlib.util.spec_from_file_location("thesis_wind_patch",
-                                                  TCOPY / "input" / "wind_patch.py")
-    m = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(m)
-    return m.make_meridional_wind_patch
+    return thesis_wind_patch_module().make_meridional_wind_patch
 
 
 @real

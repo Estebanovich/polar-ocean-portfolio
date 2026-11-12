@@ -4,6 +4,8 @@ Copied unmodified (`cp -p`) from the read-only thesis tree. Original absolute pa
 
 Helper modules of the Output_IWBay scripts: `visualizar_espectros_metodologia.py` (imported by `visualizar_espectros_bay_vs_nobay.py`), `mapas_psd_dominio.py` (imported by `mapas_psd_dominio_bay_vs_nobay.py`), `coords_iwbay.py` and `MIT_DatProcesW.py` (imported by `mapas_psd_dominio.py`). `MIT_DatProcesW.py` also needs `MITgcmutils`, `cmocean`, `pandas`, `netCDF4` at import time.
 
+Task 5 (energy budget and flux contrast, PD0 Enmienda 1): `balance_kang_fringer.py` (Kang & Fringer 2012 budget of the bay) and the modules it imports (`conversion_bt_2D.py`, `fondo_kang_fringer.py`, `energia_viento.py`, `ape_dos_capas.py`, `conversion_baroclinica_2D.py`, which imports `prototipo_hovmoller_cpcg.py`), `disipacion_viscosa_bahia.py` (explicit dissipation) and `figura_energia_balance_kf.py` (its `terminos` gives the residual D; it imports the thesis plotting module `estructura_vertical`, not copied). `analysis/thesis_contrast.py` imports these copies and calls their functions on the thesis MNC output.
+
 | Original path | SHA-256 |
 |---|---|
 | `/Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan/code/DIAGNOSTICS_SIZE.h` | `48a35a2137a47ed37828e5dba9c18e0115c83dba4e7eec7c1b8c60f30828d385` |
@@ -37,3 +39,12 @@ Helper modules of the Output_IWBay scripts: `visualizar_espectros_metodologia.py
 | `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/plot_flujo_boca_bt_bc.py` | `83f15198cd61dd4b9e5386bb07a32b584e732535bd657b196e3dc5c18a00fba3` |
 | `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/visualizar_espectros_bay_vs_nobay.py` | `90799e98591294042cb337ef92913c2ff454793e174ad66884a9f0755ecee078` |
 | `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/visualizar_espectros_metodologia.py` | `07418338dfca4d7712da9515ea8aeec0ced69d8ac288a4bf41caa0bc1602a46e` |
+| `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/ape_dos_capas.py` | `7e1e8b700d0b7fa7889ea8cb3c13db0dabee545e4ec0fe9c3efba8d8e9df5c5a` |
+| `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/balance_kang_fringer.py` | `3a5e7db3ed020faf260aec4b18494b9f62ca482fe6b90a9da8321b800d1ad91d` |
+| `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/conversion_baroclinica_2D.py` | `f155d5056fd49b1eeb37bd170db94510da23d36c9156ce919385b0ef2d8c3f5b` |
+| `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/conversion_bt_2D.py` | `079cdced9bd1473bbe1e325e85c51f36db0a677463159eb974ccc140113f6754` |
+| `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/disipacion_viscosa_bahia.py` | `4b35bf9a1bb4cebf21e99753ace9999138c53e86c72e50a97b89d4e29bb576c8` |
+| `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/energia_viento.py` | `203fd342993f05a74c2e5d721c27f1e49cbfa1a54a147908591f9d516d1c629d` |
+| `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/figura_energia_balance_kf.py` | `fd42249eb24ef24ab3ee9ea3023d59e458c736aa3f7b6363c275be96b40e122e` |
+| `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/fondo_kang_fringer.py` | `cb48bb3aeb54e010eb26cce5df1bea6039b7baefcdd7898b2a55219400f4a2b4` |
+| `/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/prototipo_hovmoller_cpcg.py` | `e7888af298d6c9a0d5af4f3f0ea4849ee7fe9893f771d2661dce5dde33c04705` |

@@ -1,0 +1,88 @@
+{
+ "run": "/Volumes/LaCie/portfolio_runs/exp4/R1",
+ "thesis_run": "/Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan/run_expand",
+ "final_record": "pickup pickup.ckptA.data (iteration 14400) for the last record",
+ "how_the_thesis_ran": "thesis functions imported from the verbatim copies in thesis_copy/Output_IWBay and called on the thesis MNC output (MITgcmutils stubbed: not installed in pyocean and not used by the called functions); main() not called; reference cached in /Volumes/LaCie/portfolio_runs/exp4/analysis_cache",
+ "tolerance_rel": 0.01,
+ "script": "thesis_copy/Output_IWBay/energy_flux_IWBay.py",
+ "sign": "+ into the bay in both (thesis +y)",
+ "section": {
+  "j": 323,
+  "i": [
+   274,
+   285
+  ]
+ },
+ "n_records": 481,
+ "records_thesis": 481,
+ "dx_max_rel_diff": 0.0,
+ "rho_ref_max_abs_diff_kg_m-3": 6.821210263296962e-13,
+ "u_mean_max_abs_diff_m_s-1": 1.3877787807814457e-17,
+ "stages": {
+  "stage1": {
+   "t_h": [
+    0.0,
+    60.0
+   ],
+   "n_records": 241,
+   "F_bc": {
+    "total_mean_W": [
+     -283.65706777170794,
+     -283.6570677069937
+    ],
+    "total_mean_rel_diff": 2.28142536255141e-10,
+    "column_mean_max_rel_diff": 8.74373496868136e-11,
+    "series_total_max_rel_diff": 1.7941389996519884e-10
+   },
+   "F_bt": {
+    "total_mean_W": [
+     -2566.0564588801053,
+     -2566.0564588810057
+    ],
+    "total_mean_rel_diff": 3.508885206476872e-13,
+    "column_mean_max_rel_diff": 5.7716921174417325e-12,
+    "series_total_max_rel_diff": 2.735294302988998e-12
+   }
+  },
+  "stage2": {
+   "t_h": [
+    60.0,
+    120.0
+   ],
+   "n_records": 241,
+   "F_bc": {
+    "total_mean_W": [
+     -963.1307220612689,
+     -963.1307221338479
+    ],
+    "total_mean_rel_diff": 7.535741491324363e-11,
+    "column_mean_max_rel_diff": 7.241384870257257e-11,
+    "series_total_max_rel_diff": 2.601444479240749e-10
+   },
+   "F_bt": {
+    "total_mean_W": [
+     0.6671963629810309,
+     0.6671963634184641
+    ],
+    "total_mean_rel_diff": 6.556288744314884e-10,
+    "column_mean_max_rel_diff": 8.132197863425459e-11,
+    "series_total_max_rel_diff": 1.0867253228346845e-09
+   }
+  }
+ },
+ "stored_thesis_npz": {
+  "file": "/Volumes/ESTEBAN_MIT/MITgcm/verification/Output_IWBay/npz_flux/realistic_bay_flujo.npz",
+  "stage_total_mean_rel_diff": {
+   "stage1": {
+    "F_bc": 2.28142536255141e-10,
+    "F_bt": 3.508885206476872e-13
+   },
+   "stage2": {
+    "F_bc": 7.535741491324363e-11,
+    "F_bt": 6.556288744314884e-10
+   }
+  }
+ },
+ "max_rel_diff": 1.0867253228346845e-09,
+ "pass_lt_1pct": true
+}

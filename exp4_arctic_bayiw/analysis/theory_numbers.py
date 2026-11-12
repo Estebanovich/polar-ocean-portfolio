@@ -503,6 +503,12 @@ def run(data_dir: Path, thesis_input: Path) -> tuple[dict, dict, dict | None]:
         c["kelvin_circuit_period_closed_loop_h"] = [thesis["closed_loop_m"] / x / 3600 for x in c["c_n"]]
         c["profile"] = "thesis realistic (feb_temp/feb_salt, column 0,0)"
         c["eos"] = "thesis"
+        # ruling R11: the thesis f0 is the constant of its beta plane (beta = 1e-11, MITgcm default)
+        c["inertial_period_note"] = ("f0 of the thesis beta plane (f = f0 + beta yC, "
+                                     "model/src/ini_cori.F:77, beta = 1e-11 default): 1-3 % below "
+                                     "the local f of the bay (7.05e-5 to 7.16e-5 s^-1 at rows "
+                                     "j 324-347, R1 case.json), so this period is 1-3 % longer "
+                                     "than the local inertial period (24.4-24.8 h)")
         cases["thesis_bay_thesis_f"] = c
         # bridge R2: VMF summer profile on the thesis levels (below 240 m the last value)
         tf = vgrid.faces(tdel)
