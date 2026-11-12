@@ -578,3 +578,21 @@ Esteban aprobó el preregistro con cuatro decisiones (`notes/pd0_preregistro.md`
   - **Inestabilidad.** El aviso de `gad_check.F:94-107` ("potentially unstable time-stepping (Internal Wave) / need staggerTimeStep") está en el STDERR de todas las corridas sincrónicas. El esquema 33 no lo arreglaría, porque tampoco usa AB (`gad_init_fixed.F:148-157`). Las alternativas reales son un esquema con AB (2, 3, 4) o `implicitIntGravWave`; las dos exigen enmienda del PD0.
   - **Hielo.** Se añade la opción `useHB87StressCoupling` para F4 (el océano recibe el viento sobre el hielo; no sirve para F2). La deriva libre de MITgcm no tiene inercia del hielo: (b).
   - **V3.** La marea era cero por un error nuestro en las entradas: escribía U₀ en el archivo de fase (s) y no había archivo de amplitud (`OBCS_PARAMS.h:162`, `obcs_init_fixed.F:536-575`). Corregido (Am = ±U₀, Ph = T/4) y con prueba. Con la marea activa, η sigue el balance de volumen (0.169 frente a 0.167 m a 1.67 h), pero V3 diverge con Δt 120 y 60 s: corrientes de 1.3 m s⁻¹ en Mariasundet y CFL vertical > 1. Va al PD1.
+
+## 2026-11-12 (mañana, 12) — Exp. 4: PD1 decidido y aplicado (Task 4)
+
+Decisiones de Esteban (`notes/pd1_config.md` §0):
+1. **Paso de tiempo:** `staggerTimeStep` con Δt = 120 s en todas las corridas del fiordo. Clase (c); el motivo es el aviso de ondas internas de `gad_check.F`.
+2. **Hielo:** copias modificadas de `obcs_check.F` (relajado con `DISABLE_SEAICE_OBCS`) y `seaice_dynsolver.F` (calcula `DWATN` también sin reología) en `config/fjord_vmf/code`, con cabecera y sha256 de los originales. Una prueba exige que difieran solo en los bloques marcados. F4 usa el polígono de F2 (R15).
+3. **T_fin = 280 h** para todo, sin recortes; el presupuesto sube a ~31–32 h.
+4. **V3:** marea suave con rampa de un ciclo (copia modificada de `obcs_add_tides.F`).
+5. **Lo demás, como estaba:** invierno a 200 m con la limitación declarada, caja, malla, viscosidad y batimetría.
+
+Verificación:
+- **F1, 48 h, configuración final:** limpia (máx |w| 1.6×10⁻³ m s⁻¹, CFL 0.13, sin el aviso de `gad_check`), 0.62 s/paso.
+- **F2 y F4 arrancan con Orlanski.**
+  - F2: el esfuerzo bajo el hielo coincide exactamente (error 0.0) con ρ₀ C_w|Δu|Δu en el piso lineal de `SEAICEdWatMin`, hasta 4.4×10⁻³ N m⁻².
+  - F4: hasta 0.097 N m⁻², dentro del ~6 % (desfase de un paso del diagnóstico `SIuice`).
+  - Reinicio 10 + 10 frente a 20: idéntico bit a bit en los dos.
+- **V3:** con η₀ = 0.2 m diverge a los 1.7 ciclos; **con η₀ = 0.1 m es estable 2 ciclos** (corrientes de 0.56 m s⁻¹ en Mariasundet; CFL vertical 0.55 una vez). La amplitud no es realista y se declara. V3 se evalúa por la velocidad de fase de la onda de Kelvin interna frente al umbral congelado.
+- La campaña no se ha lanzado.

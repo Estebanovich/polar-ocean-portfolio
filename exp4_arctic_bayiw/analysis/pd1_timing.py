@@ -135,7 +135,49 @@ def ice_stress(run: Path) -> dict | None:
         d, _ = read_mds(run / "seaice", it)
         sea = {"iter": it, "max_abs_uice": float(np.abs(d[2]).max()), "max_abs_vice": float(np.abs(d[3]).max()),
                "area_sum": float(d[0].sum())}
-    return {"inside_cells_u": int(inside.sum()), "records": res, "seaice_last": sea}
+    drag = []
+    for it in recs:
+        if (run / f"seaice.{it:010d}.data").exists() and (run / f"state3d.{it:010d}.data").exists() and it > 0:
+            drag.append(drag_check(run, it, wet))
+    return {"inside_cells_u": int(inside.sum()), "records": res, "seaice_last": sea,
+            "drag_check": drag}
+
+
+RHO_CONST = 1026.96     # kg m^-3, rhoConst = rhoNil of the fitted EOS (cases.yaml eos)
+C_W = 5.5e-3            # SEAICE_waterDrag (PD0 section 8)
+DWAT_MIN = 0.25         # kg m^-2 s^-1, SEAICEdWatMin default (pkg/seaice/seaice_readparms.F:403)
+
+
+def drag_check(run: Path, it: int, wet) -> dict:
+    """oceTAUX under full ice against the drag MITgcm should apply after the PD1 change of
+    seaice_dynsolver.F: DWATN = max(rho Cw |du_c|, SEAICEdWatMin) at cell centres
+    (pkg/seaice/seaice_oceandrag_coeffs.F:84-107; |du_c| from the two neighbouring U and V
+    points), tau_x = (DWATN_i + DWATN_i-1)/2 (u_ice - u_1) at U points
+    (pkg/seaice/seaice_ocean_stress.F:109-119, no turning angle)."""
+    s3 = read_mds(run / "state3d", it)[0]
+    si = read_mds(run / "seaice", it)[0]
+    tx = read_mds(run / "surf", it)[0][0]
+    du, dv = si[2] - s3[0][0], si[3] - s3[1][0]
+    dup = np.zeros_like(du)
+    dup[:, :-1] = du[:, 1:]
+    dvp = np.zeros_like(dv)
+    dvp[:-1, :] = dv[1:, :]
+    mag = np.sqrt(0.25 * ((du + dup) ** 2 + (dv + dvp) ** 2))
+    dw = np.maximum(RHO_CONST * C_W * mag, DWAT_MIN) * wet
+    dwm = np.zeros_like(dw)
+    dwm[:, 1:] = dw[:, :-1]
+    fu = 0.5 * (dw + dwm) * du
+    a = si[0]
+    au = np.zeros_like(a)
+    au[:, 1:] = 0.5 * (a[:, 1:] + a[:, :-1])
+    m = (au >= 1.0 - 1e-12) & wet
+    m[:, 0] = False
+    err = np.abs(tx[m] - fu[m])
+    return {"iter": it, "cells": int(m.sum()), "max_abs_tau": float(np.abs(tx[m]).max()),
+            "max_abs_expected": float(np.abs(fu[m]).max()), "max_abs_err": float(err.max()),
+            "p99_abs_err": float(np.percentile(err, 99)),
+            "floor_fraction": float((RHO_CONST * C_W * mag < DWAT_MIN)[m].mean()),
+            "max_abs_du": float(np.abs(du[m]).max())}
 
 
 def main(argv=None) -> int:

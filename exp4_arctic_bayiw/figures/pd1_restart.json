@@ -1,0 +1,20 @@
+{
+  "F2": {
+    "pickup.0000000020.data": [],
+    "pickup_seaice.0000000020.data": [],
+    "pickup_orlanski*.0000000020.*.data": [],
+    "state3d.0000000010.data": [],
+    "surf.0000000010.data": [],
+    "seaice.0000000010.data": [],
+    "bit_identical": true
+  },
+  "F4": {
+    "pickup.0000000020.data": [],
+    "pickup_seaice.0000000020.data": [],
+    "pickup_orlanski*.0000000020.*.data": [],
+    "state3d.0000000010.data": [],
+    "surf.0000000010.data": [],
+    "seaice.0000000010.data": [],
+    "bit_identical": true
+  }
+}

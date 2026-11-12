@@ -263,11 +263,13 @@ C     also be done by setting runtime parameter usePWthermodynamics=F)
 #undef DISABLE_SEAICE_GROWTH
 
 C-    Do not compile/use seaice-related obcs code when using obcs.
-#undef DISABLE_SEAICE_OBCS
+C     Exp. 4 fjord_vmf (PD1, 2026-11-12): defined; the ice never reaches the open
+C     boundaries, and the modified obcs_check.F then accepts Orlanski OBCs with seaice.
+#define DISABLE_SEAICE_OBCS
 
 C--   Enable free drift code
 C     Exp. 4 fjord_vmf: defined for F4 (SEAICEuseFREEDRIFT, spec section 3.5);
-C     the only change from pkg/seaice/SEAICE_OPTIONS.h.
+C     with DISABLE_SEAICE_OBCS (above) the two changes from pkg/seaice/SEAICE_OPTIONS.h.
 #define SEAICE_ALLOW_FREEDRIFT
 
 C--   pkg/seaice cost functions compile flags
