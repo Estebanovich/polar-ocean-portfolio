@@ -534,3 +534,14 @@ Esteban aprobó el preregistro con cuatro decisiones (`notes/pd0_preregistro.md`
   - las líneas de la figura van rasterizadas;
   - V2a en la plataforma queda como punto propio.
 - **Desde ahora los umbrales están congelados.** Cualquier cambio requiere una enmienda fechada.
+
+## 2026-11-11/12 (noche, 10) — Exp. 4, Task 3: puente con la tesis (`bay_thesis`, V1, R1k)
+
+- **Referencia:** la corrida guardada de la tesis con bahía y estratificación "realistic" es `BayIW_Rectan/run_expand` (21 de junio). Tiene la salida MNC completa: η, T, S, U, V y W cada 900 s en 0–120 h, más los pickups. Las carpetas `Output_IWBay/{realistic,…}` están vacías.
+- **`bay_thesis`:** el código de la tesis sin `mnc`, con las mismas 8 teselas en 4 procesos (`GLOBAL_SUM_ORDER_TILES` mantiene el orden de las sumas). Los namelists son los de la tesis con cambios de E/S solamente: MDS en vez de MNC, nombres de archivo fijos, y `nIter0`/`nTimeSteps` en lugar de `startTime`/`endTime`. Batimetría, malla y T/S se copian byte a byte; el viento se regenera idéntico byte a byte. Se corre en dos etapas, forzada y libre, como la tesis (`run_stages` ahora admite un plan y un namelist por etapa).
+- **V1-exacto pasa bit a bit:** máx |Δη| = 0 en los 480 registros comunes; U, V y T idénticos; los pickups de las iteraciones 7200 y 14 400, idénticos byte a byte.
+- **f₀ resuelto:** la tesis corrió en un **plano β** (`beta = 1e-11`, el valor por omisión de MITgcm, `set_defaults.F:112`), no en un plano f. En la bahía f = 7.05–7.16×10⁻⁵ s⁻¹ (24.4–24.8 h). Los "~31 h" (0.0322 cph) de los scripts viejos son el f local cerca de la frontera sur (j ≈ 39). R2/R3 usan plano f a 78°N, y se declara.
+- **Build de KPP** (`bay_thesis_kpp`: `kpp`, halo de 4, `numDiags = 7*Nr`): R1 corrido con él (R1b) es idéntico bit a bit a R1 en 2 h. Con `numDiags = 20*Nr` el ejecutable pasaba de 2 GB de datos estáticos y fallaba al arrancar de forma aleatoria (región compartida de dyld).
+- **R1k** (R1 + `useKPP`, `viscAr` 1e-4, sin `ivdc_kappa`, `implicitViscosity`; tabla en `notes/pd1_puente.md`): 240 h OK en 4.5 h. R1: 1.9 h. H4d queda para la Task 7.
+- **R2/R3** generados y probados (f a 78°N con β = 0, perfil de verano en los niveles de la tesis, EOS ajustada, KPP y mezcla del PD0); se corren tras el PD1.
+- **Declarado:** la columna de la tesis está truncada a 600 m (plataforma de 1000 m). Se conserva y se declara.
