@@ -47,12 +47,17 @@ Lo que fija el PD0 sale de `cases.yaml` (`configs.fjord_vmf`) y de las plantilla
 - **V3 (solo M2).** Velocidad normal barotrópica M2 hacia adentro, uniforme en las tres fronteras abiertas (`ALLOW_OBCS_TIDES`, `pkg/obcs/obcs_add_tides.F`), con forma u = U₀ sin ωt. U₀ sale del balance de volumen de una cuenca que sube η₀ = 0.5 m: U₀ = ω η₀ A_mar / A_frontera = 1.70 cm s⁻¹ (A_mar = 2261 km², A_frontera = 9.37 km²).
   - η₀ = 0.5 m está dentro de los 0.3–0.8 m de S&F14 (p. 89).
   - **Punto PD1-V3:** es un diseño mínimo. La amplitud real en Akseløya se mide y se reporta, sin calibrarla.
-  - **Falla en la corrida corta (`V3_smoke2h`, 2 h, Δt 120 s, escalonado).** La marea no actúa.
-    - Máx η = 7.5×10⁻⁶ m y η medio ≈ 0 a las 2 h. Con U₀ sin ωt, la teoría da η ≈ η₀(1 − cos ωt) ≈ 0.23 m.
-    - La velocidad normal en la frontera O es ~10⁻⁵ m s⁻¹; en el instante final debería ser U₀ sin ωt ≈ 1.4 cm s⁻¹.
-    - El log confirma que se leen `useOBCStides = T`, `OBCS_nTidalComp = 1` y los tres archivos `*TideSn.bin` (`MDS_READ_SEC_*`). `OBCS_ADJUST` llama a `OBCS_ADD_TIDES` después del balance (`pkg/obcs/obcs_adjust.F:42-51`; `model/src/do_oceanic_phys.F:588-597`).
-    - No encontré la causa en un tiempo razonable. Sospecho de la interacción con Orlanski: el verificador de MITgcm que usa mareas (`verification/seaice_obcs/input.tides`) usa fronteras prescritas.
-    - **V3 no está lista para la campaña.** Hay que depurarla antes (Task 6) o rediseñar su forzamiento en el PD1.
+  - **Falla en la corrida corta (`V3_smoke2h`, 2 h, Δt 120 s, escalonado): la marea no actuó.**
+    - Máx η = 7.5×10⁻⁶ m a las 2 h. η medio ≈ 10⁻²² m y velocidad normal media en la frontera O ≈ 10⁻⁹ m s⁻¹ (`V3_smoke2h/STDOUT.0000:2337-3013`): flujo neto por las fronteras exactamente cero, cuando la teoría daba η ≈ 0.23 m.
+    - **Diagnóstico** (fix round 1; corridas de 1 h, Δt 120 s, escalonado, `V3_diag_nobalance_1h` y `V3_diag_noorlanski_1h`): sin `useOBCSbalance`, η no responde (η medio 5×10⁻⁹ m). Sin Orlanski (fronteras con valor 0 más la marea), la velocidad normal en la frontera es **exactamente 0.0**: la marea no se sumaba a nada.
+    - **Causa: error nuestro (a) en las entradas generadas, no Orlanski.** `pkg/obcs` lee por punto de frontera una **amplitud** (m s⁻¹, `OB*_*TidAmFile`) y una **fase en segundos** (`OB*_*TidPhFile`) (`pkg/obcs/OBCS_PARAMS.h:162`), y forma Cs = Am cos(ωPh) y Sn = Am sin(ωPh) (`pkg/obcs/obcs_init_fixed.F:536-575`). Yo escribía U₀ en el archivo de fase y no daba amplitud, así que Am = 0.
+    - **Corregido** en `make_case.tide_v3` y `cases.yaml`: Am = ±U₀ y Ph = T/4, de modo que u = U₀ sin ωt. Prueba: `test_v3_tide_only`, que reconstruye u(t) como lo hace MITgcm.
+  - **V3 corregido (`V3_diag_tidefix_*`, solo diagnóstico): la marea actúa, pero la corrida es inestable.**
+    - η medio sigue el balance de volumen: 0.169 m a 1.67 h, frente a η₀(1 − cos ωt) = 0.167 m.
+    - Pero las corrientes de marea en Mariasundet llegan a 1.3 m s⁻¹ a las 2 h (S&F14 citan > 2 m s⁻¹ en Akselsundet, p. 89).
+    - Con **Δt 120 s** la corrida diverge (NaN entre 1.7 y 2 h).
+    - Con **Δt 60 s**, el CFL vertical (W_hf) llega a 1.01 a las 2 h y a 4.1 justo antes de diverger, entre 2.7 y 3.3 h, cerca del máximo de entrada (T/4 = 3.1 h).
+  - **Punto PD1-V3 (no elegido).** V3 necesita un Δt propio mucho menor (≲ 20–30 s para CFL_W ≤ 0.5; costo ≈ 4.7–7 h por corrida de 280 h) o un forzamiento más suave (η₀ menor, rampa), además de la duración y la amplitud ya pendientes. El PD0 no fija un umbral de V3 que dependa de Δt, pero el plan pide el mismo Δt por malla en las corridas comparables, y V3 no se compara con las F en ningún cociente.
 - **F4:** el hielo a la deriva usa el mismo polígono que F2, así que F4 frente a F2 aísla la dinámica del hielo. El spec dice "hielo libre en todo el fiordo" y el plan "fuera no hay hielo, salvo en F4". **Punto PD1-F4:** ¿mismo polígono o todo el fiordo, incluido el exterior? Además F4 tiene el problema de `pd1_seaice.md` §2.
 
 ---
@@ -81,18 +86,25 @@ No es física resuelta. Lo que se observa:
 **Lectura:**
 1. No depende de KPP: F1c, con el cierre de la tesis, crece igual.
 2. Reducir Δt no la quita, solo la retrasa. El inicio es ∝ 1/Δt (inicio × Δt casi constante), así que la tasa de crecimiento es ∝ Δt. Es la firma de una inestabilidad débil e incondicional del paso de tiempo, no de un límite CFL.
-3. Hipótesis: el acoplamiento de las ondas de gravedad internas entre el momento (Adams–Bashforth 2) y el trazador avanzado hacia delante (el esquema 77 es de espacio-tiempo directo y no usa AB2) en el paso **sincrónico**. La documentación de MITgcm recomienda el paso escalonado (`staggerTimeStep`) cuando las ondas internas limitan el paso: "essentially allows the gravity wave terms to leap-frog in time giving second order accuracy and more stability" (`doc/algorithm/algorithm.rst:705-715`).
+3. **El mecanismo lo señala el propio MITgcm.**
+   - `pkg/generic_advdiff/gad_init_fixed.F:148-157` aplica Adams–Bashforth a la tendencia de T y S solo con los esquemas 2, 3 y 4 (centrado de 2.º orden, upwind de 3.er orden y centrado de 4.º orden; `GAD.h:23-33`). El 77 (y el 33) no usan AB.
+   - Con paso sincrónico, sin `implicitIntGravWave` y con un trazador activo sin AB, `gad_check.F:94-107` avisa "potentially unstable time-stepping (Internal Wave)" y "need staggerTimeStep=.TRUE.".
+   - El aviso está en `F1_t6h/STDERR.0000:1-2` (y en todas las corridas sincrónicas) y no aparece en las escalonadas (`F1_diag_st60_12h/STDERR.0000` vacío).
+   - Es la inestabilidad de las ondas de gravedad internas cuando el trazador avanza hacia delante sin AB mientras el momento usa AB2. La documentación recomienda el paso escalonado: "essentially allows the gravity wave terms to leap-frog in time giving second order accuracy and more stability" (`doc/algorithm/algorithm.rst:705-715`).
+   - En la Task 4 lo vi primero en las corridas y no en el aviso: lo leí después.
 
-**Prueba de la hipótesis.** F1 con `staggerTimeStep = .TRUE.` y Δt = 60 s, 12 h: **sin ruido** (`F1_diag_st60_12h`).
+**Prueba.** F1 con `staggerTimeStep = .TRUE.` y Δt = 60 s, 12 h: **sin ruido** (`F1_diag_st60_12h`).
 - Máx |w| se queda en 1.0–1.7×10⁻³ m s⁻¹ durante las 12 h. En la sincrónica, a las 4 h ya valía 6.5×10⁻².
 - Máx CFL 0.066, a 0.50 s por paso (el mismo costo).
-- La hipótesis queda apoyada; el mecanismo exacto no lo demostré.
+- Coincide con lo que predice el aviso de `gad_check.F`.
 - Prueba con Δt = 120 s escalonado: limpia, máx |w| ≤ 1.6×10⁻³ m s⁻¹ (`F1_diag_st120_12h`). Corrida de 48 h escalonada a **120 s** (el "CFL ≤ 0.5 en 2 días" del plan; `F1_st120_48h`): limpia. Máx |w| ≤ 1.6×10⁻³ m s⁻¹, que baja a 6×10⁻⁴ a las 48 h; máx CFL advectivo 0.129, alcanzado en el paso 130 (4.3 h, pulso).
 
 **Punto PD1-Δt (no elegido).** Opciones medidas:
 - (a) `staggerTimeStep = .TRUE.` con **Δt = 120 s**: limpia en 48 h, CFL advectivo 0.13 y de ondas internas 0.42 (§3). La alternativa conservadora es Δt = 60 s (limpia en 12 h; cuesta ~60 % más por hora simulada). Es un cambio numérico, no físico, y se declara (c). Antes de la campaña conviene repetir la corrida de 48 h con la configuración final y el `tracForcingOutAB = 1` que `pkg/seaice` exige; las de esta Task se hicieron antes de añadirlo, salvo `F1_st120_48h`, `V4_smoke2h`, `F3_100s_t1h` y los diagnósticos de hielo.
 - (b) Paso sincrónico con Δt más corto. **No sirve:** con 30 s también aparece a las 6 h.
-- (c) Otro esquema de advección (el 33, alternativa del PD0 §6). Exige enmienda del PD0 y no está probado.
+- (c) **El esquema 33 (alternativa del PD0 §6) no lo arreglaría:** tampoco usa AB (`gad_init_fixed.F:148-157`) y daría el mismo aviso.
+- (d) Un esquema de trazador con AB (2, 3 o 4: centrado de 2.º orden, upwind de 3.er orden o centrado de 4.º orden). Quita la condición del aviso, pero sin limitador produce oscilaciones en la picnoclina. Exige enmienda del PD0 (§6 fija el 77) y no está probado.
+- (e) `implicitIntGravWave = .TRUE.`. Exige compilar con `ALLOW_NONHYDROSTATIC` (`doc/getting_started/getting_started.rst:2141`) y una enmienda del PD0, y no está probado.
 
 **CFL ≤ 0.5:** ver §3.
 
@@ -112,7 +124,8 @@ Todas las corridas usan np = 5, un caso a la vez, y escriben a LaCie. `wall_s` (
 | `F1_diag_st120_12h` | 200 m | escal. | 120 | 360 | 222 | 0.62 | — | 0.129 | OK, limpia |
 | `F1_st120_48h` | 200 m | escal. | 120 | 1440 | 881 | 0.61 | 0.61 | 0.129 | OK, limpia en 48 h |
 | `F1g_smoke1h` | 200 m | escal. | 60 | 60 | 43 | 0.72 | 0.63 | 0.011 | OK |
-| `V3_smoke2h` | 200 m | escal. | 120 | 60 | 46 | 0.77 | 0.69 | 0.001 | OK, pero sin marea (§1) |
+| `V3_smoke2h` | 200 m | escal. | 120 | 60 | 46 | 0.77 | 0.69 | 0.001 | OK, pero sin marea por un error de entradas (§1; corregido) |
+| `V3_diag_tidefix_2h` / `_dt60_4h` | 200 m | escal. | 120 / 60 | 60 / 240 | 47 / 133 | — | — | NaN | divergen (marea corregida; §1) |
 | `V4_smoke2h` | 400 m | escal. | 120 | 60 | 13 | 0.22 | 0.17 | 0.048 | OK |
 | `F2_smoke3h`, `F4_smoke3h` | 200 m | escal. | 60 | 0 | — | — | — | — | no arrancan: `OBCS_CHECK` (`pd1_seaice.md` §7) |
 | `F3_100s_t1h` (subcaja 100 m) | 100 m | escal. | 60 | 60 | 87 | 1.45 | 1.32 | 0.039 | OK (ejecutable re-enlazado; §5) |
@@ -238,9 +251,12 @@ Cada punto lleva su sección. Lo que no se decide queda como está en `cases.yam
 5. **T_fin:** 280 h o 240 h (§3 y §4: tiempo de pared y disco de las dos opciones).
 6. **Resolución de invierno** (§5): 100 m en la caja completa, subcaja anidada a 100 m o limitación declarada a 200 m.
 7. **Hielo, PD1-S1** (`pd1_seaice.md` §2, §5 y §6): con las banderas del spec, el océano no recibe arrastre bajo el hielo, ni fijo ni a la deriva. Está confirmado en corrida corta: τ = 0.0 bajo A = 1.
+   - Para F4 hay una opción solo de namelist: `useHB87StressCoupling = .TRUE.`. El océano bajo el hielo recibe el viento sobre el hielo, sin el término de Coriolis del hielo (~0.03 N m⁻² a 0.2 m s⁻¹).
+   - No sirve para F2: dejaría pasar todo el viento a través del hielo fijo.
+   - La deriva libre de MITgcm no tiene inercia del hielo (spec: "losa con inercia"); clasificado (b).
    **Hielo, PD1-S2** (`pd1_seaice.md` §7): F2 y F4 **no arrancan** con fronteras de Orlanski (`pkg/obcs/obcs_check.F:400-405, 571-579`). Sin resolver esto no hay H4b.
 8. **F4** (§1, punto PD1-F4): polígono del hielo a la deriva.
-9. **V3** (§1, punto PD1-V3): forzamiento M2 mínimo (U₀ = 1.70 cm s⁻¹ en las tres fronteras, η₀ = 0.5 m). **En la corrida corta la marea no actuó**: hay que depurarla o rediseñarla antes de la campaña.
+9. **V3** (§1, punto PD1-V3): forzamiento M2 mínimo (U₀ = 1.70 cm s⁻¹ en las tres fronteras, η₀ = 0.5 m). El error de las entradas (la marea era cero) está corregido. Con la marea activa, V3 diverge con Δt 120 y 60 s por las corrientes de los estrechos: hace falta un Δt propio ≲ 20–30 s o un forzamiento más suave.
 10. **Pendientes de batimetría** (`notes/pd1_batimetria.md`):
     - (a) la caja de 100 × 60 km (punto 1);
     - (b) el control del ancho de Mariasundet **FALLA** (1.33 km de celdas mojadas frente a 0.7 km; clasificado (a), definición de la métrica, *post hoc*). A 400 m (V4) los dos estrechos siguen abiertos: 3 celdas en Akselsundet y 6 en Mariasundet sobre la sección;

@@ -2859,5 +2859,564 @@
       "._PHL": 4096
     },
     "ice_stress": null
+  },
+  "V3_diag_tidefix_2h": {
+    "run_dir": "/Volumes/LaCie/portfolio_runs/exp4/V3_diag_tidefix_2h",
+    "case": "V3",
+    "config": "fjord_vmf",
+    "deltaT_s": 120.0,
+    "grid": {
+      "nx": 500,
+      "ny": 300,
+      "nz": 40,
+      "dx_m": 200.0,
+      "bbox_utm": [
+        455000,
+        555000,
+        8594000,
+        8654000
+      ],
+      "wet_cells": 56531,
+      "max_depth_m": 238.77259063720703,
+      "bathy_source": "gendata.bathy.build"
+    },
+    "edits": [
+      "kpp",
+      "no_wind",
+      "tide_m2"
+    ],
+    "binary_sha256": "2197357b81a88104fbd990f95a05d547c161b705af0ab97c424427e0748a6575",
+    "state": "FAILED",
+    "n_timesteps": 60,
+    "last_iter": 60,
+    "wall_s": 47,
+    "s_per_step": 0.7833333333333333,
+    "main_loop_wall_s": 42.31312894821167,
+    "monitor_max": {
+      "trAdv_CFL_u_max": 2.5089485378131e+82,
+      "trAdv_CFL_v_max": 5.0027031678605e+82,
+      "trAdv_CFL_w_max": 1.4809296765102,
+      "advcfl_uvel_max": 2.5089485378131e+82,
+      "advcfl_vvel_max": 5.0027031678605e+82,
+      "advcfl_wvel_max": 1.4746029969852,
+      "advcfl_W_hf_max": 1.4809296765102,
+      "dynstat_uvel_max": 0.95194717938495,
+      "dynstat_uvel_min": 0.26237892403344,
+      "dynstat_vvel_max": 1.1233509047333,
+      "dynstat_vvel_min": 0.39828888081449,
+      "dynstat_wvel_max": 0.012262261871204,
+      "dynstat_eta_max": 0.20755376772998,
+      "dynstat_eta_min": 0.061423287801529
+    },
+    "cfl_max": 5.0027031678605e+82,
+    "noise_onset_iter": 40,
+    "noise_onset_h": 1.3333333333333333,
+    "wvel_max_series": [
+      [
+        0,
+        -0.0
+      ],
+      [
+        10,
+        0.00047602919567017
+      ],
+      [
+        20,
+        0.0016257054554417
+      ],
+      [
+        30,
+        0.0037528531643645
+      ],
+      [
+        40,
+        0.0062341431491721
+      ],
+      [
+        50,
+        0.012262261871204
+      ]
+    ],
+    "cfl_max_iter": 60,
+    "cfl_max_key": "advcfl_vvel_max",
+    "bytes_per_record": {
+      "U": 48000000,
+      "._U": 4096,
+      "V": 48000000,
+      "._V": 4096,
+      "T": 48000000,
+      "._T": 4096,
+      "S": 48000000,
+      "._S": 4096,
+      "Eta": 1200000,
+      "._Eta": 4096,
+      "W": 48000000,
+      "._W": 4096,
+      "state3d": 144000000,
+      "._state3d": 4096,
+      "state2d": 1200000,
+      "._state2d": 4096,
+      "wlev": 3600000,
+      "._wlev": 4096,
+      "surf": 2400000,
+      "._surf": 4096,
+      "kpp2d": 1200000,
+      "._kpp2d": 4096,
+      "kpp3d": 96000000,
+      "._kpp3d": 4096,
+      "PH": 48000000,
+      "._PH": 4096,
+      "PHL": 1200000,
+      "._PHL": 4096
+    },
+    "ice_stress": null
+  },
+  "V3_diag_tidefix_dt60_2h": {
+    "run_dir": "/Volumes/LaCie/portfolio_runs/exp4/V3_diag_tidefix_dt60_2h",
+    "case": "V3",
+    "config": "fjord_vmf",
+    "deltaT_s": 60.0,
+    "grid": {
+      "nx": 500,
+      "ny": 300,
+      "nz": 40,
+      "dx_m": 200.0,
+      "bbox_utm": [
+        455000,
+        555000,
+        8594000,
+        8654000
+      ],
+      "wet_cells": 56531,
+      "max_depth_m": 238.77259063720703,
+      "bathy_source": "gendata.bathy.build"
+    },
+    "edits": [
+      "kpp",
+      "no_wind",
+      "tide_m2"
+    ],
+    "binary_sha256": "2197357b81a88104fbd990f95a05d547c161b705af0ab97c424427e0748a6575",
+    "state": "OK",
+    "n_timesteps": 120,
+    "last_iter": 120,
+    "wall_s": 69,
+    "s_per_step": 0.575,
+    "main_loop_wall_s": 64.45909404754639,
+    "monitor_max": {
+      "trAdv_CFL_u_max": 0.34281620864883,
+      "trAdv_CFL_v_max": 0.39404930272718,
+      "trAdv_CFL_w_max": 1.0142901882268,
+      "advcfl_uvel_max": 0.34281620864883,
+      "advcfl_vvel_max": 0.39404930272718,
+      "advcfl_wvel_max": 1.0099570392137,
+      "advcfl_W_hf_max": 1.0142901882268,
+      "dynstat_uvel_max": 1.1427206954961,
+      "dynstat_uvel_min": 0.35688474719789,
+      "dynstat_vvel_max": 1.3134976757573,
+      "dynstat_vvel_min": 0.45726366532104,
+      "dynstat_wvel_max": 0.022517888966133,
+      "dynstat_eta_max": 0.27648202643247,
+      "dynstat_eta_min": 0.12019091706047
+    },
+    "cfl_max": 1.0142901882268,
+    "noise_onset_iter": 80,
+    "noise_onset_h": 1.3333333333333333,
+    "wvel_max_series": [
+      [
+        0,
+        -0.0
+      ],
+      [
+        20,
+        0.00047206736420616
+      ],
+      [
+        40,
+        0.001557767764572
+      ],
+      [
+        60,
+        0.0037106498969231
+      ],
+      [
+        80,
+        0.0061609590194853
+      ],
+      [
+        100,
+        0.012345441932031
+      ],
+      [
+        120,
+        0.022517888966133
+      ]
+    ],
+    "cfl_max_iter": 120,
+    "cfl_max_key": "advcfl_W_hf_max",
+    "bytes_per_record": {
+      "U": 48000000,
+      "._U": 4096,
+      "V": 48000000,
+      "._V": 4096,
+      "T": 48000000,
+      "._T": 4096,
+      "S": 48000000,
+      "._S": 4096,
+      "Eta": 1200000,
+      "._Eta": 4096,
+      "W": 48000000,
+      "._W": 4096,
+      "state3d": 144000000,
+      "._state3d": 4096,
+      "state2d": 1200000,
+      "._state2d": 4096,
+      "wlev": 3600000,
+      "._wlev": 4096,
+      "surf": 2400000,
+      "._surf": 4096,
+      "kpp2d": 1200000,
+      "._kpp2d": 4096,
+      "kpp3d": 96000000,
+      "._kpp3d": 4096,
+      "PH": 48000000,
+      "._PH": 4096,
+      "PHL": 1200000,
+      "._PHL": 4096
+    },
+    "ice_stress": null
+  },
+  "V3_diag_tidefix_dt60_4h": {
+    "run_dir": "/Volumes/LaCie/portfolio_runs/exp4/V3_diag_tidefix_dt60_4h",
+    "case": "V3",
+    "config": "fjord_vmf",
+    "deltaT_s": 60.0,
+    "grid": {
+      "nx": 500,
+      "ny": 300,
+      "nz": 40,
+      "dx_m": 200.0,
+      "bbox_utm": [
+        455000,
+        555000,
+        8594000,
+        8654000
+      ],
+      "wet_cells": 56531,
+      "max_depth_m": 238.77259063720703,
+      "bathy_source": "gendata.bathy.build"
+    },
+    "edits": [
+      "kpp",
+      "no_wind",
+      "tide_m2"
+    ],
+    "binary_sha256": "2197357b81a88104fbd990f95a05d547c161b705af0ab97c424427e0748a6575",
+    "state": "FAILED",
+    "n_timesteps": 240,
+    "last_iter": 240,
+    "wall_s": 133,
+    "s_per_step": 0.5541666666666667,
+    "main_loop_wall_s": 127.66026902198792,
+    "monitor_max": {
+      "trAdv_CFL_u_max": 0.5168709457117,
+      "trAdv_CFL_v_max": 2.5983961340813,
+      "trAdv_CFL_w_max": 4.1466585888698,
+      "advcfl_uvel_max": 0.5168709457117,
+      "advcfl_vvel_max": 1.9195226446222,
+      "advcfl_wvel_max": 4.128943649121,
+      "advcfl_W_hf_max": 4.1466585888698,
+      "dynstat_uvel_max": 1.7229031523723,
+      "dynstat_uvel_min": 0.45604556475332,
+      "dynstat_vvel_max": 6.3984088154073,
+      "dynstat_vvel_min": 3.3316054982743,
+      "dynstat_wvel_max": 0.080075158859933,
+      "dynstat_eta_max": 0.51437042805176,
+      "dynstat_eta_min": 0.30309716819135
+    },
+    "cfl_max": 4.1466585888698,
+    "noise_onset_iter": 80,
+    "noise_onset_h": 1.3333333333333333,
+    "wvel_max_series": [
+      [
+        0,
+        -0.0
+      ],
+      [
+        20,
+        0.00047206736420616
+      ],
+      [
+        40,
+        0.001557767764572
+      ],
+      [
+        60,
+        0.0037106498969231
+      ],
+      [
+        80,
+        0.0061609590194853
+      ],
+      [
+        100,
+        0.012345441932031
+      ],
+      [
+        120,
+        0.022517888966133
+      ],
+      [
+        140,
+        0.028858077911912
+      ],
+      [
+        160,
+        0.032053950592197
+      ],
+      [
+        180,
+        0.080075158859933
+      ]
+    ],
+    "cfl_max_iter": 180,
+    "cfl_max_key": "advcfl_W_hf_max",
+    "bytes_per_record": {
+      "U": 48000000,
+      "._U": 4096,
+      "V": 48000000,
+      "._V": 4096,
+      "T": 48000000,
+      "._T": 4096,
+      "S": 48000000,
+      "._S": 4096,
+      "Eta": 1200000,
+      "._Eta": 4096,
+      "W": 48000000,
+      "._W": 4096,
+      "state3d": 144000000,
+      "._state3d": 4096,
+      "state2d": 1200000,
+      "._state2d": 4096,
+      "wlev": 3600000,
+      "._wlev": 4096,
+      "surf": 2400000,
+      "._surf": 4096,
+      "kpp2d": 1200000,
+      "._kpp2d": 4096,
+      "kpp3d": 96000000,
+      "._kpp3d": 4096,
+      "PH": 48000000,
+      "._PH": 4096,
+      "PHL": 1200000,
+      "._PHL": 4096
+    },
+    "ice_stress": null
+  },
+  "V3_diag_nobalance_1h": {
+    "run_dir": "/Volumes/LaCie/portfolio_runs/exp4/V3_diag_nobalance_1h",
+    "case": "V3",
+    "config": "fjord_vmf",
+    "deltaT_s": 120.0,
+    "grid": {
+      "nx": 500,
+      "ny": 300,
+      "nz": 40,
+      "dx_m": 200.0,
+      "bbox_utm": [
+        455000,
+        555000,
+        8594000,
+        8654000
+      ],
+      "wet_cells": 56531,
+      "max_depth_m": 238.77259063720703,
+      "bathy_source": "gendata.bathy.build"
+    },
+    "edits": [
+      "kpp",
+      "no_wind",
+      "tide_m2"
+    ],
+    "binary_sha256": null,
+    "state": "OK",
+    "n_timesteps": 30,
+    "last_iter": 30,
+    "wall_s": 30,
+    "s_per_step": 1.0,
+    "main_loop_wall_s": 25.346999168395996,
+    "monitor_max": {
+      "trAdv_CFL_u_max": 0.00017704506543546,
+      "trAdv_CFL_v_max": 0.00017588653122592,
+      "trAdv_CFL_w_max": 0.00024973522680027,
+      "advcfl_uvel_max": 0.00010890696588263,
+      "advcfl_vvel_max": 0.0001106230814898,
+      "advcfl_wvel_max": 0.00024981838871396,
+      "advcfl_W_hf_max": 0.00024990160603198,
+      "dynstat_uvel_max": 0.00018151160980439,
+      "dynstat_uvel_min": 0.00017742020822577,
+      "dynstat_vvel_max": 0.00018437180248299,
+      "dynstat_vvel_min": 0.00017947924533146,
+      "dynstat_wvel_max": 3.1258525887834e-06,
+      "dynstat_eta_max": 3.8539061412913e-06,
+      "dynstat_eta_min": 4.0407091424429e-07
+    },
+    "cfl_max": 0.00024990160603198,
+    "noise_onset_iter": null,
+    "noise_onset_h": null,
+    "wvel_max_series": [
+      [
+        0,
+        -0.0
+      ],
+      [
+        10,
+        4.8548906107944e-07
+      ],
+      [
+        20,
+        1.6951010215568e-06
+      ],
+      [
+        30,
+        3.1258525887834e-06
+      ]
+    ],
+    "cfl_max_iter": 30,
+    "cfl_max_key": "advcfl_W_hf_max",
+    "bytes_per_record": {
+      "U": 48000000,
+      "._U": 4096,
+      "V": 48000000,
+      "._V": 4096,
+      "T": 48000000,
+      "._T": 4096,
+      "S": 48000000,
+      "._S": 4096,
+      "Eta": 1200000,
+      "._Eta": 4096,
+      "W": 48000000,
+      "._W": 4096,
+      "state3d": 144000000,
+      "._state3d": 4096,
+      "state2d": 1200000,
+      "._state2d": 4096,
+      "wlev": 3600000,
+      "._wlev": 4096,
+      "surf": 2400000,
+      "._surf": 4096,
+      "kpp2d": 1200000,
+      "._kpp2d": 4096,
+      "kpp3d": 96000000,
+      "._kpp3d": 4096,
+      "PH": 48000000,
+      "._PH": 4096,
+      "PHL": 1200000,
+      "._PHL": 4096
+    },
+    "ice_stress": null
+  },
+  "V3_diag_noorlanski_1h": {
+    "run_dir": "/Volumes/LaCie/portfolio_runs/exp4/V3_diag_noorlanski_1h",
+    "case": "V3",
+    "config": "fjord_vmf",
+    "deltaT_s": 120.0,
+    "grid": {
+      "nx": 500,
+      "ny": 300,
+      "nz": 40,
+      "dx_m": 200.0,
+      "bbox_utm": [
+        455000,
+        555000,
+        8594000,
+        8654000
+      ],
+      "wet_cells": 56531,
+      "max_depth_m": 238.77259063720703,
+      "bathy_source": "gendata.bathy.build"
+    },
+    "edits": [
+      "kpp",
+      "no_wind",
+      "tide_m2"
+    ],
+    "binary_sha256": null,
+    "state": "OK",
+    "n_timesteps": 30,
+    "last_iter": 30,
+    "wall_s": 30,
+    "s_per_step": 1.0,
+    "main_loop_wall_s": 24.89538598060608,
+    "monitor_max": {
+      "trAdv_CFL_u_max": 0.00017704506633834,
+      "trAdv_CFL_v_max": 0.00017588703106591,
+      "trAdv_CFL_w_max": 0.00024973351100342,
+      "advcfl_uvel_max": 0.00010890182494352,
+      "advcfl_vvel_max": 0.00011062293184521,
+      "advcfl_wvel_max": 0.00024981667234575,
+      "advcfl_W_hf_max": 0.00024989988909203,
+      "dynstat_uvel_max": 0.00018150304157253,
+      "dynstat_uvel_min": 0.0001774198967926,
+      "dynstat_vvel_max": 0.00018437155307534,
+      "dynstat_vvel_min": 0.00017947999696906,
+      "dynstat_wvel_max": 3.1258311127262e-06,
+      "dynstat_eta_max": 3.842890068806e-06,
+      "dynstat_eta_min": 4.0637005554081e-07
+    },
+    "cfl_max": 0.00024989988909203,
+    "noise_onset_iter": null,
+    "noise_onset_h": null,
+    "wvel_max_series": [
+      [
+        0,
+        -0.0
+      ],
+      [
+        10,
+        4.8548906783542e-07
+      ],
+      [
+        20,
+        1.6951011282697e-06
+      ],
+      [
+        30,
+        3.1258311127262e-06
+      ]
+    ],
+    "cfl_max_iter": 30,
+    "cfl_max_key": "advcfl_W_hf_max",
+    "bytes_per_record": {
+      "U": 48000000,
+      "._U": 4096,
+      "V": 48000000,
+      "._V": 4096,
+      "T": 48000000,
+      "._T": 4096,
+      "S": 48000000,
+      "._S": 4096,
+      "Eta": 1200000,
+      "._Eta": 4096,
+      "W": 48000000,
+      "._W": 4096,
+      "state3d": 144000000,
+      "._state3d": 4096,
+      "state2d": 1200000,
+      "._state2d": 4096,
+      "wlev": 3600000,
+      "._wlev": 4096,
+      "surf": 2400000,
+      "._surf": 4096,
+      "kpp2d": 1200000,
+      "._kpp2d": 4096,
+      "kpp3d": 96000000,
+      "._kpp3d": 4096,
+      "PH": 48000000,
+      "._PH": 4096,
+      "PHL": 1200000,
+      "._PHL": 4096
+    },
+    "ice_stress": null
   }
 }

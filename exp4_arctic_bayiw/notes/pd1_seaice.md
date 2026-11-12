@@ -56,7 +56,7 @@ KPP y GGL90 sí ven el esfuerzo que deja `pkg/seaice` (§3): el problema no est�
 - **KPP.** `KPP_CALC` llama a `KPP_FORCING_SURF` con `surfaceForcingU/V` (`pkg/kpp/kpp_calc.F:419-430`; comentario de `:377-379`). Ahí u* = (|τ|/ρ₀)^½, con τ promediado a los centros (`pkg/kpp/kpp_forcing_surf.F:186-207`). Si |τ| ≈ 0, u* = (½ ε Δz₁)^½ con ε = `phepsi` (`:198-204`).
   - Como `surfaceForcingU = fu·mass2rUnit` sale después de `SEAICE_MODEL` (§1, puntos 2 y 6), **KPP sí usa el esfuerzo hielo–agua cuando `pkg/seaice` lo calcula**. Con DWATN = 0 (los dos modos, §2), ese esfuerzo es 0 y KPP ve u* ≈ ε bajo el hielo: sin mezcla por esfuerzo superficial.
   - Lo que el spec (§3.6) pide, "bajo hielo, KPP recibe el esfuerzo hielo–agua como esfuerzo superficial", se cumple en el acoplamiento, pero el esfuerzo que llega es 0.
-- **GGL90.** u*² se estima con `surfaceForcingU/V` promediados a los centros (`pkg/ggl90/ggl90_calc.F:787-792`). Es el mismo camino que KPP y la misma conclusión.
+- **GGL90.** u*² se estima con `surfaceForcingU/V` promediados a los centros (`pkg/ggl90/ggl90_calc.F:787-792`, rama `calcMeanVertShear = .FALSE.`, la que se usa por omisión). La rama `.TRUE.` (`:764-782`) también usa `surfaceForcingU/V`. Es el mismo camino que KPP y la misma conclusión.
 - **Convivencia con `seaice` y `obcs`.**
   - Ni `pkg/kpp` ni `pkg/ggl90` mencionan `seaice` ni `obcs` (grep vacío): leen solo `surfaceForcing*` y el estado.
   - OBCS se aplica antes (`OBCS_CALC`, `do_oceanic_phys.F:322`) y fija las velocidades en las fronteras.
@@ -113,10 +113,22 @@ Se mide `oceTAUX`, el esfuerzo que recibe el océano después de `pkg/seaice` (`
 3. **Hielo "casi fijo" con la reología:** `SEAICEuseDYNAMICS = .TRUE.` con LSR y una resistencia del hielo muy alta (`SEAICE_strength`). LSR calcula DWATN.
    - Solo vale para F2, y el hielo no queda exactamente inmóvil.
    - Cuesta un resolvedor LSR por paso (no medido).
-4. **Sin `pkg/seaice`:** tapa con arrastre cuadrático (por ejemplo, `pkg/shelfice` con un calado mínimo).
+4. **Solo para F4, solo con el namelist: `useHB87StressCoupling = .TRUE.`** (por omisión `.FALSE.`, `seaice_readparms.F:264`).
+   - Con esa bandera, `SEAICE_OCEAN_STRESS` usa fu ← (1 − A) fu + A·τ_viento-sobre-hielo + divergencia del esfuerzo interno (`seaice_ocean_stress.F:64-97`).
+   - En deriva libre la divergencia es cero (`seaice_dynsolver.F:315-316`), así que bajo A = 1 el océano recibe el viento sobre el hielo (τ_hielo = fu, §4).
+   - El equilibrio de deriva libre da, como esfuerzo hielo–agua, τ_aire − m f k×u_hielo (más la inclinación de la superficie; `seaice_freedrift.F:82-84`). HB87 pasa τ_aire sin el término de Coriolis del hielo: con m = 910 kg m⁻² y \|u_hielo\| = 0.2 m s⁻¹ (§5), m f \|u_hielo\| ≈ 0.03 N m⁻², frente a un pico de 0.1 N m⁻².
+   - No necesita código, pero **no sirve para F2**: sin dinámica, el término del viento pasaría entero a través del hielo fijo, lo contrario de lo que se quiere.
+5. **Sin `pkg/seaice`:** tapa con arrastre cuadrático (por ejemplo, `pkg/shelfice` con un calado mínimo).
    - Es un cambio grande de configuración, choca con la celda superficial de 1.5 m y no lo recomiendo.
 
-**Recomendación técnica (la decisión es de Esteban):** la opción 2. Es la que reproduce lo que el spec y el PD0 (§8, "τ = ρ₀ C_w |u_hielo − u|(u_hielo − u) con u_hielo = 0") daban por hecho, con el C_w ya aprobado.
+**Inercia del hielo en F4.** La deriva libre de MITgcm resuelve un equilibrio estacionario, sin du_hielo/dt: el lado derecho de `seaice_freedrift.F:82-84` solo tiene viento y Coriolis, y la solución es algebraica, `:96-135`. El spec (§3.5) pedía "losa con inercia y arrastre".
+- Es **(b) física ausente** del modo elegido. Se declara.
+- Escala: el tiempo de ajuste del hielo es m/(ρ₀ C_w \|Δu\|) ≈ 910/(1027 × 5.5×10⁻³ × 0.2) ≈ 800 s, menos que la escala del pulso (σ = 1 h). La aproximación es razonable para la respuesta forzada, pero no representa las oscilaciones inerciales del hielo.
+
+**Recomendación técnica (la decisión es de Esteban):**
+- **F2:** la opción 2. Es la que reproduce lo que el spec y el PD0 (§8, "τ = ρ₀ C_w |u_hielo − u|(u_hielo − u) con u_hielo = 0") daban por hecho, con el C_w ya aprobado.
+- **F4:** la opción 2 también lo resuelve, con el arrastre coherente con el hielo que se mueve. Si se prefiere no tocar código, la opción 4 (HB87) es aceptable para F4, declarando el término de Coriolis que falta y la falta de inercia.
+- En cualquier caso hace falta resolver antes PD1-S2 (§7).
 
 ## 7. `pkg/seaice` con `pkg/obcs` de Orlanski: F2 y F4 no arrancan (punto PD1-S2)
 

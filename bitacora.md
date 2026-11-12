@@ -574,3 +574,7 @@ Esteban aprobó el preregistro con cuatro decisiones (`notes/pd0_preregistro.md`
   - la Task 1b no da batimetría a 100 m.
 - **V3:** en la corrida corta la marea por las fronteras no actuó (η ≈ 0); está sin depurar.
 - **Al PD1:** Δt y paso escalonado, T_fin, malla de invierno, las dos opciones de hielo, V3, polígono de F4 y los pendientes de batimetría (`notes/pd1_config.md` §6).
+- **Task 4, ronda de correcciones 1** (revisión):
+  - **Inestabilidad.** El aviso de `gad_check.F:94-107` ("potentially unstable time-stepping (Internal Wave) / need staggerTimeStep") está en el STDERR de todas las corridas sincrónicas. El esquema 33 no lo arreglaría, porque tampoco usa AB (`gad_init_fixed.F:148-157`). Las alternativas reales son un esquema con AB (2, 3, 4) o `implicitIntGravWave`; las dos exigen enmienda del PD0.
+  - **Hielo.** Se añade la opción `useHB87StressCoupling` para F4 (el océano recibe el viento sobre el hielo; no sirve para F2). La deriva libre de MITgcm no tiene inercia del hielo: (b).
+  - **V3.** La marea era cero por un error nuestro en las entradas: escribía U₀ en el archivo de fase (s) y no había archivo de amplitud (`OBCS_PARAMS.h:162`, `obcs_init_fixed.F:536-575`). Corregido (Am = ±U₀, Ph = T/4) y con prueba. Con la marea activa, η sigue el balance de volumen (0.169 frente a 0.167 m a 1.67 h), pero V3 diverge con Δt 120 y 60 s: corrientes de 1.3 m s⁻¹ en Mariasundet y CFL vertical > 1. Va al PD1.

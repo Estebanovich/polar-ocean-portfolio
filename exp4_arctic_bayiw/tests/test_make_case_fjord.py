@@ -162,20 +162,35 @@ def test_f1g_ggl90(cases):
 
 
 def test_v3_tide_only(cases):
+    """V3: no wind; M2 normal velocity u = U0 sin(omega t) inward at the three OBs. pkg/obcs reads
+    an amplitude (m/s) and a phase lag (s) per OB point (pkg/obcs/OBCS_PARAMS.h:162) and forms
+    Cs = Am cos(omega Ph), Sn = Am sin(omega Ph) (pkg/obcs/obcs_init_fixed.F:536-575); the tide is
+    Cs cos(omega t) + Sn sin(omega t) (obcs_add_tides.F), so Ph = T/4 gives Am sin(omega t)."""
     d, meta = cases["V3"]
     p5 = _nml(d)["PARM05"]
     assert "zonalwindfile" not in p5 and "meridwindfile" not in p5
     o = _nml(d, "data.obcs")["OBCS_PARM01"]
     assert o["useobcstides"] == ".TRUE."
-    assert float(o["obcs_tidalperiod"].split(",")[0]) == pytest.approx(44714.16)
-    tw = np.fromfile(d / "OBW_uTideSn.bin", ">f8")
-    tn = np.fromfile(d / "OBN_vTideSn.bin", ">f8")
-    ts = np.fromfile(d / "OBS_vTideSn.bin", ">f8")
-    assert tw.size == 300 and tn.size == 500 and ts.size == 500
+    T = float(o["obcs_tidalperiod"].split(",")[0])
+    assert T == pytest.approx(44714.16)
+    for side, comp, n in (("W", "u", 300), ("N", "v", 500), ("S", "v", 500)):
+        assert o[f"ob{side.lower()}_{comp}tidamfile"] == f"'OB{side}_{comp}TidAm.bin'"
+        assert o[f"ob{side.lower()}_{comp}tidphfile"] == f"'OB{side}_{comp}TidPh.bin'"
     u0 = meta["actual"]["tide"]["U0_m_s-1"]
     assert u0 > 0
-    assert set(np.unique(tw)) <= {0.0, u0} and set(np.unique(ts)) <= {0.0, u0}
-    assert set(np.unique(tn)) <= {0.0, -u0}                      # inward at the north edge
+    am = {s: np.fromfile(d / f"OB{s}_{c}TidAm.bin", ">f8") for s, c in (("W", "u"), ("N", "v"), ("S", "v"))}
+    ph = {s: np.fromfile(d / f"OB{s}_{c}TidPh.bin", ">f8") for s, c in (("W", "u"), ("N", "v"), ("S", "v"))}
+    assert am["W"].size == 300 and am["N"].size == 500 and am["S"].size == 500
+    assert set(np.unique(am["W"])) <= {0.0, u0} and set(np.unique(am["S"])) <= {0.0, u0}
+    assert set(np.unique(am["N"])) <= {0.0, -u0}                 # inward at the north edge
+    for s in am:
+        assert np.all(ph[s][am[s] != 0] == T / 4)
+        # what MITgcm builds from (Am, Ph): u(t) = Am cos(w Ph) cos(w t) + Am sin(w Ph) sin(w t)
+        w = 2 * np.pi / T
+        t = np.array([0.0, T / 4, T / 2])
+        a = am[s][am[s] != 0][0]
+        u = a * np.cos(w * T / 4) * np.cos(w * t) + a * np.sin(w * T / 4) * np.sin(w * t)
+        assert np.allclose(u, a * np.sin(w * t), atol=1e-15)       # starts at 0, peak at T/4
     t = meta["actual"]["tide"]
     # mass balance: wet OB face area x U0 = omega x eta0 x wet surface area
     assert t["U0_m_s-1"] * t["ob_face_area_m2"] == pytest.approx(

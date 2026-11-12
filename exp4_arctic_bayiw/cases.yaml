@@ -224,8 +224,9 @@ configs:
       tide_m2:                 # V3: barotropic M2 at the open boundaries (ALLOW_OBCS_TIDES)
         data.obcs:
           OBCS_PARM01: {useOBCStides: ".TRUE.", OBCS_tidalPeriod: "44714.16, 9*0.",
-                        OBW_uTidPhFile: "'OBW_uTideSn.bin'", OBN_vTidPhFile: "'OBN_vTideSn.bin'",
-                        OBS_vTidPhFile: "'OBS_vTideSn.bin'"}
+                        OBW_uTidAmFile: "'OBW_uTidAm.bin'", OBW_uTidPhFile: "'OBW_uTidPh.bin'",
+                        OBN_vTidAmFile: "'OBN_vTidAm.bin'", OBN_vTidPhFile: "'OBN_vTidPh.bin'",
+                        OBS_vTidAmFile: "'OBS_vTidAm.bin'", OBS_vTidPhFile: "'OBS_vTidPh.bin'"}
   # V4: resolution test, the same box at 400 m (bathy.build at dx_m = 400, Task 1b pipeline)
   fjord_vmf_400:
     <<: *fjord_vmf
