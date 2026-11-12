@@ -1,5 +1,5 @@
 #!/opt/anaconda3/envs/pyocean/bin/python
-"""Run a campaign of Exp. 4 MITgcm cases (thesis bay, Task 3): build once, then run the cases.
+"""Run a campaign of Exp. 4 MITgcm cases (thesis bay and Van Mijenfjorden): build once, then run.
 
 Usage::
 
@@ -16,7 +16,8 @@ happens once, before the first run.
 Stages (as the thesis run_expand, data.stage1 / data.stage2): the stage plan of case.json
 (``actual.stages``): stage 1 is forced and runs ``input/data``; the free stage (if any) runs
 ``input/data.free`` in ``<run>/stage2`` and restarts from the stage-1 pickups, every
-``pickup*.<iter>.*`` file (the model pickup and the Orlanski OB pickups), copied, never linked
+``pickup*.<iter>.*`` file (the model pickup, the Orlanski OB pickups and, with sea ice,
+pickup_seaice), copied, never linked; the stems that must exist are the case's ``pickup_stems``
 (pfcommon.campaign.run_stages with ``plan`` and ``stage_data``). Every case gets
 ``run_status_final.json``.
 
@@ -120,19 +121,20 @@ def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1
             done.add(n)
     todo = [n for n in names if n not in done]
 
-    inputs, plans = {}, {}
+    inputs, plans, stems = {}, {}, {}
     for n in todo:
         inp = run_dirs[n] / "input"
         meta = make_case(n, inp, cases_file=cases_file, overrides=overrides)
         cp.check_size(inp, cfg_dir / "code" / "SIZE.h")
         inputs[n], plans[n] = inp, [tuple(s) for s in meta["actual"]["stages"]]
+        # required restart files: the case's pickup_stems (fjord ice cases add pickup_seaice)
+        stems[n] = tuple(meta["params"].get("pickup_stems")
+                         or spec["configs"][config].get("pickup_stems", ["pickup"]))
     if todo:
         cp.check_free_space(Path(runs_root), list(inputs.values()), disk_usage)
         if not (skip_ok and cp.build_up_to_date(cfg_dir, build_dir, np_ > 1)):
             if sh([BUILD_SH, cfg_dir, build_dir] + (["--mpi"] if np_ > 1 else [])) != 0:
                 raise RuntimeError(f"build of {config} failed")
-
-    pickup_stems = tuple(spec["configs"][config].get("pickup_stems", ["pickup"]))
 
     def run_one(n: str) -> str:
         record_binary(inputs[n], build_dir)
@@ -142,7 +144,7 @@ def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1
             texts.update({k: (inputs[n] / "data.free").read_text() for k in range(2, len(plan) + 1)})
         print(f"[run_campaign] {n}: running in {run_dirs[n]} (stages {plan})", flush=True)
         st = cp.run_stages(run_dirs[n], inputs[n], build_dir, np_, len(plan), sh, RUN_SH,
-                           pickup_stems=pickup_stems, plan=plan, stage_data=texts.__getitem__)
+                           pickup_stems=stems[n], plan=plan, stage_data=texts.__getitem__)
         print(f"[run_campaign] {n}: {st}", flush=True)
         return st
 

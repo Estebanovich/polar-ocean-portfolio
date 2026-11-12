@@ -1,0 +1,15 @@
+# Exp. 4 fjord_vmf sea ice (spec section 3.5): pkg/seaice without thermodynamics, h = 1 m and
+# A = 1 inside the inner-fjord polygon (gendata/ice.py). The mode (landfast: no dynamics; F4:
+# free drift) is set by the case's edit set. What the ocean receives in each mode:
+# notes/pd1_seaice.md. Written only for cases with useSEAICE.
+ &SEAICE_PARM01
+ usePW79thermodynamics=.FALSE.,
+# ice-water drag C_w = 5.5e-3, the MITgcm default (pkg/seaice/seaice_readparms.F:401; PD0 sec. 8)
+ SEAICE_waterDrag=5.5E-3,
+# wind stress on ice = (SEAICE_drag / OCEAN_drag) fu (pkg/seaice/seaice_get_dynforcing.F:224-232):
+# equal coefficients, so the ice receives the prescribed stress (both defaults 1e-3, :399-400)
+ SEAICE_drag=1.E-3,
+ OCEAN_drag=1.E-3,
+ HeffFile='HEFF.bin',
+ AreaFile='AREA.bin',
+ &

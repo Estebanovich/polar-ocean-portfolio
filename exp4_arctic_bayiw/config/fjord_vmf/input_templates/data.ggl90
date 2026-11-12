@@ -1,0 +1,4 @@
+# GGL90 (Gaspar et al. 1990; pkg/ggl90) with every parameter at its MITgcm default
+# (pkg/ggl90/ggl90_readparms.F), F1g only. Written only for cases with useGGL90.
+ &GGL90_PARM01
+ &

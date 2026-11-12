@@ -545,3 +545,32 @@ Esteban aprobó el preregistro con cuatro decisiones (`notes/pd0_preregistro.md`
 - **R1k** (R1 + `useKPP`, `viscAr` 1e-4, sin `ivdc_kappa`, `implicitViscosity`; tabla en `notes/pd1_puente.md`): 240 h OK en 4.5 h. R1: 1.9 h. H4d queda para la Task 7.
 - **R2/R3** generados y probados (f a 78°N con β = 0, perfil de verano en los niveles de la tesis, EOS ajustada, KPP y mezcla del PD0); se corren tras el PD1.
 - **Declarado:** la columna de la tesis está truncada a 600 m (plataforma de 1000 m). Se conserva y se declara.
+
+## 2026-11-12 (madrugada, 11) — Exp. 4, Task 4: configuración `fjord_vmf`, hielo y cronometraje → PD1
+
+- **Generadores:**
+  - `gendata/forcing.py`: el pulso de la tesis, igual a `make_meridional_wind_patch` con error < 1e-15. Se muestrea en los instantes de registro de MITgcm, (n − ½)·1200 s, con un registro de más para que el ciclo periódico no vuelva al registro 1 dentro de la etapa forzada. Viento hacia 192.412° (aguas abajo del fiordo) y +90° en F5.
+  - `gendata/ice.py`: máscara y campos de hielo (h = 1 m, A = 1, polígono del fiordo interior; 13 286 celdas).
+  - `make_case` para F1–F5, F1c, F1g, V3, V4 y los casos de cronometraje a 100 m.
+- **Builds:** un solo build (`config/fjord_vmf`, con `kpp`, `ggl90` y `seaice`, sin `exf`); `data.pkg` elige el cierre y el hielo. TDD: RED por `ImportError`; GREEN con 780 pruebas.
+- **Inestabilidad numérica.** Con la configuración del PD0 (paso sincrónico, esquema 77) aparece ruido de escala de malla en Bellsund y en la plataforma sur:
+  - a las 2.7 h con Δt 60 s, 3.3 h con 48 s, 4.3 h con 40 s y 6.3 h con 30 s;
+  - inicio × Δt es casi constante, y pasa igual con el cierre de la tesis;
+  - con `staggerTimeStep` desaparece: limpio en 12 h con 60 s y en 48 h con 120 s;
+  - 120 s es el mayor Δt que divide los 1200 s de los registros y deja el CFL advectivo (0.13) y el de ondas internas (0.42) ≤ 0.5.
+  - Va al PD1.
+- **Hielo (`notes/pd1_seaice.md`).**
+  - Ni el hielo fijo ni la deriva libre transmiten esfuerzo al océano bajo A = 1: `DWATN` solo lo calculan LSR, EVP, Krylov y JFNK. Confirmado en caja cerrada: τ_océano = 0.0 bajo el hielo durante 3 h, y en F4 el hielo se mueve a 0.2 m s⁻¹ sin arrastrar al océano. KPP y GGL90 sí usan el esfuerzo que deja `seaice`.
+  - Además, F2 y F4 **no arrancan**: `obcs_check` rechaza Orlanski con `seaice` y exige `exf`.
+  - Hallazgo de paso: `seaice` exige `tracForcingOutAB = 1`; queda en el `data` de todos los casos del fiordo.
+  - Opciones al PD1.
+- **Cronometraje (np = 5):**
+  - 0.50 s/paso a 200 m con Δt 60 s y 0.61 s/paso con Δt 120 s. Una corrida de 280 h tarda 2.3 o 1.45 h.
+  - Campaña con 120 s escalonado: 23.0 h a 280 h y 19.7 h a 240 h, frente a ~22 h disponibles.
+  - Disco: ~1.9 TB a 280 h (2.9 TB libres).
+- **100 m (R13):**
+  - la caja completa no enlaza (más de 4 GB de datos estáticos, `ADRP out of range`) y pediría ~17 GB de RAM;
+  - la subcaja (730 × 380) corre solo con el ejecutable re-enlazado (base de imagen de 16 GB; ~25 % de arranques fallan por ASLR), a 1.32 s/paso;
+  - la Task 1b no da batimetría a 100 m.
+- **V3:** en la corrida corta la marea por las fronteras no actuó (η ≈ 0); está sin depurar.
+- **Al PD1:** Δt y paso escalonado, T_fin, malla de invierno, las dos opciones de hielo, V3, polígono de F4 y los pendientes de batimetría (`notes/pd1_config.md` §6).
