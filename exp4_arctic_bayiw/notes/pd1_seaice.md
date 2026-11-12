@@ -137,7 +137,7 @@ Se mide `oceTAUX`, el esfuerzo que recibe el océano después de `pkg/seaice` (`
 - **Qué pasó.** La corrida corta de F2 (`F2_smoke3h`, Δt 60 s, escalonado) y la de F4 terminan en la inicialización con `STOP ABNORMAL END: S/R OBCS_CHECK`. `STDERR.0000` dice:
   - "useOrlanski* OBC not yet implemented for SEAICE" (`pkg/obcs/obcs_check.F:386-406`; bloque `IF (useSEAICE)` en `:400-405`);
   - "for SEAICE OBCS, use pkg/exf to read input files" (`:571-579`, `IF (useSEAICE .AND. .NOT. useEXF)`).
-- **No tiene salida por namelist.** Las dos comprobaciones están fuera de cualquier opción CPP. `DISABLE_SEAICE_OBCS` (`SEAICE_OPTIONS.h:266`) solo quita las llamadas de `seaice_model.F:190-195` y `:309-314`, no las comprobaciones. El hielo nunca toca las fronteras (está a más de 30 km), pero `obcs_check` no lo mira.
+- **No tiene salida por namelist.** Las dos comprobaciones están fuera de cualquier opción CPP. `DISABLE_SEAICE_OBCS` (`SEAICE_OPTIONS.h:266`) solo quita las llamadas de `seaice_model.F:190-195` y `:309-314`, no las comprobaciones. El hielo empieza a 29 km (146 celdas) de las celdas de frontera abierta, pero `obcs_check` no lo mira.
 - **Lo que no hice:** cambiar las fronteras de Orlanski en los casos con hielo. F2 y F3 dejarían de ser comparables (H4b).
 
 **Opciones (no elegidas):**
@@ -168,12 +168,22 @@ Se mide `oceTAUX`, el esfuerzo que recibe el océano después de `pkg/seaice` (`
 | `seaice_dynsolver.F` (`pkg/seaice`) | 3730d29b…5a660 | antes de `SEAICE_OCEAN_STRESS`, si no corrió ningún resolvedor de reología (`.NOT.SEAICEuseDYNAMICS .OR. SEAICEuseFREEDRIFT`), llama a `SEAICE_OCEANDRAG_COEFFS(uIce, vIce, HEFFM, DWATN, …)`, como `seaice_lsr.F:378` |
 | `obcs_add_tides.F` (`pkg/obcs`, V3) | bb3ca468…245ea8 | con `EXP4_TIDE_RAMP_S` (en `OBCS_OPTIONS.h`), rampa de medio coseno de la velocidad de marea durante un ciclo M2 |
 
-Además, `SEAICE_OPTIONS.h` define `DISABLE_SEAICE_OBCS`, de modo que `pkg/seaice` no aplica condiciones de frontera al hielo (`seaice_model.F:190-195, 309-314`).
+Además, `SEAICE_OPTIONS.h` define `DISABLE_SEAICE_OBCS`.
+- Eso quita las llamadas de frontera de `seaice_model.F:190-195` y `:309-314` (`OBCS_ADJUST_UVICE`, `OBCS_APPLY_SEAICE`).
+- **No quita** la de `seaice_dynsolver.F:324-328`. En deriva libre (F4) sigue llamando a `OBCS_APPLY_UVICE`, que pone la velocidad del hielo en la frontera igual a `OB*uice`/`OB*vice`, que valen 0 (`pkg/obcs/obcs_init_variables.F:221, 241, 283`).
+- Es inocuo mientras el hielo no llegue a la frontera: empieza a 29 km (146 celdas) de las celdas de frontera abierta (`analysis/pd1_timing.ice_distance_to_open_boundaries`).
+- **Comprobación obligatoria después de cada corrida con hielo (Task 6):** como con `DISABLE_SEAICE_OBCS` el contacto sería silencioso, el análisis tiene que verificar que en las 280 h el hielo (SIarea > 0) se queda a ≥ 10 celdas (el ancho de la esponja) de toda celda de frontera abierta (`open_boundary_distance.passes` en `figures/pd1_timing.json`). Si no se cumple, la corrida se declara afectada.
+- En las corridas cortas de 3 h: F2 y F4 a 146 celdas, la pasan.
 
 **Verificación** (`figures/pd1_timing.json`, `ice_stress.drag_check`; `figures/pd1_restart.json`):
 - **F2 y F4 arrancan con Orlanski** (`F2_pd1final_3h`, `F4_pd1final_3h`: 3 h, Δt 120 s escalonado, OK).
 - **Esfuerzo bajo A = 1 frente a la fórmula.** `analysis/pd1_timing.drag_check` compara oceTAUX con τ = ½(DWATN_i + DWATN_i−1)(u_hielo − u₁), con DWATN = max(ρ₀ C_w |Δu|, `SEAICEdWatMin` = 0.25 kg m⁻² s⁻¹), en cada registro:
   - **F2:** 13 072 puntos U; error máximo **0.0** en los 8 registros. Todos los puntos están en el piso lineal (|Δu| ≤ 1.7 cm s⁻¹ < 0.25/(ρ₀C_w) = 4.4 cm s⁻¹). |τ| crece hasta 4.4×10⁻³ N m⁻² a las 2.7 h. Antes del cambio era exactamente 0 (§5).
-  - **F4:** hielo a 0.22 m s⁻¹; |τ| bajo A = 1 de hasta 0.097 N m⁻², en régimen cuadrático (fracción en el piso < 2 %). La diferencia con la fórmula es ≤ 5×10⁻³ N m⁻² (≤ 6 %) hasta las 2.3 h, y 1.4×10⁻² N m⁻² en el registro de las 2.7 h, cuando el pulso se apaga. Se explica porque `SIuice/SIvice` se escriben al empezar el paso (`model/src/do_statevars_diags.F:96`), antes de la deriva libre del mismo paso, mientras que `DWATN` usa la velocidad nueva: un desfase de un paso en el diagnóstico, no en el modelo. Con hielo fijo (u_hielo = 0) el desfase no existe y la coincidencia es exacta.
+  - **F4:** hielo a 0.22 m s⁻¹; |τ| bajo A = 1 de hasta 0.097 N m⁻², en régimen cuadrático (fracción en el piso < 2 %).
+    - La velocidad del hielo del paso comprobado no se guarda: `SIuice/SIvice` se escriben al empezar el paso (`model/src/do_statevars_diags.F:96`), antes de la deriva libre de ese paso.
+    - Por eso la comprobación **recalcula la deriva libre del paso** con el álgebra de `seaice_freedrift.F:65-170` (`analysis/pd1_timing.free_drift_velocity`), a partir del estado diagnosticado: u₁, η (inclinación), h y A del registro, y el viento interpolado a t = it·Δt.
+    - **En el interior del hielo** (≥ 2 celdas del borde del hielo y de la costa; 2630–3274 puntos U): error máximo ≤ 1.6×10⁻³ N m⁻², **≤ 1.6 % del máximo de |τ| del registro durante el pulso y 2.7 % cuando se apaga** (registro de las 2.7 h), con mediana ≤ 9×10⁻⁵ N m⁻² (≤ 0.2 %).
+    - En el borde del hielo y junto a la costa, la reconstrucción de las máscaras (`SIMaskU`, A_u, h en el borde) no es exacta, y los errores llegan a ~0.5 del máximo en unos pocos puntos. No es una discrepancia del modelo.
+    - Con `SIuice` del inicio del paso, en cambio, el error es casi uniforme (~3.4×10⁻³ N m⁻², 5 % del máximo): el desfase de un paso.
 - **Reinicio** (`scripts/restart_test.py`): 20 pasos seguidos frente a 10 + pickup + 10. **Idéntico bit a bit** en F2 y F4: pickups del modelo, de `seaice` y de Orlanski del paso 20, y diagnósticos `state3d`, `surf` y `seaice` del paso 10.
 - Pendiente para declarar: la deriva libre sigue sin inercia del hielo, (b) (§6).

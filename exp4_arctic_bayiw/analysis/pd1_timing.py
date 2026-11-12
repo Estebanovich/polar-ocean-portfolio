@@ -135,17 +135,127 @@ def ice_stress(run: Path) -> dict | None:
         d, _ = read_mds(run / "seaice", it)
         sea = {"iter": it, "max_abs_uice": float(np.abs(d[2]).max()), "max_abs_vice": float(np.abs(d[3]).max()),
                "area_sum": float(d[0].sum())}
+    edge = ice_distance_to_open_boundaries(run)
     drag = []
     for it in recs:
         if (run / f"seaice.{it:010d}.data").exists() and (run / f"state3d.{it:010d}.data").exists() and it > 0:
             drag.append(drag_check(run, it, wet))
     return {"inside_cells_u": int(inside.sum()), "records": res, "seaice_last": sea,
-            "drag_check": drag}
+            "drag_check": drag, "open_boundary_distance": edge}
+
+
+def ob_distance_field(wet, ob_sides) -> np.ndarray:
+    """Distance (cells) of every cell to the nearest wet open-boundary cell (W column, S row,
+    N row; j = 0 is the south row)."""
+    from scipy import ndimage
+    wet = np.asarray(wet, bool)
+    ob = np.zeros_like(wet)
+    if "W" in ob_sides:
+        ob[:, 0] = wet[:, 0]
+    if "S" in ob_sides:
+        ob[0, :] = wet[0, :]
+    if "N" in ob_sides:
+        ob[-1, :] = wet[-1, :]
+    return ndimage.distance_transform_edt(~ob)
+
+
+def ice_distance_to_open_boundaries(run: Path, min_cells: int | None = None) -> dict:
+    """Smallest distance (cells, Euclidean between cell centres) between ice (SIarea > 0) and
+    an open-boundary cell (a wet cell of the W column, N row or S row, as OB_Iwest/OB_Jnorth/
+    OB_Jsouth of data.obcs) over every seaice record of ``run``. With DISABLE_SEAICE_OBCS the
+    ice gets no OB condition (code/obcs_check.F header), so ice reaching the boundaries would
+    go unnoticed: the check passes if the distance stays >= ``min_cells`` (default n_sponge,
+    the sponge width). Required for F2/F4 after every run (Task 6)."""
+    cj = json.loads((run / "input" / "case.json").read_text())
+    p = cj["params"]
+    n = int(p["n_sponge"]) if min_cells is None else int(min_cells)
+    wet = np.fromfile(run / "bathy.bin", ">f8").reshape(int(p["ny"]), int(p["nx"])) < 0
+    dist = ob_distance_field(wet, p["ob_sides"])
+    recs = sorted(int(re.match(r"seaice\.(\d{10})\.data", f.name).group(1)) for f in run.glob("seaice.*.data"))
+    dmin, at = None, None
+    for it in recs:
+        a = read_mds(run / "seaice", it)[0][0]
+        if not (a > 0).any():
+            continue
+        dd = float(dist[a > 0].min())
+        if dmin is None or dd < dmin:
+            dmin, at = dd, it
+    return {"min_cells": dmin, "at_iter": at, "required_cells": n, "records": len(recs),
+            "passes": bool(dmin is not None and dmin >= n)}
 
 
 RHO_CONST = 1026.96     # kg m^-3, rhoConst = rhoNil of the fitted EOS (cases.yaml eos)
 C_W = 5.5e-3            # SEAICE_waterDrag (PD0 section 8)
 DWAT_MIN = 0.25         # kg m^-2 s^-1, SEAICEdWatMin default (pkg/seaice/seaice_readparms.F:403)
+
+
+RHO_ICE = 910.0         # kg m^-3, SEAICE_rhoIce default (pkg/seaice/seaice_readparms.F:396)
+GRAV = 9.81
+
+
+def free_drift_velocity(run: Path, it: int, wet) -> tuple:
+    """Free-drift ice velocity of step ``it`` at U and V points, recomputed as
+    pkg/seaice/seaice_freedrift.F:65-170 does, from the diagnosed state at the start of the
+    step: surface velocity (state3d), free surface (state2d, tilt term), ice h and A of the
+    seaice stream (fields at the start of step it) and the wind stress at t = it deltaT
+    (linear interpolation of the records, model/src/external_fields_load.F). Forcing on the
+    ice: FORCEX0 = TAUX A_u - m_u g d(eta)/dx (seaice_dynsolver.F:266-296, scaleSurfStress and
+    tilt on), TAUX = fu (SEAICE_drag = OCEAN_drag). The SIuice/SIvice diagnostics are written at
+    the start of the step (model/src/do_statevars_diags.F:96), before this update."""
+    import sys as _s
+    if str(PKG.parent) not in _s.path:
+        _s.path.insert(0, str(PKG.parent))
+    from exp4_arctic_bayiw.gendata import forcing
+    cj = json.loads((run / "input" / "case.json").read_text())
+    w, dt = cj["actual"]["wind"], cj["actual"]["deltaT_s"]
+    f0, dx = cj["actual"]["f0_s-1"], cj["actual"]["grid"]["dx_m"]
+    tr = forcing.record_times(w["n_records"], w["record_period_s"])
+    mag = np.interp(it * dt, tr, forcing.pulse(tr, tau_max=w["tau_max"], sigma_h=w["sigma_h"],
+                                                  center_h=w["center_h"]))
+    tx0, ty0 = mag * w["unit_vector_xy"][0], mag * w["unit_vector_xy"][1]
+    s3 = read_mds(run / "state3d", it)[0]
+    eta = read_mds(run / "state2d", it)[0][0]
+    si = read_mds(run / "seaice", it)[0]
+    a, h = si[0], si[1]
+    u1, v1 = s3[0][0], s3[1][0]
+    mw = np.zeros_like(wet, float)
+    mw[:, 1:] = (wet[:, 1:] & wet[:, :-1])
+    ms = np.zeros_like(wet, float)
+    ms[1:, :] = (wet[1:, :] & wet[:-1, :])
+
+    def xm(q):                     # q(i-1) at i
+        r = np.zeros_like(q)
+        r[:, 1:] = q[:, :-1]
+        return r
+
+    def ym(q):
+        r = np.zeros_like(q)
+        r[1:, :] = q[:-1, :]
+        return r
+
+    def xp(q):
+        r = np.zeros_like(q)
+        r[:, :-1] = q[:, 1:]
+        return r
+
+    def yp(q):
+        r = np.zeros_like(q)
+        r[:-1, :] = q[1:, :]
+        return r
+
+    fx = (tx0 * mw) * 0.5 * (a + xm(a)) - RHO_ICE * 0.5 * (h + xm(h)) * GRAV * (eta - xm(eta)) / dx * mw
+    fy = (ty0 * ms) * 0.5 * (a + ym(a)) - RHO_ICE * 0.5 * (h + ym(h)) * GRAV * (eta - ym(eta)) / dx * ms
+    tauc_x, tauc_y = 0.5 * (fx + xp(fx)), 0.5 * (fy + yp(fy))
+    mcor = RHO_ICE * h * f0
+    uc, vc = 0.5 * (u1 + xp(u1)), 0.5 * (v1 + yp(v1))
+    rx, ry = -tauc_x - mcor * vc, -tauc_y + mcor * uc
+    rn, ra = np.hypot(rx, ry), np.arctan2(ry, rx)
+    t1 = 1.0 / RHO_CONST / C_W
+    t2, t3 = (t1 * mcor) ** 2, (t1 * rn) ** 2
+    soln = np.where(t3 > 0, np.sqrt(0.5 * (np.sqrt(t2 * t2 + 4 * t3) - t2)), 0.0)
+    sola = np.where(soln > 0, ra - np.arctan2(mcor * soln, C_W * RHO_CONST * soln ** 2), 0.0)
+    uic, vic = uc - soln * np.cos(sola), vc - soln * np.sin(sola)
+    return 0.5 * (xm(uic) + uic) * mw, 0.5 * (ym(vic) + vic) * ms
 
 
 def drag_check(run: Path, it: int, wet) -> dict:
@@ -157,7 +267,12 @@ def drag_check(run: Path, it: int, wet) -> dict:
     s3 = read_mds(run / "state3d", it)[0]
     si = read_mds(run / "seaice", it)[0]
     tx = read_mds(run / "surf", it)[0][0]
-    du, dv = si[2] - s3[0][0], si[3] - s3[1][0]
+    cj = json.loads((run / "input" / "case.json").read_text())
+    if cj["actual"]["ice"]["mode"] == "free_drift":
+        ui, vi = free_drift_velocity(run, it, wet)      # ice velocity of this step (see above)
+    else:
+        ui, vi = si[2], si[3]                            # landfast: 0
+    du, dv = ui - s3[0][0], vi - s3[1][0]
     dup = np.zeros_like(du)
     dup[:, :-1] = du[:, 1:]
     dvp = np.zeros_like(dv)
@@ -173,8 +288,19 @@ def drag_check(run: Path, it: int, wet) -> dict:
     m = (au >= 1.0 - 1e-12) & wet
     m[:, 0] = False
     err = np.abs(tx[m] - fu[m])
+    # interior: >= 2 cells from the ice edge and the coast, where the reconstruction of the
+    # masks (SIMaskU, A_u, h at the edge) does not matter
+    from scipy import ndimage
+    inner = ndimage.binary_erosion(m, iterations=2)
+    ei = np.abs(tx[inner] - fu[inner]) if inner.any() else np.array([np.nan])
     return {"iter": it, "cells": int(m.sum()), "max_abs_tau": float(np.abs(tx[m]).max()),
+            "interior_cells": int(inner.sum()), "interior_max_abs_err": float(ei.max()),
+            "interior_p99_abs_err": float(np.percentile(ei, 99)),
+            "interior_median_abs_err": float(np.median(ei)),
             "max_abs_expected": float(np.abs(fu[m]).max()), "max_abs_err": float(err.max()),
+            "max_rel_err_to_max_tau": float(err.max() / max(np.abs(tx[m]).max(), 1e-30)),
+            "ice_velocity": "recomputed free drift of this step" if cj["actual"]["ice"]["mode"] == "free_drift"
+            else "SIuice/SIvice (landfast)",
             "p99_abs_err": float(np.percentile(err, 99)),
             "floor_fraction": float((RHO_CONST * C_W * mag < DWAT_MIN)[m].mean()),
             "max_abs_du": float(np.abs(du[m]).max())}

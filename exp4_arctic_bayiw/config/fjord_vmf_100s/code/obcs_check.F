@@ -5,9 +5,13 @@ C     Changes, all between 'C--- Exp. 4 BEGIN' / 'C--- Exp. 4 END' lines:
 C     1. include SEAICE_OPTIONS.h (for DISABLE_SEAICE_OBCS) after OBCS_SEAICE.h;
 C     2. the stop 'useOrlanski* OBC not yet implemented for SEAICE' (original lines
 C        400-405) and the stop 'for SEAICE OBCS, use pkg/exf' (original lines 571-579)
-C        are skipped when DISABLE_SEAICE_OBCS is defined. With it, pkg/seaice applies no
-C        OB condition to the ice (pkg/seaice/seaice_model.F:190-195, 309-314); the ice of
-C        the fjord runs stays > 30 km from the open boundaries.
+C        are skipped when DISABLE_SEAICE_OBCS is defined. The flag itself removes the OB
+C        calls of pkg/seaice/seaice_model.F:190-195, 309-314 (OBCS_ADJUST_UVICE,
+C        OBCS_APPLY_SEAICE); in free drift pkg/seaice/seaice_dynsolver.F:324-328 still
+C        calls OBCS_APPLY_UVICE, which sets the boundary ice velocity to OB*uice = 0
+C        (pkg/obcs/obcs_init_variables.F:221, 241, 283). Harmless here: the ice of the
+C        fjord runs starts 29 km (146 cells) from the open-boundary cells (checked after
+C        each run: analysis/pd1_timing.ice_distance_to_open_boundaries).
 C     Everything else is the original file, line for line.
 C--- Exp. 4 header end
 #include "OBCS_OPTIONS.h"
