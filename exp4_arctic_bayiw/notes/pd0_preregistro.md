@@ -370,3 +370,15 @@ Cada diferencia contra la referencia se clasifica como (a) error nuestro, (b) f�
 **Por qué.** La tesis tiene dos definiciones de flujo: Nash et al. (2005), en `energy_flux_IWBay.py`, con medias temporales de ρ y u en la sección; y Kang y Fringer (2012), en `balance_kang_fringer.py`, con ū instantánea y ρ_b inicial. Solo la segunda entra en un balance que cierra, porque ρ′ y la separación barotrópica–baroclínica son las mismas en E, F, C y P. Un flujo de Nash, con otra referencia, no cierra el balance (`fondo_kang_fringer.py`). H4b(i) usa la energía del fiordo con su residuo, y H4d compara un flujo con el trabajo del viento. Por eso los dos necesitan las definiciones del balance. Lo decidió Esteban el 2026-11-12.
 
 **Cuándo.** La decisión se tomó el 2026-11-12, antes de correr la campaña del fiordo (F1–F5, F1c, F1g, V3, V4 y R2/R3). R1 y R1k ya habían corrido (Task 3), pero no se había calculado ningún flujo sobre ellos. Esta enmienda se escribe en la Task 5. En esa misma tarea se calcula sobre R1 el contraste del método con los scripts de la tesis (`figures/flux_vs_thesis.json`, `figures/budget_vs_thesis.json`). Ese contraste reproduce números que ya estaban en la tesis, porque R1 es idéntico bit a bit a la corrida de la tesis. No se calculó H4d sobre R1/R1k: eso es de la Task 7.
+
+### Enmienda 2 (2026-11-12)
+
+**Qué cambia.**
+- **Numerador de H4d.** F_bc,out es solo el trabajo de presión baroclínico de Kang y Fringer que sale de la caja: F_bc = Σ u_n′ p′ dz sobre las caras abiertas, hacia fuera. Es la contraparte de Kang y Fringer del flujo de Nash que pedía la H4d original. En el código es `F_bc_pressure_out` (`analysis/budget.py`, `kf_budget` y `f_bc_pressure_out`).
+- **Cociente.** η = F_bc,out / (P_bt + P_bc); η′ = F_bc,out / P_bc sigue siendo descriptivo.
+- **Advección.** La suma F_bc + A_bc (trabajo de presión más advección) se reporta solo como descriptiva.
+- **Umbrales.** No cambia ninguno.
+
+**Por qué.** Corrige el punto 2 de la Enmienda 1. El "(F_bc + A_bc)" que aparece ahí venía de una paráfrasis, no de una decisión explícita de Esteban. Esteban lo decidió el 2026-11-12. El texto de la Enmienda 1 no se edita.
+
+**Qué se sabía al decidir.** El reparto en R1 entre 0 y 120 h ya se conocía por el contraste de la Task 5 (`figures/budget_vs_thesis.json`): el trabajo de presión baroclínico saca 0.28 GJ de la bahía y la advección A_bc mete 5.68 GJ. En cambio, no se había calculado ningún cociente de H4d en ninguna corrida, ni en R1 ni en R1k, y no se habían analizado las salidas de la campaña del fiordo.

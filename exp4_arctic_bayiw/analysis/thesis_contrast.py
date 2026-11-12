@@ -20,7 +20,10 @@ re-implemented on the reference side. The pyocean environment has no ``MITgcmuti
 replaced by an empty stub module. ``figura_energia_balance_kf.py`` imports the thesis plotting
 module ``estructura_vertical`` only for the npz folder; it is stubbed with that folder. The
 thesis ``main()`` functions are not called (they would write into the read-only thesis tree);
-the reference results are cached as npz in ``EXP4_RUNS/analysis_cache``.
+the reference results are cached as npz in ``EXP4_RUNS/analysis_cache`` (or ``--cache``). Every cache
+file is keyed on its kind, the run (or thesis scenario) and a hash of the source files that make it
+(``CACHE_SOURCES``), so a different run or changed code misses the cache; ``--recompute`` forces
+the library series to be recomputed.
 
 Sign conventions: project + = into the bay (and into the fjord). energy_flux_IWBay.py uses
 + = into the bay (+y, "Positivo = flujo neto entrando a la bahía"); balance_kang_fringer.py uses
@@ -34,6 +37,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib
 import json
 import sys
@@ -57,6 +61,47 @@ J_SEC, I_SEC = 323, slice(274, 286)         # ruling R16 (energy_flux_IWBay.J_BO
 J_BAY, I_BAY = (324, 348), (274, 286)       # balance_kang_fringer.J_BAHIA, I_BAHIA
 T_STAGE2 = 216000.0                         # s; thesis ITER_ETAPA2 = 7200 x 30 s
 TOL_REL = 0.01                              # Task 5 Step 5: < 1 %
+ANALYSIS = PKG / "analysis"
+_TS = THESIS_SCRIPTS
+# Sources whose content keys each cache file (a change in any of them misses the cache).
+CACHE_SOURCES = {
+    "thesis_nash": [_TS / "energy_flux_IWBay.py"],
+    "thesis_kf": [_TS / f for f in ("balance_kang_fringer.py", "conversion_bt_2D.py",
+                                    "fondo_kang_fringer.py", "energia_viento.py",
+                                    "ape_dos_capas.py", "conversion_baroclinica_2D.py",
+                                    "MIT_DatProcesW.py", "energy_flux_IWBay.py")],
+    "thesis_diss": [_TS / f for f in ("disipacion_viscosa_bahia.py", "balance_kang_fringer.py",
+                                      "energy_flux_IWBay.py", "MIT_DatProcesW.py")],
+    "library_kf": [ANALYSIS / "budget.py", ANALYSIS / "load.py"],
+}
+
+
+def source_hash(paths) -> str:
+    """First 12 hex digits of the sha256 of the concatenated file contents."""
+    h = hashlib.sha256()
+    for p in paths:
+        h.update(Path(p).read_bytes())
+    return h.hexdigest()[:12]
+
+
+def cache_file(cache: Path, kind: str, run_name: str, sources) -> Path:
+    """Cache file keyed on the kind, the run (or thesis scenario) and the source hash."""
+    return Path(cache) / f"{kind}_{run_name}_{source_hash(sources)}.npz"
+
+
+def cached(f: Path, compute, recompute: bool = False) -> dict:
+    """np.load(f) if it exists and not ``recompute``; else compute() -> dict, saved to f."""
+    f = Path(f)
+    if f.exists() and not recompute:
+        return dict(np.load(f))
+    r = compute()
+    f.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(f, **r)
+    return dict(r)
+
+
+def _ref_file(cache, kind):
+    return cache_file(cache, kind, f"{SCEN}_bay", CACHE_SOURCES[kind])
 
 
 # ---- thesis side -------------------------------------------------------------------------------
@@ -100,9 +145,8 @@ def reference_nash(cache: Path = CACHE) -> Path:
         r = m.procesar_etapa(run_dir, grp, rho_ref, u_mean, v_mean, drF, **eos)
         for k in ("t_seconds", "Fy_sec", "Fy_bt_sec"):
             out[f"{k}_e{n}"] = r[k]
-    cache.mkdir(parents=True, exist_ok=True)
-    f = cache / "thesis_nash_realistic_bay.npz"
-    np.savez(f, **out)
+    f = _ref_file(cache, "thesis_nash")
+    cached(f, lambda: out, recompute=True)
     return f
 
 
@@ -110,9 +154,8 @@ def reference_kf(cache: Path = CACHE) -> Path:
     """balance_kang_fringer.calcular('realistic') on the thesis run (time series per record)."""
     m = thesis_modules()["balance_kang_fringer"]
     res, meta = m.calcular(SCEN)
-    cache.mkdir(parents=True, exist_ok=True)
-    f = cache / "thesis_kf_realistic_bay.npz"
-    np.savez(f, **res, meta_json=json.dumps(meta))
+    f = _ref_file(cache, "thesis_kf")
+    cached(f, lambda: dict(res, meta_json=json.dumps(meta)), recompute=True)
     return f
 
 
@@ -120,9 +163,8 @@ def reference_dissipation(cache: Path = CACHE) -> Path:
     """disipacion_viscosa_bahia.calcular('realistic') on the thesis run."""
     m = thesis_modules()["disipacion_viscosa_bahia"]
     res = m.calcular(SCEN)
-    cache.mkdir(parents=True, exist_ok=True)
-    f = cache / "thesis_diss_realistic_bay.npz"
-    np.savez(f, **res)
+    f = _ref_file(cache, "thesis_diss")
+    cached(f, lambda: res, recompute=True)
     return f
 
 
@@ -196,18 +238,17 @@ FLUX_TERMS = ("F_bt", "F_bc", "A_bt", "A_bc")                 # thesis: + out of
 THESIS_KEY = {"ape_linear": "ape_lineal"}
 
 
-def contrast_kf(ds, ref: dict, figs, stored: Path | None = None) -> dict:
+def contrast_kf(ds, ref: dict, figs, stored: Path | None = None, cache: Path = CACHE,
+                recompute: bool = False) -> dict:
     from exp4_arctic_bayiw.analysis import budget, load
     tau = (lambda t: load.forcing_stress(ds, t))
-    f = CACHE / "library_kf_R1_bay.npz"
-    if f.exists():                     # the library series of an earlier call (reading R1 is slow)
-        r = dict(np.load(f))
-    else:
-        r = budget.kf_budget(ds, bay_mask(ds), tau=tau,
-                             conversion_masks={"escalon": bay_mask(ds, rows=(J_BAY[0] - 1, J_BAY[0]))})
-        r = {k: v for k, v in r.items() if isinstance(v, np.ndarray)}
-        CACHE.mkdir(parents=True, exist_ok=True)
-        np.savez(f, **r)
+    def compute():
+        r = budget.kf_budget(ds, bay_mask(ds), tau=tau, conversion_masks={
+            "escalon": bay_mask(ds, rows=(J_BAY[0] - 1, J_BAY[0]))})
+        return {k: v for k, v in r.items() if isinstance(v, np.ndarray)}
+
+    f = cache_file(cache, "library_kf", Path(ds.attrs["run_dir"]).name, CACHE_SOURCES["library_kf"])
+    r = cached(f, compute, recompute)        # the library series (reading R1 is slow)
     esc = {"t": r["t"], "C": r["C_escalon"]}
     if not np.allclose(r["t"] / 3600.0, ref["t_horas"], atol=1e-9, rtol=0):
         raise RuntimeError("record times differ from the thesis")
@@ -277,7 +318,14 @@ def contrast_dissipation(ds, ref: dict, c_me: dict) -> dict:
     return out
 
 
-def contrast(run: Path, cache: Path = CACHE) -> dict:
+def _load_ref(cache, kind):
+    f = _ref_file(cache, kind)
+    if not f.exists():
+        raise FileNotFoundError(f"{f}: run `thesis_contrast.py reference-{kind[7:]}` first")
+    return dict(np.load(f))
+
+
+def contrast(run: Path, cache: Path = CACHE, recompute: bool = False) -> dict:
     from exp4_arctic_bayiw.analysis import load
     mods = thesis_modules()
     ds = load.run(run)
@@ -290,16 +338,17 @@ def contrast(run: Path, cache: Path = CACHE) -> dict:
         "tolerance_rel": TOL_REL}
     nash = dict(common, script="thesis_copy/Output_IWBay/energy_flux_IWBay.py",
                 sign="+ into the bay in both (thesis +y)",
-                **contrast_nash(ds, dict(np.load(cache / "thesis_nash_realistic_bay.npz")),
+                **contrast_nash(ds, _load_ref(cache, "thesis_nash"),
                                 base / "npz_flux" / "realistic_bay_flujo.npz"))
     (PKG / "figures" / "flux_vs_thesis.json").write_text(json.dumps(nash, indent=1))
-    kf_ref = dict(np.load(cache / "thesis_kf_realistic_bay.npz"))
+    kf_ref = _load_ref(cache, "thesis_kf")
     kfres, r, c = contrast_kf(ds, kf_ref, mods["figura_energia_balance_kf"],
-                              base / "npz_energy" / "realistic_balance_kf_bahia.npz")
+                              base / "npz_energy" / "realistic_balance_kf_bahia.npz",
+                              cache=cache, recompute=recompute)
     kf = dict(common, script="thesis_copy/Output_IWBay/balance_kang_fringer.py",
               sign="project F, A + into the bay = - thesis (+ out of the bay); D identical",
               **kfres)
-    dref = cache / "thesis_diss_realistic_bay.npz"
+    dref = _ref_file(cache, "thesis_diss")
     if dref.exists():
         kf["explicit_dissipation_descriptive"] = contrast_dissipation(ds, dict(np.load(dref)), c)
     (PKG / "figures" / "budget_vs_thesis.json").write_text(json.dumps(kf, indent=1))
@@ -312,6 +361,8 @@ def main(argv=None) -> int:
     ap.add_argument("what", choices=("reference-nash", "reference-kf", "reference-diss", "contrast"))
     ap.add_argument("--run", type=Path, default=EXP4_RUNS / "R1")
     ap.add_argument("--cache", type=Path, default=CACHE)
+    ap.add_argument("--recompute", action="store_true",
+                    help="ignore the cached library series of this run and recompute them")
     a = ap.parse_args(argv)
     if a.what == "reference-nash":
         print(reference_nash(a.cache))
@@ -320,7 +371,7 @@ def main(argv=None) -> int:
     elif a.what == "reference-diss":
         print(reference_dissipation(a.cache))
     else:
-        res = contrast(a.run, a.cache)
+        res = contrast(a.run, a.cache, a.recompute)
         print(json.dumps(res["summary"], indent=2))
     return 0
 

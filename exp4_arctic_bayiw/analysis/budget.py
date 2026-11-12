@@ -166,11 +166,16 @@ def n2_background(rho_b, RC, rho0, g=G):
 
 # ---- box geometry -----------------------------------------------------------------------------
 
-def box_faces(mask, wet=None) -> dict:
+def box_faces(mask, wet=None, allow_edge: bool = False) -> dict:
     """Open faces of a box. {'x': [(j, i, s)] west faces of cell (j, i) (U points),
     'y': [(j, i, s)] south faces (V points)}; s = +1 if +x / +y points into the box. With
-    ``wet``, only the faces whose outer cell is wet (water). Domain-edge faces are excluded."""
+    ``wet``, only the faces whose outer cell is wet (water). A box touching the domain edge has
+    faces on the model boundary that this list cannot hold (an open boundary would carry a flux):
+    ValueError unless ``allow_edge=True``, in which case those faces are left out."""
     m = np.asarray(mask, bool)
+    if not allow_edge and (m[0].any() or m[-1].any() or m[:, 0].any() or m[:, -1].any()):
+        raise ValueError("the box touches the domain edge; its boundary faces would be dropped "
+                         "(pass allow_edge=True to accept that)")
     w = np.ones_like(m) if wet is None else np.asarray(wet, bool)
     out = {"x": [], "y": []}
     jj, ii = np.nonzero(m[:, 1:] != m[:, :-1])
@@ -406,6 +411,10 @@ def kf_budget(ds, mask, tau=None, rho_b=None, face_groups=None, time=slice(None)
     out["t"] = times.astype(float)
     out["rho_b"] = rho_b
     out["n2"] = n2
+    # PD0 Enmienda 2: the H4d numerator is the outward baroclinic pressure work alone
+    out["F_bc_pressure_out"] = -out["F_bc"]
+    for n in gy:
+        out[f"F_bc_pressure_out_{n}"] = -out[f"F_bc_{n}"]
     out["ape_linear_defined"] = lin_ok
     out["faces"] = faces
     return out
@@ -424,6 +433,16 @@ def cumulative(t_s, x):
     """Trapezoidal running integral from the first record [J for W] (thesis _acumular)."""
     t_s, x = np.asarray(t_s, float), np.asarray(x, float)
     return np.concatenate(([0.0], np.cumsum(0.5 * (x[1:] + x[:-1]) * np.diff(t_s))))
+
+
+def f_bc_pressure_out(r: dict, section: str | None = None):
+    """H4d numerator [J] (PD0 Enmienda 2, 2026-11-12): the running integral of the outward
+    Kang & Fringer baroclinic pressure work, -int F_bc dt with F_bc = sum u_n' p' dz dl over the
+    open faces (+ into the box in kf_budget), so + = out of the box. Advection (A_bc) is NOT
+    included; F_bc + A_bc is descriptive only. ``section``: one face group (e.g. 'Akselsundet').
+    eta = f_bc_pressure_out[-1] / int (P_bt + P_bc) dt; eta' with P_bc alone is descriptive."""
+    key = "F_bc" if section is None else f"F_bc_{section}"
+    return -cumulative(r["t"], r[key])
 
 
 def closure(r: dict, ape: str = "ape") -> dict:

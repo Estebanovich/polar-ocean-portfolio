@@ -623,3 +623,12 @@ Verificación:
   - doble import;
   - la máscara de la bahía usa `bay_cells`;
   - el helper de `wind_patch` está compartido.
+- **Ronda de correcciones 1 de la Task 5.**
+  - **Enmienda 2 del PD0** (decisión de Esteban): el numerador de H4d es solo el trabajo de presión baroclínico que sale, `F_bc_pressure_out`. F_bc + A_bc queda como descriptivo, y la Enmienda 1 no se edita. Al decidir ya se conocía el reparto de R1 (presión: 0.28 GJ hacia fuera; advección: 5.68 GJ hacia dentro), pero no se había calculado ningún cociente de H4d ni se había analizado la campaña.
+  - **Correcciones de código:**
+    - cachés con clave (corrida + hash de las fuentes) y la opción `--recompute`;
+    - el pickup se valida antes de usarse;
+    - una columna seca aporta cero al flujo;
+    - una caja que toca el borde del dominio da error;
+    - el forzamiento periódico usa el ciclo del namelist.
+  - Los JSON del contraste no cambian.

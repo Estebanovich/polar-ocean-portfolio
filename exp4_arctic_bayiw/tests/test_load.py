@@ -120,3 +120,34 @@ def test_forcing_stress_interpolates_like_mitgcm_and_stops_in_stage2(run):
     assert np.all(taux == 0)
     _, tauy2 = load.forcing_stress(ds, 2700.0)              # stage 2 has no wind file
     assert np.all(tauy2 == 0)
+
+
+def test_forcing_stress_wraps_on_the_namelist_cycle(run):
+    """Periodic record sequence of eesupp/src/get_periodic_interval.F:83, 117-127: nbRec =
+    cycle / period (here 3 of the 4 file records), record k centred at (k + 1/2) period."""
+    d, _, _ = run
+    R = np.stack([np.full((NY, NX), v) for v in (1.0, 2.0, 3.0, 99.0)])
+    R.astype(">f8").tofile(d / "tauy.bin")
+    ds = load.run(d)
+    _, ty = load.forcing_stress(ds, 300.0)                  # centre of record 0
+    np.testing.assert_allclose(ty, 1.0)
+    _, ty = load.forcing_stress(ds, 1500.0)                 # centre of record 2
+    np.testing.assert_allclose(ty, 3.0)
+    _, ty = load.forcing_stress(ds, 1650.0)                 # 1/4 of the way from record 2 to 0
+    np.testing.assert_allclose(ty, 0.75 * 3.0 + 0.25 * 1.0)  # wraps to record 0, not to 3 (99)
+
+
+def test_pickup_layout_checks(tmp_path):
+    from pfcommon.mitgcm_io import _parse_meta
+    nz = 2
+    a = np.zeros((2 * nz + 1, NY, NX))
+    a.astype(">f8").tofile(tmp_path / "p.data")
+    _meta(tmp_path / "p.meta", (NY, NX), 1, ["Uvel", "Vvel", "EtaN"], a.shape[0])
+    f = load._pickup_fields(tmp_path / "p.data", _parse_meta((tmp_path / "p.meta").read_text()), nz)
+    assert f["Uvel"].shape == (nz, NY, NX) and f["EtaN"].shape == (NY, NX)
+    _meta(tmp_path / "p.meta", (NY, NX), 1, ["Uvel", "Vvel", "EtaN", "EtaH"], a.shape[0])
+    with pytest.raises(ValueError, match="records"):
+        load._pickup_fields(tmp_path / "p.data", _parse_meta((tmp_path / "p.meta").read_text()), nz)
+    _meta(tmp_path / "p.meta", (NY, NX), 1, ["Uvel", "Vvel", "Mystery"], a.shape[0])
+    with pytest.raises(ValueError, match="unknown"):
+        load._pickup_fields(tmp_path / "p.data", _parse_meta((tmp_path / "p.meta").read_text()), nz)

@@ -134,7 +134,7 @@ def _diag_files(dirs):
     """{field: {iteration: (data path, nrec, rec, shape)}} of every MDS diagnostics file."""
     out: dict = {}
     for d in dirs:
-        for m in sorted(d.glob("*.[0-9]" * 1 + "*.meta")):
+        for m in sorted(d.glob("*.meta")):
             parts = m.name.split(".")
             if len(parts) != 3 or not re.fullmatch(r"\d{10}", parts[1]):
                 continue
@@ -162,16 +162,27 @@ def _pickup(d: Path, it: int):
     return None
 
 
+PICKUP_3D = ("Uvel", "Vvel", "Theta", "Salt", "GuNm1", "GvNm1", "GtNm1", "GsNm1")
+PICKUP_2D = ("EtaN", "dEtaHdt", "EtaH")
+
+
 def _pickup_fields(path, meta, nz):
+    """{field: array} of a MITgcm pickup: the 3-D fields of PICKUP_3D take nz records each, the
+    2-D fields of PICKUP_2D one. ValueError for an unknown field or if the records consumed do not
+    equal the meta's nrecords."""
     ny, nx = meta["shape"][-2:]
+    unknown = [f for f in meta["fldList"] if f not in PICKUP_3D + PICKUP_2D]
+    if unknown:
+        raise ValueError(f"{path}: unknown pickup field layout {unknown}")
+    n_rec = sum(nz if f in PICKUP_3D else 1 for f in meta["fldList"])
+    if n_rec != meta["nrecords"]:
+        raise ValueError(f"{path}: fields need {n_rec} records, the meta says {meta['nrecords']}")
     a = np.fromfile(path, ">f8").reshape(meta["nrecords"], ny, nx)
     out, r = {}, 0
-    n3 = (meta["nrecords"] - 3) // nz if meta["nrecords"] > 3 else 0
     for f in meta["fldList"]:
-        n = nz if f in ("Uvel", "Vvel", "Theta", "Salt", "GuNm1", "GvNm1", "GtNm1", "GsNm1") else 1
+        n = nz if f in PICKUP_3D else 1
         out[f] = a[r:r + n].astype(float) if n > 1 else a[r].astype(float)
         r += n
-    del n3
     return out
 
 
@@ -270,8 +281,9 @@ def run(run_dir: Path, final_from_pickup: bool = True) -> xr.Dataset:
 
 def forcing_stress(ds: xr.Dataset, t: float):
     """(taux at U points, tauy at V points) [N m^-2] that the model applies at time t from the
-    stage's periodic forcing files: record k centred at (k + 1/2) period, linear interpolation,
-    periodic over the cycle (eesupp/src/get_periodic_interval.F:118-127;
+    stage's forcing files: record k centred at (k + 1/2) period, linear interpolation, wrapped
+    on nbRec = externForcingCycle / externForcingPeriod from the namelist (not on the file's record
+    count; eesupp/src/get_periodic_interval.F:83, 117-127;
     model/src/external_fields_load.F:268-277). The stage is the one with
     nIter0 deltaT <= t < (nIter0 + nTimeSteps) deltaT (the last stage holds its end); a stage
     without wind files gives 0 (the thesis stage 2, balance_kang_fringer.tau_modelo)."""
@@ -286,14 +298,31 @@ def forcing_stress(ds: xr.Dataset, t: float):
     out = []
     for key in ("zonalWindFile", "meridWindFile"):
         f = s[key]
-        if not f or not s["periodic"]:
+        if not f:
             out.append(np.zeros((ny, nx)))
             continue
+        if not s["periodic"]:
+            # external_fields_load.F:63 only interpolates with periodicExternalForcing
+            raise NotImplementedError(f"{key} without periodicExternalForcing is not handled")
         p = Path(s["dir"]) / f
         R = np.fromfile(p, ">f8").reshape(-1, ny, nx)
-        n = R.shape[0]
-        x = t / s["period"] - 0.5
-        k0 = int(np.floor(x))
-        a = x - k0
-        out.append((1 - a) * R[k0 % n] + a * R[(k0 + 1) % n])
+        per, cyc = s["period"], s["cycle"]
+        if cyc > 0:
+            # periodic sequence, eesupp/src/get_periodic_interval.F:83 (nbRec) and 117-127
+            nb = int(round(cyc / per))
+            if abs(nb * per - cyc) > 1e-9 * cyc:
+                raise ValueError(f"externForcingCycle {cyc} is not a multiple of the period {per}")
+            if R.shape[0] < nb:
+                raise ValueError(f"{p}: {R.shape[0]} records < cycle/period = {nb}")
+            loc = t - 0.5 * per + cyc * (2 - round(t / cyc))
+            tm = loc % cyc
+            k1 = int(tm // per)
+            w2 = (tm - per * k1) / per
+            out.append((1 - w2) * R[k1] + w2 * R[(k1 + 1) % nb])
+        else:
+            # non-periodic sequence, get_periodic_interval.F:98-107
+            loc = t - 0.5 * per
+            k1 = int(np.floor(loc / per))
+            w2 = (loc - per * k1) / per
+            out.append((1 - w2) * R[k1] + w2 * R[k1 + 1])
     return out[0], out[1]

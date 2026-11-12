@@ -95,7 +95,7 @@ def test_box_from_section_closes_a_channel_with_a_staircase():
     ny, nx = 20, 20
     xc, yc = np.arange(nx) + 0.5, np.arange(ny) + 0.5
     wet = np.zeros((ny, nx), bool)
-    wet[5:15] = True
+    wet[5:15, 1:19] = True                                  # closed channel (land at both ends)
     sec = {"S": ((9.3, 4.0), (10.7, 16.0))}
     mask, groups = budget.box_from_sections(wet, xc, yc, sec, seed_in=(17.5, 10.5),
                                             seed_out=(2.5, 10.5), extend_m=0.0)
@@ -210,3 +210,23 @@ def test_conversion_mask_outside_the_region_is_refused_and_inside_is_computed():
     corner = np.zeros((6, 5), bool); corner[0, 0] = True
     with pytest.raises(ValueError, match="leaves"):
         budget.kf_budget(ds, big, conversion_masks={"corner": corner})
+
+
+def test_box_touching_the_domain_edge_is_refused_unless_allowed():
+    m = np.zeros((5, 6), bool)
+    m[1:3, 0:2] = True                                       # touches the west edge
+    with pytest.raises(ValueError, match="domain edge"):
+        budget.box_faces(m)
+    f = budget.box_faces(m, allow_edge=True)
+    assert len(f["x"]) == 2 and len(f["y"]) == 4
+
+
+def test_h4d_numerator_is_the_outward_baroclinic_pressure_work():
+    """PD0 Enmienda 2: the H4d numerator is -int F_bc dt (pressure work only, + out)."""
+    ds, mask, _ = _filling_basin(nt=4)
+    r = budget.kf_budget(ds, mask)
+    np.testing.assert_array_equal(r["F_bc_pressure_out"], -r["F_bc"])
+    t = np.array([0.0, 10.0, 20.0])
+    s = {"t": t, "F_bc": np.array([1.0, -3.0, 5.0]), "A_bc": np.array([100.0, 100.0, 100.0])}
+    out = budget.f_bc_pressure_out(s)
+    np.testing.assert_allclose(out, -budget.cumulative(t, s["F_bc"]))      # A_bc not included
