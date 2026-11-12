@@ -42,16 +42,25 @@ def compare(case: str, runs: Path = EXP4_RUNS) -> dict:
     return out
 
 
-def run(case: str, runs: Path = EXP4_RUNS, builds: Path = EXP4_BUILDS) -> dict:
-    if cp.other_mitgcm_processes():
-        raise RuntimeError("another MPI / model process is running")
+def _sh(cmd) -> int:
     env = {**os.environ, "OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "VECLIB_MAXIMUM_THREADS": "1"}
+    return subprocess.run([str(c) for c in cmd], env=env).returncode
 
-    def sh(cmd):
-        return subprocess.run([str(c) for c in cmd], env=env).returncode
 
+def run(case: str, runs: Path = EXP4_RUNS, builds: Path = EXP4_BUILDS, *, sh=_sh, pgrep=None,
+        make_case=None) -> dict:
+    """Generate the 20-step inputs and run them once whole and once split in two stages.
+
+    ``sh`` (the command runner, called as sh([run_mitgcm.sh, build, input, run_dir, np])),
+    ``pgrep`` (process listing for cp.other_mitgcm_processes) and ``make_case`` (default
+    gendata.make_case.make_case) are injectable so the whole function runs in tests with a fake
+    runner, without MITgcm (tests/test_restart_test.py)."""
+    make_case = make_case or mc.make_case
+    if cp.other_mitgcm_processes(pgrep):
+        raise RuntimeError("another MPI / model process is running")
+    runs, builds = Path(runs), Path(builds)
     inp = runs / f"{case}_restarttest_input"
-    mc.make_case(case, inp, overrides={"t_end_h": 2400.0 / 3600.0})
+    make_case(case, inp, overrides={"t_end_h": 2400.0 / 3600.0})
     t = (inp / "data").read_text()
     (inp / "data").write_text(re.sub(r"pChkptFreq=[^,]+,", "pChkptFreq=1200.,", t))
     b = builds / "fjord_vmf"
@@ -59,7 +68,7 @@ def run(case: str, runs: Path = EXP4_RUNS, builds: Path = EXP4_BUILDS) -> dict:
     s1 = cp.run_stages(runs / f"{case}_restarttest_single", inp, b, 5, 1, sh, run_sh)
     s2 = cp.run_stages(runs / f"{case}_restarttest_split", inp, b, 5, 2, sh, run_sh,
                        pickup_stems=("pickup", "pickup_seaice"))
-    if cp.other_mitgcm_processes():
+    if cp.other_mitgcm_processes(pgrep):
         raise RuntimeError("processes left after the restart test")
     return {"single": s1, "split": s2}
 

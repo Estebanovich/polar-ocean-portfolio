@@ -186,13 +186,19 @@ def _status(run_dir: Path) -> dict | None:
 
 def finished_ok(run_dir: Path) -> bool:
     """True if the run is OK and complete. run_status_final.json (written by run_stages)
-    wins when present; otherwise run_status.json must be OK with last_iter >= n_timesteps."""
+    wins when present; otherwise run_status.json must be OK with last_iter >= n_timesteps, and a
+    multi-stage layout (stage<k>/ or input_stage<k>/) without the final file is not finished."""
     run_dir = Path(run_dir)
     fin = run_dir / "run_status_final.json"
     try:
         if fin.exists():
             st = json.loads(fin.read_text())
             return st.get("state") == "OK" and st.get("last_iter") == st.get("expected_last_iter")
+        # a multi-stage run (stage<k>/ or input_stage<k>/ present) is finished only when
+        # run_stages wrote run_status_final.json; stage 1 OK alone is not enough
+        if any(p.is_dir() for p in run_dir.glob("stage[0-9]*")) or \
+                any(p.is_dir() for p in run_dir.glob("input_stage[0-9]*")):
+            return False
         st = json.loads((run_dir / "run_status.json").read_text())
     except (OSError, json.JSONDecodeError):
         return False

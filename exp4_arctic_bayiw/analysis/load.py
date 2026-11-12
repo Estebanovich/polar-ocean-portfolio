@@ -195,10 +195,16 @@ def eos_linear(T, S, eos: dict):
 
 
 def run(run_dir: Path, final_from_pickup: bool = True) -> xr.Dataset:
-    """The run as an xarray.Dataset (grid eager, time series lazy). See the module docstring."""
+    """The run as an xarray.Dataset (grid eager, time series lazy). See the module docstring.
+
+    A run with sea ice (case.json ``actual.ice``) is refused unless it passed the mandatory
+    ice-open-boundary distance check (analysis/ice_check.py; notes/pd1_seaice.md section 8)."""
+    from exp4_arctic_bayiw.analysis import ice_check
     dirs = stage_dirs(run_dir)
     for d in dirs:
         require_ok(d)
+    if ice_check.is_ice_run(run_dir):
+        ice_check.require_ice_ob_check(run_dir)
     g0 = dirs[0]
     nml = _nml(g0)
     p1 = nml.get("PARM01", {})

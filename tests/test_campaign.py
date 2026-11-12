@@ -380,3 +380,19 @@ def test_run_stages_last_stage_end_need_not_be_on_checkpoint(tmp_path):
     with pytest.raises(ValueError, match="pChkptFreq"):
         cp.run_stages(tmp_path / "r2", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh",
                       plan=[(0, 35), (35, 80)])
+
+
+def test_finished_ok_needs_the_final_status_of_a_multi_stage_run(tmp_path):
+    """Stage 1 OK while stage 2 runs (or after it was killed before run_status_final.json was
+    written) is not a finished run: --skip-ok must not skip it (found in Exp. 4 Task 6, V3)."""
+    from pfcommon import campaign as cp
+    (tmp_path / "run_status.json").write_text(json.dumps(
+        {"state": "OK", "last_iter": 1800, "n_timesteps": 1800}))
+    assert cp.finished_ok(tmp_path)                         # single-stage layout: OK
+    (tmp_path / "stage2").mkdir()
+    (tmp_path / "stage2" / "run_status.json").write_text(json.dumps(
+        {"state": "RUNNING", "last_iter": 1800, "n_timesteps": 6600}))
+    assert not cp.finished_ok(tmp_path)
+    (tmp_path / "run_status_final.json").write_text(json.dumps(
+        {"state": "OK", "last_iter": 8400, "expected_last_iter": 8400}))
+    assert cp.finished_ok(tmp_path)

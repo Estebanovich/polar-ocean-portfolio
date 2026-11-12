@@ -165,7 +165,8 @@ def ice_distance_to_open_boundaries(run: Path, min_cells: int | None = None) -> 
     OB_Jsouth of data.obcs) over every seaice record of ``run``. With DISABLE_SEAICE_OBCS the
     ice gets no OB condition (code/obcs_check.F header), so ice reaching the boundaries would
     go unnoticed: the check passes if the distance stays >= ``min_cells`` (default n_sponge,
-    the sponge width). Required for F2/F4 after every run (Task 6)."""
+    the sponge width). Reads the top run directory only (the short PD1 runs have one stage);
+    the mandatory check of the campaign runs, over every stage, is analysis/ice_check.py."""
     cj = json.loads((run / "input" / "case.json").read_text())
     p = cj["params"]
     n = int(p["n_sponge"]) if min_cells is None else int(min_cells)
