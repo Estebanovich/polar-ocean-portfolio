@@ -155,4 +155,62 @@ configs:
            inversion_tol_kg_m3: 0.004, min_levels: 5}
       min_profiles: 20            # per season, after QC
       min_count_per_level: 5      # a level enters the median if >= 5 casts reach it
-cases: {}
+  # Thesis rectangular bay (MSc thesis BayIW_Rectan, run_expand; Task 3). Inputs are read from the
+  # read-only thesis tree (thesis_dir): bathymetry, grid spacing and the "realistic" (Feb) T/S are
+  # copied byte for byte; the wind patch is regenerated (gendata/make_case.thesis_wind_patch, equal
+  # to the thesis merid_local_bay_560x352.bin byte for byte). Namelists: config/bay_thesis/
+  # input_templates (thesis namelists with I/O changes only) plus the edit sets named by `edits`
+  # (namelist_sets below). Runs: stage 1 forced (data, forced_h), then one free stage (data.free)
+  # to t_end_h, as the thesis data.stage1 / data.stage2. notes/pd1_puente.md lists every change.
+  bay_thesis: &bay_thesis
+    thesis_dir: /Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan
+    nx: 560
+    ny: 352
+    nz: 50
+    deltaT: 30.0             # s, data.stage1
+    forced_h: 60.0           # stage 1 (thesis data.stage1 endTime = 216000 s)
+    t_end_h: 120.0           # thesis: 60 h forced + 60 h free (data.stage2 endTime = 432000 s)
+    bathy_file: bahia_01_expand_bat.bin
+    delx_file: bahia_01_expand_dx.bin
+    dely_file: bahia_01_expand_dy.bin
+    profile: thesis_realistic           # feb_{temp,salt}_50zlev_560x352.bin, byte copy
+    surface: open water
+    # make_meridional_wind_patch (thesis input/wind_patch.py) with the arguments of the thesis
+    # notebook input/make_wind_forcing_local.ipynb that wrote merid_local_bay_560x352.bin
+    wind: {nt: 180, end_time_h: 60.0, max_tau: 0.10, sigma_t_h: 1.0, center_t_h: 2.5,
+           cx: 280, cy: 310, radius: 60}
+    pickup_stems: [pickup]
+    edits: []
+    # Namelist edit sets: {file: {group: {key: value or null (remove)}}}. Edits of `data` apply
+    # to data and data.free (both stages). eos_vmf is built by make_case from configs.fjord_vmf.eos.
+    namelist_sets:
+      kpp:                    # R1k: only what KPP needs (PD0 section 6; pkg/kpp/kpp_check.F:128-145)
+        data.pkg: {PACKAGES: {useKPP: ".TRUE."}}
+        data:
+          PARM01: {viscAr: "1.E-4", ivdc_kappa: null, implicitViscosity: ".TRUE."}
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1,4)": "'KPPhbl'", "fileName(4)": "'kpp2d'",
+                             "frequency(4)": "-900.", "timePhase(4)": "0.",
+                             "fields(1:2,5)": "'KPPviscA','KPPdiffT'", "fileName(5)": "'kpp3d'",
+                             "frequency(5)": "-10800.", "timePhase(5)": "0."}
+      pd0_mixing:             # R2/R3: horizontal mixing, bottom drag and advection of PD0 section 6
+        data:
+          PARM01: {viscAh: null, viscC2smag: "2.2", viscC4smag: "1.", diffKhT: "0.", diffKhS: "0.",
+                   bottomDragQuadratic: "2.5E-3", tempAdvScheme: "77", saltAdvScheme: "77"}
+      f78n:                   # R2/R3: f-plane at 78 N, f = 2 Omega sin 78 deg (plan, Configuracion)
+        data:
+          PARM01: {f0: "1.4266E-4", beta: "0."}
+  bay_thesis_kpp:
+    # same inputs; build with pkg/kpp and OLx = OLy = 4 (config/bay_thesis_kpp/code)
+    <<: *bay_thesis
+cases:
+  R1: {config: bay_thesis}            # thesis physics exactly (V1)
+  R1b: {config: bay_thesis_kpp}       # R1 on the KPP build: control of the build effect (short run)
+  R1k: {config: bay_thesis_kpp, edits: [kpp], t_end_h: 240.0}   # H4d with R1 over 0-120 h
+  # bridge (generated in Task 3, run after the PD1 fixes T_end; 280 h is provisional, PD0 decision 2)
+  R2: {config: bay_thesis_kpp, edits: [kpp, pd0_mixing, f78n, eos_vmf],
+       profile: vmf_summer_thesis_levels, t_end_h: 280.0}
+  R3: {config: bay_thesis_kpp, edits: [kpp, pd0_mixing, f78n, eos_vmf],
+       profile: vmf_summer_thesis_levels, t_end_h: 280.0,
+       bathy_file: nobahia_01_expand_bat.bin, delx_file: nobahia_01_expand_dx.bin,
+       dely_file: nobahia_01_expand_dy.bin}

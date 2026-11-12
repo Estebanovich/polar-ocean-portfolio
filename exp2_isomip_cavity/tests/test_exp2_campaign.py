@@ -67,7 +67,8 @@ def test_refuses_when_model_running(tmp_path, cfg_root, templates, synth_geom):
 
 
 def test_concurrency_rules_enforced(tmp_path, cfg_root, templates, synth_geom):
-    for np_, mc in ((1, 6), (5, 2), (3, 1)):
+    # one MPI run of 2..5 ranks is allowed since Exp. 4 (np = 4, thesis tiles); 6 is not
+    for np_, mc in ((1, 6), (5, 2), (3, 2), (6, 1)):
         with pytest.raises(ValueError):
             _run(tmp_path, cfg_root, templates, synth_geom, "ocean0_2km", "cal2_*", np_=np_, mc=mc)
 

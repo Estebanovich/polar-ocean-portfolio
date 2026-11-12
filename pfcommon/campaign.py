@@ -92,14 +92,18 @@ def check_overrides(names: list[str], overrides: dict | None, spec: dict) -> dic
 
 
 def check_concurrency(np_each: int, max_concurrent: int) -> None:
-    """Allowed: np = 1 with 1..5 concurrent runs, or np = 5 with exactly 1. Anything else
-    raises ValueError (global constraints: <= 5 MPI processes in total)."""
+    """Allowed: np = 1 with 1..5 concurrent runs, or one MPI run (max_concurrent = 1) of
+    2..5 ranks. Anything else raises ValueError (global constraints: <= 5 MPI processes in
+    total; one MPI run at a time). A run of fewer than 5 ranks is allowed because some
+    decompositions need it: the Exp. 4 thesis bay keeps the thesis tiles (8 tiles of
+    140 x 176) for a bit-for-bit reproduction, which runs on 4 ranks."""
     if np_each == 1 and 1 <= max_concurrent <= MAX_SERIAL_CONCURRENT:
         return
-    if np_each == MAX_NP and max_concurrent == 1:
+    if 1 < np_each <= MAX_NP and max_concurrent == 1:
         return
     raise ValueError(f"np={np_each} with max_concurrent={max_concurrent} not allowed: use np=1 "
-                     f"with max_concurrent 1..{MAX_SERIAL_CONCURRENT}, or np={MAX_NP} with 1")
+                     f"with max_concurrent 1..{MAX_SERIAL_CONCURRENT}, or one run of "
+                     f"np=2..{MAX_NP} (max_concurrent 1)")
 
 
 # ---- environment checks ------------------------------------------------------------------
@@ -278,7 +282,9 @@ def stage_plan(n_iter0: int, n_total: int, n_stages: int) -> list[tuple[int, int
 
 
 def run_stages(run_dir: Path, inp: Path, build_dir: Path, np_: int, n_stages: int,
-               sh: Callable[[list], int], run_sh, pickup_stems=("pickup",)) -> str:
+               sh: Callable[[list], int], run_sh, pickup_stems=("pickup",),
+               plan: list[tuple[int, int]] | None = None,
+               stage_data: Callable[[int], str] | None = None) -> str:
     """Run case input ``inp`` in ``n_stages`` chained restart stages (ruling R2).
 
     Stage 1 runs in ``run_dir``, stage k > 1 in ``run_dir/stage<k>``. With more than one
@@ -290,24 +296,44 @@ def run_stages(run_dir: Path, inp: Path, build_dir: Path, np_: int, n_stages: in
     permanent pickup is written there. Before each stage its run_status.json is removed,
     and a nonzero exit code of the runner makes the case FAILED. Writes
     ``run_dir/run_status_final.json``: OK only if every stage is OK and the last
-    iteration is nIter0 + nTimeSteps of the input."""
+    iteration is nIter0 + nTimeSteps of the input.
+
+    ``plan`` (optional) replaces the equal split: a list of ``n_stages`` (nIter0,
+    nTimeSteps) pairs, contiguous, starting at the nIter0 of ``data``, each with
+    nTimeSteps > 0; the expected last iteration is then the end of the last pair.
+    ``stage_data`` (optional) gives the ``data`` text of stage k (1-based) before its
+    nIter0 / nTimeSteps are set, e.g. a forced first stage and free later stages (the
+    thesis data.stage1 / data.stage2); by default every stage uses ``inp/data``. The
+    pChkptFreq check uses the namelist of the stage that ends there, and only the
+    intermediate stage ends are checked (the last one needs no pickup)."""
     run_dir, inp = Path(run_dir), Path(inp)
     text = (inp / "data").read_text()
     n0, ntot = nml_int(text, "nIter0"), nml_int(text, "nTimeSteps")
-    plan = stage_plan(n0, ntot, n_stages)
-    expected = n0 + ntot
+    if plan is None:
+        plan = stage_plan(n0, ntot, n_stages)
+    else:
+        plan = [(int(a), int(n)) for a, n in plan]
+        if len(plan) != n_stages:
+            raise ValueError(f"stage plan has {len(plan)} stages, n_stages is {n_stages}")
+        if plan[0][0] != n0:
+            raise ValueError(f"stage plan starts at {plan[0][0]}, data has nIter0 = {n0}")
+        for (a, n), (b, _) in zip(plan, plan[1:] + [(None, None)]):
+            if n <= 0 or (b is not None and b != a + n):
+                raise ValueError(f"stage plan {plan} is not contiguous with nTimeSteps > 0")
+    expected = plan[-1][0] + plan[-1][1]
+    texts = {k: (stage_data(k) if stage_data else text) for k in range(1, len(plan) + 1)}
     if n_stages > 1:
-        try:
-            ck = nml_float(text, "pChkptFreq")
-        except RuntimeError:
-            ck = 0.0
-        if ck > 0:
-            dt = nml_float(text, "deltaT")
-            for a, n in plan:
-                t_end = (a + n) * dt
+        for k, (a, n) in enumerate(plan[:-1], 1):
+            try:
+                ck = nml_float(texts[k], "pChkptFreq")
+            except RuntimeError:
+                ck = 0.0
+            if ck > 0:
+                t_end = (a + n) * nml_float(texts[k], "deltaT")
                 if abs(t_end / ck - round(t_end / ck)) > 1e-9:
                     raise ValueError(f"stage end {t_end:g} s is not a multiple of pChkptFreq {ck:g} s")
-        set_namelist_ints(text, {"nIter0": n0, "nTimeSteps": ntot})   # validates the namelist
+        for k, (a, n) in enumerate(plan, 1):                          # validates each namelist
+            set_namelist_ints(texts[k], {"nIter0": a, "nTimeSteps": n})
     stages: dict = {}
     prev = None
     for k, (a, n) in enumerate(plan, 1):
@@ -319,7 +345,7 @@ def run_stages(run_dir: Path, inp: Path, build_dir: Path, np_: int, n_stages: in
             if sinp.exists():
                 shutil.rmtree(sinp)
             shutil.copytree(inp, sinp, symlinks=False)                # copies, never links
-            (sinp / "data").write_text(set_namelist_ints(text, {"nIter0": a, "nTimeSteps": n}))
+            (sinp / "data").write_text(set_namelist_ints(texts[k], {"nIter0": a, "nTimeSteps": n}))
             if prev is not None:
                 for f in sorted(prev.glob(f"pickup*.{a:010d}.*")):
                     shutil.copyfile(f, sinp / f.name)                  # content copy
