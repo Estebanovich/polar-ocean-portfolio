@@ -20,7 +20,7 @@
 #   V3    fjord_vmf, summer, no wind, M2 only at the open boundaries
 #   V4    fjord_vmf at ~400 m, as F1
 configs:
-  fjord_vmf:
+  fjord_vmf: &fjord_vmf
     # Model box (Task 1b; approved or changed in PD1, then Task 1b is re-run). UTM 33N (EPSG:32633),
     # not rotated, [x0, x1, y0, y1] in m, 100 km x 60 km at 200 m (500 x 300 cells). It holds
     # Van Mijenfjorden with Vallunden (head at y ~ 8 651.5 km), Akseloya, Bellsund, Van Keulenfjorden,
@@ -155,6 +155,107 @@ configs:
            inversion_tol_kg_m3: 0.004, min_levels: 5}
       min_profiles: 20            # per season, after QC
       min_count_per_level: 5      # a level enters the median if >= 5 casts reach it
+    # ---- MITgcm runs of the fjord (Task 4; gendata/make_case.py, config/fjord_vmf). The values
+    # marked PD1 are fixed by Esteban at the PD1 (notes/pd1_config.md) from the timing runs.
+    template_config: fjord_vmf
+    nx: 500                     # (x1 - x0) / dx_m
+    ny: 300
+    nz: 40
+    # Time step: PD1 (notes/pd1_config.md sections 2-3). The synchronous step of these values grows
+    # grid-scale noise at every deltaT tried (60, 48, 40, 30 s); staggerTimeStep is clean at 60 and
+    # 120 s, and 120 s is the largest deltaT dividing 1200 s with advective and internal-wave
+    # CFL <= 0.5. Kept at the timing values until Esteban decides.
+    deltaT: 60.0                # s
+    stagger_time_step: 0        # 0: synchronous (MITgcm default), 1: staggerTimeStep
+    forced_h: 60.0              # stage 1 with the wind file (plan: 60 h forced), then free
+    t_end_h: 280.0              # PD1 (PD0 decision 2: ~280 h if the timing allows, else 240 h)
+    f0: 1.4266e-4               # s^-1, 2 Omega sin 78 deg, f-plane (beta = 0)
+    profile: vmf_summer         # figures/profiles_vmf.json, on the delR cell centres (Task 2)
+    surface: open water
+    # Wind pulse (spec 3.4; PD0 section 7): thesis half Gaussian, spatially uniform. angle_deg is
+    # the direction the stress points to, from UTM east, counter-clockwise: the down-fjord axis
+    # (theory.json wind: axis 12.412 deg north of east, stress towards 192.412 deg, i.e. wind
+    # from 077.6 deg = "078" of the PD0; unit vector (-0.977, -0.215)). F5 adds 90 deg.
+    wind: {tau_max: 0.1, sigma_h: 1.0, center_h: 2.5, angle_deg: 192.412, record_period_s: 1200.0}
+    wind_angle_deg: 192.412
+    # Sea ice (spec 3.5): h, A inside the profile polygon (inner fjord east of Akseloya)
+    ice: {polygon: profiles, h_m: 1.0, A: 1.0}
+    # V3 tide (M2 only): uniform inward barotropic normal velocity on the three open boundaries,
+    # U0 = omega eta0 A_wet / A_OB (volume balance of a basin rising eta0; make_case.tide_v3).
+    # eta0 = 0.5 m within the 0.3-0.8 m outside Akseloya (Stoylen and Fer 2014, p. 89). PD1.
+    tide: {period_s: 44714.16, eta0_m: 0.5}
+    pickup_stems: [pickup]
+    edits: []
+    # wlev diagnostics: WVEL at the cell centres nearest 10, 30 and 60 m (k = 7, 18, 26)
+    wlev_levels: [7, 18, 26]
+    namelist_sets:
+      kpp:                     # default closure: KPP output (data.pkg already has useKPP)
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1,5)": "'KPPhbl  '", "fileName(5)": "'kpp2d'",
+                             "frequency(5)": "-1200.", "timePhase(5)": "0.",
+                             "fields(1:2,6)": "'KPPviscA','KPPdiffT'", "fileName(6)": "'kpp3d'",
+                             "frequency(6)": "-10800.", "timePhase(6)": "0."}
+      thesis_closure:          # F1c: constant 1e-5 vertical viscosity and diffusivity, thesis
+        data.pkg: {PACKAGES: {useKPP: ".FALSE."}}           # convective adjustment ivdc_kappa
+        data: {PARM01: {viscAr: "1.E-5", ivdc_kappa: "1."}}  # (thesis data.stage1)
+      ggl90:                   # F1g: GGL90 with its defaults instead of KPP
+        data.pkg: {PACKAGES: {useKPP: ".FALSE.", useGGL90: ".TRUE."}}
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1:2,6)": "'GGL90Kr ','GGL90ArU'", "fileName(6)": "'ggl90'",
+                             "frequency(6)": "-10800.", "timePhase(6)": "0."}
+      seaice_landfast:         # F2: no dynamics, the ice does not move (spec 3.5)
+        data.pkg: {PACKAGES: {useSEAICE: ".TRUE."}}
+        data.seaice: {SEAICE_PARM01: {SEAICEuseDYNAMICS: ".FALSE."}}
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1:4,7)": "'SIarea  ','SIheff  ','SIuice  ','SIvice  '",
+                             "fileName(7)": "'seaice'", "frequency(7)": "-1200.",
+                             "timePhase(7)": "0."}
+      seaice_free_drift:       # F4: free drift (no internal stress), SEAICE_ALLOW_FREEDRIFT
+        data.pkg: {PACKAGES: {useSEAICE: ".TRUE."}}
+        data.seaice: {SEAICE_PARM01: {SEAICEuseDYNAMICS: ".TRUE.", SEAICEuseFREEDRIFT: ".TRUE."}}
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1:4,7)": "'SIarea  ','SIheff  ','SIuice  ','SIvice  '",
+                             "fileName(7)": "'seaice'", "frequency(7)": "-1200.",
+                             "timePhase(7)": "0."}
+      no_wind:                 # V3: no wind file
+        data:
+          PARM03: {periodicExternalForcing: null, externForcingPeriod: null, externForcingCycle: null}
+          PARM05: {zonalWindFile: null, meridWindFile: null}
+      tide_m2:                 # V3: barotropic M2 at the open boundaries (ALLOW_OBCS_TIDES)
+        data.obcs:
+          OBCS_PARM01: {useOBCStides: ".TRUE.", OBCS_tidalPeriod: "44714.16, 9*0.",
+                        OBW_uTidPhFile: "'OBW_uTideSn.bin'", OBN_vTidPhFile: "'OBN_vTideSn.bin'",
+                        OBS_vTidPhFile: "'OBS_vTideSn.bin'"}
+  # V4: resolution test, the same box at 400 m (bathy.build at dx_m = 400, Task 1b pipeline)
+  fjord_vmf_400:
+    <<: *fjord_vmf
+    dx_m: 400
+    nx: 250
+    ny: 150
+  # Winter runs at 100 m (PD0 decision 1, ruling R13): timing only until the PD1. The Task 1b
+  # pipeline does not run at 100 m (bathy.to_model_grid: 31729 cells hold no IBCAO point), so
+  # the timing case uses the 200 m bathymetry split 2 x 2 (bathy_source: refine_200m).
+  fjord_vmf_100:
+    <<: *fjord_vmf
+    dx_m: 100
+    nx: 1000
+    ny: 600
+    deltaT: 30.0
+    bathy_source: refine_200m
+  # Alternative of R13 (timing only): a 100 m sub-box over the inner fjord, the two sounds and
+  # the inner Bellsund (73 x 38 km). Its bathymetry is cut from the fjord_vmf_100 grid; the west
+  # and south edges cross Bellsund (open), the north edge is land. A production run would need
+  # open-boundary values from a 200 m parent run (one-way nesting), which does not exist yet.
+  fjord_vmf_100s:
+    <<: *fjord_vmf
+    dx_m: 100
+    nx: 730
+    ny: 380
+    deltaT: 30.0
+    bathy_source: subbox_of_refine_200m
+    parent_bbox_utm: [455000, 555000, 8594000, 8654000]
+    bbox_utm: [482000, 555000, 8616000, 8654000]
+    ob_sides: [W, S]
   # Thesis rectangular bay (MSc thesis BayIW_Rectan, run_expand; Task 3). Inputs are read from the
   # read-only thesis tree (thesis_dir): bathymetry, grid spacing and the "realistic" (Feb) T/S are
   # copied byte for byte; the wind patch is regenerated (gendata/make_case.thesis_wind_patch, equal
@@ -214,3 +315,24 @@ cases:
        profile: vmf_summer_thesis_levels, t_end_h: 280.0,
        bathy_file: nobahia_01_expand_bat.bin, delx_file: nobahia_01_expand_dx.bin,
        dely_file: nobahia_01_expand_dy.bin}
+  # ---- fjord (Task 4). Case keys override the config; edits are applied in order.
+  F1: {config: fjord_vmf, edits: [kpp]}
+  F2: {config: fjord_vmf, edits: [kpp, seaice_landfast], profile: vmf_winter, surface: landfast ice,
+       ice_mode: landfast, pickup_stems: [pickup, pickup_seaice]}
+  F3: {config: fjord_vmf, edits: [kpp], profile: vmf_winter}
+  F4: {config: fjord_vmf, edits: [kpp, seaice_free_drift], profile: vmf_winter,
+       surface: drifting ice, ice_mode: free_drift, pickup_stems: [pickup, pickup_seaice]}
+  F5: {config: fjord_vmf, edits: [kpp], wind_angle_deg: 282.412}    # cross-axis, PD0 section 7
+  F1c: {config: fjord_vmf, edits: [thesis_closure]}
+  F1g: {config: fjord_vmf, edits: [ggl90]}
+  V3: {config: fjord_vmf, edits: [kpp, no_wind, tide_m2], surface: open water, wind_angle_deg: null}
+  V4: {config: fjord_vmf_400, edits: [kpp]}
+  # 100 m winter timing (R13); production only if the PD1 approves 100 m (then with a 100 m bathymetry)
+  F2_100: {config: fjord_vmf_100, edits: [kpp, seaice_landfast], profile: vmf_winter,
+           surface: landfast ice, ice_mode: landfast, pickup_stems: [pickup, pickup_seaice]}
+  F2_100s: {config: fjord_vmf_100s, edits: [kpp, seaice_landfast], profile: vmf_winter,
+            surface: landfast ice, ice_mode: landfast, pickup_stems: [pickup, pickup_seaice]}
+  # F3 (winter, open water) on the same 100 m grids: the timing of R13 runs F3_100s, because
+  # pkg/obcs refuses Orlanski boundaries with pkg/seaice (notes/pd1_seaice.md section 7)
+  F3_100: {config: fjord_vmf_100, edits: [kpp], profile: vmf_winter}
+  F3_100s: {config: fjord_vmf_100s, edits: [kpp], profile: vmf_winter}

@@ -1,4 +1,5 @@
-"""Generate all MITgcm input for one Exp. 4 case of the thesis bay (bay_thesis, Task 3).
+"""Generate all MITgcm input for one Exp. 4 case: the thesis bay (bay_thesis, Task 3) and the
+Van Mijenfjorden cases (fjord_vmf, Task 4; ``make_fjord_case``, documented below it).
 
 ``make_case(name, out_dir, ...)`` reads ``cases.yaml``, writes the binary inputs, renders the
 namelist templates of ``config/bay_thesis/input_templates``, applies the namelist edit sets of
@@ -47,6 +48,9 @@ import yaml
 
 from pfcommon.mitgcm_io import write_bin
 
+from . import bathy as bth
+from . import forcing
+from . import ice as icemod
 from . import profiles as prof
 from . import vgrid
 
@@ -279,6 +283,9 @@ def make_case(name: str, out_dir: Path, *, cases_file: Path | None = None,
     spec = load_cases(cases_file)
     p = case_params(spec, name, overrides)
     cfg = spec["cases"][name]["config"]
+    if cfg.startswith("fjord_vmf"):
+        return make_fjord_case(name, out_dir, spec=spec, p=p, template_dir=template_dir,
+                               write_bins=write_bins)
     sets = edit_sets(spec, p)
     nx, ny, nz = int(p["nx"]), int(p["ny"]), int(p["nz"])
     thesis_in = Path(p["thesis_dir"]) / "input"
@@ -394,6 +401,282 @@ def make_case(name: str, out_dir: Path, *, cases_file: Path | None = None,
             write_bin(out_dir / k, np.broadcast_to(col[:, None, None], (nz, ny, nx)))
     if tau is not None:
         write_bin(out_dir / "tauy.bin", tau)
+    for fname, text in rendered.items():
+        (out_dir / fname).write_text(text)
+    (out_dir / "case.json").write_text(json.dumps(meta, indent=2, default=float))
+    return json.loads(json.dumps(meta, default=float))
+
+
+# ==== Van Mijenfjorden (fjord_vmf, Task 4) =====================================================
+#
+# make_fjord_case writes, for the cases of the fjord_vmf* configs (cases.yaml):
+#
+#   bathy.bin   (ny, nx)          Task 1b bathymetry, gendata.bathy.build at dx_m (fjord_vmf_100:
+#                                 the 200 m grid split 2 x 2; fjord_vmf_100s: a sub-box of it;
+#                                 timing only, bathy_source)
+#   T.init.bin  (nz, ny, nx)      horizontally uniform summer / winter representative profile
+#   S.init.bin                    (figures/profiles_vmf.json, Task 2, on the delR cell centres)
+#   taux.bin    (nrec, ny, nx)    uniform pulse (gendata.forcing) towards wind_angle_deg,
+#   tauy.bin                      records at (n - 1/2) * 1200 s, nrec = forced/1200 s + 1
+#   HEFF.bin    (ny, nx)          ice cases: h and A inside the profile polygon (gendata.ice)
+#   AREA.bin
+#   OB?_?TideSn.bin               V3: sine coefficient of the inward M2 normal velocity per OB
+#
+# Namelists: the templates of config/fjord_vmf/input_templates rendered with the config values
+# (string.Template.substitute), then the case's edit sets (namelist_sets) applied in order.
+# data.free (free stage) = data with the wind forcing removed and nIter0/nTimeSteps of stage 2.
+# data.kpp / data.ggl90 / data.seaice are kept only if data.pkg uses the package.
+
+TIDE_FILES = ("OBW_uTideSn.bin", "OBN_vTideSn.bin", "OBS_vTideSn.bin")
+FJORD_BINS = ("bathy.bin", "T.init.bin", "S.init.bin", "taux.bin", "tauy.bin", "HEFF.bin",
+              "AREA.bin") + TIDE_FILES
+DATA_EXTERNAL = PKG / "data_external"
+WIND_KEYS = {"PARM03": ("periodicExternalForcing", "externForcingPeriod", "externForcingCycle"),
+             "PARM05": ("zonalWindFile", "meridWindFile")}
+_GRID_CACHE: dict = {}
+
+
+def _true(v) -> bool:
+    return str(v).strip().upper() in (".TRUE.", "T", ".T.", "TRUE")
+
+
+def fjord_grid(p: dict, data_dir: Path = DATA_EXTERNAL) -> dict:
+    """xc, yc (m), depth (m, > 0 at sea), wet of the case grid (cached per bathymetry config)."""
+    keys = ("bbox_utm", "dx_m", "ob_sides", "n_sponge", "hFacMin", "hFacMinDr", "min_depth_m",
+            "max_step_cells", "delR", "bathy", "bathy_source", "parent_bbox_utm")
+    key = json.dumps({k: p.get(k) for k in keys}, sort_keys=True, default=str)
+    if key in _GRID_CACHE:
+        return _GRID_CACHE[key]
+    if p.get("bathy_source") == "subbox_of_refine_200m":
+        parent = {k: copy.deepcopy(p[k]) for k in keys if k in p}
+        parent.update(bbox_utm=list(p["parent_bbox_utm"]), bathy_source="refine_200m",
+                      ob_sides=["W", "N", "S"])
+        gp = fjord_grid(parent, data_dir)
+        px0, _, py0, _ = p["parent_bbox_utm"]
+        x0, x1, y0, y1 = p["bbox_utm"]
+        d = float(p["dx_m"])
+        i0, i1 = round((x0 - px0) / d), round((x1 - px0) / d)
+        j0, j1 = round((y0 - py0) / d), round((y1 - py0) / d)
+        depth = gp["depth"][j0:j1, i0:i1].copy()
+        xc, yc = bth.model_axes(p["bbox_utm"], d)
+        g = {"xc": xc, "yc": yc, "depth": depth, "wet": depth > 0, "source": "subbox_of_refine_200m"}
+    elif p.get("bathy_source") == "refine_200m":
+        base = {k: copy.deepcopy(p[k]) for k in keys if k in p and k not in ("bathy_source", "parent_bbox_utm")}
+        base["dx_m"] = 2 * float(p["dx_m"])
+        g2 = fjord_grid(base, data_dir)
+        depth = np.kron(g2["depth"], np.ones((2, 2)))
+        xc, yc = bth.model_axes(p["bbox_utm"], float(p["dx_m"]))
+        g = {"xc": xc, "yc": yc, "depth": depth, "wet": depth > 0, "source": "refine_200m"}
+    else:
+        _, gb = bth.build(p, data_dir)
+        g = {"xc": gb["xc"], "yc": gb["yc"], "depth": gb["depth"], "wet": gb["wet"],
+             "source": "gendata.bathy.build"}
+    _GRID_CACHE[key] = g
+    return g
+
+
+def season_profile(profile: str, profiles_json: Path = PROFILES_JSON):
+    """(T, S) columns of 'vmf_summer' / 'vmf_winter' on the fjord delR cell centres."""
+    season = {"vmf_summer": "summer", "vmf_winter": "winter"}.get(profile)
+    if season is None:
+        raise ValueError(f"unknown fjord profile {profile!r}")
+    pj = json.loads(Path(profiles_json).read_text())
+    return np.array(pj[season]["T"], float), np.array(pj[season]["S"], float), pj["delR"]
+
+
+def tide_v3(depth, wet, delR, dx: float, ob_sides, period_s: float, eta0_m: float,
+            hfac_min: float, hfac_min_dr: float) -> dict:
+    """Uniform inward barotropic M2 normal velocity U0 on the open boundaries, from the volume
+    balance of a basin whose surface rises eta0 sin(omega t) everywhere:
+    U0 * A_OB = omega * eta0 * A_wet  (A_OB: wet face area of the OB cells with partial cells,
+    model/src/ini_masks_etc.F:105-121 via gendata.bathy.partial_cells; A_wet: wet surface area).
+    The OB velocity is u_OB = U0 sin(omega t) (sine coefficient of pkg/obcs/obcs_add_tides.F;
+    starts at 0). Sign: inward is +u at W, +v at S, -v at N."""
+    faces = vgrid.faces(delR)
+    col = bth.partial_cells(depth, faces, hfac_min, hfac_min_dr)       # (ny, nx) water column (m)
+    col = np.where(wet, col, 0.0)
+    a_ob = 0.0
+    if "W" in ob_sides:
+        a_ob += col[:, 0].sum() * dx
+    if "N" in ob_sides:
+        a_ob += col[-1, :].sum() * dx
+    if "S" in ob_sides:
+        a_ob += col[0, :].sum() * dx
+    a_wet = float(np.asarray(wet).sum() * dx * dx)
+    omega = 2 * np.pi / float(period_s)
+    u0 = omega * float(eta0_m) * a_wet / a_ob
+    w = np.asarray(wet)
+    files = {"OBW_uTideSn.bin": np.where(w[:, 0], u0, 0.0),
+             "OBN_vTideSn.bin": np.where(w[-1, :], -u0, 0.0),
+             "OBS_vTideSn.bin": np.where(w[0, :], u0, 0.0)}
+    return {"U0_m_s-1": float(u0), "ob_face_area_m2": float(a_ob), "wet_area_m2": a_wet,
+            "eta0_m": float(eta0_m), "period_s": float(period_s), "files": files}
+
+
+def _fmt_list(v, per_line: int = 8) -> str:
+    items = [f"{x:g}" for x in v]
+    return ",\n   ".join(", ".join(items[i:i + per_line]) for i in range(0, len(items), per_line))
+
+
+def _apply_sets(rendered: dict, sets) -> dict:
+    for _, es in sets:
+        for fname, groups in es.items():
+            if fname not in rendered:
+                raise KeyError(f"edit set names {fname}, which is not a template")
+            for g, kv in groups.items():
+                for k, v in kv.items():
+                    rendered[fname] = set_nml_key(rendered[fname], g, k, v)
+    return rendered
+
+
+def free_stage_data(data_text: str, n_iter0: int, n_steps: int) -> str:
+    """data of the free stage: the forced data without the wind forcing (WIND_KEYS)."""
+    t = data_text
+    for g, ks in WIND_KEYS.items():
+        for k in ks:
+            t = set_nml_key(t, g, k, None)
+    t = set_nml_key(t, "PARM03", "nIter0", str(int(n_iter0)))
+    t = set_nml_key(t, "PARM03", "nTimeSteps", str(int(n_steps)))
+    return t.replace("stage 1 (forced)", "free stage (data.free: data without the wind forcing)", 1)
+
+
+def make_fjord_case(name: str, out_dir: Path, *, spec: dict, p: dict, template_dir=None,
+                    write_bins=True) -> dict:
+    """Write the inputs of fjord case ``name`` (see the block comment above)."""
+    cfg = spec["cases"][name]["config"]
+    sets = edit_sets(spec, p)
+    names = [e for e, _ in sets]
+    nx, ny, nz, dx = int(p["nx"]), int(p["ny"]), int(p["nz"]), float(p["dx_m"])
+    x0, x1, y0, y1 = p["bbox_utm"]
+    if round((x1 - x0) / dx) != nx or round((y1 - y0) / dx) != ny or len(p["delR"]) != nz:
+        raise ValueError(f"{cfg}: nx, ny, nz do not match bbox_utm / dx_m / delR")
+    want = set(FJORD_BINS) if write_bins is True else set(write_bins or ())
+    out_dir = Path(out_dir)
+
+    # ---- inputs
+    g = fjord_grid(p)
+    T, S, delR_prof = season_profile(p["profile"])
+    if not np.allclose(delR_prof, p["delR"]):
+        raise ValueError("profiles_vmf.json delR differs from the config delR")
+    plan = stage_plan(p)
+    n1 = plan[0][1]
+    n_free = plan[1][1] if len(plan) > 1 else 0
+    dt = float(p["deltaT"])
+    w = p["wind"]
+    period = float(w["record_period_s"])
+    if abs(period / dt - round(period / dt)) > 1e-9:
+        raise ValueError(f"deltaT = {dt} s does not divide the record period {period} s")
+    angle = p.get("wind_angle_deg")
+    use_wind = "no_wind" not in names
+    if use_wind and angle is None:
+        raise ValueError(f"case {name}: wind on but wind_angle_deg is null")
+    nrec = forcing.cycle_records(p["forced_h"], period)
+    bins: dict = {}
+    wind_info = None
+    if use_wind:
+        tr = forcing.record_times(nrec, period)
+        if want & {"taux.bin", "tauy.bin"}:
+            tx, ty = forcing.uniform_stress(tr, angle, (ny, nx), tau_max=w["tau_max"],
+                                            sigma_h=w["sigma_h"], center_h=w["center_h"])
+            bins["taux.bin"], bins["tauy.bin"] = tx, ty
+        mag = forcing.pulse(tr, tau_max=w["tau_max"], sigma_h=w["sigma_h"], center_h=w["center_h"])
+        c, s_ = forcing._cos_sin(angle)
+        wind_info = {**w, "angle_deg": float(angle), "unit_vector_xy": [c, s_], "n_records": nrec,
+                     "record_times_s": [float(tr[0]), float(tr[-1])],
+                     "max_tau_N_m-2": float(mag.max()),
+                     "peak_record_time_s": float(tr[int(np.argmax(mag))]),
+                     "cycle_s": nrec * period}
+    ice_info = None
+    if p.get("ice_mode"):
+        poly = p["ice"]["polygon"]
+        if isinstance(poly, str):
+            poly = p[poly]["polygon_utm"]
+        m = icemod.mask(g["xc"], g["yc"], g["wet"], poly)
+        bins.update(icemod.fields(m, h=p["ice"]["h_m"], A=p["ice"]["A"]))
+        ice_info = {"mode": p["ice_mode"], "cells": int(m.sum()), "area_km2": float(m.sum() * dx * dx / 1e6),
+                    "h_m": float(p["ice"]["h_m"]), "A": float(p["ice"]["A"]),
+                    "polygon": "configs.fjord_vmf.profiles.polygon_utm"}
+    tide_info = None
+    if "tide_m2" in names:
+        td = tide_v3(g["depth"], g["wet"], p["delR"], dx, p["ob_sides"], p["tide"]["period_s"],
+                     p["tide"]["eta0_m"], p["hFacMin"], p["hFacMinDr"])
+        bins.update(td.pop("files"))
+        tide_info = td
+
+    # ---- namelists
+    eos = spec["configs"]["fjord_vmf"]["eos"]
+    zc = 0.5 * (vgrid.faces(p["delR"])[1:] + vgrid.faces(p["delR"])[:-1])
+    lev = [int(k) for k in p["wlev_levels"]]
+    subs = {"nIter0": 0, "n_stage1_steps": n1, "deltaT": f"{dt:g}",
+            "staggerTimeStep": ".TRUE." if int(p.get("stagger_time_step", 0)) else ".FALSE.",
+            "pChkptFreq": f"{float(p['forced_h']) * 3600:g}",
+            "tAlpha": f"{eos['tAlpha']}", "sBeta": f"{eos['sBeta']}", "rhoNil": f"{eos['rhoNil']}",
+            "tRef": f"{nz}*{eos['tRef']}", "sRef": f"{nz}*{eos['sRef']}", "f0": f"{p['f0']}",
+            "hFacMin": f"{p['hFacMin']}", "hFacMinDr": f"{p['hFacMinDr']}",
+            "forcing_period": f"{period:g}", "forcing_cycle": f"{nrec * period:g}",
+            "delX": f"{nx}*{dx:.1f}", "delY": f"{ny}*{dx:.1f}", "xgOrigin": f"{float(x0):.1f}",
+            "ygOrigin": f"{float(y0):.1f}", "delR": _fmt_list(p["delR"]),
+            "nx": nx, "ny": ny, "n_sponge": int(p["n_sponge"]),
+            "relax_bound": f"{max(60.0, 2 * dt):g}",
+            "wlev_levels": ", ".join(f"{k}." for k in lev),
+            "wlev_depths": ", ".join(f"{zc[k - 1]:.1f}" for k in lev)}
+    if template_dir is None:
+        template_dir = PKG / "config" / p.get("template_config", "fjord_vmf") / "input_templates"
+    tfiles = [f for f in sorted(Path(template_dir).iterdir()) if f.is_file() and not f.name.startswith(".")]
+    rendered = {f.name: Template(f.read_text()).substitute(subs) for f in tfiles}
+    rendered = _apply_sets(rendered, sets)
+    if n_free:
+        rendered["data.free"] = free_stage_data(rendered["data"], n1, n_free)
+    pk = parse_namelist(rendered["data.pkg"]).get("PACKAGES", {})
+    use = {k: _true(pk.get(f"use{k}", ".FALSE.")) for k in ("kpp", "ggl90", "seaice")}
+    for k, f in (("kpp", "data.kpp"), ("ggl90", "data.ggl90"), ("seaice", "data.seaice")):
+        if not use[k]:
+            rendered.pop(f, None)
+    if use["seaice"] != bool(ice_info):
+        raise RuntimeError(f"case {name}: useSEAICE = {use['seaice']} but ice_mode = {p.get('ice_mode')}")
+    if use["kpp"] and use["ggl90"]:
+        raise RuntimeError(f"case {name}: both KPP and GGL90 on")
+    written = {"bathy.bin", "T.init.bin", "S.init.bin"} | set(bins) | ({"taux.bin", "tauy.bin"} if use_wind else set())
+    missing = []
+    for fname, text in rendered.items():
+        for line in text.splitlines():
+            if _live(line):
+                missing += [f"{fname}: {r}" for r in re.findall(r"'([^']+\.bin)'", line) if r not in written]
+    if missing:
+        raise RuntimeError("namelists name files that are not inputs: " + "; ".join(missing))
+    par1 = parse_namelist(rendered["data"])["PARM01"]
+
+    # ---- actual parameters
+    src_files = {"profiles_vmf.json": PROFILES_JSON, "cases.yaml": CASES_FILE}
+    if g["source"] in ("gendata.bathy.build", "refine_200m", "subbox_of_refine_200m"):
+        b = p["bathy"]
+        src_files.update({k: DATA_EXTERNAL / b["ibcao_dir"] / v for k, v in bth.IBCAO_FILES.items()})
+        src_files["coastline"] = DATA_EXTERNAL / b["coastline"]
+    closure = "KPP" if use["kpp"] else ("GGL90" if use["ggl90"] else "constant (thesis)")
+    actual = {
+        "f0_s-1": float(par1["f0"]), "beta_m-1s-1": float(par1["beta"]),
+        "profile": p["profile"], "T_column": [float(x) for x in T], "S_column": [float(x) for x in S],
+        "eos": {k: par1[k.lower()] for k in ("eosType", "tAlpha", "sBeta", "rhoNil", "rhoConst", "tRef", "sRef")},
+        "closure": closure, "packages": use, "surface": p["surface"],
+        "wind": wind_info, "ice": ice_info, "tide": tide_info,
+        "stages": plan, "edits": names, "deltaT_s": dt,
+        "grid": {"nx": nx, "ny": ny, "nz": nz, "dx_m": dx, "bbox_utm": list(p["bbox_utm"]),
+                 "wet_cells": int(g["wet"].sum()), "max_depth_m": float(g["depth"].max()),
+                 "bathy_source": g["source"]},
+        "sources": {k: {"path": str(v), "sha256": _sha256(v)} for k, v in src_files.items()},
+    }
+    meta = {"params": p, "actual": actual, "config": cfg, **_git_state()}
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if "bathy.bin" in want:
+        bth.write_bathy(out_dir / "bathy.bin", g["depth"], g["wet"])
+        actual["bathy_sha256"] = _sha256(out_dir / "bathy.bin")
+    for k, col in (("T.init.bin", T), ("S.init.bin", S)):
+        if k in want:
+            write_bin(out_dir / k, np.broadcast_to(col[:, None, None], (nz, ny, nx)))
+    for k, arr in bins.items():
+        if k in want:
+            write_bin(out_dir / k, arr)
     for fname, text in rendered.items():
         (out_dir / fname).write_text(text)
     (out_dir / "case.json").write_text(json.dumps(meta, indent=2, default=float))
