@@ -420,14 +420,16 @@ def make_case(name: str, out_dir: Path, *, cases_file: Path | None = None,
 #   tauy.bin                      records at (n - 1/2) * 1200 s, nrec = forced/1200 s + 1
 #   HEFF.bin    (ny, nx)          ice cases: h and A inside the profile polygon (gendata.ice)
 #   AREA.bin
-#   OB?_?TideSn.bin               V3: sine coefficient of the inward M2 normal velocity per OB
+#   OB?_?TidAm.bin, OB?_?TidPh.bin  V3: amplitude (m/s) and phase lag (s) of the inward M2 normal
+#                                 velocity per OB point (pkg/obcs/OBCS_PARAMS.h:162)
 #
 # Namelists: the templates of config/fjord_vmf/input_templates rendered with the config values
 # (string.Template.substitute), then the case's edit sets (namelist_sets) applied in order.
 # data.free (free stage) = data with the wind forcing removed and nIter0/nTimeSteps of stage 2.
 # data.kpp / data.ggl90 / data.seaice are kept only if data.pkg uses the package.
 
-TIDE_FILES = ("OBW_uTideSn.bin", "OBN_vTideSn.bin", "OBS_vTideSn.bin")
+TIDE_FILES = ("OBW_uTidAm.bin", "OBW_uTidPh.bin", "OBN_vTidAm.bin", "OBN_vTidPh.bin",
+              "OBS_vTidAm.bin", "OBS_vTidPh.bin")
 FJORD_BINS = ("bathy.bin", "T.init.bin", "S.init.bin", "taux.bin", "tauy.bin", "HEFF.bin",
               "AREA.bin") + TIDE_FILES
 DATA_EXTERNAL = PKG / "data_external"
@@ -490,8 +492,12 @@ def tide_v3(depth, wet, delR, dx: float, ob_sides, period_s: float, eta0_m: floa
     balance of a basin whose surface rises eta0 sin(omega t) everywhere:
     U0 * A_OB = omega * eta0 * A_wet  (A_OB: wet face area of the OB cells with partial cells,
     model/src/ini_masks_etc.F:105-121 via gendata.bathy.partial_cells; A_wet: wet surface area).
-    The OB velocity is u_OB = U0 sin(omega t) (sine coefficient of pkg/obcs/obcs_add_tides.F;
-    starts at 0). Sign: inward is +u at W, +v at S, -v at N."""
+    The OB velocity is u_OB = U0 sin(omega t), starting at 0. pkg/obcs reads an amplitude Am
+    (m/s) and a phase lag Ph (s) (pkg/obcs/OBCS_PARAMS.h:162), forms Cs = Am cos(omega Ph) and
+    Sn = Am sin(omega Ph) (pkg/obcs/obcs_init_fixed.F:536-575) and adds Cs cos(omega t) +
+    Sn sin(omega t) (pkg/obcs/obcs_add_tides.F), so Am = +-U0 and Ph = T/4. Sign: inward is +u
+    at W, +v at S, -v at N. (Task 4 fix round 1: the first version wrote U0 into the phase
+    file and no amplitude file, so the tide was zero.)"""
     faces = vgrid.faces(delR)
     col = bth.partial_cells(depth, faces, hfac_min, hfac_min_dr)       # (ny, nx) water column (m)
     col = np.where(wet, col, 0.0)
@@ -506,9 +512,10 @@ def tide_v3(depth, wet, delR, dx: float, ob_sides, period_s: float, eta0_m: floa
     omega = 2 * np.pi / float(period_s)
     u0 = omega * float(eta0_m) * a_wet / a_ob
     w = np.asarray(wet)
-    files = {"OBW_uTideSn.bin": np.where(w[:, 0], u0, 0.0),
-             "OBN_vTideSn.bin": np.where(w[-1, :], -u0, 0.0),
-             "OBS_vTideSn.bin": np.where(w[0, :], u0, 0.0)}
+    q = float(period_s) / 4.0
+    files = {"OBW_uTidAm.bin": np.where(w[:, 0], u0, 0.0), "OBW_uTidPh.bin": np.where(w[:, 0], q, 0.0),
+             "OBN_vTidAm.bin": np.where(w[-1, :], -u0, 0.0), "OBN_vTidPh.bin": np.where(w[-1, :], q, 0.0),
+             "OBS_vTidAm.bin": np.where(w[0, :], u0, 0.0), "OBS_vTidPh.bin": np.where(w[0, :], q, 0.0)}
     return {"U0_m_s-1": float(u0), "ob_face_area_m2": float(a_ob), "wet_area_m2": a_wet,
             "eta0_m": float(eta0_m), "period_s": float(period_s), "files": files}
 
