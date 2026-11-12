@@ -27,6 +27,10 @@ config's SIZE.h (4 for the thesis tiles). The campaign refuses to start while an
 or model process runs (matched by process name), and fails if one is left behind. SIZE.h
 (Nx, Ny, Nr) is checked against every case, and the run disk must have room for the inputs.
 
+``--dry-run`` prints the selected case names on stdout and, on stderr, the plan
+(``plan_campaign``): run directory, stages and action of each case, and whether a build would be
+triggered. It writes nothing.
+
 ``--skip-ok`` does not rerun a case whose run directory is already OK with the same deltaT,
 forced_h, t_end_h and edits (otherwise it refuses to start); the build is skipped when up to
 date. ``--set KEY=VALUE`` overrides a numeric case parameter; ``--end-time S`` sets t_end_h =
@@ -53,7 +57,7 @@ if str(REPO) not in sys.path:
 
 from pfcommon import campaign as cp  # noqa: E402
 from pfcommon.paths import EXP4_BUILDS, EXP4_RUNS  # noqa: E402
-from exp4_arctic_bayiw.gendata.make_case import load_cases, make_case  # noqa: E402
+from exp4_arctic_bayiw.gendata.make_case import case_params, load_cases, make_case, stage_plan  # noqa: E402
 
 BUILD_SH = REPO / "scripts" / "build_mitgcm.sh"
 RUN_SH = REPO / "scripts" / "run_mitgcm.sh"
@@ -84,6 +88,46 @@ def _requested(spec: dict, name: str, overrides: dict | None) -> dict:
     case = spec["cases"][name]
     p = {**spec["configs"][case["config"]], **case, **(overrides or {})}
     return {k: p.get(k) for k in SKIP_KEYS}
+
+
+def plan_campaign(config: str, pattern: str, np_: int, *, overrides: dict | None = None,
+                  run_suffix: str = "", runs_root: Path = EXP4_RUNS, build_root: Path = EXP4_BUILDS,
+                  config_root: Path | None = None, cases_file: Path | None = None,
+                  skip_ok: bool = False) -> dict:
+    """What run_campaign would do, without writing, building or running anything (--dry-run):
+    per case the run directory, t_end_h, forced_h, deltaT, the stage plan and the action
+    ('run', 'skip (already OK)' with --skip-ok, or 'refuse: ...' when an OK run has other
+    parameters); and the build action, with the same rule as run_campaign: the build is skipped
+    only with --skip-ok and an executable newer than every file in config/<cfg>/code built
+    with/without MPI as asked (cp.build_up_to_date); with nothing to run there is no build."""
+    spec = load_cases(cases_file)
+    names = cp.select_cases(spec["cases"], config, pattern)
+    overrides = cp.check_overrides(names, overrides, spec)
+    cfg_dir = Path(config_root or PKG / "config") / config
+    build_dir = Path(build_root) / config
+    cases = []
+    for n in names:
+        rd = Path(runs_root) / f"{n}{run_suffix}"
+        p = case_params(spec, n, overrides)
+        action = "run"
+        if skip_ok and cp.finished_ok(rd):
+            want = _requested(spec, n, overrides)
+            have = json.loads((rd / "input" / "case.json").read_text())["params"]
+            bad = [f"{k}: run has {have.get(k)}, requested {want[k]}" for k in SKIP_KEYS
+                   if have.get(k) != want[k]]
+            action = ("refuse: " + "; ".join(bad)) if bad else "skip (already OK)"
+        cases.append({"case": n, "run_dir": str(rd), "t_end_h": p.get("t_end_h"),
+                      "forced_h": p.get("forced_h"), "deltaT": p.get("deltaT"),
+                      "stages": stage_plan(p), "action": action})
+    up = cp.build_up_to_date(cfg_dir, build_dir, np_ > 1)
+    if not any(c["action"] == "run" for c in cases):
+        b = "none (nothing to run)"
+    elif skip_ok and up:
+        b = "none (up to date)"
+    else:
+        b = "build"
+    return {"config": config, "np": np_, "cases": cases,
+            "build": {"dir": str(build_dir), "up_to_date": up, "action": b}}
 
 
 def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1,
@@ -174,12 +218,22 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--skip-ok", action="store_true",
                     help="do not rerun cases already OK (same deltaT/forced_h/t_end_h/edits)")
     a = ap.parse_args(argv)
-    if a.dry_run:
-        print("\n".join(cp.select_cases(load_cases()["cases"], a.config, a.cases)))
-        return 0
     ov = cp.parse_sets(a.set)
     if a.end_time is not None:
         ov["t_end_h"] = a.end_time / 3600.0
+    if a.dry_run:
+        # case names on stdout (as before); the plan on stderr
+        print("\n".join(cp.select_cases(load_cases()["cases"], a.config, a.cases)))
+        pl = plan_campaign(a.config, a.cases, a.np_, overrides=ov or None, run_suffix=a.run_suffix,
+                           runs_root=a.runs_root, build_root=a.build_root, skip_ok=a.skip_ok)
+        for c in pl["cases"]:
+            print(f"[dry-run] {c['case']}: {c['run_dir']} t_end_h {c['t_end_h']} forced_h "
+                  f"{c['forced_h']} deltaT {c['deltaT']} stages {c['stages']} -> {c['action']}",
+                  file=sys.stderr)
+        b = pl["build"]
+        print(f"[dry-run] build: {b['dir']} up_to_date={b['up_to_date']} -> {b['action']}",
+              file=sys.stderr)
+        return 0
     res = run_campaign(a.config, a.cases, a.np_, max_concurrent=a.max_concurrent,
                        runs_root=a.runs_root, build_root=a.build_root,
                        overrides=ov or None, run_suffix=a.run_suffix, skip_ok=a.skip_ok)

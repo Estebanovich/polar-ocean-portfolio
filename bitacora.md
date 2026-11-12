@@ -632,3 +632,22 @@ Verificación:
     - una caja que toca el borde del dominio da error;
     - el forzamiento periódico usa el ciclo del namelist.
   - Los JSON del contraste no cambian.
+
+## 2026-11-12 (tarde, 14) — Exp. 4, Task 6 parte A: validación V2–V4 (código), comprobación del hielo y pendientes
+
+La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue corriendo; en esta parte no se lanzó ninguna corrida.
+- **`analysis/validate.py`:**
+  - `THRESHOLDS` transcritos del PD0 (V1–V4, H4a–H4d, factor 1.5). Una prueba los lee del texto de `pd0_preregistro.md` y falla si alguno difiere; otra exige que cada enmienda diga que no cambia umbrales.
+  - Evaluadores de V2a (pico en la plataforma a ≤ 1Δf de f), V2b (frente de Kelvin en ≥ 3 estaciones, [0.28, 0.62] m s⁻¹ de `theory.json`), V3 (decaimiento 1–8 km, sentido ciclónico, 0.21–0.84 m s⁻¹) y V4 (V4a ≤ 25 %, V4b ≤ 0.10), probados en salidas sintéticas por los dos lados de cada umbral.
+  - Para V4 el flujo es el de Kang y Fringer (trabajo de presión baroclínico en las caras de los estrechos, como H4 tras las Enmiendas 1–2), leído solo cerca de los estrechos. El reparto por bandas es el coespectro exacto (Parseval): la suma de las bandas es la media.
+  - Lo que el PD0 no fija (nivel de la picnoclina, estaciones, regla de llegada del frente, ajuste armónico M2) se fijó aquí **antes de analizar cualquier salida**, y queda etiquetado como método, no PD0. Las estaciones se comprobaron sobre la malla real de F1 (solo malla y estado inicial): picnoclina a −6.8 m; plataforma en (j, i) = (114, 62), 153 m; 12 estaciones costeras sur cada 5 km (32–41 m, 200–600 m de la costa).
+  - S&F14 no está en las bibliotecas locales; se cita con [verificar] (ya está en `readinglist.md`).
+  - CLI `validate.py evaluate --f1 --v3 --v4` (require_ok en cada corrida) → `figures/validation.json`. Figura 1 en `analysis/fig1_validation.py`, probada solo con datos sintéticos.
+- **Comprobación obligatoria del hielo (`pd1_seaice.md` §8):** `analysis/ice_check.py` y `validate.py ice-check RUN` (código 1 si falla). Lee **todas las etapas**; la versión de la Task 4 solo leía la etapa forzada. Guarda el resultado con el sha256 del estado final en `figures/ice_ob_check.json`, y `load.run` rechaza toda corrida con hielo sin comprobación vigente que pase.
+- **Pendientes:**
+  - `restart_test.run()` acepta el ejecutor inyectado; una prueba lo corre de punta a punta con un ejecutor falso (reinicio idéntico y perturbado).
+  - El error del arrastre en el borde del hielo de F4 pasa de "~0.5" a 0.5–0.7 del máximo (0.51–0.67 medido).
+  - `notes/pd1_config.md`: el binario de la campaña es el de afc3526 (sha256 25bdc7f3…).
+  - `run_campaign.py --dry-run` informa ahora del plan (en stderr). F1g, F5 y F4 no recompilan; **V4 sí recompila `fjord_vmf_400`** (ejecutable anterior a las copias modificadas). Va como aviso.
+  - Receta del smoke de R2/R3 (2 h, sufijo `_smoke2h`), comprobada solo con `--dry-run`.
+- **Error encontrado y corregido:** `campaign.finished_ok` daba por terminada una corrida de dos etapas con la etapa 1 OK y la 2 corriendo (V3), así que `--skip-ok` la habría saltado. Ahora, sin `run_status_final.json`, un directorio con etapas no cuenta como terminado.

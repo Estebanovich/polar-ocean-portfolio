@@ -17,6 +17,9 @@ Fecha: 2026-11-12. Material para el PD1. Esteban aprueba aquí la configuración
    - F4 usa el mismo polígono que F2 (ruling R15).
    - Verificación en `pd1_seaice.md` §8: F2 y F4 arrancan con Orlanski; el esfuerzo bajo A = 1 coincide con ρ₀ C_w|Δu|Δu con el piso `SEAICEdWatMin` (F2 exacto; F4 ≤ 2.7 % del máximo de |τ| en el interior del hielo); el reinicio es idéntico bit a bit.
    - Comprobación obligatoria tras F2 y F4 (Task 6): el hielo a ≥ 10 celdas de toda frontera abierta durante las 280 h (`pd1_seaice.md` §8).
+   - **Binario de la campaña (Task 6).** El ejecutable `fjord_vmf` con que corren F1–F5, F1c, F1g y V3 se compiló el 2026-11-12 a las 07:15, al arrancar F1, con el código del commit **afc3526** (las cabeceras de las copias modificadas cambiaron en ese commit; `config/fjord_vmf/code` no cambió después: `git diff afc3526 HEAD` vacío). sha256 `25bdc7f3e89e674f1653696f2792bc2057cf5703b541fb44b1c47066b10fed91`, el mismo que registra `binary_sha256` en el `case.json` de F1, F2, F3, F1c y V3. No se recompila durante la campaña.
+     - `run_campaign.py --dry-run` (que ahora informa del plan; Task 6) confirma que **F1g, F5 y F4 no recompilan** (build al día con `--skip-ok`).
+     - **V4 sí recompila** `fjord_vmf_400`: ese ejecutable es de las 01:48, anterior a las copias modificadas de 8ba509d/afc3526 (`OBCS_OPTIONS.h`, `SEAICE_OPTIONS.h`, `obcs_add_tides.F`, `obcs_check.F`, `seaice_dynsolver.F`). La recompilación va a otro directorio (no toca el binario de `fjord_vmf`) y deja V4 con el mismo código que F1, que es lo que pide V4; queda registrada como aviso para el controlador.
 3. **T_fin = 280 h** en todas las corridas, sin recortes.
    - El presupuesto de cómputo sube a **~31–32 h en total**: Task 3 6.6 h, cronometraje y verificación de esta Task ~1.5 h, y campaña con Δt 120 s ≈ 23.0 h (9 corridas del fiordo 12.4 h + R2/R3 10.6 h; §3).
    - El límite de 8 h por corrida se cumple: la más larga del fiordo es F1g, ≈ 1.8 h.
