@@ -2,6 +2,8 @@
 
 Fecha: 2026-11-12. Fuente: `/Volumes/ESTEBAN_MIT/MITgcm` (solo lectura; commit 8e1c407, 2026-01-12). Todas las citas son `archivo:línea` de ese árbol. Configuración que se lee: `config/fjord_vmf/code` (C-grid, `SEAICE_CGRID` definido y `SEAICE_BGRID_DYNAMICS` sin definir en `SEAICE_OPTIONS.h:90-95`; `SEAICE_ALLOW_FREEDRIFT` definido para F4), sin `pkg/exf` y sin termodinámica.
 
+**Decisión del PD1 (Esteban, 2026-11-12):** se aplican la opción 2 de §6 (`DWATN` sin reología) y la opción 1 de §7 (`obcs_check.F` relajado con `DISABLE_SEAICE_OBCS`). F4 usa el mismo polígono que F2 (ruling R15). La implementación y su verificación están en §8. Las secciones 1–7 describen MITgcm sin modificar y siguen valiendo como diagnóstico de por qué hizo falta el cambio.
+
 **Resumen para el PD1.** Los dos modos de hielo del spec (§3.5) **no hacen lo que el spec dice** en el esfuerzo que recibe el océano:
 
 | Modo (spec §3.5) | Lo que el spec espera | Lo que hace MITgcm (lectura del código) | Comprobación empírica |
@@ -99,13 +101,13 @@ Se mide `oceTAUX`, el esfuerzo que recibe el océano después de `pkg/seaice` (`
 - Con A = 1, el océano recibe esfuerzo cero en los dos modos, aunque bajo el hielo fijo hay corrientes superficiales de hasta 2.0 cm s⁻¹ (percentil 99: 0.12 cm s⁻¹). Con arrastre, ρ₀ C_w \|u\|² sería ≤ 2×10⁻³ N m⁻², y con el piso lineal `SEAICEdWatMin`, hasta ~5×10⁻³ N m⁻².
 - En F4 el hielo recibe el viento y se mueve a 0.2 m s⁻¹, pero no transmite nada al océano donde A = 1. Donde el hielo diverge (A < 1), el océano recibe (1 − A) veces el viento.
 
-## 6. Opciones para el PD1 (no elegidas; punto PD1-S1; ver también §7)
+## 6. Opciones para el PD1 (punto PD1-S1; elegida la 2, §8; ver también §7)
 
 1. **Aceptar el comportamiento de MITgcm y declararlo.**
    - F2: viento nulo y superficie sin fricción bajo el hielo, en lugar de una superficie con arrastre. El efecto sobre H4b va en contra de la hipótesis: sin arrastre, el hielo amortigua menos la energía interna del fiordo interior.
    - F4: el momento del viento se pierde en el hielo. F4 no tendría sentido físico y se recortaría (de todos modos es el primero del recorte).
    - Clasificación: (b) física ausente del modo elegido.
-2. **Calcular `DWATN` también sin reología** con una copia modificada de `seaice_dynsolver.F` en `config/fjord_vmf/code/`. La fuente de MITgcm no se toca; `-mods` la sustituye.
+2. **[ELEGIDA, §8]** **Calcular `DWATN` también sin reología** con una copia modificada de `seaice_dynsolver.F` en `config/fjord_vmf/code/`. La fuente de MITgcm no se toca; `-mods` la sustituye.
    - Añadir, fuera del bloque `IF (SEAICEuseDYNAMICS ...)`, la llamada `SEAICE_OCEANDRAG_COEFFS(uIce, vIce, HEFFM, DWATN, ...)` antes de `SEAICE_OCEAN_STRESS`.
    - Con hielo fijo: τ = ρ₀ C_w |u_1| u_1 hacia el reposo, con el piso lineal `SEAICEdWatMin` (0.25 kg m⁻² s⁻¹, equivalente a |Δu| = 4.4 cm s⁻¹ con C_w = 5.5×10⁻³).
    - Con deriva libre: el arrastre consistente con el hielo que se mueve.
@@ -130,7 +132,7 @@ Se mide `oceTAUX`, el esfuerzo que recibe el océano después de `pkg/seaice` (`
 - **F4:** la opción 2 también lo resuelve, con el arrastre coherente con el hielo que se mueve. Si se prefiere no tocar código, la opción 4 (HB87) es aceptable para F4, declarando el término de Coriolis que falta y la falta de inercia.
 - En cualquier caso hace falta resolver antes PD1-S2 (§7).
 
-## 7. `pkg/seaice` con `pkg/obcs` de Orlanski: F2 y F4 no arrancan (punto PD1-S2)
+## 7. `pkg/seaice` con `pkg/obcs` de Orlanski: F2 y F4 no arrancan (punto PD1-S2; elegida la 1, §8)
 
 - **Qué pasó.** La corrida corta de F2 (`F2_smoke3h`, Δt 60 s, escalonado) y la de F4 terminan en la inicialización con `STOP ABNORMAL END: S/R OBCS_CHECK`. `STDERR.0000` dice:
   - "useOrlanski* OBC not yet implemented for SEAICE" (`pkg/obcs/obcs_check.F:386-406`; bloque `IF (useSEAICE)` en `:400-405`);
@@ -139,7 +141,7 @@ Se mide `oceTAUX`, el esfuerzo que recibe el océano después de `pkg/seaice` (`
 - **Lo que no hice:** cambiar las fronteras de Orlanski en los casos con hielo. F2 y F3 dejarían de ser comparables (H4b).
 
 **Opciones (no elegidas):**
-1. **Copia modificada de `obcs_check.F` en `config/fjord_vmf/code`.** Se relajan las dos comprobaciones cuando `DISABLE_SEAICE_OBCS` está definido, y se define en `SEAICE_OPTIONS.h`. La fuente de MITgcm no se toca.
+1. **[ELEGIDA, §8]** **Copia modificada de `obcs_check.F` en `config/fjord_vmf/code`.** Se relajan las dos comprobaciones cuando `DISABLE_SEAICE_OBCS` está definido, y se define en `SEAICE_OPTIONS.h`. La fuente de MITgcm no se toca.
    - Justificación: con `DISABLE_SEAICE_OBCS` no se aplica ninguna condición de frontera al hielo, y el hielo está lejos de las fronteras.
    - Riesgo: código propio, que se declara.
    - Se combina bien con la opción 2 de §6 (otra copia, de `seaice_dynsolver.F`).
@@ -153,3 +155,25 @@ Se mide `oceTAUX`, el esfuerzo que recibe el océano después de `pkg/seaice` (`
    - F4 no tiene equivalente sin `pkg/seaice`.
 
 **Recomendación técnica (la decisión es de Esteban):** opción 1 de esta sección más la opción 2 de §6. Son dos copias pequeñas de archivos de MITgcm en `code/`, con una prueba de reinicio y una corrida corta. Darían el F2 del spec (arrastre bajo el hielo fijo) y un F4 coherente, con las fronteras de Orlanski en todas las corridas.
+
+## 8. Implementación del PD1 y verificación (2026-11-12)
+
+**Copias modificadas en `config/fjord_vmf/code`** (también en las de 400 m, 100 m y la subcaja; una prueba exige que sean idénticas). La fuente de MITgcm no se toca.
+- Cada copia empieza con una cabecera: archivo original, versión (checkpoint69j, git 8e1c4076) y sha256 del original. Los cambios están entre líneas `C--- Exp. 4 BEGIN` / `C--- Exp. 4 END`.
+- `tests/test_mitgcm_mods.py` comprueba que, quitando la cabecera y esos bloques, cada copia es el original byte a byte, y que el sha256 de la cabecera es el del original.
+
+| Copia | sha256 del original | Cambio |
+|---|---|---|
+| `obcs_check.F` (`pkg/obcs`) | b19d4e2e…6bcc1 | incluye `SEAICE_OPTIONS.h`; con `DISABLE_SEAICE_OBCS` se saltan las dos paradas (líneas originales 400-405 y 571-579) |
+| `seaice_dynsolver.F` (`pkg/seaice`) | 3730d29b…5a660 | antes de `SEAICE_OCEAN_STRESS`, si no corrió ningún resolvedor de reología (`.NOT.SEAICEuseDYNAMICS .OR. SEAICEuseFREEDRIFT`), llama a `SEAICE_OCEANDRAG_COEFFS(uIce, vIce, HEFFM, DWATN, …)`, como `seaice_lsr.F:378` |
+| `obcs_add_tides.F` (`pkg/obcs`, V3) | bb3ca468…245ea8 | con `EXP4_TIDE_RAMP_S` (en `OBCS_OPTIONS.h`), rampa de medio coseno de la velocidad de marea durante un ciclo M2 |
+
+Además, `SEAICE_OPTIONS.h` define `DISABLE_SEAICE_OBCS`, de modo que `pkg/seaice` no aplica condiciones de frontera al hielo (`seaice_model.F:190-195, 309-314`).
+
+**Verificación** (`figures/pd1_timing.json`, `ice_stress.drag_check`; `figures/pd1_restart.json`):
+- **F2 y F4 arrancan con Orlanski** (`F2_pd1final_3h`, `F4_pd1final_3h`: 3 h, Δt 120 s escalonado, OK).
+- **Esfuerzo bajo A = 1 frente a la fórmula.** `analysis/pd1_timing.drag_check` compara oceTAUX con τ = ½(DWATN_i + DWATN_i−1)(u_hielo − u₁), con DWATN = max(ρ₀ C_w |Δu|, `SEAICEdWatMin` = 0.25 kg m⁻² s⁻¹), en cada registro:
+  - **F2:** 13 072 puntos U; error máximo **0.0** en los 8 registros. Todos los puntos están en el piso lineal (|Δu| ≤ 1.7 cm s⁻¹ < 0.25/(ρ₀C_w) = 4.4 cm s⁻¹). |τ| crece hasta 4.4×10⁻³ N m⁻² a las 2.7 h. Antes del cambio era exactamente 0 (§5).
+  - **F4:** hielo a 0.22 m s⁻¹; |τ| bajo A = 1 de hasta 0.097 N m⁻², en régimen cuadrático (fracción en el piso < 2 %). La diferencia con la fórmula es ≤ 5×10⁻³ N m⁻² (≤ 6 %) hasta las 2.3 h, y 1.4×10⁻² N m⁻² en el registro de las 2.7 h, cuando el pulso se apaga. Se explica porque `SIuice/SIvice` se escriben al empezar el paso (`model/src/do_statevars_diags.F:96`), antes de la deriva libre del mismo paso, mientras que `DWATN` usa la velocidad nueva: un desfase de un paso en el diagnóstico, no en el modelo. Con hielo fijo (u_hielo = 0) el desfase no existe y la coincidencia es exacta.
+- **Reinicio** (`scripts/restart_test.py`): 20 pasos seguidos frente a 10 + pickup + 10. **Idéntico bit a bit** en F2 y F4: pickups del modelo, de `seaice` y de Orlanski del paso 20, y diagnósticos `state3d`, `surf` y `seaice` del paso 10.
+- Pendiente para declarar: la deriva libre sigue sin inercia del hielo, (b) (§6).

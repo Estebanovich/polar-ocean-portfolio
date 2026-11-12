@@ -608,6 +608,7 @@ def make_fjord_case(name: str, out_dir: Path, *, spec: dict, p: dict, template_d
         td = tide_v3(g["depth"], g["wet"], p["delR"], dx, p["ob_sides"], p["tide"]["period_s"],
                      p["tide"]["eta0_m"], p["hFacMin"], p["hFacMinDr"])
         bins.update(td.pop("files"))
+        td["ramp_s"] = float(p["tide"]["ramp_s"])        # code/OBCS_OPTIONS.h EXP4_TIDE_RAMP_S
         tide_info = td
 
     # ---- namelists

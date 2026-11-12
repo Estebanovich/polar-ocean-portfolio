@@ -161,14 +161,14 @@ configs:
     nx: 500                     # (x1 - x0) / dx_m
     ny: 300
     nz: 40
-    # Time step: PD1 (notes/pd1_config.md sections 2-3). The synchronous step of these values grows
-    # grid-scale noise at every deltaT tried (60, 48, 40, 30 s); staggerTimeStep is clean at 60 and
-    # 120 s, and 120 s is the largest deltaT dividing 1200 s with advective and internal-wave
-    # CFL <= 0.5. Kept at the timing values until Esteban decides.
-    deltaT: 60.0                # s
-    stagger_time_step: 0        # 0: synchronous (MITgcm default), 1: staggerTimeStep
+    # Time step, PD1 decision 1 (Esteban, 2026-11-12; notes/pd1_config.md): staggered stepping
+    # with 120 s. The synchronous step grows grid-scale noise at every deltaT tried, as MITgcm warns
+    # (pkg/generic_advdiff/gad_check.F:95-105: scheme 77 is not Adams-Bashforth); 120 s is the
+    # largest deltaT dividing 1200 s with advective and internal-wave CFL <= 0.5. Class (c).
+    deltaT: 120.0               # s
+    stagger_time_step: 1        # 1: staggerTimeStep = .TRUE.
     forced_h: 60.0              # stage 1 with the wind file (plan: 60 h forced), then free
-    t_end_h: 280.0              # PD1 (PD0 decision 2: ~280 h if the timing allows, else 240 h)
+    t_end_h: 280.0              # PD1 decision 3 (Esteban, 2026-11-12): 280 h for every run
     f0: 1.4266e-4               # s^-1, 2 Omega sin 78 deg, f-plane (beta = 0)
     profile: vmf_summer         # figures/profiles_vmf.json, on the delR cell centres (Task 2)
     surface: open water
@@ -181,9 +181,13 @@ configs:
     # Sea ice (spec 3.5): h, A inside the profile polygon (inner fjord east of Akseloya)
     ice: {polygon: profiles, h_m: 1.0, A: 1.0}
     # V3 tide (M2 only): uniform inward barotropic normal velocity on the three open boundaries,
-    # U0 = omega eta0 A_wet / A_OB (volume balance of a basin rising eta0; make_case.tide_v3).
-    # eta0 = 0.5 m within the 0.3-0.8 m outside Akseloya (Stoylen and Fer 2014, p. 89). PD1.
-    tide: {period_s: 44714.16, eta0_m: 0.5}
+    # U0 = omega eta0 A_wet / A_OB (volume balance of a basin rising eta0; make_case.tide_v3),
+    # ramped in over one M2 cycle (ramp_s = EXP4_TIDE_RAMP_S of code/OBCS_OPTIONS.h, used by the
+    # modified obcs_add_tides.F). PD1 decision 4: eta0 in 0.1-0.2 m (the largest stable for two
+    # cycles at 120 s; notes/pd1_config.md). Not the real 0.3-0.8 m of Stoylen and Fer (2014,
+    # p. 89): with it V3 diverged (sound currents > 1.3 m/s). V3 measures the phase speed of the
+    # internal Kelvin wave against the frozen PD0 range (0.21-0.84 m/s around 0.42 m/s).
+    tide: {period_s: 44714.16, eta0_m: 0.1, ramp_s: 44714.16}
     pickup_stems: [pickup]
     edits: []
     # wlev diagnostics: WVEL at the cell centres nearest 10, 30 and 60 m (k = 7, 18, 26)

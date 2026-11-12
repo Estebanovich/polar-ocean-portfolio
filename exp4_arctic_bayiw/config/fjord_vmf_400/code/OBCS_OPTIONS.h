@@ -42,6 +42,9 @@ C add tidal contributions to normal OB flow
 C NOTE that at the moment tidal forcing is applied
 C only to "normal" flow.
 #define ALLOW_OBCS_TIDES
+C     Exp. 4 (PD1 decision 4): V3 tide ramped in over one M2 cycle (s); used only by
+C     the modified obcs_add_tides.F of this directory.
+#define EXP4_TIDE_RAMP_S 44714.16 _d 0
 
 C Use older implementation of obcs in seaice-dynamics
 C note: most of the "experimental" options listed below have not yet

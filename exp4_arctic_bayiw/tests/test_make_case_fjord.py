@@ -45,6 +45,20 @@ def test_all_fjord_cases_registered():
         assert SPEC["cases"][n]["config"].startswith("fjord_vmf")
 
 
+def test_pd1_time_stepping_in_every_fjord_case(cases):
+    """PD1 decision 1: staggerTimeStep with deltaT = 120 s in every fjord case."""
+    for n, (d, _) in cases.items():
+        a = _nml(d)
+        assert a["PARM01"]["staggertimestep"] == ".TRUE." and float(a["PARM03"]["deltat"]) == 120.0, n
+        assert a["PARM03"]["tracforcingoutab"] == "1", n
+
+
+def test_pd1_end_time_280h(cases):
+    for n, (_, m) in cases.items():
+        assert m["params"]["t_end_h"] == 280.0, n
+        assert m["actual"]["stages"][-1][0] + m["actual"]["stages"][-1][1] == 280 * 30, n
+
+
 def test_f1_pd0_mixing_eos_and_f_plane(cases):
     d, meta = cases["F1"]
     p1 = _nml(d)["PARM01"]
@@ -192,6 +206,9 @@ def test_v3_tide_only(cases):
         u = a * np.cos(w * T / 4) * np.cos(w * t) + a * np.sin(w * T / 4) * np.sin(w * t)
         assert np.allclose(u, a * np.sin(w * t), atol=1e-15)       # starts at 0, peak at T/4
     t = meta["actual"]["tide"]
+    # PD1 decision 4: softer forcing, eta0 in 0.1-0.2 m, ramp over one M2 cycle
+    assert 0.1 <= t["eta0_m"] <= 0.2
+    assert t["ramp_s"] == pytest.approx(T)
     # mass balance: wet OB face area x U0 = omega x eta0 x wet surface area
     assert t["U0_m_s-1"] * t["ob_face_area_m2"] == pytest.approx(
         2 * np.pi / 44714.16 * t["eta0_m"] * t["wet_area_m2"], rel=1e-12)

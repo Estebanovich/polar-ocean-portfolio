@@ -8,6 +8,34 @@ Fecha: 2026-11-12. Material para el PD1. Esteban aprueba aquí la configuración
 
 ---
 
+## 0. Decisiones del PD1 (Esteban, 2026-11-12)
+
+1. **Paso de tiempo:** `staggerTimeStep = .TRUE.` y **Δt = 120 s** en todas las corridas del fiordo (F1–F5, F1c, F1g, V3, V4); `cases.yaml` y la plantilla `data`.
+   - Es un cambio numérico, clase (c). Motivo: el aviso de `gad_check.F:95-105` sobre las ondas internas con un esquema de trazador sin AB (§2).
+   - **Comprobación con la configuración final** (escalonado, 120 s, `tracForcingOutAB = 1`, copias modificadas de `seaice` y `obcs` compiladas; `F1_pd1final_48h`, diagnóstico): **limpia**. 1440 pasos en 888 s (0.62 s/paso); máx |w| = 1.6×10⁻³ m s⁻¹, que baja a 6.0×10⁻⁴ a las 48 h, por debajo del umbral *post hoc* de 5×10⁻³ de §2; máx CFL 0.129 (W_hf, a las 4.3 h). `STDERR.0000` vacío: ya no aparece el aviso de `gad_check`.
+2. **Hielo:** la opción 2 de `pd1_seaice.md` §6 (`DWATN` también sin reología) y la opción 1 de §7 (`obcs_check.F` relajado con `DISABLE_SEAICE_OBCS`), como copias de MITgcm en `config/fjord_vmf/code`.
+   - F4 usa el mismo polígono que F2 (ruling R15).
+   - Verificación en `pd1_seaice.md` §8: F2 y F4 arrancan con Orlanski; el esfuerzo bajo A = 1 coincide con ρ₀ C_w|Δu|Δu con el piso `SEAICEdWatMin`; el reinicio es idéntico bit a bit.
+3. **T_fin = 280 h** en todas las corridas, sin recortes.
+   - El presupuesto de cómputo sube a **~31–32 h en total**: Task 3 6.6 h, cronometraje y verificación de esta Task ~1.5 h, y campaña con Δt 120 s ≈ 23.0 h (9 corridas del fiordo 12.4 h + R2/R3 10.6 h; §3).
+   - El límite de 8 h por corrida se cumple: la más larga del fiordo es F1g, ≈ 1.8 h.
+4. **V3:** forzamiento suave con Δt 120 s escalonado: η₀ = **0.1 m** (U₀ = 0.34 cm s⁻¹) y rampa de medio coseno durante un ciclo M2 (12.42 h; `obcs_add_tides.F` modificado, `EXP4_TIDE_RAMP_S`).
+   - **Estabilidad** (corridas de diagnóstico de 25 h, 2 ciclos M2, Δt 120 s escalonado):
+     - **η₀ = 0.2 m (`V3_pd1final_eta02_25h`): diverge** en el paso ~640 (21.3 h, 1.7 ciclos), con CFL_W 1.14 y corrientes de 0.9 m s⁻¹ en Mariasundet.
+     - **η₀ = 0.1 m (`V3_pd1final_eta01_25h`): estable los 2 ciclos** (OK, 469 s).
+       - Máx CFL horizontal 0.27. CFL vertical (W_hf) 0.548 una vez, a las 16 h, y ≤ 0.38 el resto: pasa del 0.5 de una vez y se declara.
+       - Corrientes máximas: 0.56 m s⁻¹ en Mariasundet (x 495.9, y 8622.3 km) y 0.45 m s⁻¹ en Akselsundet.
+       - η medio entre −0.12 y +0.08 m.
+   - **La amplitud no es realista** (S&F14: 0.3–0.8 m fuera de Akseløya, p. 89). Con η₀ = 0.5 m V3 divergía por las corrientes de los estrechos (§1).
+   - V3 mide la velocidad de fase de la onda de Kelvin interna frente al umbral congelado del PD0 (§4: 0.21–0.84 m s⁻¹, alrededor de 0.42 m s⁻¹, sin cambios), además de la presencia y el sentido ciclónico. La amplitud no es un criterio.
+5. **Lo que queda como estaba** (regla del PD0):
+   - el invierno sigue a 200 m, con la limitación declarada (R₁/Δx = 1.7–6.6; opción (c) de §5);
+   - caja de 100 × 60 km, 200 m y 40 niveles;
+   - Smagorinsky 2.2 + `viscC4smag` 1;
+   - los pendientes de batimetría tal como están (§6, punto 10).
+
+---
+
 ## 1. Configuración generada (los valores del PD0, sin cambios)
 
 **Un solo build** (`config/fjord_vmf/code`):
@@ -44,8 +72,8 @@ Lo que fija el PD0 sale de `cases.yaml` (`configs.fjord_vmf`) y de las plantilla
   - Hay 181 registros (60 h + 1). El último está a cero y el ciclo periódico no vuelve a interpolar hacia el registro 1 dentro de la etapa forzada. Con 180 registros, a las 60 h volvería un viento de hasta 0.003 N m⁻². En la tesis pasa lo mismo, con 0.002 N m⁻² (la mitad del registro 1, 0.0044 N m⁻²).
 - **Etapas.** Etapa forzada de 60 h (plan) y etapa libre. `data.free` es `data` sin el viento (prueba `test_free_stage_has_same_physics_without_wind`). Hay pickup permanente cada 60 h.
 - **Tiempos de relajación de la esponja:** 1200 s en el borde interior (tesis) y max(60 s, 2Δt) en la frontera. En la tesis, 60 s con Δt = 30 s.
-- **V3 (solo M2).** Velocidad normal barotrópica M2 hacia adentro, uniforme en las tres fronteras abiertas (`ALLOW_OBCS_TIDES`, `pkg/obcs/obcs_add_tides.F`), con forma u = U₀ sin ωt. U₀ sale del balance de volumen de una cuenca que sube η₀ = 0.5 m: U₀ = ω η₀ A_mar / A_frontera = 1.70 cm s⁻¹ (A_mar = 2261 km², A_frontera = 9.37 km²).
-  - η₀ = 0.5 m está dentro de los 0.3–0.8 m de S&F14 (p. 89).
+- **V3 (solo M2).** Velocidad normal barotrópica M2 hacia adentro, uniforme en las tres fronteras abiertas (`ALLOW_OBCS_TIDES`, `pkg/obcs/obcs_add_tides.F`), con forma u = U₀ sin ωt. U₀ sale del balance de volumen de una cuenca que sube η₀: U₀ = ω η₀ A_mar / A_frontera (A_mar = 2261 km², A_frontera = 9.37 km²). Primero era η₀ = 0.5 m (U₀ = 1.70 cm s⁻¹); **tras el PD1 es η₀ = 0.1 m (U₀ = 0.34 cm s⁻¹), con una rampa de un ciclo M2 (§0, punto 4).**
+  - El η₀ = 0.5 m original estaba dentro de los 0.3–0.8 m de S&F14 (p. 89); el de 0.1 m no lo está, y se declara (§0).
   - **Punto PD1-V3:** es un diseño mínimo. La amplitud real en Akseløya se mide y se reporta, sin calibrarla.
   - **Falla en la corrida corta (`V3_smoke2h`, 2 h, Δt 120 s, escalonado): la marea no actuó.**
     - Máx η = 7.5×10⁻⁶ m a las 2 h. η medio ≈ 10⁻²² m y velocidad normal media en la frontera O ≈ 10⁻⁹ m s⁻¹ (`V3_smoke2h/STDOUT.0000:2337-3013`): flujo neto por las fronteras exactamente cero, cuando la teoría daba η ≈ 0.23 m.
@@ -57,7 +85,7 @@ Lo que fija el PD0 sale de `cases.yaml` (`configs.fjord_vmf`) y de las plantilla
     - Pero las corrientes de marea en Mariasundet llegan a 1.3 m s⁻¹ a las 2 h (S&F14 citan > 2 m s⁻¹ en Akselsundet, p. 89).
     - Con **Δt 120 s** la corrida diverge (NaN entre 1.7 y 2 h).
     - Con **Δt 60 s**, el CFL vertical (W_hf) llega a 1.01 a las 2 h y a 4.1 justo antes de diverger, entre 2.7 y 3.3 h, cerca del máximo de entrada (T/4 = 3.1 h).
-  - **Punto PD1-V3 (no elegido).** V3 necesita un Δt propio mucho menor (≲ 20–30 s para CFL_W ≤ 0.5; costo ≈ 4.7–7 h por corrida de 280 h) o un forzamiento más suave (η₀ menor, rampa), además de la duración y la amplitud ya pendientes. El PD0 no fija un umbral de V3 que dependa de Δt, pero el plan pide el mismo Δt por malla en las corridas comparables, y V3 no se compara con las F en ningún cociente.
+  - **Punto PD1-V3 — decidido: forzamiento más suave con Δt 120 s (§0).** Antes del PD1 la nota decía: V3 necesita un Δt propio mucho menor (≲ 20–30 s para CFL_W ≤ 0.5; costo ≈ 4.7–7 h por corrida de 280 h) o un forzamiento más suave (η₀ menor, rampa), además de la duración y la amplitud ya pendientes. El PD0 no fija un umbral de V3 que dependa de Δt, pero el plan pide el mismo Δt por malla en las corridas comparables, y V3 no se compara con las F en ningún cociente.
 - **F4:** el hielo a la deriva usa el mismo polígono que F2, así que F4 frente a F2 aísla la dinámica del hielo. El spec dice "hielo libre en todo el fiordo" y el plan "fuera no hay hielo, salvo en F4". **Punto PD1-F4:** ¿mismo polígono o todo el fiordo, incluido el exterior? Además F4 tiene el problema de `pd1_seaice.md` §2.
 
 ---
@@ -91,7 +119,6 @@ No es física resuelta. Lo que se observa:
    - Con paso sincrónico, sin `implicitIntGravWave` y con un trazador activo sin AB, `gad_check.F:94-107` avisa "potentially unstable time-stepping (Internal Wave)" y "need staggerTimeStep=.TRUE.".
    - El aviso está en `F1_t6h/STDERR.0000:1-2` (y en todas las corridas sincrónicas) y no aparece en las escalonadas (`F1_diag_st60_12h/STDERR.0000` vacío).
    - Es la inestabilidad de las ondas de gravedad internas cuando el trazador avanza hacia delante sin AB mientras el momento usa AB2. La documentación recomienda el paso escalonado: "essentially allows the gravity wave terms to leap-frog in time giving second order accuracy and more stability" (`doc/algorithm/algorithm.rst:705-715`).
-   - En la Task 4 lo vi primero en las corridas y no en el aviso: lo leí después.
 
 **Prueba.** F1 con `staggerTimeStep = .TRUE.` y Δt = 60 s, 12 h: **sin ruido** (`F1_diag_st60_12h`).
 - Máx |w| se queda en 1.0–1.7×10⁻³ m s⁻¹ durante las 12 h. En la sincrónica, a las 4 h ya valía 6.5×10⁻².
@@ -99,11 +126,11 @@ No es física resuelta. Lo que se observa:
 - Coincide con lo que predice el aviso de `gad_check.F`.
 - Prueba con Δt = 120 s escalonado: limpia, máx |w| ≤ 1.6×10⁻³ m s⁻¹ (`F1_diag_st120_12h`). Corrida de 48 h escalonada a **120 s** (el "CFL ≤ 0.5 en 2 días" del plan; `F1_st120_48h`): limpia. Máx |w| ≤ 1.6×10⁻³ m s⁻¹, que baja a 6×10⁻⁴ a las 48 h; máx CFL advectivo 0.129, alcanzado en el paso 130 (4.3 h, pulso).
 
-**Punto PD1-Δt (no elegido).** Opciones medidas:
-- (a) `staggerTimeStep = .TRUE.` con **Δt = 120 s**: limpia en 48 h, CFL advectivo 0.13 y de ondas internas 0.42 (§3). La alternativa conservadora es Δt = 60 s (limpia en 12 h; cuesta ~60 % más por hora simulada). Es un cambio numérico, no físico, y se declara (c). Antes de la campaña conviene repetir la corrida de 48 h con la configuración final y el `tracForcingOutAB = 1` que `pkg/seaice` exige; las de esta Task se hicieron antes de añadirlo, salvo `F1_st120_48h`, `V4_smoke2h`, `F3_100s_t1h` y los diagnósticos de hielo.
+**Punto PD1-Δt — decidido: opción (a), `staggerTimeStep` con Δt 120 s (§0).** Opciones medidas:
+- (a) **[ELEGIDA]** `staggerTimeStep = .TRUE.` con **Δt = 120 s**: limpia en 48 h, CFL advectivo 0.13 y de ondas internas 0.42 (§3). La alternativa conservadora es Δt = 60 s (limpia en 12 h; cuesta ~60 % más por hora simulada). Es un cambio numérico, no físico, y se declara (c). Antes de la campaña conviene repetir la corrida de 48 h con la configuración final y el `tracForcingOutAB = 1` que `pkg/seaice` exige; las de esta Task se hicieron antes de añadirlo, salvo `F1_st120_48h`, `V4_smoke2h`, `F3_100s_t1h` y los diagnósticos de hielo.
 - (b) Paso sincrónico con Δt más corto. **No sirve:** con 30 s también aparece a las 6 h.
 - (c) **El esquema 33 (alternativa del PD0 §6) no lo arreglaría:** tampoco usa AB (`gad_init_fixed.F:148-157`) y daría el mismo aviso.
-- (d) Un esquema de trazador con AB (2, 3 o 4: centrado de 2.º orden, upwind de 3.er orden o centrado de 4.º orden). Quita la condición del aviso, pero sin limitador produce oscilaciones en la picnoclina. Exige enmienda del PD0 (§6 fija el 77) y no está probado.
+- (d) Un esquema de trazador con AB (2, 3 o 4: centrado de 2.º orden, upwind de 3.er orden o centrado de 4.º orden). Quita la condición del aviso, pero son esquemas sin limitador, que el PD0 §6 descartó en favor del 77. Exige enmienda del PD0 y no está probado.
 - (e) `implicitIntGravWave = .TRUE.`. Exige compilar con `ALLOW_NONHYDROSTATIC` (`doc/getting_started/getting_started.rst:2141`) y una enmienda del PD0, y no está probado.
 
 **CFL ≤ 0.5:** ver §3.
@@ -144,7 +171,7 @@ Todas las corridas usan np = 5, un caso a la vez, y escriben a LaCie. `wall_s` (
 | R2 + R3 (Task 3: 5.3 h cada una a 280 h) | 10.6 h | 10.6 h | 9.1 h |
 | **Total de la campaña** | **30.6 h** | **23.0 h** | **19.7 h** |
 
-- **Presupuesto (spec §4):** ≤ 8 h por corrida y ≤ 30 h en total.
+- **Presupuesto (spec §4):** ≤ 8 h por corrida y ≤ 30 h en total. **Tras el PD1 (§0, punto 3) el total sube a ~31–32 h y se corre todo a 280 h.**
   - La Task 3 gastó 6.6 h (R1, R1k) y esta Task ~0.9 h de modelo (suma de `wall_s`, más los builds). Quedan ~22 h.
   - **Con Δt 120 s escalonado:** 280 h se pasa por ~1 h (23.0 h); 240 h cabe (19.7 h).
   - **Con Δt 60 s:** 280 h (30.6 h) no cabe sin recortar (F4, F5, V4, F1g).
@@ -226,13 +253,13 @@ R13 pide cronometrar una corrida corta a 100 m con la configuración de invierno
    - **Física:** la subcaja necesita valores de frontera abierta de una corrida madre a 200 m (anidamiento en un sentido, `OBCS_PRESCRIBE` con archivos de la madre), que no existe todavía. Con Orlanski sola en Bellsund cambia el dominio de F2 y F3 frente a F1 (H4c compara F1 con F3). Disco: 264 GB por corrida de 280 h (§4).
 4. **Limitación declarada a 200 m** (lo que dice el PD0 si no cabe): R₁/Δx de invierno = 1.7–6.6 (PD0 §2.3). Costo: nada extra.
 
-**Resumen para la decisión** (no elegido; punto PD1-W):
+**Resumen para la decisión** (punto PD1-W; decidido: (c), §0):
 
 | Opción | Costo extra frente a 200 m (F2 + F3, Δt 120 s) | Disco extra | Qué falta |
 |---|---|---|---|
 | (a) 100 m en la caja completa | **imposible en esta máquina**: no enlaza (> 4 GB estáticos) y pide ~17 GB de RAM | +0.86 TB | otra máquina o reestructurar el build |
 | (b) subcaja anidada a 100 m | +4.7 h (280 h) / +4.1 h (240 h): F2 y F3 a ~3.8 h / 3.3 h cada una, más sus madres a 200 m, que ya están en la campaña | +0.24 TB | anidamiento (archivos de frontera de la madre, `useOBCSprescribe`), ajuste del enlazador en el build y reintentos de arranque; además, F2 no arranca por PD1-S2 |
-| (c) limitación declarada a 200 m | 0 | 0 | nada; se declara R₁/Δx = 1.7–6.6 en invierno (PD0 §2.3) y la advertencia de H4c |
+| (c) **[ELEGIDA]** limitación declarada a 200 m | 0 | 0 | nada; se declara R₁/Δx = 1.7–6.6 en invierno (PD0 §2.3) y la advertencia de H4c |
 
 - Con la opción (b), la campaña con Δt 120 s pasa de 23.0 a 27.7 h (280 h) o de 19.7 a 23.8 h (240 h). Con ~22 h disponibles, **no cabe sin recortar** (F4, F5, V4 y F1g suman 5.1 h a 280 h).
 - **Recomendación técnica (la decisión es de Esteban):** (c), la limitación declarada. (b) añade un anidamiento que no existe, con su propia validación, y un build frágil.
@@ -241,7 +268,7 @@ R13 pide cronometrar una corrida corta a 100 m con la configuración de invierno
 
 ## 6. Agenda del PD1 (para Esteban)
 
-Cada punto lleva su sección. Lo que no se decide queda como está en `cases.yaml`.
+Cada punto lleva su sección. **Las decisiones de Esteban están en §0.**
 
 1. **Caja** (R5): 100 × 60 km (§1).
    - Alternativa de la Task 1b: 100 × 45 km cerrando Van Keulenfjorden y Recherchefjorden en su boca (−25 % de celdas). Si se cambia, se vuelve a correr la Task 1b.
