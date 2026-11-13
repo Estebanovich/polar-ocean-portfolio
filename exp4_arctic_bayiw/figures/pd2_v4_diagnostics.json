@@ -1,0 +1,71 @@
+{
+ "post_hoc": "diagnostics written after V4 failed; not criteria",
+ "F1": {
+  "Akselsundet": {
+   "net_out_J": -974969344.4929893,
+   "gross_J": 1572538498.4791982,
+   "net_over_gross": -0.619997122764169,
+   "band_out_J": {
+    "low": -997023903.0729153,
+    "kelvin_subinertial": 52029730.82434623,
+    "near_inertial": -33988436.274433635,
+    "superinertial": 10805907.566135228,
+    "seiche": -9331898.008875273
+   },
+   "open_faces": 6,
+   "wet_levels_max": 21,
+   "mean_out_W": -969.7505942120466,
+   "std_W": 2056.394851686818
+  },
+  "Mariasundet": {
+   "net_out_J": -196039434.48141307,
+   "gross_J": 208046960.03450528,
+   "net_over_gross": -0.9422845421480769,
+   "band_out_J": {
+    "low": -147384431.50735837,
+    "kelvin_subinertial": -34142929.95021006,
+    "near_inertial": -9112956.872882713,
+    "superinertial": -613877.6646281055,
+    "seiche": -5297871.0682337405
+   },
+   "open_faces": 8,
+   "wet_levels_max": 11,
+   "mean_out_W": -194.992130023128,
+   "std_W": 232.73709847310212
+  }
+ },
+ "V4": {
+  "Akselsundet": {
+   "net_out_J": 318100393.4706679,
+   "gross_J": 380614302.9003016,
+   "net_over_gross": 0.8357552279216144,
+   "band_out_J": {
+    "low": 164726783.07494575,
+    "kelvin_subinertial": 153445231.65789473,
+    "near_inertial": -12059450.745319162,
+    "superinertial": 13066898.23766074,
+    "seiche": -1178931.2210081932
+   },
+   "open_faces": 4,
+   "wet_levels_max": 20,
+   "mean_out_W": 315.47671726604557,
+   "std_W": 948.3284924614022
+  },
+  "Mariasundet": {
+   "net_out_J": 5483049.211646832,
+   "gross_J": 22216702.907222494,
+   "net_over_gross": 0.2467985116668383,
+   "band_out_J": {
+    "low": 7376616.468176032,
+    "kelvin_subinertial": -2083065.8741184324,
+    "near_inertial": -603861.81022131,
+    "superinertial": 273688.93835351255,
+    "seiche": 536253.6476693631
+   },
+   "open_faces": 6,
+   "wet_levels_max": 6,
+   "mean_out_W": 5.455983501844413,
+   "std_W": 37.2127618208078
+  }
+ }
+}

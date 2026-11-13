@@ -403,31 +403,40 @@ def face_profiles(ds, mask, face_groups: dict, rho_b=None, time=slice(None)) -> 
     for q, (kind, j, i, s, n) in enumerate(sel):
         groups.setdefault(n, []).append(q)
     for n, qs in groups.items():
+        if np.any(dz[:, qs][int(np.flatnonzero((dz[:, qs] > 0).any(1)).max()) + 1:] != 0):
+            raise AssertionError("face thickness below the last wet level")
         js = [sel[q][1] for q in qs]
         is_ = [sel[q][2] for q in qs]
         j0, j1, i0, i1 = max(min(js) - 1, 0), min(max(js) + 2, ny), max(min(is_) - 1, 0), min(max(is_) + 2, nx)
-        dzC = drF[:, None, None] * hC[:, j0:j1, i0:i1]
+        # only the levels that are wet somewhere in the rectangle are read (I/O: the strait
+        # rectangles are small, but each level is a separate read); the dry levels below carry
+        # no face thickness and do not enter p~ above them, so the result is unchanged
+        nk = int(np.flatnonzero((hC[:, j0:j1, i0:i1] > 0).any(axis=(1, 2))).max()) + 1
+        dzC = drF[:nk, None, None] * hC[:nk, j0:j1, i0:i1]
         wetC = dzC > 0
         for r, n_rec in enumerate(tidx):
-            U = ds["U"].isel(time=int(n_rec), j=slice(j0, j1), i=slice(i0, i1)).values
-            V = ds["V"].isel(time=int(n_rec), j=slice(j0, j1), i=slice(i0, i1)).values
-            R = ds["RHO"].isel(time=int(n_rec), j=slice(j0, j1), i=slice(i0, i1)).values
+            win = dict(time=int(n_rec), k=slice(0, nk), j=slice(j0, j1), i=slice(i0, i1))
+            U = ds["U"].isel(**win).values
+            V = ds["V"].isel(**win).values
+            R = ds["RHO"].isel(**win).values
             E = ds["ETA"].isel(time=int(n_rec), j=slice(j0, j1), i=slice(i0, i1)).values
-            rp = np.where(wetC, R - rho_b[:, None, None], 0.0)
+            _progress(f"face_profiles {n}", r, nt)
+            rp = np.where(wetC, R - rho_b[:nk, None, None], 0.0)
             pt = budget.pressure_tilde(rp, E, dzC, rho0, g)            # Pa, Nash 2005 eq. 3
             for q in qs:
                 kind, j, i, _, _ = sel[q]
                 a, b = j - j0, i - i0
                 if kind == "y":
-                    un = V[:, a, b] * (hS[:, j, i] > 0)
+                    un = V[:, a, b] * (hS[:nk, j, i] > 0)
                     p = 0.5 * (pt[:, a - 1, b] + pt[:, a, b])
                 else:
-                    un = U[:, a, b] * (hW[:, j, i] > 0)
+                    un = U[:, a, b] * (hW[:nk, j, i] > 0)
                     p = 0.5 * (pt[:, a, b - 1] + pt[:, a, b])
-                H = dz[:, q].sum()
+                dzq = dz[:nk, q]
+                H = dzq.sum()
                 Hs = H if H > 0 else 1.0
-                ub, pb = (un * dz[:, q]).sum() / Hs, (p * dz[:, q]).sum() / Hs
-                up[r, :, q], pp[r, :, q] = un - ub, p - pb               # KF12: u', p'
+                ub, pb = (un * dzq).sum() / Hs, (p * dzq).sum() / Hs
+                up[r, :nk, q], pp[r, :nk, q] = un - ub, p - pb           # KF12: u', p'
     return {"up": up, "pp": pp, "dz": dz, "w": w, "group": np.array([x[4] for x in sel]),
             "t": ds["time"].values[time].astype(float)}
 
@@ -456,6 +465,28 @@ def flux_summary(fp: dict, bands: dict | None = None) -> dict:
 
 
 # ---- on load.run datasets (part B) ----------------------------------------------------------
+
+def _progress(what: str, r: int, n: int, every: int = 120) -> None:
+    if r % every == 0 or r == n - 1:
+        print(f"[validate] {what}: record {r + 1}/{n}", file=sys.stderr, flush=True)
+
+
+def level_values(ds, var: str, k: int, cells, rect=None):
+    """(nt, ncells) of ds[var] at level k on the cells [(j, i)], and, with rect = (j0, j1, i0, i1),
+    also the (nt, j1 - j0, i1 - i0) block. One contiguous read of the whole level per record
+    (MDS layout: a level of one field is contiguous), instead of one read per cell and record."""
+    jj = np.array([c[0] for c in cells], int)
+    ii = np.array([c[1] for c in cells], int)
+    nt = ds.sizes["time"]
+    out = np.empty((nt, jj.size))
+    blk = None if rect is None else np.empty((nt, rect[1] - rect[0], rect[3] - rect[2]))
+    for n in range(nt):
+        a = ds[var].isel(time=n, k=k).values
+        out[n] = a[jj, ii]
+        if blk is not None:
+            blk[n] = a[rect[0]:rect[1], rect[2]:rect[3]]
+        _progress(f"{var} level {k}", n, nt)
+    return (out, blk) if rect is not None else out
 
 def open_run(run_dir: Path):
     """load.run: require_ok on every stage, and the ice-OB check for ice runs."""
@@ -498,15 +529,15 @@ def v2_from_run(ds, th: dict) -> dict:
     f = th["cases"]["vmf_summer"]["f_s-1"]
     t = ds["time"].values.astype(float)
     js, is_ = shelf_station(wet, inner, p["ob_sides"], int(p["n_sponge"]))
-    u = 0.5 * (ds["U"].isel(k=0, j=js, i=is_).values + ds["U"].isel(k=0, j=js, i=is_ + 1).values)
-    v = 0.5 * (ds["V"].isel(k=0, j=js, i=is_).values + ds["V"].isel(k=0, j=js + 1, i=is_).values)
+    uu = level_values(ds, "U", 0, [(js, is_), (js, is_ + 1)])
+    vv = level_values(ds, "V", 0, [(js, is_), (js + 1, is_)])
+    u, v = 0.5 * (uu[:, 0] + uu[:, 1]), 0.5 * (vv[:, 0] + vv[:, 1])          # T point, k = 0
     v2a = v2a_inertial_peak(u, v, t, f)
     v2a["station_ji"] = [js, is_]
     axis = th["fjord_geometry"]["axis_angle_deg"]
     st = coastal_stations(wet, deep, inner, ds["XC"].values[0], ds["YC"].values[:, 0], axis, 5000.0,
                           max_coast_cells=rules["max_coast_cells"])
-    z = np.stack([displacement(ds["RHO"].isel(k=k, j=j, i=i).values, rho_b, ds["RC"].values, k)
-                  for j, i in st["cells"]], axis=1)
+    z = displacement(level_values(ds, "RHO", k, st["cells"]), rho_b, ds["RC"].values, k)
     v2b = v2b_kelvin_speed(z, t, st["s_m"], v2b_range(th))
     v2b.update(stations=_public(st), pycnocline_level=k, station_gaps=st["gaps"],
                stations_successive=st["successive"])
@@ -525,13 +556,12 @@ def v3_from_run(ds) -> dict:
                           th["fjord_geometry"]["axis_angle_deg"], 2000.0,
                           max_coast_cells=rules["max_coast_cells"])
     RC = ds["RC"].values
-    coast = np.stack([displacement(ds["RHO"].isel(k=k, j=j, i=i).values, rho_b, RC, k)
-                      for j, i in st["cells"]], axis=1)
     # amplitude map at k* over the south side of the inner fjord (the coast of the stations),
     # binned by distance to land
     jj, ii = np.nonzero(inner & deep & st["side_mask"])
     j0, j1, i0, i1 = jj.min(), jj.max() + 1, ii.min(), ii.max() + 1
-    lev = ds["RHO"].isel(k=k, j=slice(j0, j1), i=slice(i0, i1)).values            # (nt, ., .)
+    cs, lev = level_values(ds, "RHO", k, st["cells"], rect=(j0, j1, i0, i1))     # one pass
+    coast = displacement(cs, rho_b, RC, k)
     m = t >= ramp
     dx = float(np.median(np.diff(ds["XC"].values[0])))
     dl = _dist_land(wet)[jj, ii] * dx                                             # m
@@ -549,33 +579,104 @@ def v3_from_run(ds) -> dict:
     return r
 
 
-def flux_from_run(ds, th: dict) -> dict:
-    mask, groups = budget.fjord_box(ds)
+def _seg_dist(px, py, p0, p1) -> float:
+    """Distance [m] from (px, py) to the segment p0-p1."""
+    p0, p1 = np.asarray(p0, float), np.asarray(p1, float)
+    d = p1 - p0
+    u = np.clip(((px - p0[0]) * d[0] + (py - p0[1]) * d[1]) / (d @ d), 0.0, 1.0)
+    return float(np.hypot(px - p0[0] - u * d[0], py - p0[1] - u * d[1]))
+
+
+def coarse_box(fine_mask, wet_coarse, xc, yc, sections: dict, max_dist_m: float = 2000.0):
+    """The fine (200 m) inner-fjord box mapped onto a coarser grid (V4, 400 m): a coarse cell is in
+    the box if it is wet and at least half of its children are in the fine box. Each open face
+    (budget.box_faces with the coarse wet mask) is assigned to the nearest section line; a face
+    farther than ``max_dist_m`` from every section is an error (the box would leak elsewhere).
+
+    Why (Task 6 part B, method, not PD0; decided after budget.fjord_box failed on the V4 grid and
+    BEFORE any V4 flux was computed): at 400 m the Akselsundet line (from bathy_report.json) ends
+    west of the coarsened tip of Akseloya, so the line-cut box of fjord_box leaks along the west
+    flank of the island for any extension of 1-3 cells. Mapping the 200 m box gives the same box
+    (532.2 km2 against 531.6 km2) with 10 open faces, all at the two sounds, so F1 and V4 compare
+    the flux through the same sections."""
+    wc = np.asarray(wet_coarse, bool)
+    nyc, nxc = wc.shape
+    mf = np.asarray(fine_mask, bool)
+    fy, fx = mf.shape[0] // nyc, mf.shape[1] // nxc
+    if fy * nyc != mf.shape[0] or fx * nxc != mf.shape[1]:
+        raise ValueError("the fine grid is not an integer refinement of the coarse grid")
+    frac = mf.reshape(nyc, fy, nxc, fx).mean(axis=(1, 3))
+    mask = (frac >= 0.5) & wc
+    faces = budget.box_faces(mask, wet=wc)
+    dx, dy = float(np.median(np.diff(xc))), float(np.median(np.diff(yc)))
+    groups = {n: {"x": np.zeros((nyc, nxc), bool), "y": np.zeros((nyc, nxc), bool)} for n in sections}
+    for kind in ("x", "y"):
+        for j, i, _ in faces[kind]:
+            px = xc[i] - 0.5 * dx if kind == "x" else xc[i]
+            py = yc[j] if kind == "x" else yc[j] - 0.5 * dy
+            d = {n: _seg_dist(px, py, *v) for n, v in sections.items()}
+            n = min(d, key=d.get)
+            if d[n] > max_dist_m:
+                raise RuntimeError(f"open {kind} face ({j}, {i}) is {d[n]:.0f} m far from every section")
+            groups[n][kind][j, i] = True
+    return mask, groups
+
+
+def _sections():
+    rep = json.loads((PKG / "figures" / "bathy_report.json").read_text())
+    return {n: (v["p0"], v["p1"]) for n, v in rep["sounds"].items()}
+
+
+def flux_from_run(ds, th: dict, box=None) -> dict:
+    mask, groups = box if box is not None else budget.fjord_box(ds)
     fp = face_profiles(ds, mask, groups)
-    return flux_summary(fp, bands_hz(th))
+    out = flux_summary(fp, bands_hz(th))
+    out["box_cells"] = int(np.asarray(mask).sum())
+    out["open_faces"] = {n: int(g["x"].sum() + g["y"].sum()) for n, g in groups.items()}
+    return out
 
 
 def v4_from_runs(ds_f1, ds_v4) -> dict:
+    """V4: F1 with budget.fjord_box; V4 with that box mapped onto the 400 m grid (coarse_box)."""
     th = load_theory()
-    return v4_resolution(flux_from_run(ds_f1, th), flux_from_run(ds_v4, th))
+    m1, g1 = budget.fjord_box(ds_f1)
+    m4, g4 = coarse_box(m1, ds_v4["hFacC"].values[0] > 0, ds_v4["XC"].values[0],
+                        ds_v4["YC"].values[:, 0], _sections())
+    r = v4_resolution(flux_from_run(ds_f1, th, (m1, g1)), flux_from_run(ds_v4, th, (m4, g4)))
+    r["box_method"] = ("F1: budget.fjord_box; V4: coarse_box (the F1 box mapped to 400 m; "
+                       "method, not PD0, fixed in Task 6 part B before any V4 flux was computed)")
+    return r
 
 
 # ---- CLI -----------------------------------------------------------------------------------------
 
-def evaluate(f1=None, v3=None, v4=None) -> dict:
+def evaluate(f1=None, v3=None, v4=None, previous: dict | None = None, out: Path | None = None) -> dict:
+    """Evaluate the criteria whose runs are given. ``previous`` (--resume): criteria already in it
+    are kept and not recomputed. With ``out``, the JSON is rewritten after each criterion, so a
+    failure later does not lose the hours of reading before it."""
     th = load_theory()
-    res = {"thresholds": THRESHOLDS, "pd0": "notes/pd0_preregistro.md sections 3-4, Enmiendas 1-2",
-           "runs": {"F1": str(f1) if f1 else None, "V3": str(v3) if v3 else None,
-                    "V4": str(v4) if v4 else None}}
-    ds_f1 = open_run(f1) if f1 else None
-    ds_v3 = open_run(v3) if v3 else None
-    ds_v4 = open_run(v4) if v4 else None
-    if ds_f1 is not None:
+    res = dict(previous or {})
+    res.update(thresholds=THRESHOLDS, pd0="notes/pd0_preregistro.md sections 3-4, Enmiendas 1-2")
+    res.setdefault("runs", {})
+    res["runs"].update({k: str(v) for k, v in (("F1", f1), ("V3", v3), ("V4", v4)) if v})
+
+    def save():
+        if out is not None:
+            Path(out).parent.mkdir(parents=True, exist_ok=True)
+            Path(out).write_text(json.dumps(res, indent=1, default=jsonable))
+
+    ds_f1 = open_run(f1) if f1 and not ({"V2a", "V2b", "V4"} <= set(res)) else None
+    ds_v3 = open_run(v3) if v3 and "V3" not in res else None
+    ds_v4 = open_run(v4) if v4 and "V4" not in res else None
+    if ds_f1 is not None and not ({"V2a", "V2b"} <= set(res)):
         res.update(v2_from_run(ds_f1, th))
+        save()
     if ds_v3 is not None:
         res["V3"] = v3_from_run(ds_v3)
+        save()
     if ds_f1 is not None and ds_v4 is not None:
         res["V4"] = v4_from_runs(ds_f1, ds_v4)
+        save()
     done = [k for k in ("V2a", "V2b", "V3", "V4") if k in res]
     for k in done:
         res[k].setdefault("classification", "pending")     # (a)-(d), filled when a criterion fails
@@ -585,6 +686,7 @@ def evaluate(f1=None, v3=None, v4=None) -> dict:
     res["summary"] = {"evaluated": done, "failed": failed,
                       "go_to_PD2": True if failed else (None if missing else False),
                       "not_evaluated": missing}
+    save()
     return res
 
 
@@ -596,6 +698,8 @@ def main(argv=None) -> int:
     e.add_argument("--v3", type=Path)
     e.add_argument("--v4", type=Path)
     e.add_argument("--out", type=Path, default=PKG / "figures" / "validation.json")
+    e.add_argument("--resume", action="store_true",
+                   help="keep the criteria already in --out and evaluate only the missing ones")
     c = sub.add_parser("ice-check", help="mandatory ice-OB distance check (pd1_seaice.md 8)")
     c.add_argument("runs", nargs="+", type=Path)
     c.add_argument("--stamps", type=Path, default=None)
@@ -608,9 +712,8 @@ def main(argv=None) -> int:
                   f"{res['records']} records: {'PASS' if res['passes'] else 'FAIL'}")
             bad += not res["passes"]
         return 1 if bad else 0
-    res = evaluate(a.f1, a.v3, a.v4)
-    a.out.parent.mkdir(parents=True, exist_ok=True)
-    a.out.write_text(json.dumps(res, indent=1, default=jsonable))
+    prev = json.loads(a.out.read_text()) if a.resume and a.out.exists() else None
+    res = evaluate(a.f1, a.v3, a.v4, previous=prev, out=a.out)
     print(json.dumps(res["summary"]))
     return 0
 

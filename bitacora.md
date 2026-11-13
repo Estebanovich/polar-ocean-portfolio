@@ -651,3 +651,28 @@ La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue co
   - `run_campaign.py --dry-run` informa ahora del plan (en stderr). F1g, F5 y F4 no recompilan; **V4 sí recompila `fjord_vmf_400`** (ejecutable anterior a las copias modificadas). Va como aviso.
   - Receta del smoke de R2/R3 (2 h, sufijo `_smoke2h`), comprobada solo con `--dry-run`.
 - **Error encontrado y corregido:** `campaign.finished_ok` daba por terminada una corrida de dos etapas con la etapa 1 OK y la 2 corriendo (V3), así que `--skip-ok` la habría saltado. Ahora, sin `run_status_final.json`, un directorio con etapas no cuenta como terminado.
+
+## 2026-11-12 (noche, 15) — Exp. 4, Task 6 parte B: validación V2–V4 sobre las corridas reales → PD2
+
+- **Nota de corrección (2026-11-12, parte B):** la entrada anterior ("tarde, 14") dice "F1, F2, F3, F1c y V3 terminadas". No es exacto: cuando se escribió, V3 estaba en su etapa 2 (etapa 1 OK, etapa 2 RUNNING). Es el mismo caso que destapó el error de `finished_ok`. V3 terminó OK después. La entrada original no se edita.
+- **Menores de la revisión de la parte A** (TDD):
+  - el sello del hielo incluye nombre, tamaño y mtime de los `seaice.*.data`;
+  - la comprobación del hielo exige registros en cada etapa y que el último esté a ≤ 1 intervalo del final;
+  - `stage_dirs` solo acepta `stage<n>`;
+  - se comprueba `dataprec`;
+  - la prueba de flujo usa el sintético con viento, así que ya no es vacía;
+  - `go_to_PD2` vale `None` mientras falte algún criterio;
+  - la rampa de V3 sale de `case.json`;
+  - V2b informa de los huecos entre estaciones;
+  - el registro del flujo tiene que empezar en t = 0.
+- **Comprobación del hielo:** pasa en F2 y F4. Distancia mínima a las fronteras abiertas: 146 y 119 celdas (exigido ≥ 10), en 840 registros de las dos etapas. F5 no tiene hielo.
+- **R2/R3:** el smoke de 2 h está limpio en los dos (`numDiags` = 350 alcanza; 213 y 219 s). Las de 280 h corren una tras otra; tiempos en `notes/pd1_puente.md` cuando terminen.
+- **Lectura de LaCie.**
+  - La primera evaluación leía un valor por estación y registro y tardaba horas con R2 escribiendo en el mismo disco. Ahora se lee un nivel entero por registro, y en los estrechos solo los niveles mojados.
+  - **La caja del fiordo no cierra a 400 m:** la línea de Akselsundet termina al oeste de la punta de Akseløya, que se mueve al engrosar la malla. Para V4 se usa la caja de 200 m llevada a 400 m (`coarse_box`: 532.2 km², 10 caras en los estrechos). Es método, no PD0, decidido antes de calcular ningún flujo de V4.
+- **Resultados** (`figures/validation.json`, Figura 1):
+  - **V2a falla:** pico en 1.136 f, a 3.1 Δf. *Post hoc*: el desplazamiento al azul se ve en todo el dominio (mediana 1.09 f) y el giro es horario. Clase (c) provisional; falta descartar (a) con una prueba de columna.
+  - **V2b falla:** c = 1.65 m s⁻¹, porque las "llegadas" caen durante el pulso de viento uniforme. Clase (a), definición de la métrica.
+  - **V3 pasa:** decaimiento de 2.5 km, sentido hacia el este, c = 0.48 m s⁻¹, como S&F14.
+  - **V4 falla:** el neto cambia de signo (F1 −1.17 GJ hacia dentro; V4 +0.32 GJ hacia fuera). A 200 m el 97 % del neto está en la banda baja, y el bruto cae ×4 y ×10 en los estrechos a 400 m. Clase (c), resolución. El PD0 manda declarar la limitación.
+- **No se continúa** a la Task 7. Material para Esteban: `notes/pd2_validacion.md`.
