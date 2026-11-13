@@ -587,3 +587,46 @@ def test_v2b_flags_gaps_in_the_station_sequence():
     assert st["gaps"] and st["successive"] is False
     st2 = va.coastal_stations(wet, wet, inner, xc, yc, axis_deg=0.0, spacing_m=1000.0, side="south")
     assert st2["gaps"] == [] and st2["successive"] is True
+
+
+def test_face_profiles_with_dry_bottom_levels_still_match_kang_fringer():
+    """face_profiles reads only the wet levels of each strait rectangle (I/O); a dry bottom level
+    must not change the flux."""
+    ds, mask, groups, rho_b = _channel_ds()
+    for v in ("hFacC", "hFacW", "hFacS"):
+        ds[v].values[2] = 0.0
+    ds["U"].values[:, 2] = 0.0
+    r = budget.kf_budget(ds, mask, rho_b=rho_b, face_groups=groups)
+    fp = va.face_profiles(ds, mask, groups, rho_b=rho_b)
+    Fbc = (fp["up"] * fp["pp"] * fp["dz"][None]).sum(1) @ fp["w"]
+    np.testing.assert_allclose(Fbc, r["F_bc"], rtol=1e-10, atol=1e-6)
+    assert np.abs(Fbc).max() > 0
+
+
+def test_coarse_box_maps_the_fine_box_and_its_sound_faces():
+    """V4 (400 m): the inner-fjord box is the 200 m box mapped onto the coarse grid (cells with at
+    least half of their 2 x 2 children in the fine box); every open face is assigned to the
+    nearest sound, and a face far from every sound is an error."""
+    nyf, nxf, dxf = 20, 40, 200.0
+    wf = np.zeros((nyf, nxf), bool); wf[6:14, :38] = True               # channel closed at the east
+    mf = np.zeros_like(wf); mf[6:14, 20:38] = True                      # fine box east of x = 20
+    xc = (np.arange(nxf // 2) + 0.5) * 2 * dxf; yc = (np.arange(nyf // 2) + 0.5) * 2 * dxf
+    wc = wf.reshape(nyf // 2, 2, nxf // 2, 2).any((1, 3))
+    secs = {"S": ([4000.0, 1000.0], [4000.0, 3000.0])}
+    m, g = va.coarse_box(mf, wc, xc, yc, secs)
+    assert m.sum() == 4 * 9 and g["S"]["x"].sum() == 4 and g["S"]["y"].sum() == 0
+    with pytest.raises(RuntimeError, match="far from"):
+        va.coarse_box(mf, wc, xc, yc, {"S": ([0.0, 0.0], [0.0, 100.0])})
+
+
+def test_evaluate_resumes_from_a_partial_json(tmp_path, monkeypatch):
+    out = tmp_path / "v.json"
+    out.write_text(json.dumps({"V2a": {"pass": True}, "V2b": {"pass": True}, "V3": {"pass": True}}))
+    calls = []
+    monkeypatch.setattr(va, "open_run", lambda p: Path(p).name)
+    monkeypatch.setattr(va, "v2_from_run", lambda ds, th: calls.append("v2") or {})
+    monkeypatch.setattr(va, "v3_from_run", lambda ds: calls.append("v3") or {})
+    monkeypatch.setattr(va, "v4_from_runs", lambda a, b: {"pass": False, "V4a": {}, "V4b": {}})
+    assert va.main(["evaluate", "--f1", "F1", "--v3", "V3", "--v4", "V4", "--out", str(out), "--resume"]) == 0
+    r = json.loads(out.read_text())
+    assert calls == [] and r["summary"]["failed"] == ["V4"] and r["summary"]["go_to_PD2"] is True
