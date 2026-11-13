@@ -692,3 +692,8 @@ La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue co
   - Al probar el método en el sintético, antes de calcular F1, vi que hay que cortar el registro antes de filtrar (ondulación del filtro) y exigir un umbral de amplitud en los extremos. Está declarado.
   - Nuevas entradas en `readinglist.md`: Gill 2016, Yao 1986, Hodges 2000 y Beletsky 1997 (están en la biblioteca de la tesis).
 - La Task 7 y H4a–H4d no se tocan.
+
+## 2026-11-13 (mañana, 17) — Exp. 4, Task 6 parte B: R2 y R3 terminados
+
+- R2 y R3 a 280 h, OK: 7.30 h y 7.04 h (≤ 8 h por corrida), 357 GB cada una. Detalle en `notes/pd1_puente.md` §7. Ningún proceso suelto; quedan 972 GB libres en LaCie.
+- Con esto termina la parte B de la Task 6. El PD2 está decidido (V2a (c) con la prueba de columna, V2b (a), V4 limitación declarada) y la Task 7 queda para después.
