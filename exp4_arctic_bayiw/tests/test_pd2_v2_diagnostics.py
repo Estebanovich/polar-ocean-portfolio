@@ -64,3 +64,31 @@ def test_free_wave_speed_ignores_the_forced_period_and_tracks_the_first_extremum
     r = dg.free_wave_speed(z, t, s, band, t_min=6 * 3600.0)
     assert r["c_m_s"] == pytest.approx(c, rel=0.1)
     assert r["c_stderr_m_s"] > 0 and r["n_stations"] == 12 and r["extremum"] in ("crest", "trough")
+
+
+def _fw_case(forced_amp=2.0):
+    """Uniform forced bump of amplitude forced_amp before 6 h plus a unit free wave at 0.4 m/s."""
+    t = np.arange(840) * DT
+    s = np.arange(12) * 5e3
+    c = 0.4
+    forced = forced_amp * np.exp(-0.5 * ((t - 2.5 * 3600) / 3600) ** 2)
+    free = np.stack([np.where(t > x / c + 8 * 3600,
+                              np.sin(2 * np.pi * (t - x / c - 8 * 3600) / (60 * 3600)), 0.0) for x in s], axis=1)
+    return t, s, c, forced[:, None] + free, (2 / (280 * 3600), 0.85 * F / (2 * np.pi))
+
+
+def test_free_wave_needs_the_cut_before_filtering():
+    """A forced pulse 6 times the free wave (F1: |zeta| 1.4-1.9 m during the pulse): filtering the
+    whole record rings past 6 h above the 1/2-max floor; cutting first recovers c."""
+    t, s, c, z, band = _fw_case(forced_amp=6.0)
+    assert dg.free_wave_speed(z, t, s, band)["c_m_s"] == pytest.approx(c, rel=0.1)
+    r = dg.free_wave_speed(z, t, s, band, cut_before_filter=False)
+    assert not (r["c_m_s"] == pytest.approx(c, rel=0.25))
+
+
+def test_free_wave_needs_the_amplitude_floor():
+    """Without the 1/2-max floor the first ripple after the cut counts as the crest."""
+    t, s, c, z, band = _fw_case()
+    assert dg.free_wave_speed(z, t, s, band)["c_m_s"] == pytest.approx(c, rel=0.1)
+    r = dg.free_wave_speed(z, t, s, band, frac=0.0)
+    assert not (r["c_m_s"] == pytest.approx(c, rel=0.25))

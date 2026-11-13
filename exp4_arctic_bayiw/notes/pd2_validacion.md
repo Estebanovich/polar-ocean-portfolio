@@ -15,7 +15,7 @@ Fecha: 2026-11-12 (noche). Material para que Esteban decida en el PD2. **No se h
 
 | Criterio | Umbral (PD0 §4) | Resultado | Veredicto | Clase |
 |---|---|---|---|---|
-| V2a: pico cercano a la inercial en la plataforma | ≤ 1Δf de f | pico a 1.136 f, **3.11 Δf** (Δf = 1/280 h) | **FALLA** | (c), provisional |
+| V2a: pico cercano a la inercial en la plataforma | ≤ 1Δf de f | pico a 1.136 f, **3.11 Δf** (Δf = 1/280 h) | **FALLA** | (c), definitiva (ver "Resultado 1"); la causa del desplazamiento al azul no está identificada |
 | V2b: velocidad del frente de Kelvin (F1) | 0.28–0.62 m s⁻¹, ≥ 3 estaciones sucesivas | **1.65 m s⁻¹**, 12 estaciones sin huecos | **FALLA** | (a) |
 | V3: presencia (decaimiento) | 1–8 km | 2.50 km | pasa | — |
 | V3: sentido ciclónico | hacia el este por la costa sur | hacia el este (dφ/ds = 2.9×10⁻⁴ rad m⁻¹) | pasa | — |
@@ -33,8 +33,12 @@ V3 reproduce S&F14: c = 0.48 m s⁻¹ frente a sus 0.40–0.45 y los 0.42 de la 
 - El pico cercano a la inercial está desplazado al azul **en todo el dominio**: la mediana es 1.09 f (percentiles 5–95: 1.00–1.18 f) y solo el 5 % de las columnas tiene el pico a ≤ 1Δf de f. No es un artefacto de la estación elegida.
 - En la estación gira en **sentido horario**: la energía horaria cercana a la inercial es 5×10³ veces la antihoraria, con el pico horario también en 1.14 f. Es movimiento inercial, desplazado al azul.
 
-**Clasificación: (c), provisional.**
-- El dominio (caja de 100 × 60 km, R5, con fronteras abiertas y esponja; la estación queda a ≥ 20 celdas de ellas) no tiene una plataforma con W ≫ R₁. La respuesta cercana a la inercial de una región acotada y estratificada se desplaza al azul, por los modos de Poincaré: ω = (f² + c_n²(π/W)²)^½ (Gill 1982 §10.4 [verificar]).
+**Clasificación: (c), provisional** (definitiva tras la prueba de columna; ver "Resultado 1").
+- *Corrección (2026-11-13, ronda de correcciones 1 de la parte B).* Aquí decía que el dominio "no tiene una plataforma con W ≫ R₁" y atribuía el desplazamiento a los modos de Poincaré de una región acotada. Las dos afirmaciones eran incorrectas:
+  - con W = 60 km y R₁ ≈ 2.5–3.6 km, W ≫ R₁ sí se cumple;
+  - la relación ω = (f² + c₁²(π/W)²)^½ (Gill 1982 §10.4 [verificar]) da solo ω/f = 1.008–1.018 con W = 60 km y c₁ = 0.35–0.52 m s⁻¹. Llegar a 1.09 f exigiría W = 18–26 km, y a 1.14 f, W = 14–21 km.
+
+  El ancho del dominio, por sí solo, no explica el desplazamiento. Las causas candidatas, sin probar, están en "Resultado 1".
 - El propio PD0 §3 anticipaba el desplazamiento al azul de esta banda (Alford et al. 2016 [verificar]). Pero el criterio exigía f en la plataforma, y no se cumple.
 - **No está descartada la clase (a)**, un error del modelo en la frecuencia inercial, por ejemplo por el paso de tiempo de Coriolis. Con fΔt = 0.017 el error de fase de AB2 es del orden de 10⁻⁴ f, así que no lo espero, pero no está comprobado.
 
@@ -142,11 +146,22 @@ V3 reproduce S&F14: c = 0.48 m s⁻¹ frente a sus 0.40–0.45 y los 0.42 de la 
 
 **Corrida:** `V2a_column`, OK en las dos etapas (8400 pasos). Build: 1 min 57 s. Modelo: 13 s + 59 s (76 s de pared en total), np = 1, mientras R3 corría con 4 rangos.
 
-**Resultado** (`figures/pd2_column_test.json`; el mismo estimador que V2a: energía cinética horizontal en superficie, una ventana Hann en 0–280 h):
+**Resultado** (`figures/pd2_column_test.json`; el mismo estimador que V2a: energía cinética horizontal en superficie, una ventana Hann en 0–280 h; el campo se llama `within_1df`, porque es el resultado de la regla, no un veredicto):
 - pico a **1.005 f**, a **0.11 Δf** de f;
 - la columna queda horizontalmente uniforme (desviación máxima de U en superficie: 0.0).
 
-**Clase final de V2a: (c).** La frecuencia inercial del modelo es correcta. El pico de 1.136 f en la plataforma de F1, y el desplazamiento al azul de mediana 1.09 f en todo el dominio, se deben al dominio acotado (caja de 100 × 60 km con costas y fronteras abiertas), no a un error del modelo. El veredicto sigue siendo **FALLA**. Actualizado en `figures/validation.json` (`V2a.classification`).
+**Clase final de V2a: (c)**, por la regla fijada antes de la prueba. El veredicto sigue siendo **FALLA**.
+
+**Qué excluye la prueba y qué no** (redacción corregida el 2026-11-13, ronda de correcciones 1 de la parte B; la versión anterior atribuía la causa al dominio acotado, más de lo que la prueba muestra):
+- **Excluye** un error del modelo en la frecuencia inercial: el término de Coriolis y el paso de tiempo. La columna es una losa en plano f sin fronteras.
+- **No prueba nada que dependa de las fronteras.** Con `useOBCS = .FALSE.` las copias modificadas de `obcs` y la esponja no actúan, y la viscosidad lateral (Smagorinsky) no tiene gradientes horizontales sobre los que actuar.
+- **La causa del desplazamiento al azul de F1 no está identificada:** pico de 1.136 f en la plataforma; en todo el dominio, mediana 1.09 f y percentiles 5–95 de 1.00–1.18 f, en sentido horario. Candidatas, sin elegir ninguna:
+  1. la geometría acotada y los modos laterales;
+  2. las fronteras abiertas y la esponja;
+  3. la vorticidad de fondo o el flujo medio.
+- **El ancho del dominio, por sí solo, no basta:** ω/f = (1 + (c₁π/(W f))²)^½ = 1.008–1.018 con W = 60 km y c₁ = 0.35–0.52 m s⁻¹. Para 1.09–1.14 f harían falta W = 14–26 km (Gill 1982 §10.4 [verificar]).
+
+Actualizado en `figures/validation.json` (`V2a.classification`), que ahora se reconstruye con `validate.py pd2-merge`.
 
 ## Resultado 2: V4, limitación declarada y descriptivo *post hoc*
 
@@ -171,3 +186,15 @@ V3 reproduce S&F14: c = 0.48 m s⁻¹ frente a sus 0.40–0.45 y los 0.42 de la 
   - en Akselsundet, que lleva el 88 % del bruto de F1, cambia el reparto entre bandas;
   - en Mariasundet, el estrecho apenas existe a 400 m (6 niveles mojados frente a 11).
 - La banda baja domina el neto en F1 (−1.14 de −1.17 GJ) y cambia de signo a 400 m.
+
+
+## Cómo se reconstruyen los bloques del PD2 en `validation.json`
+
+`validate.py evaluate` solo escribe los veredictos. Los bloques del PD2 (`classification`, `pd2_decision`, `column_test`, `descriptive_free_wave`, `note_on_lag_correlation`) los reconstruye **`validate.py pd2-merge`** a partir de:
+- `pd2_column_test.json`;
+- `pd2_v2_diagnostics.json`;
+- `pd2_v2b_free_wave.json`;
+- `pd2_v4_diagnostics.json` y `pd2_v4_descriptive.json`;
+- los textos fijos de clasificación, que están en el código.
+
+No cambia ningún veredicto (prueba `test_pd2_merge_rebuilds_the_pd2_blocks`). El orden documentado es `evaluate` y después `pd2-merge`.

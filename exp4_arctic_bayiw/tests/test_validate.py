@@ -630,3 +630,58 @@ def test_evaluate_resumes_from_a_partial_json(tmp_path, monkeypatch):
     assert va.main(["evaluate", "--f1", "F1", "--v3", "V3", "--v4", "V4", "--out", str(out), "--resume"]) == 0
     r = json.loads(out.read_text())
     assert calls == [] and r["summary"]["failed"] == ["V4"] and r["summary"]["go_to_PD2"] is True
+
+
+# ---- fix round 1 (part B review) ---------------------------------------------------------------
+
+def test_ice_check_stage_with_only_the_boundary_duplicate_is_empty(tmp_path):
+    """Stage 2 holds only iteration 20, which the previous stage also wrote: it has no record of
+    its own and counts as empty."""
+    r = _ice_run(tmp_path / "a", 15)
+    for x in (r / "stage2").glob("seaice.0000000030.*"):
+        x.unlink()
+    for ext in ("data", "meta"):
+        (r / f"seaice.0000000020.{ext}").write_bytes((r / "stage2" / f"seaice.0000000020.{ext}").read_bytes())
+    res = ice_check.ice_ob_distance(r)
+    assert not res["passes"] and "no seaice record in stage2" in res["reason"]
+
+
+def test_ice_check_flags_a_gap_in_the_middle_of_the_record(tmp_path):
+    r = _ice_run(tmp_path / "a", 15)
+    for x in r.glob("seaice.0000000010.*"):                       # records 0, 20, 30: gap 0 -> 20
+        x.unlink()
+    res = ice_check.ice_ob_distance(r)
+    assert not res["passes"] and "gap" in res["reason"]
+
+
+def test_pd2_merge_rebuilds_the_pd2_blocks(tmp_path):
+    figs = tmp_path
+    (figs / "pd2_column_test.json").write_text(json.dumps(
+        {"peak_over_f": 1.005, "offset_df": 0.11, "within_1df": True}))
+    (figs / "pd2_v2_diagnostics.json").write_text(json.dumps(
+        {"V2a_peak_map": {"peak_over_f_percentiles": {"5": 1.0, "50": 1.09, "95": 1.18},
+                          "fraction_within_1df_of_f": 0.05},
+         "V2a_station_rotary": {"cw_near_inertial": 5.0, "ccw_near_inertial": 0.001, "cw_peak_over_f": 1.136}}))
+    (figs / "pd2_v2b_free_wave.json").write_text(json.dumps(
+        {"extremum": "crest", "arrival_h": [9.0], "n_stations": 12, "t_min_h": 6.0, "band_hz": [1, 2],
+         "c_m_s": 0.92, "c_stderr_m_s": 0.42, "reference": {"V3_c_m_s": 0.48}}))
+    (figs / "pd2_v4_diagnostics.json").write_text(json.dumps({"F1": {}, "V4": {}}))
+    (figs / "pd2_v4_descriptive.json").write_text(json.dumps({"post_hoc": "x"}))
+    val = {"V2a": {"pass": False, "classification": "pending"}, "V2b": {"pass": False},
+           "V3": {"pass": True}, "V4": {"pass": False}, "summary": {"failed": ["V2a", "V2b", "V4"]}}
+    out = va.pd2_merge(val, figs)
+    assert out["V2a"]["pass"] is False and out["V2b"]["pass"] is False      # verdicts untouched
+    assert out["V2a"]["classification"]["class"] == "(c)"
+    assert "inertial frequency excluded" in out["V2a"]["classification"]["text"]
+    assert "not identified" in out["V2a"]["classification"]["text"]
+    assert out["V2a"]["classification"]["column_test"]["peak_over_f"] == 1.005
+    assert out["V2b"]["classification"]["class"] == "(a)"
+    assert out["V2b"]["descriptive_free_wave"]["c_m_s"] == 0.92
+    assert "note_on_lag_correlation" in out["V2b"]["classification"]
+    assert out["V4"]["classification"]["class"] == "(c)" and "pd2_decision" in out["V4"]["classification"]
+    assert out["V3"]["classification"] == "not needed (pass)"
+    # the CLI path rewrites the file in place
+    p = figs / "validation.json"
+    p.write_text(json.dumps(val))
+    assert va.main(["pd2-merge", "--validation", str(p), "--figures", str(figs)]) == 0
+    assert json.loads(p.read_text())["V2a"]["classification"]["class"] == "(c)"

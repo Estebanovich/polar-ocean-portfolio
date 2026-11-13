@@ -21,7 +21,7 @@ Two stages as F1 (pfcommon.campaign.run_stages, forced data then data.free).
 
 Usage:
     column_test.py make  --f1-input <F1>/input --out <run>/input [--depth 153.37 --ji 114 62]
-    column_test.py run   --input <run>/input --run <run>      (np = 1; builds nothing)
+    column_test.py run   --input <run>/input --run <run> [--allow-concurrent]   (np = 1; builds nothing)
     column_test.py analyse --run <run> [--out figures/pd2_column_test.json]
 """
 from __future__ import annotations
@@ -120,7 +120,9 @@ def analyse(run_dir: Path) -> dict:
     r["record_h"] = float((t[-1] - t[0] + (t[1] - t[0])) / 3600)
     r["rule"] = ("fixed before running (PD2, 2026-11-13): peak <= 1 df of f -> the model inertial "
                  "frequency is right and the F1 blue shift is (c); > 1 df -> (a)")
-    r["v2a_class"] = "(c)" if r["pass"] else "(a)"
+    # the V2a evaluator's "pass" is renamed: this is a rule outcome, not a validation verdict
+    r["within_1df"] = r.pop("pass")
+    r["v2a_class"] = "(c)" if r["within_1df"] else "(a)"
     r["post_hoc"] = True
     return r
 
@@ -136,6 +138,9 @@ def main(argv=None) -> int:
     r = sub.add_parser("run")
     r.add_argument("--input", type=Path, required=True)
     r.add_argument("--run", type=Path, required=True)
+    r.add_argument("--allow-concurrent", action="store_true",
+                   help="run although other MPI/model processes exist (the declared exception: np = 1 "
+                        "next to a 4-rank run, 5 ranks in total; PD2 2026-11-13)")
     a_ = sub.add_parser("analyse")
     a_.add_argument("--run", type=Path, required=True)
     a_.add_argument("--out", type=Path, default=PKG / "figures" / "pd2_column_test.json")
@@ -144,7 +149,10 @@ def main(argv=None) -> int:
         print(json.dumps(make_column_inputs(a.f1_input, a.out, a.depth, tuple(a.ji))))
         return 0
     if a.cmd == "run":
-        # np = 1 while R3 runs on 4 ranks: 5 in total (PD2 instruction); no process check here
+        busy = cp.other_mitgcm_processes()                 # same check as run_campaign / restart_test
+        if busy and not a.allow_concurrent:
+            raise RuntimeError("another MPI / model process is running (" + " | ".join(busy) + "); "
+                               "pass --allow-concurrent only for the declared np = 1 exception")
         st = run(a.input, a.run)
         print(st)
         return 0 if st == "OK" else 1
