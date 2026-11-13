@@ -57,8 +57,9 @@ def _grid(stem: Path) -> np.ndarray:
 
 
 def stage_dirs(run_dir: Path) -> list[Path]:
+    """The run directory and its ``stage<k>`` subdirectories (``stage`` + digits only)."""
     run_dir = Path(run_dir)
-    return [run_dir] + sorted((p for p in run_dir.glob("stage[0-9]*") if p.is_dir()),
+    return [run_dir] + sorted((p for p in run_dir.iterdir() if p.is_dir() and re.fullmatch(r"stage\d+", p.name)),
                               key=lambda p: int(p.name[5:]))
 
 

@@ -379,6 +379,46 @@ def test_load_run_enforces_the_ice_check(tmp_path, monkeypatch):
         load.run(run)
 
 
+def test_ice_stamp_goes_stale_when_the_seaice_files_change(tmp_path):
+    stamps = tmp_path / "s.json"
+    good = _ice_run(tmp_path / "a", 15)
+    ice_check.check_and_stamp(good, stamps)
+    f = good / "stage2" / "seaice.0000000030.data"
+    f.write_bytes(f.read_bytes())                               # same bytes, new mtime
+    import os
+    os.utime(f, (1, 1))
+    with pytest.raises(RuntimeError, match="stale"):
+        ice_check.require_ice_ob_check(good, stamps)
+
+
+def test_ice_check_fails_if_the_records_do_not_cover_the_run(tmp_path):
+    r = _ice_run(tmp_path / "a", 15)
+    for x in (r / "stage2").glob("seaice.0000000030.*"):       # last record 20 < 40 - 10
+        x.unlink()
+    res = ice_check.ice_ob_distance(r)
+    assert not res["passes"] and "cover" in res["reason"]
+    r2 = _ice_run(tmp_path / "b", 15)
+    for x in (r2 / "stage2").glob("seaice.*"):                  # a stage without records
+        x.unlink()
+    res2 = ice_check.ice_ob_distance(r2)
+    assert not res2["passes"] and "stage2" in res2["reason"]
+
+
+def test_stage_dirs_ignore_renamed_stage_directories(tmp_path):
+    for n in ("stage2", "stage2_old", "stage10", "stagex"):
+        (tmp_path / n).mkdir()
+    assert [p.name for p in ice_check.stage_dirs(tmp_path)][1:] == ["stage2", "stage10"]
+    assert [p.name for p in load.stage_dirs(tmp_path)][1:] == ["stage2", "stage10"]
+
+
+def test_ice_area_refuses_other_precisions(tmp_path):
+    r = _ice_run(tmp_path / "a", 15)
+    m = r / "seaice.0000000000.meta"
+    m.write_text(m.read_text().replace("float64", "float32"))
+    with pytest.raises(ValueError, match="float64"):
+        ice_check.ice_ob_distance(r)
+
+
 def test_open_water_run_needs_no_ice_check(tmp_path):
     assert ice_check.is_ice_run(tmp_path) is False
 
@@ -482,7 +522,9 @@ def _synthetic_fjord_ds(nt=240, kind="tide"):
 @pytest.fixture
 def synth(monkeypatch):
     params = {"ob_sides": ["W", "N", "S"], "n_sponge": 5, "tide": {"period_s": 12.4206012 * 3600}}
+    actual = {"tide": {"period_s": 12.4206012 * 3600, "ramp_s": 2 * 12.4206012 * 3600}}
     monkeypatch.setattr(va, "_case_params", lambda ds: params)
+    monkeypatch.setattr(va, "_case_actual", lambda ds: actual)
 
     def make(kind):
         ds, inner, groups = _synthetic_fjord_ds(kind=kind)
@@ -496,6 +538,7 @@ def test_v3_from_run_on_a_synthetic_kelvin_wave(synth):
     assert r["sense"]["pass"] and r["speed"]["c_m_s"] == pytest.approx(0.42, rel=0.05)
     assert r["presence"]["decay_scale_km"] == pytest.approx(3.0, rel=0.1) and r["pass"]
     assert len(r["stations"]["cells"]) >= 5
+    assert r["ramp_s"] == 2 * 12.4206012 * 3600                    # actual.tide.ramp_s (review 6)
 
 
 def test_v2_from_run_on_a_synthetic_wind_response(synth):
@@ -506,8 +549,41 @@ def test_v2_from_run_on_a_synthetic_wind_response(synth):
 
 
 def test_flux_from_run_partitions_the_section_flux(synth):
-    ds = synth("tide")
-    out = va.flux_from_run(ds, va.load_theory())
-    assert sum(out["band_out_J"].values()) == pytest.approx(
-        out["F_bc_out_J"], rel=0.05, abs=1e-6 * max(1.0, abs(out["F_bc_out_J"])))
+    """Wind synthetic: baroclinic surface current and a density front at the mouth, so the flux
+    is not zero; the band sum equals the record integral up to the trapezoid end terms."""
+    ds = synth("wind")
+    th = va.load_theory()
+    mask, groups = budget.fjord_box(ds)
+    fp = va.face_profiles(ds, mask, groups)
+    Fq = ((fp["up"] * fp["pp"] * fp["dz"][None]).sum(1) * fp["w"][None]).sum(1)      # W, + in
+    out = va.flux_from_run(ds, th)
+    assert abs(out["F_bc_out_J"]) > 1.0                           # J: not a vacuous zero
+    end = 0.5 * DT * (abs(Fq[0]) + abs(Fq[-1]))
+    assert abs(sum(out["band_out_J"].values()) - out["F_bc_out_J"]) <= end + 1e-9 * abs(out["F_bc_out_J"])
+    assert sum(out["band_out_J"].values()) == pytest.approx(-Fq.sum() * DT, rel=1e-10)
     assert set(out["per_section_out_J"]) == {"mouth"}
+
+
+def test_flux_summary_requires_the_record_to_start_at_zero(synth):
+    ds = synth("wind")
+    mask, groups = budget.fjord_box(ds)
+    fp = va.face_profiles(ds, mask, groups, time=slice(1, None))
+    with pytest.raises(ValueError, match="t\\[0\\]"):
+        va.flux_summary(fp)
+
+
+def test_go_to_pd2_is_undecided_while_criteria_are_not_evaluated(tmp_path, monkeypatch):
+    monkeypatch.setattr(va, "open_run", lambda p: Path(p).name)
+    monkeypatch.setattr(va, "v2_from_run", lambda ds, th: {"V2a": {"pass": True}, "V2b": {"pass": True}})
+    r = va.evaluate(f1=tmp_path / "F1")
+    assert r["summary"]["not_evaluated"] == ["V3", "V4"] and r["summary"]["go_to_PD2"] is None
+
+
+def test_v2b_flags_gaps_in_the_station_sequence():
+    wet, inner, xc, yc, dx = _fjord_grid()
+    deep = wet.copy()
+    deep[:, 40:46] = False                                     # no deep water for one target
+    st = va.coastal_stations(wet, deep, inner, xc, yc, axis_deg=0.0, spacing_m=1000.0, side="south")
+    assert st["gaps"] and st["successive"] is False
+    st2 = va.coastal_stations(wet, wet, inner, xc, yc, axis_deg=0.0, spacing_m=1000.0, side="south")
+    assert st2["gaps"] == [] and st2["successive"] is True

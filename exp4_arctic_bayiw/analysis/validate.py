@@ -322,11 +322,14 @@ def coastal_stations(wet, deep, inner, xc, yc, axis_deg: float, spacing_m: float
     cand = strip & deep
     if not cand.any():
         raise ValueError("no coastal-station candidate")
-    a0, a1 = A[cand].min(), A[cand].max()
-    cells = []
-    for at in np.arange(a0 + 0.5 * spacing_m, a1, spacing_m):
+    # targets span the coastal strip (not only the candidates), so a target without a candidate
+    # is a gap in the "successive" stations of the PD0 (V2b) and is reported
+    a0, a1 = A[strip].min(), A[strip].max()
+    cells, gaps = [], []
+    for q, at in enumerate(np.arange(a0 + 0.5 * spacing_m, a1, spacing_m)):
         sel = cand & (np.abs(A - at) <= 0.5 * spacing_m)
         if not sel.any():
+            gaps.append({"target_index": q, "a_m": float(at)})
             continue
         jj, ii = np.nonzero(sel)
         key = np.lexsort((np.abs(A[jj, ii] - at), dl[jj, ii]))[0]
@@ -352,6 +355,8 @@ def coastal_stations(wet, deep, inner, xc, yc, axis_deg: float, spacing_m: float
         raise ValueError("coastal stations not connected through the coastal strip")
     return {"cells": cells, "s_m": s, "a_m": np.array([A[c] for c in cells]),
             "side": side, "max_coast_cells": max_coast_cells, "method": METHOD_NOTE,
+            "gaps": [g for g in gaps if A[cand].min() < g["a_m"] < A[cand].max()],
+            "successive": not any(A[cand].min() < g["a_m"] < A[cand].max() for g in gaps),
             "side_mask": fj & sidem}
 
 
@@ -430,9 +435,16 @@ def face_profiles(ds, mask, face_groups: dict, rho_b=None, time=slice(None)) -> 
 def flux_summary(fp: dict, bands: dict | None = None) -> dict:
     """Outward KF baroclinic pressure work integrated over the record [J] (budget.cumulative,
     trapezoid, as budget.f_bc_pressure_out), per section, and (with ``bands``) per band [J] =
-    -(band share of the time mean) x record length n dt."""
+    -(band share of the time mean) x record length n dt.
+
+    The record must start at t = 0 (the initial state at rest of a load.run dataset): the PD0
+    integrates over 0-T_fin, and a record starting later would silently drop the first interval
+    (ValueError). The band total, -dt sum F, differs from the trapezoid integral by the end terms
+    dt (F_0 + F_n)/2 only; F_0 = 0 for a run that starts at rest."""
     Fq = (fp["up"] * fp["pp"] * fp["dz"][None]).sum(1) * fp["w"][None]     # (nt, nf) W, + in
     t = fp["t"]
+    if t[0] != 0.0:
+        raise ValueError(f"flux_summary: t[0] = {t[0]} s, the record must start at 0 (0-T_fin)")
     out = {"F_bc_out_J": float(-budget.cumulative(t, Fq.sum(1))[-1]),
            "per_section_out_J": {str(n): float(-budget.cumulative(t, Fq[:, fp["group"] == n].sum(1))[-1])
                                  for n in np.unique(fp["group"])}}
@@ -453,6 +465,10 @@ def open_run(run_dir: Path):
 
 def _case_params(ds) -> dict:
     return json.loads((Path(ds.attrs["run_dir"]) / "input" / "case.json").read_text())["params"]
+
+
+def _case_actual(ds) -> dict:
+    return json.loads((Path(ds.attrs["run_dir"]) / "input" / "case.json").read_text())["actual"]
 
 
 def station_rules(th: dict, dx: float) -> dict:
@@ -492,13 +508,15 @@ def v2_from_run(ds, th: dict) -> dict:
     z = np.stack([displacement(ds["RHO"].isel(k=k, j=j, i=i).values, rho_b, ds["RC"].values, k)
                   for j, i in st["cells"]], axis=1)
     v2b = v2b_kelvin_speed(z, t, st["s_m"], v2b_range(th))
-    v2b.update(stations=_public(st), pycnocline_level=k)
+    v2b.update(stations=_public(st), pycnocline_level=k, station_gaps=st["gaps"],
+               stations_successive=st["successive"])
     return {"V2a": v2a, "V2b": v2b}
 
 
 def v3_from_run(ds) -> dict:
-    """V3 on the tide-only run (after the one-cycle ramp)."""
+    """V3 on the tide-only run, after the tide ramp of case.json (actual.tide.ramp_s)."""
     p = _case_params(ds)
+    ramp = float(_case_actual(ds)["tide"]["ramp_s"])
     th = load_theory()
     wet, inner, _, rho_b, k, deep, rules = _geometry(ds, th)
     omega = 2 * np.pi / float(p["tide"]["period_s"])          # M2 [rad s^-1] (case.json)
@@ -514,7 +532,7 @@ def v3_from_run(ds) -> dict:
     jj, ii = np.nonzero(inner & deep & st["side_mask"])
     j0, j1, i0, i1 = jj.min(), jj.max() + 1, ii.min(), ii.max() + 1
     lev = ds["RHO"].isel(k=k, j=slice(j0, j1), i=slice(i0, i1)).values            # (nt, ., .)
-    m = t >= float(p["tide"]["period_s"])
+    m = t >= ramp
     dx = float(np.median(np.diff(ds["XC"].values[0])))
     dl = _dist_land(wet)[jj, ii] * dx                                             # m
     amp = np.array([harmonic(displacement(lev[:, j - j0, i - i0], rho_b, RC, k)[m], t[m], omega)[0]
@@ -526,9 +544,8 @@ def v3_from_run(ds) -> dict:
         if s_.sum() >= 5:
             cen.append(0.5 * (a + b))
             med.append(float(np.median(amp[s_])))
-    r = v3_kelvin(coast, st["s_m"], np.array(med), np.array(cen), t, omega,
-                  ramp_s=float(p["tide"]["period_s"]))
-    r.update(stations=_public(st), pycnocline_level=k)
+    r = v3_kelvin(coast, st["s_m"], np.array(med), np.array(cen), t, omega, ramp_s=ramp)
+    r.update(stations=_public(st), pycnocline_level=k, ramp_s=ramp)
     return r
 
 
@@ -563,8 +580,11 @@ def evaluate(f1=None, v3=None, v4=None) -> dict:
     for k in done:
         res[k].setdefault("classification", "pending")     # (a)-(d), filled when a criterion fails
     failed = [k for k in done if not res[k]["pass"]]
-    res["summary"] = {"evaluated": done, "failed": failed, "go_to_PD2": bool(failed),
-                      "not_evaluated": [k for k in ("V2a", "V2b", "V3", "V4") if k not in res]}
+    missing = [k for k in ("V2a", "V2b", "V3", "V4") if k not in res]
+    # undecided (None) while a criterion is not evaluated, unless one already failed
+    res["summary"] = {"evaluated": done, "failed": failed,
+                      "go_to_PD2": True if failed else (None if missing else False),
+                      "not_evaluated": missing}
     return res
 
 
