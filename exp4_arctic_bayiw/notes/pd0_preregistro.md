@@ -382,3 +382,23 @@ Cada diferencia contra la referencia se clasifica como (a) error nuestro, (b) f�
 **Por qué.** Corrige el punto 2 de la Enmienda 1. El "(F_bc + A_bc)" que aparece ahí venía de una paráfrasis, no de una decisión explícita de Esteban. Esteban lo decidió el 2026-11-12. El texto de la Enmienda 1 no se edita.
 
 **Qué se sabía al decidir.** El reparto en R1 entre 0 y 120 h ya se conocía por el contraste de la Task 5 (`figures/budget_vs_thesis.json`): el trabajo de presión baroclínico saca 0.28 GJ de la bahía y la advección A_bc mete 5.68 GJ. En cambio, no se había calculado ningún cociente de H4d en ninguna corrida, ni en R1 ni en R1k, y no se habían analizado las salidas de la campaña del fiordo.
+
+### Enmienda 3 (2026-11-13)
+
+**Qué cambia.**
+- **Flujo que decide H4a, H4b(ii) y H4c(ii).** Es el trabajo de presión baroclínico de Kang y Fringer solo: F_bc = Σ u_n′ p′ dz sobre las caras de los estrechos (el mismo de `F_bc_pressure_out`, `analysis/budget.py`). La suma con la advección, F_bc + A_bc, pasa a ser descriptiva en las tres.
+- **H4b(ii).** La contraparte barotrópica es el trabajo de presión barotrópico, F_bt = H ū_n p_bt. La comparación F_bc,in ≥ |F_bt,in| es, entonces, entre trabajos de presión. F_bt + A_bt es descriptivo.
+- **H4d** queda como la dejó la Enmienda 2.
+- **Umbrales.** No cambia ninguno: los de H4a–H4d, V1–V4 y la regla del factor 1.5 quedan como están en §4–§5.
+
+**Por qué.** Hace que todos los flujos de las hipótesis sean la misma magnitud:
+- el numerador de H4d (Enmienda 2);
+- el flujo de V4, que se eligió como trabajo de presión porque V4a acota los cocientes de H4 (ruling R23 de la Task 6);
+- la intención original del PD0, que pedía el flujo de Nash, un trabajo de presión.
+
+Lo decidió Esteban el 2026-11-13. El texto de las Enmiendas 1 y 2 no se edita.
+
+**Qué se sabía al decidir.**
+- Los descriptivos de V4 y del PD2 (`figures/pd2_v4_diagnostics.json`, `pd2_v4_descriptive.json`), que son de trabajo de presión: en F1 el flujo neto por los estrechos es casi entero de la banda baja.
+- El reparto F/A de R1 en 0–120 h (Task 5, `figures/budget_vs_thesis.json`): el trabajo de presión baroclínico saca 0.28 GJ de la bahía y la advección A_bc mete 5.68 GJ.
+- **No se había calculado ningún número de H4a–H4d en ninguna corrida**, ni ninguna partición por bandas de flujo del fiordo para H4. Al decidir, la Task 7 estaba escribiendo las series de F1 en caché, sin ensamblarlas ni mirarlas. Los únicos números reales vistos en la Task 7 eran los de una corrida corta de cronometraje del PD1 (`F1_pd1final_48h`, 48 h): diferencias entre dos rutas de lectura (cero) y la energía de la caja por bandas, sin flujos.
