@@ -1,0 +1,39 @@
+# Exp. 4 fjord_vmf open boundaries: west (all rows), north and south (all columns; land points
+# of an OB row are masked by MITgcm), the east edge is land. Orlanski radiation, a sponge of
+# n_sponge cells on the velocities and the barotropic balance, as the thesis (bay_thesis
+# data.obcs), with the sponge width of the Task 1b bathymetry (d h / d n = 0 in the band).
+ &OBCS_PARM01
+ OB_Iwest=300*1,
+ OB_Jnorth=500*-1,
+ OB_Jsouth=500*1,
+ useOrlanskiWest=.TRUE.,
+ useOrlanskiNorth=.TRUE.,
+ useOrlanskiSouth=.TRUE.,
+ useOBCSsponge=.TRUE.,
+ useLinearSponge=.FALSE.,
+ OBCSsponge_Salt=.FALSE.,
+ OBCSsponge_Theta=.FALSE.,
+ useOBCSbalance=.TRUE.,
+ useOBCSprescribe=.FALSE.,
+ OBCS_balanceFacW=1.,
+ OBCS_balanceFacN=1.,
+ OBCS_balanceFacS=1.,
+ OBCS_monitorFreq=1200.,
+ &
+
+ &OBCS_PARM02
+# thesis values (bay_thesis data.obcs): Orlanski phase-speed averaging 250 s, CMAX 0.45 < 0.5
+# (AB-II stability of the radiation, pkg/obcs/orlanski_*.F)
+ cvelTimeScale=250.0,
+ CMAX=0.45,
+ &
+
+ &OBCS_PARM03
+# sponge width = n_sponge of cases.yaml; relaxation times 1200 s (inner edge, thesis) and
+# 240 s at the boundary (thesis 60 s = 2 deltaT; here max(60 s, 2 deltaT))
+ spongeThickness=10,
+ Urelaxobcsinner=1200.E0,
+ Vrelaxobcsinner=1200.E0,
+ Urelaxobcsbound=240,
+ Vrelaxobcsbound=240,
+ &

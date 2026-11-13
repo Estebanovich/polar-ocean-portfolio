@@ -924,10 +924,15 @@
    62
   ],
   "classification": {
-   "class": "(c) provisional",
-   "text": "Domain configuration: the near-inertial peak of the surface HKE is blue-shifted over the whole model domain (median 1.09 f, 5-95 % 1.00-1.18 f, only 5 % of columns within 1 df of f) and is clockwise (rotary cw/ccw ratio 5e3), so the 1.14 f shelf peak is not a station artefact; the 100 x 60 km box with open boundaries 20 cells away has no shelf where W >> R1. Not yet excluded: (a) a model error in the inertial frequency (option: horizontally uniform column test).",
+   "class": "(c)",
+   "text": "Domain configuration: the near-inertial peak of the surface HKE is blue-shifted over the whole model domain (median 1.09 f, 5-95 % 1.00-1.18 f, only 5 % of columns within 1 df of f) and is clockwise (rotary cw/ccw ratio 5e3), so the 1.14 f shelf peak is not a station artefact; the 100 x 60 km box with open boundaries 20 cells away has no shelf where W >> R1. (a) excluded by the PD2 column test (same configuration, doubly periodic, peak at 1.005 f).",
    "evidence": "figures/pd2_v2_diagnostics.json (post hoc)",
-   "post_hoc_evidence": true
+   "post_hoc_evidence": true,
+   "column_test": {
+    "result": "inertial peak of the doubly periodic column at 1.005 f, 0.11 df from f: the model inertial frequency is right",
+    "rule": "fixed before running (PD2, Esteban 2026-11-13): <= 1 df -> (c); > 1 df -> (a)",
+    "evidence": "figures/pd2_column_test.json; scripts/column_test.py (post hoc)"
+   }
   }
  },
  "V2b": {
@@ -1059,7 +1064,44 @@
    "class": "(a)",
    "text": "Our error in the definition of the pre-registered metric: with a spatially uniform wind every coastal station responds locally during the pulse (half-maximum reached at 2.0-3.7 h at 11 of 12 stations; pulse centre 2.5 h, sigma 1 h), so the first-arrival time measures the forced response, not a propagating Kelvin front, and c = 1.65 m/s is not a phase speed. Descriptive only (post hoc): lag of maximum correlation of the Kelvin-band displacement gives 0.64 m/s, with noisy lags.",
    "evidence": "figures/pd2_v2_diagnostics.json (post hoc)",
-   "post_hoc_evidence": true
+   "post_hoc_evidence": true,
+   "pd2_decision": "Esteban, PD2 2026-11-13: verdict stays FAIL, class (a): the pre-registered front-arrival metric is not defined under spatially uniform forcing. Gill (2016) sec. 10.10, pp. 399-401, eq. 10.10.21 (thesis library Gill_2016 .md l.15449-15486): with a uniform wind of finite duration the coastal response is 1 - cos(pi t), independent of x, until the signal from the end of the coast arrives. Yao (1986), doi:10.1080/07055900.1986.9649249 (Yao_1986 .md l.553-558): the forced response has about half the free-wave alongshore phase gradient, so a free wave cannot be told from the forced response by phase alone.",
+   "note_on_lag_correlation": "The earlier post hoc lag correlation (0.64 m/s) spans the forced period and is therefore expected to be biased high (Yao 1986)."
+  },
+  "descriptive_free_wave": {
+   "extremum": "crest",
+   "arrival_h": [
+    9.0,
+    10.333333333333334,
+    12.0,
+    10.666666666666666,
+    11.666666666666666,
+    12.333333333333334,
+    14.666666666666666,
+    11.666666666666666,
+    13.0,
+    21.666666666666668,
+    11.0,
+    14.0
+   ],
+   "n_stations": 12,
+   "t_min_h": 6.0,
+   "band_hz": [
+    1.984126984126984e-06,
+    1.929861146857004e-05
+   ],
+   "c_m_s": 0.9249455618776685,
+   "c_stderr_m_s": 0.4239311207157057,
+   "reference": {
+    "V3_c_m_s": 0.483164060294951,
+    "theory_c1_m_s": {
+     "H_mean": 0.3517382885733339,
+     "H_max": 0.5168196074381992
+    }
+   },
+   "label": "POST HOC, DESCRIPTIVE, not a validation (PD2 2026-11-13); method of Antenucci et al. 2000, Hodges et al. 2000 (l.798-800), Beletsky et al. 1997 (l.424-428)",
+   "rules": "Kelvin/subinertial band of PD0 section 3; record cut to t >= 6 h (pulse centre 2.5 h + 3 sigma) before filtering; first crest/trough with magnitude >= 1/2 of the station maximum; least-squares slope with standard error",
+   "source": "figures/pd2_v2b_free_wave.json; analysis/pd2_v2_diagnostics.py --free-wave"
   }
  },
  "V3": {
@@ -1451,7 +1493,8 @@
    "class": "(c)",
    "text": "Numerical choice (resolution): the net outward baroclinic pressure work changes sign between 200 m (-1.17 GJ, into the fjord) and 400 m (+0.32 GJ). At 200 m the net is 97 % in the unresolved low band (time-mean exchange); the four resolved bands add up to -0.03 GJ, so the V4b fractions are ill-conditioned. The gross flux drops by 4x at Akselsundet (1.57 -> 0.38 GJ) and 10x at Mariasundet (0.21 -> 0.02 GJ; 11 -> 6 wet levels, 8 -> 6 faces): 400 m does not resolve the strait exchange. PD0 4: if V4 fails, the limitation is declared.",
    "evidence": "figures/pd2_v4_diagnostics.json (post hoc)",
-   "post_hoc_evidence": true
+   "post_hoc_evidence": true,
+   "pd2_decision": "limitation declared (PD0 4 rule; Esteban, PD2 2026-11-13); descriptive post hoc analysis in figures/pd2_v4_descriptive.json"
   }
  },
  "summary": {

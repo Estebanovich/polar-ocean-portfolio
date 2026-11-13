@@ -226,7 +226,7 @@ def test_v4_400m_grid(cases):
 
 def test_fjord_configs_share_code_but_size_h():
     base = PKG / "config" / "fjord_vmf" / "code"
-    for other in ("fjord_vmf_400", "fjord_vmf_100", "fjord_vmf_100s"):
+    for other in ("fjord_vmf_400", "fjord_vmf_100", "fjord_vmf_100s", "fjord_vmf_column"):
         o = PKG / "config" / other / "code"
         names = sorted(p.name for p in base.iterdir())
         assert names == sorted(p.name for p in o.iterdir())

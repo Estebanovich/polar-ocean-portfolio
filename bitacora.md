@@ -676,3 +676,19 @@ La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue co
   - **V3 pasa:** decaimiento de 2.5 km, sentido hacia el este, c = 0.48 m s⁻¹, como S&F14.
   - **V4 falla:** el neto cambia de signo (F1 −1.17 GJ hacia dentro; V4 +0.32 GJ hacia fuera). A 200 m el 97 % del neto está en la banda baja, y el bruto cae ×4 y ×10 en los estrechos a 400 m. Clase (c), resolución. El PD0 manda declarar la limitación.
 - **No se continúa** a la Task 7. Material para Esteban: `notes/pd2_validacion.md`.
+
+## 2026-11-13 (mañana, 16) — Exp. 4, PD2: decisiones de Esteban sobre V2a, V2b y V4
+
+- **V2a, prueba de columna** (*post hoc*; regla fijada antes de correr: ≤ 1Δf → (c), > 1Δf → (a)).
+  - Configuración: `config/fjord_vmf_column`, el código de `fjord_vmf` con un `SIZE.h` de 10 × 10 × 40 y 1 rango. Namelists copiados de F1, doblemente periódico (sin tierra, `useOBCS = .FALSE.`), columna de la estación de V2a a 153 m.
+  - Build: 1 min 57 s. Corrida: 76 s (np = 1, en paralelo con R3).
+  - El pico inercial sale en **1.005 f, a 0.11 Δf**: la frecuencia inercial del modelo es correcta. **V2a queda FALLA, clase (c)**: el desplazamiento al azul de F1 (mediana 1.09 f) se debe al dominio acotado.
+- **V4: limitación declarada** (regla del PD0), más un descriptivo *post hoc* del bruto y de cada banda resuelta por estrecho.
+  - Akselsundet, el 88 % del bruto de F1: los signos de las cuatro bandas se conservan, pero no los pesos (la cercana a la inercial pasa de 0.32 a 0.07; Kelvin, de 0.49 a 0.85).
+  - Mariasundet: pesos parecidos (diferencia ≤ 0.10), pero el flujo es 10 veces menor a 400 m.
+  - La partición no es robusta a la resolución. V4a y V4b siguen en FALLA.
+- **V2b, cierre:** FALLA, clase (a). Apoyos: Gill (2016) §10.10, ec. 10.10.21 (respuesta uniforme independiente de x) y Yao (1986) (el gradiente de fase forzado es la mitad del libre), con las líneas comprobadas en la biblioteca de la tesis.
+  - Descriptivo *post hoc*, método de la literatura: banda de Kelvin, t ≥ 6 h, primera cresta. Da **c = 0.92 ± 0.42 m s⁻¹**, con las crestas aún casi simultáneas; frente a V3, 0.48 m s⁻¹.
+  - Al probar el método en el sintético, antes de calcular F1, vi que hay que cortar el registro antes de filtrar (ondulación del filtro) y exigir un umbral de amplitud en los extremos. Está declarado.
+  - Nuevas entradas en `readinglist.md`: Gill 2016, Yao 1986, Hodges 2000 y Beletsky 1997 (están en la biblioteca de la tesis).
+- La Task 7 y H4a–H4d no se tocan.

@@ -1,0 +1,77 @@
+C CPP options file for OBCS package
+C     Exp. 4 fjord_vmf: the bay_thesis OBCS_OPTIONS.h (thesis copy) with two changes:
+C     no eastern boundary (the east edge of the box is land) and ALLOW_OBCS_TIDES
+C     (V3: barotropic M2 added to the OB normal velocity, pkg/obcs/obcs_add_tides.F,
+C     called after the balance in pkg/obcs/obcs_adjust.F:42-51).
+C Use this file for selecting options within the OBCS package
+
+#ifndef OBCS_OPTIONS_H
+#define OBCS_OPTIONS_H
+#include "PACKAGES_CONFIG.h"
+#include "CPP_OPTIONS.h"
+
+#ifdef ALLOW_OBCS
+C Package-specific Options & Macros go here
+
+C Enable individual open boundaries
+#define ALLOW_OBCS_NORTH
+#define ALLOW_OBCS_SOUTH
+#undef ALLOW_OBCS_EAST
+#define ALLOW_OBCS_WEST
+
+C This include hooks to the Orlanski Open Boundary Radiation code
+#define ALLOW_ORLANSKI
+
+C Enable OB values to be prescribed via external fields that are read
+C from a file
+#define ALLOW_OBCS_PRESCRIBE
+
+C Enable OB conditions following Stevens (1990)
+#undef ALLOW_OBCS_STEVENS
+
+C Allow sponge layer treatment of open boundary conditions
+#define ALLOW_OBCS_SPONGE
+
+C Include hooks to sponge layer treatment of pkg/seaice variables
+#undef ALLOW_OBCS_SEAICE_SPONGE
+
+C balance barotropic velocity
+#define ALLOW_OBCS_BALANCE
+
+C add tidal contributions to normal OB flow
+C NOTE that at the moment tidal forcing is applied
+C only to "normal" flow.
+#define ALLOW_OBCS_TIDES
+C     Exp. 4 (PD1 decision 4): V3 tide ramped in over one M2 cycle (s); used only by
+C     the modified obcs_add_tides.F of this directory.
+#define EXP4_TIDE_RAMP_S 44714.16 _d 0
+
+C Use older implementation of obcs in seaice-dynamics
+C note: most of the "experimental" options listed below have not yet
+C       been implementated in new version.
+#undef OBCS_UVICE_OLD
+
+#ifdef OBCS_UVICE_OLD
+C     The following five CPP options are experimental and aim to deal
+C     with artifacts due to the low-frequency specification of sea-ice
+C     boundary conditions compared to the model forcing frequency.
+C     Ice convergence at edges can cause model to blow up.  The
+C     following CPP option fixes this problem at the expense of less
+C     accurate boundary conditions.
+#undef OBCS_SEAICE_AVOID_CONVERGENCE
+
+C     Smooth the component of sea-ice velocity perpendicular to the edge.
+#undef OBCS_SEAICE_SMOOTH_UVICE_PERP
+
+C     Smooth the component of sea ice velocity parallel to the edge.
+#undef OBCS_SEAICE_SMOOTH_UVICE_PAR
+
+C     Compute rather than specify seaice velocities at the edges.
+#undef OBCS_SEAICE_COMPUTE_UVICE
+#endif /* OBCS_UVICE_OLD */
+
+C     Smooth the tracer sea-ice variables near the edges.
+#undef OBCS_SEAICE_SMOOTH_EDGE
+
+#endif /* ALLOW_OBCS */
+#endif /* OBCS_OPTIONS_H */

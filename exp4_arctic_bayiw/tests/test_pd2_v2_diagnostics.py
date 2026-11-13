@@ -34,3 +34,33 @@ def test_v4_section_summary_net_gross_and_bands():
     s = d4.summarise(fp, BANDS_HZ)["mouth"]
     assert s["gross_J"] >= abs(s["net_out_J"]) > 0
     assert sum(s["band_out_J"].values()) == pytest.approx(s["mean_out_W"] * 240 * DT, rel=1e-9)
+
+
+def test_v4_descriptive_shares_and_signs():
+    from exp4_arctic_bayiw.analysis import pd2_v4_diagnostics as d4
+    band = lambda a, b, c, e, low: {"kelvin_subinertial": a, "near_inertial": b, "superinertial": c,
+                                    "seiche": e, "low": low}
+    diag = {"F1": {"S": {"gross_J": 10.0, "band_out_J": band(2.0, -1.0, 0.5, 0.5, -5.0)}},
+            "V4": {"S": {"gross_J": 4.0, "band_out_J": band(4.0, -1.0, -0.5, 0.5, 1.0)}}}
+    r = d4.descriptive(diag)["S"]
+    assert r["gross_J"]["V4_over_F1"] == 0.4
+    assert r["bands"]["kelvin_subinertial"]["abs_share_F1"] == 0.5
+    assert r["bands"]["kelvin_subinertial"]["abs_share_V4"] == pytest.approx(4 / 6)
+    assert r["bands"]["superinertial"]["same_sign"] is False and r["bands"]["near_inertial"]["same_sign"]
+    assert r["max_abs_share_diff"] == pytest.approx(4 / 6 - 0.5)
+
+
+def test_free_wave_speed_ignores_the_forced_period_and_tracks_the_first_extremum():
+    """PD2 V2b descriptive (post hoc): a uniform forced bump before 6 h plus a free wave of 60 h
+    period travelling at 0.4 m/s; the speed comes from the first crest or trough after 6 h."""
+    t = np.arange(840) * DT
+    s = np.arange(12) * 5e3
+    c = 0.4
+    forced = 2.0 * np.exp(-0.5 * ((t - 2.5 * 3600) / 3600) ** 2)
+    free = np.stack([np.where(t > x / c + 8 * 3600,
+                              np.sin(2 * np.pi * (t - x / c - 8 * 3600) / (60 * 3600)), 0.0) for x in s], axis=1)
+    z = forced[:, None] + free
+    band = (2 / (280 * 3600), 0.85 * F / (2 * np.pi))
+    r = dg.free_wave_speed(z, t, s, band, t_min=6 * 3600.0)
+    assert r["c_m_s"] == pytest.approx(c, rel=0.1)
+    assert r["c_stderr_m_s"] > 0 and r["n_stations"] == 12 and r["extremum"] in ("crest", "trough")

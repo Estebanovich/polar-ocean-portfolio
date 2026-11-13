@@ -96,3 +96,78 @@ V3 reproduce S&F14: c = 0.48 m s⁻¹ frente a sus 0.40–0.45 y los 0.42 de la 
 2. V2b: ¿declarar (a) y apoyarse en V3, o una enmienda *post hoc*?
 3. V4: la limitación se declara por regla. ¿Se añade el descriptivo de bandas resueltas y bruto?
 4. Para la Task 7: con la banda baja dominando el flujo neto, H4a probablemente salga "no concluyente". ¿Se sigue con H4b–H4d como están?
+
+---
+
+## Decisiones del PD2 (Esteban, 2026-11-13)
+
+1. **V2a:** opción 2, la prueba de columna. La regla se fijó antes de correrla:
+   - pico a ≤ 1Δf de f → la frecuencia inercial del modelo es correcta y el desplazamiento al azul de F1 es (c), el dominio acotado;
+   - pico a > 1Δf → (a), y se investiga.
+
+   La prueba es *post hoc*: cambia la clase de V2a, no su veredicto (FALLA).
+2. **V4:** se declara la limitación (regla del PD0 §4), y se añade un análisis descriptivo *post hoc*: el bruto y cada una de las cuatro bandas resueltas, F1 frente a V4, por estrecho. V4a y V4b siguen en FALLA.
+3. **V2b y Task 7:** nada por ahora. Esteban pidió antes una búsqueda bibliográfica, que lleva el controlador. No se toca la clase de V2b ni se escribe ninguna enmienda.
+4. **V2b, cierre (Esteban, 2026-11-13, después de la consulta bibliográfica).**
+   - **Veredicto:** FALLA, **clase (a)**. La métrica prerregistrada del tiempo de llegada del frente no está definida con un forzamiento espacialmente uniforme. Apoyo (líneas comprobadas en la biblioteca de la tesis, `~/Documents/TESIS_InternalWaves-2/Literatura/`):
+     - Gill (2016), §10.10, pp. 399–401, ec. 10.10.21 (`Gill_2016 … .md`, l. 15449–15486; la ecuación está en la l. 15483). Con un viento uniforme de duración finita, la respuesta en la costa es A = 1 − cos(πt), **independiente de x**, hasta que llega la señal del extremo de la costa.
+     - Yao (1986), Trinity Bay, doi:10.1080/07055900.1986.9649249 (`Yao_1986 … .md`, l. 553–558). La respuesta forzada tiene alrededor de **la mitad** del gradiente de fase a lo largo de la costa que la onda libre, y "it is not possible to distinguish between a free wave and a forced response from the observed alongshore phase gradients alone".
+   - **Descriptivo *post hoc*, no es validación** (`figures/pd2_v2b_free_wave.json`, `analysis/pd2_v2_diagnostics.py --free-wave`).
+     - **Método:** el de la literatura para la velocidad del periodo libre: Antenucci et al. (2000); Hodges et al. (2000), l. 798–800, desplazamiento de una isoterma filtrado en una banda; Beletsky et al. (1997), l. 424–428, seguir el máximo y el mínimo de la temperatura alrededor de la cuenca.
+     - **Reglas fijadas antes de calcular:**
+       - la banda de Kelvin/subinercial del PD0 §3 (el controlador citó §5; las bandas están en §3);
+       - solo t ≥ 6 h (centro del pulso 2.5 h + 3σ);
+       - las mismas 12 estaciones de la costa sur;
+       - el desplazamiento de la picnoclina en k\* (−6.8 m).
+     - **Dos detalles de implementación**, fijados con la prueba sintética **antes de calcular F1**:
+       - el registro se corta en t ≥ 6 h **antes** de filtrar, porque filtrar el registro entero esparce el pulso forzado más allá de las 6 h (ondulación del filtro);
+       - un extremo cuenta si su magnitud es ≥ ½ del máximo de la estación.
+     - **Resultado:**
+       - se sigue la primera cresta;
+       - llegadas en 9.0, 10.3, 12.0, 10.7, 11.7, 12.3, 14.7, 11.7, 13.0, 21.7, 11.0 y 14.0 h a lo largo de 0–59 km;
+       - **c = 0.92 ± 0.42 m s⁻¹** (pendiente y error típico del ajuste);
+       - como referencia: V3, 0.48 m s⁻¹; teoría, c₁ = 0.35 (H̄) a 0.52 m s⁻¹ (H_máx).
+     - **Lectura:** después del pulso, las crestas siguen llegando casi a la vez (9–15 h en 11 de 12 estaciones). Con la incertidumbre del ajuste, el resultado no separa una onda libre de la respuesta forzada, como predicen Gill (2016) y Yao (1986). Es solo descriptivo.
+     - La correlación con desfase *post hoc* anterior (0.64 m s⁻¹) abarca el periodo forzado, así que se espera que esté sesgada hacia arriba (Yao 1986).
+   - `figures/validation.json` recoge la clase (`V2b.classification`) y un bloque descriptivo aparte (`V2b.descriptive_free_wave`). El campo del veredicto no cambia.
+
+## Resultado 1: prueba de columna (V2a)
+
+**Configuración** (`scripts/column_test.py`, build `config/fjord_vmf_column`):
+- **Código:** el de `fjord_vmf`, con las mismas copias modificadas de MITgcm; solo cambia `SIZE.h`: 10 × 10 × 40 celdas y 1 rango. La prueba `test_fjord_configs_share_code_but_size_h` exige que el resto sea idéntico.
+- **Namelists:** los de F1, copiados (`data`, `data.free`, `data.kpp`, `data.diagnostics`, `eedata`): Δt 120 s escalonado, KPP y la mezcla del PD0, EOS lineal ajustada, f0 de 78°N, salida cada 1200 s, y etapa forzada de 0–60 h más libre hasta 280 h.
+- **Fronteras:** **doblemente periódicas**: sin tierra y con `useOBCS = .FALSE.`, así que MITgcm aplica su periodicidad por omisión en x e y (`output.txt`: "pkg/obcs compiled but not used").
+- **Columna:** fondo plano a 153.4 m, la profundidad de la estación de V2a. T y S son la columna inicial de F1 en esa estación. El esfuerzo es el registro de F1 en esa estación, el mismo pulso uniforme, repartido igual en todo el dominio.
+- **Pipeline:** no se pasó por `cases.yaml`/`make_case`, porque `make_fjord_case` construye la batimetría IBCAO y no es barato adaptarlo. Es una configuración mínima aparte que **copia las entradas reales de F1**, y las dos etapas corren con `pfcommon.campaign.run_stages`, como en la campaña.
+
+**Corrida:** `V2a_column`, OK en las dos etapas (8400 pasos). Build: 1 min 57 s. Modelo: 13 s + 59 s (76 s de pared en total), np = 1, mientras R3 corría con 4 rangos.
+
+**Resultado** (`figures/pd2_column_test.json`; el mismo estimador que V2a: energía cinética horizontal en superficie, una ventana Hann en 0–280 h):
+- pico a **1.005 f**, a **0.11 Δf** de f;
+- la columna queda horizontalmente uniforme (desviación máxima de U en superficie: 0.0).
+
+**Clase final de V2a: (c).** La frecuencia inercial del modelo es correcta. El pico de 1.136 f en la plataforma de F1, y el desplazamiento al azul de mediana 1.09 f en todo el dominio, se deben al dominio acotado (caja de 100 × 60 km con costas y fronteras abiertas), no a un error del modelo. El veredicto sigue siendo **FALLA**. Actualizado en `figures/validation.json` (`V2a.classification`).
+
+## Resultado 2: V4, limitación declarada y descriptivo *post hoc*
+
+**La limitación se declara** (PD0 §4): a 400 m el flujo baroclínico neto por los estrechos no converge (cambia de signo), así que V4 no puede acotar la incertidumbre de resolución de los cocientes de H4. V4a y V4b quedan en **FALLA**.
+
+**Descriptivo *post hoc*** (`figures/pd2_v4_descriptive.json`, de `analysis/pd2_v4_diagnostics.py --descriptive`). GJ, + hacia fuera. "Peso" es |F_b| / Σ|F_b| sobre las cuatro bandas resueltas.
+
+| Estrecho | | Bruto ∫\|F\|dt | Kelvin/subinercial | Cercana a la inercial | Superinercial | Seiche | Banda baja (no resuelta) |
+|---|---|---|---|---|---|---|---|
+| Akselsundet | F1 (200 m) | 1.573 | +0.0520 (peso 0.49) | −0.0340 (0.32) | +0.0108 (0.10) | −0.0093 (0.09) | −0.997 |
+| | V4 (400 m) | 0.381 (×0.24) | +0.1534 (0.85) | −0.0121 (0.07) | +0.0131 (0.07) | −0.0012 (0.01) | +0.165 |
+| Mariasundet | F1 (200 m) | 0.208 | −0.0341 (0.69) | −0.0091 (0.19) | −0.0006 (0.01) | −0.0053 (0.11) | −0.147 |
+| | V4 (400 m) | 0.022 (×0.11) | −0.0021 (0.60) | −0.0006 (0.17) | +0.0003 (0.08) | +0.0005 (0.15) | +0.007 |
+
+**Lectura** (descriptiva, sin umbral):
+- **Akselsundet:** el **signo** de las cuatro bandas resueltas es el mismo a 200 y a 400 m, pero los **pesos no**:
+  - la banda cercana a la inercial pasa de 0.32 a 0.07;
+  - la de Kelvin, de 0.49 a 0.85;
+  - diferencia máxima de peso 0.36.
+- **Mariasundet:** los pesos se parecen (diferencia máxima 0.10), con Kelvin primero y la cercana a la inercial después en las dos mallas. Pero todo el flujo es 10 veces menor a 400 m, y las bandas superinercial y de seiche cambian de signo con valores minúsculos.
+- **En ningún estrecho la partición es robusta**:
+  - en Akselsundet, que lleva el 88 % del bruto de F1, cambia el reparto entre bandas;
+  - en Mariasundet, el estrecho apenas existe a 400 m (6 niveles mojados frente a 11).
+- La banda baja domina el neto en F1 (−1.14 de −1.17 GJ) y cambia de signo a 400 m.
