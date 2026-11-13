@@ -312,7 +312,8 @@ def forcing_stress(ds: xr.Dataset, t: float):
             # external_fields_load.F:63 only interpolates with periodicExternalForcing
             raise NotImplementedError(f"{key} without periodicExternalForcing is not handled")
         p = Path(s["dir"]) / f
-        R = np.fromfile(p, ">f8").reshape(-1, ny, nx)
+        # memory map: only the two records used are read (the fjord files hold 181 records)
+        R = np.memmap(p, dtype=">f8", mode="r").reshape(-1, ny, nx)
         per, cyc = s["period"], s["cycle"]
         if cyc > 0:
             # periodic sequence, eesupp/src/get_periodic_interval.F:83 (nbRec) and 117-127

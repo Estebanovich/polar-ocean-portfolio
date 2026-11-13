@@ -709,3 +709,22 @@ La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue co
 - `free_wave_speed`: la señal es el desplazamiento de la picnoclina en k\*, usado como aproximación al modo 1, no una proyección modal. Hay pruebas que muestran por qué hacen falta el corte antes de filtrar y el umbral de ½ del máximo; el resultado de F1 no cambia.
 - `column_test.py run` hace la misma comprobación de procesos que los demás ejecutores, con `--allow-concurrent` explícito para la excepción declarada.
 - Los namelists de prueba pasan a modo 100644.
+
+## 2026-11-13 (tarde, 19) — Exp. 4, Task 7: hipótesis H4a–H4d y Figuras 2–4 → PD3
+
+- **Enmienda 3 del PD0** (Esteban, por el controlador): H4a, H4b(ii) y H4c(ii) las decide el trabajo de presión de Kang y Fringer (F_bc; F_bt en H4b(ii)), y F + A queda como descriptivo. Se escribió y se versionó (1c1f45c) antes de calcular ningún número de H4.
+- **Código nuevo:**
+  - `analysis/partition.py`: flujos por cara y por nivel, su partición por bandas, la energía de la caja sin la banda baja, W_NI, las estaciones y el ensamblado de `partition.json` y `budget.json`;
+  - `analysis/hypotheses.py`: evaluación mecánica;
+  - `analysis/figures.py`: Figuras 2–4.
+  
+  Todo con pruebas sintéticas contra `kf_budget`. La lectura pasa por un almacén local de la caja (una pasada por LaCie por corrida, ~20 min en el fiordo); es idéntica bit a bit a la lectura directa. `load.forcing_stress` lee los archivos de viento con memmap.
+- **Resultados** (`notes/pd3_hipotesis.md`):
+  - H4a: **no concluyente con T_fin** (banda baja 0.93).
+  - H4b(i): **se cumple** (0.228).
+  - H4b(ii): **no se cumple** (0.0067 frente a 0.0206 GJ).
+  - H4c: **no distinguible** (W_NI 0.83).
+  - H4d R1k/R1: **apoyada** (3.93; R1 da el 0.08 % de la tesis).
+  - H4d F1/F1c: **refutada**, por aritmética literal y con bandera: η(F1) < 0, porque el intercambio medio entra.
+- **Hallazgo:** la APE exacta con el ρ_b inicial fijo deriva, porque el perfil de fondo se suaviza (F2 sin viento: de 0 a 1.15 GJ; R2: 149 GJ). Clase (c). No cambia H4b(i): el cociente de KE_bc sola, *post hoc*, es 0.0005. Los residuos D no miden disipación.
+- Lista de lecturas: Arneborg y Liljebladh (2001), en la biblioteca de la tesis.
