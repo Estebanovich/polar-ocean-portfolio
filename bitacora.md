@@ -697,3 +697,15 @@ La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue co
 
 - R2 y R3 a 280 h, OK: 7.30 h y 7.04 h (≤ 8 h por corrida), 357 GB cada una. Detalle en `notes/pd1_puente.md` §7. Ningún proceso suelto; quedan 972 GB libres en LaCie.
 - Con esto termina la parte B de la Task 6. El PD2 está decidido (V2a (c) con la prueba de columna, V2b (a), V4 limitación declarada) y la Task 7 queda para después.
+
+## 2026-11-13 (mañana, 18) — Exp. 4, Task 6 parte B: ronda de correcciones 1 de la revisión
+
+- **Corrección de V2a** (de esta entrada y de la anterior, "mañana, 16", que no se edita). La prueba de columna **solo excluye un error en la frecuencia inercial** (Coriolis y paso de tiempo). No prueba nada que dependa de las fronteras: `useOBCS = .FALSE.`, sin esponja y sin gradientes laterales.
+  - La causa del desplazamiento al azul de F1 **no está identificada**. Candidatas: la geometría acotada y los modos laterales, las fronteras abiertas y la esponja, la vorticidad de fondo o el flujo medio.
+  - Con W = 60 km, Poincaré da solo ω/f = 1.008–1.018; para 1.09–1.14 f harían falta 14–26 km. Además, W ≫ R₁ sí se cumple: la afirmación contraria era errónea.
+  - La clase sigue siendo (c), por la regla fijada antes de la prueba, y el veredicto sigue en FALLA. Corregido en `notes/pd2_validacion.md` y en `validation.json`.
+- `validate.py pd2-merge` reconstruye los bloques del PD2 de `validation.json` a partir de los JSON *post hoc* y de textos fijos, sin tocar los veredictos (probado). En `pd2_column_test.json`, `pass` pasa a llamarse `within_1df`.
+- **Comprobación del hielo, más estricta:** una etapa cuyo único registro repite la frontera de la anterior cuenta como vacía, y se señalan los huecos a mitad de registro. Repetida en F2 y F4: pasan (146 y 119 celdas; 840 registros, intervalo de 10 iteraciones, sin huecos).
+- `free_wave_speed`: la señal es el desplazamiento de la picnoclina en k\*, usado como aproximación al modo 1, no una proyección modal. Hay pruebas que muestran por qué hacen falta el corte antes de filtrar y el umbral de ½ del máximo; el resultado de F1 no cambia.
+- `column_test.py run` hace la misma comprobación de procesos que los demás ejecutores, con `--allow-concurrent` explícito para la excepción declarada.
+- Los namelists de prueba pasan a modo 100644.

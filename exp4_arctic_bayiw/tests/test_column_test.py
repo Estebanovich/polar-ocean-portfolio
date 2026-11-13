@@ -64,3 +64,22 @@ def test_column_inputs_keep_f1_physics_and_remove_boundaries(tmp_path):
     assert tx.shape[0] == 181 and np.allclose(tx.max(), 0.0) and tx.min() < -0.09
     assert info["boundaries"].startswith("doubly periodic")
     cp.check_size(out, PKG / "config" / "fjord_vmf_column" / "code" / "SIZE.h")
+
+
+def test_column_run_refuses_other_model_processes_unless_allowed(tmp_path, monkeypatch):
+    ct = _load()
+    monkeypatch.setattr(ct.cp, "_pgrep", lambda: "4242 model-process")
+    import pytest
+    with pytest.raises(RuntimeError, match="allow-concurrent"):
+        ct.main(["run", "--input", str(tmp_path), "--run", str(tmp_path / "r")])
+    called = []
+    monkeypatch.setattr(ct, "run", lambda *a, **k: called.append(1) or "OK")
+    assert ct.main(["run", "--input", str(tmp_path), "--run", str(tmp_path / "r"), "--allow-concurrent"]) == 0
+    assert called == [1]
+
+
+def test_column_analysis_reports_within_1df_not_pass():
+    import inspect
+    ct = _load()
+    src = inspect.getsource(ct.analyse)
+    assert "within_1df" in src and 'r["pass"]' not in src.replace('r.pop("pass")', "")

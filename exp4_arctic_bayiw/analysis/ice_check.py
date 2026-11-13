@@ -85,7 +85,9 @@ def ice_ob_distance(run_dir: Path, min_cells: int | None = None) -> dict:
     """Smallest distance (cells, between cell centres) from ice (SIarea > 0) to a wet open-boundary
     cell over every seaice record of every stage. passes: distance >= min_cells (default the
     case's n_sponge) at every record, AND the records cover the run: every stage holds at least
-    one record and the last record read is within one output interval (the record spacing) of
+    one record of its own (a stage whose only record repeats the previous stage's boundary
+    iteration counts as empty), no two consecutive records are more than one output interval
+    (the smallest record spacing) apart, and the last record read is within one interval of
     expected_last_iter (run_status_final.json, else last_iter of the last stage). The final
     state itself is never a diagnostic (module docstring), hence the one-interval allowance."""
     run_dir = Path(run_dir)
@@ -99,14 +101,13 @@ def ice_ob_distance(run_dir: Path, min_cells: int | None = None) -> dict:
     dist = ob_distance_field(wet, p["ob_sides"])
     dmin, at, nrec, seen, empty = None, None, 0, set(), []
     for d in stage_dirs(run_dir):
-        metas = sorted(d.glob("seaice.*.meta"))
-        if not metas:
-            empty.append(d.name)
-        for m in metas:
+        own = 0                                             # records not already read
+        for m in sorted(d.glob("seaice.*.meta")):
             it = int(re.match(r"seaice\.(\d{10})\.meta", m.name).group(1))
             if it in seen:                                  # a stage boundary written twice
                 continue
             seen.add(it)
+            own += 1
             a = _area(m.with_suffix(".data"), _parse_meta(m.read_text()))
             nrec += 1
             if not (a > 0).any():
@@ -114,16 +115,22 @@ def ice_ob_distance(run_dir: Path, min_cells: int | None = None) -> dict:
             dd = float(dist[a > 0].min())
             if dmin is None or dd < dmin:
                 dmin, at = dd, it
+        if own == 0:                                        # none, or only the boundary duplicate
+            empty.append(d.name)
     its = sorted(seen)
     fin = run_dir / "run_status_final.json"
     if fin.exists():
         expected = int(json.loads(fin.read_text())["expected_last_iter"])
     else:
         expected = int(json.loads((stage_dirs(run_dir)[-1] / "run_status.json").read_text())["last_iter"])
-    step = int(np.median(np.diff(its))) if len(its) > 1 else None
+    # output interval = the smallest spacing between records; a larger spacing anywhere is a gap
+    step = int(np.diff(its).min()) if len(its) > 1 else None
     reason = []
     if empty:
         reason.append("no seaice record in " + ", ".join(empty))
+    gaps = [(int(a), int(b)) for a, b in zip(its[:-1], its[1:]) if step and b - a > step]
+    if gaps:
+        reason.append(f"gap in the records (interval {step}): " + ", ".join(f"{a}->{b}" for a, b in gaps[:5]))
     if not its or step is None or its[-1] < expected - step:
         reason.append(f"records do not cover the run (last {its[-1] if its else None}, "
                       f"expected {expected}, interval {step})")
@@ -132,7 +139,7 @@ def ice_ob_distance(run_dir: Path, min_cells: int | None = None) -> dict:
         reason.append(f"ice within {dmin} cells of an open boundary at iteration {at}")
     return {"min_cells": dmin, "at_iter": at, "required_cells": n, "records": nrec,
             "first_iter": its[0] if its else None, "last_iter_read": its[-1] if its else None,
-            "expected_last_iter": expected, "record_interval_iter": step,
+            "expected_last_iter": expected, "record_interval_iter": step, "gaps": gaps,
             "passes": bool(not reason), "reason": "; ".join(reason)}
 
 

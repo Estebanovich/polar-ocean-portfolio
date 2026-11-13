@@ -86,10 +86,14 @@ def _first_extremum(x, t, t_min, kind, frac: float = 0.5):
     return None
 
 
-def free_wave_speed(z, t, s, band, t_min: float = 6 * 3600.0) -> dict:
+def free_wave_speed(z, t, s, band, t_min: float = 6 * 3600.0, cut_before_filter: bool = True,
+                    frac: float = 0.5) -> dict:
     """PD2 V2b closure (Esteban, 2026-11-13): POST HOC and DESCRIPTIVE free-wave speed, the
     literature method (Antenucci et al. 2000; Hodges et al. 2000, filtered isotherm displacement;
     Beletsky et al. 1997, tracing the displacement maximum and minimum along the coast).
+
+    The signal is the pycnocline displacement at the level k* of maximum background N^2, used as a
+    proxy for the mode-1 displacement: it is NOT a modal projection.
 
     Rules fixed BEFORE computing (2026-11-13): z (nt, ns) = pycnocline displacement [m] at the
     V2b south-coast stations ordered eastward, band-passed in the Kelvin/subinertial band of the
@@ -103,13 +107,18 @@ def free_wave_speed(z, t, s, band, t_min: float = 6 * 3600.0) -> dict:
     # the record is cut at t_min BEFORE filtering: band-passing the whole record spreads the
     # forced pulse past t_min (filter ringing of a spatially uniform signal; found on the
     # synthetic test before any F1 value was computed)
-    keep = np.asarray(t) >= t_min
-    t = np.asarray(t)[keep]
-    zk = band_pass(np.asarray(z, float)[keep], dt, *band)
-    tc = _first_extremum(zk[:, 0], t, t_min, "crest")
-    tt = _first_extremum(zk[:, 0], t, t_min, "trough")
+    # (cut_before_filter=False and frac=0 exist only to test why each rule is needed)
+    t = np.asarray(t, float)
+    if cut_before_filter:
+        keep = t >= t_min
+        t = t[keep]
+        zk = band_pass(np.asarray(z, float)[keep], dt, *band)
+    else:
+        zk = band_pass(np.asarray(z, float), dt, *band)
+    tc = _first_extremum(zk[:, 0], t, t_min, "crest", frac)
+    tt = _first_extremum(zk[:, 0], t, t_min, "trough", frac)
     kind = "crest" if (tt is None or (tc is not None and tc <= tt)) else "trough"
-    arr = [_first_extremum(zk[:, q], t, t_min, kind) for q in range(zk.shape[1])]
+    arr = [_first_extremum(zk[:, q], t, t_min, kind, frac) for q in range(zk.shape[1])]
     ok = [q for q, a in enumerate(arr) if a is not None]
     res = {"extremum": kind, "arrival_h": [None if a is None else a / 3600 for a in arr],
            "n_stations": len(ok), "t_min_h": t_min / 3600, "band_hz": list(band),
@@ -159,7 +168,6 @@ def main(argv=None) -> int:
                                      float(t[1] - t[0]))
     fh = f / (2 * np.pi)
     sel = (fr >= 0.85 * fh) & (fr < 1.2 * fh)
-    rho_b = None
     from exp4_arctic_bayiw.analysis import budget
     rho_b = budget.background_profile(ds["RHO"].isel(time=0).values, ds["hFacC"].values > 0)
     z = va.displacement(R, rho_b, ds["RC"].values, k)

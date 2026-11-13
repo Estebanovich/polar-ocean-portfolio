@@ -648,6 +648,92 @@ def v4_from_runs(ds_f1, ds_v4) -> dict:
     return r
 
 
+# ---- PD2 blocks (Esteban, PD2 2026-11-13): rebuilt from the post hoc JSONs, never by hand -------
+
+def _poincare_width_note(th: dict) -> str:
+    """omega/f = (1 + (c1 pi / (W f))^2)^(1/2) (transverse Poincare mode, Gill 1982 sec. 10.4
+    [verificar]) for the 60 km box width, and the width that 1.09-1.14 f would need."""
+    f = th["cases"]["vmf_summer"]["f_s-1"]
+    cs = (th["cases"]["vmf_summer_Hmean"]["c_n"][0], th["cases"]["vmf_summer"]["c_n"][0])
+    r60 = [float(np.sqrt(1 + (np.pi * c / (60e3 * f)) ** 2)) for c in cs]
+    need = {q: [float(np.pi * c / f / np.sqrt(q ** 2 - 1) / 1e3) for c in cs] for q in (1.09, 1.14)}
+    return (f"The 60 km width alone does not explain it: omega/f = (1 + (c1 pi/(W f))^2)^(1/2) = "
+            f"{r60[0]:.3f}-{r60[1]:.3f} for W = 60 km and c1 = {cs[0]:.2f}-{cs[1]:.2f} m/s; 1.09 f would need "
+            f"W = {min(need[1.09]):.0f}-{max(need[1.09]):.0f} km and 1.14 f W = {min(need[1.14]):.0f}-"
+            f"{max(need[1.14]):.0f} km (Gill 1982 sec. 10.4 [verificar]).")
+
+
+def pd2_merge(val: dict, figures: Path | None = None, th: dict | None = None) -> dict:
+    """Rebuild the PD2 blocks of validation.json (classification, pd2_decision, column_test,
+    descriptive_free_wave, note_on_lag_correlation) from figures/pd2_column_test.json,
+    pd2_v2_diagnostics.json, pd2_v2b_free_wave.json, pd2_v4_diagnostics.json and
+    pd2_v4_descriptive.json, with fixed classification text. Verdicts ("pass") are never touched.
+    The documented path after any `evaluate` (which does not hold these blocks) is
+    `validate.py pd2-merge`."""
+    figures = Path(figures or PKG / "figures")
+    th = th or load_theory()
+    rd = lambda n: json.loads((figures / n).read_text())  # noqa: E731
+    col, d2, fw = rd("pd2_column_test.json"), rd("pd2_v2_diagnostics.json"), rd("pd2_v2b_free_wave.json")
+    rd("pd2_v4_diagnostics.json"); rd("pd2_v4_descriptive.json")             # must exist
+    out = json.loads(json.dumps(val))
+    pm, rot = d2["V2a_peak_map"], d2["V2a_station_rotary"]
+    pc = pm["peak_over_f_percentiles"]
+    out["V2a"]["classification"] = {
+        "class": "(c)",
+        "text": ("(a) in the inertial frequency excluded by the PD2 column test (doubly periodic f-plane "
+                 f"slab, F1 configuration, peak at {col['peak_over_f']:.3f} f, {col['offset_df']:.2f} df), "
+                 "which tests the Coriolis term and time stepping only: with useOBCS=.FALSE. it does not "
+                 "test the open-boundary code, the sponge or lateral viscosity. Class (c) by the rule "
+                 "fixed before the test. The cause of the domain-wide blue shift of F1 (median "
+                 f"{pc['50']:.2f} f, 5-95 % {pc['5']:.2f}-{pc['95']:.2f} f, clockwise, shelf peak "
+                 f"{rot['cw_peak_over_f']:.3f} f) is not identified. Candidates, none tested: bounded "
+                 "geometry and lateral modes; the open boundaries and sponge; background vorticity or "
+                 "mean flow. " + _poincare_width_note(th)),
+        "evidence": "figures/pd2_v2_diagnostics.json, figures/pd2_column_test.json (post hoc)",
+        "post_hoc_evidence": True,
+        "column_test": {**{k: col[k] for k in ("peak_over_f", "offset_df", "within_1df") if k in col},
+                        "rule": "fixed before running (PD2, Esteban 2026-11-13): <= 1 df -> (c); > 1 df -> (a)",
+                        "source": "figures/pd2_column_test.json; scripts/column_test.py (post hoc)"}}
+    out["V2b"]["classification"] = {
+        "class": "(a)",
+        "text": ("Our error in the definition of the pre-registered metric: with a spatially uniform wind "
+                 "every coastal station responds locally during the pulse, so the first-arrival time "
+                 "measures the forced response, not a propagating Kelvin front."),
+        "pd2_decision": ("Esteban, PD2 2026-11-13: verdict stays FAIL, class (a): the pre-registered "
+                         "front-arrival metric is not defined under spatially uniform forcing. Gill (2016) "
+                         "sec. 10.10, pp. 399-401, eq. 10.10.21 (thesis library Gill_2016 .md l.15449-15486): "
+                         "with a uniform wind of finite duration the coastal response is 1 - cos(pi t), "
+                         "independent of x, until the signal from the end of the coast arrives. Yao (1986), "
+                         "doi:10.1080/07055900.1986.9649249 (Yao_1986 .md l.553-558): the forced response has "
+                         "about half the free-wave alongshore phase gradient, so a free wave cannot be told "
+                         "from the forced response by phase alone."),
+        "note_on_lag_correlation": ("The earlier post hoc lag correlation (0.64 m/s) spans the forced "
+                                    "period and is therefore expected to be biased high (Yao 1986)."),
+        "evidence": "figures/pd2_v2_diagnostics.json (post hoc)", "post_hoc_evidence": True}
+    out["V2b"]["descriptive_free_wave"] = {
+        **{k: fw[k] for k in ("extremum", "arrival_h", "n_stations", "t_min_h", "band_hz", "c_m_s",
+                              "c_stderr_m_s", "reference") if k in fw},
+        "label": ("POST HOC, DESCRIPTIVE, not a validation (PD2 2026-11-13); method of Antenucci et al. "
+                  "2000, Hodges et al. 2000 (l.798-800), Beletsky et al. 1997 (l.424-428); pycnocline "
+                  "displacement at k* as a mode-1 proxy, not a modal projection"),
+        "rules": ("Kelvin/subinertial band of PD0 section 3; record cut to t >= 6 h (pulse centre 2.5 h "
+                  "+ 3 sigma) before filtering; first crest/trough with magnitude >= 1/2 of the station "
+                  "maximum; least-squares slope with standard error"),
+        "source": "figures/pd2_v2b_free_wave.json; analysis/pd2_v2_diagnostics.py --free-wave"}
+    out["V3"]["classification"] = "not needed (pass)"
+    out["V4"]["classification"] = {
+        "class": "(c)",
+        "text": ("Numerical choice (resolution): the net outward baroclinic pressure work changes sign "
+                 "between 200 m and 400 m; at 200 m the net is almost all in the unresolved low band, so "
+                 "the V4b fractions are ill-conditioned, and the gross strait flux drops 4x (Akselsundet) "
+                 "and 10x (Mariasundet) at 400 m."),
+        "pd2_decision": ("limitation declared (PD0 4 rule; Esteban, PD2 2026-11-13); post hoc descriptive "
+                         "per strait in figures/pd2_v4_descriptive.json"),
+        "evidence": "figures/pd2_v4_diagnostics.json, figures/pd2_v4_descriptive.json (post hoc)",
+        "post_hoc_evidence": True}
+    return out
+
+
 # ---- CLI -----------------------------------------------------------------------------------------
 
 def evaluate(f1=None, v3=None, v4=None, previous: dict | None = None, out: Path | None = None) -> dict:
@@ -703,7 +789,14 @@ def main(argv=None) -> int:
     c = sub.add_parser("ice-check", help="mandatory ice-OB distance check (pd1_seaice.md 8)")
     c.add_argument("runs", nargs="+", type=Path)
     c.add_argument("--stamps", type=Path, default=None)
+    m = sub.add_parser("pd2-merge", help="rebuild the PD2 blocks of validation.json (after evaluate)")
+    m.add_argument("--validation", type=Path, default=PKG / "figures" / "validation.json")
+    m.add_argument("--figures", type=Path, default=PKG / "figures")
     a = ap.parse_args(argv)
+    if a.cmd == "pd2-merge":
+        res = pd2_merge(json.loads(a.validation.read_text()), a.figures)
+        a.validation.write_text(json.dumps(res, indent=1, default=jsonable))
+        return 0
     if a.cmd == "ice-check":
         bad = 0
         for r in a.runs:
