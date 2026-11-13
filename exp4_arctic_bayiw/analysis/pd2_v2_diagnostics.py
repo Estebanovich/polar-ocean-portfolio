@@ -71,13 +71,66 @@ def lag_speed(z, t, s, max_lag_s=48 * 3600.0):
     return c, lags
 
 
+def _first_extremum(x, t, t_min, kind, frac: float = 0.5):
+    """Time [s] of the first local maximum with x >= frac max|x| ('crest') or minimum with
+    x <= -frac max|x| ('trough') at t >= t_min; None if there is none. The amplitude floor keeps
+    filter ripples from counting as the crest (fixed on the synthetic test, before F1)."""
+    thr = frac * np.abs(x).max()
+    for n in range(1, x.size - 1):
+        if t[n] < t_min:
+            continue
+        if kind == "crest" and x[n] >= thr and x[n - 1] < x[n] >= x[n + 1]:
+            return float(t[n])
+        if kind == "trough" and x[n] <= -thr and x[n - 1] > x[n] <= x[n + 1]:
+            return float(t[n])
+    return None
+
+
+def free_wave_speed(z, t, s, band, t_min: float = 6 * 3600.0) -> dict:
+    """PD2 V2b closure (Esteban, 2026-11-13): POST HOC and DESCRIPTIVE free-wave speed, the
+    literature method (Antenucci et al. 2000; Hodges et al. 2000, filtered isotherm displacement;
+    Beletsky et al. 1997, tracing the displacement maximum and minimum along the coast).
+
+    Rules fixed BEFORE computing (2026-11-13): z (nt, ns) = pycnocline displacement [m] at the
+    V2b south-coast stations ordered eastward, band-passed in the Kelvin/subinertial band of the
+    PD0 section 3 (band = (lo, hi) [Hz]) after cutting the record to t >= t_min = 6 h (pulse centre 2.5 h + 3 sigma,
+    sigma = 1 h); the extremum kind is the first extremum (crest or trough) after t_min at the
+    first (westmost) station, and its first occurrence after t_min is tracked at every station
+    (an extremum counts if its magnitude is >= 1/2 of the station's maximum |filtered z|);
+    c = least-squares slope of s on arrival time [m s^-1] with its standard error (np.polyfit
+    covariance). Not a validation: V2b stays FAIL, class (a)."""
+    dt = float(t[1] - t[0])
+    # the record is cut at t_min BEFORE filtering: band-passing the whole record spreads the
+    # forced pulse past t_min (filter ringing of a spatially uniform signal; found on the
+    # synthetic test before any F1 value was computed)
+    keep = np.asarray(t) >= t_min
+    t = np.asarray(t)[keep]
+    zk = band_pass(np.asarray(z, float)[keep], dt, *band)
+    tc = _first_extremum(zk[:, 0], t, t_min, "crest")
+    tt = _first_extremum(zk[:, 0], t, t_min, "trough")
+    kind = "crest" if (tt is None or (tc is not None and tc <= tt)) else "trough"
+    arr = [_first_extremum(zk[:, q], t, t_min, kind) for q in range(zk.shape[1])]
+    ok = [q for q, a in enumerate(arr) if a is not None]
+    res = {"extremum": kind, "arrival_h": [None if a is None else a / 3600 for a in arr],
+           "n_stations": len(ok), "t_min_h": t_min / 3600, "band_hz": list(band),
+           "post_hoc": "descriptive, not a validation (PD2 2026-11-13)"}
+    if len(ok) < 4:
+        return {**res, "c_m_s": None, "c_stderr_m_s": None}
+    p, cov = np.polyfit(np.array([arr[q] for q in ok]), np.asarray(s, float)[ok], 1, cov=True)
+    return {**res, "c_m_s": float(p[0]), "c_stderr_m_s": float(np.sqrt(cov[0, 0]))}
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--f1", type=Path, required=True)
     ap.add_argument("--validation", type=Path, required=True)
     ap.add_argument("--out", type=Path, default=PKG / "figures" / "pd2_v2_diagnostics.json")
     ap.add_argument("--step", type=int, default=4)
+    ap.add_argument("--free-wave", action="store_true",
+                    help="only the PD2 V2b free-wave speed -> figures/pd2_v2b_free_wave.json")
     a = ap.parse_args(argv)
+    if a.free_wave:
+        return free_wave_main(a)
     val = json.loads(a.validation.read_text())
     th = va.load_theory()
     f = th["cases"]["vmf_summer"]["f_s-1"]
@@ -135,6 +188,26 @@ def main(argv=None) -> int:
     a.out.write_text(json.dumps(out, indent=1, default=va.jsonable))
     print(json.dumps({k: v for k, v in out.items() if k != "V2b"}, indent=1, default=va.jsonable))
     print(json.dumps(out["V2b"], default=va.jsonable))
+    return 0
+
+
+def free_wave_main(a) -> int:
+    from exp4_arctic_bayiw.analysis import budget
+    val = json.loads(a.validation.read_text())
+    th = va.load_theory()
+    ds = va.open_run(a.f1)
+    t = ds["time"].values.astype(float)
+    k = int(val["V2b"]["pycnocline_level"])
+    R = va.level_values(ds, "RHO", k, val["V2b"]["stations"]["cells"])
+    rho_b = budget.background_profile(ds["RHO"].isel(time=0).values, ds["hFacC"].values > 0)
+    z = va.displacement(R, rho_b, ds["RC"].values, k)
+    r = free_wave_speed(z, t, np.asarray(val["V2b"]["s_m"], float), va.bands_hz(th)["kelvin_subinertial"])
+    r["reference"] = {"V3_c_m_s": val["V3"]["speed"]["c_m_s"],
+                      "theory_c1_m_s": {"H_mean": th["cases"]["vmf_summer_Hmean"]["c_n"][0],
+                                        "H_max": th["cases"]["vmf_summer"]["c_n"][0]}}
+    out = a.out.parent / "pd2_v2b_free_wave.json"
+    out.write_text(json.dumps(r, indent=1, default=va.jsonable))
+    print(json.dumps(r, indent=1, default=va.jsonable))
     return 0
 
 
