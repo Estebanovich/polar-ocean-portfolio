@@ -402,3 +402,13 @@ Lo decidió Esteban el 2026-11-13. El texto de las Enmiendas 1 y 2 no se edita.
 - Los descriptivos de V4 y del PD2 (`figures/pd2_v4_diagnostics.json`, `pd2_v4_descriptive.json`), que son de trabajo de presión: en F1 el flujo neto por los estrechos es casi entero de la banda baja.
 - El reparto F/A de R1 en 0–120 h (Task 5, `figures/budget_vs_thesis.json`): el trabajo de presión baroclínico saca 0.28 GJ de la bahía y la advección A_bc mete 5.68 GJ.
 - **No se había calculado ningún número de H4a–H4d en ninguna corrida**, ni ninguna partición por bandas de flujo del fiordo para H4. Al decidir, la Task 7 estaba escribiendo las series de F1 en caché, sin ensamblarlas ni mirarlas. Los únicos números reales vistos en la Task 7 eran los de una corrida corta de cronometraje del PD1 (`F1_pd1final_48h`, 48 h): diferencias entre dos rutas de lectura (cero) y la energía de la caja por bandas, sin flujos.
+
+#### Nota a la Enmienda 3 (2026-11-13)
+
+La Enmienda 3 dice que, al decidirla, no se había calculado "ninguna partición por bandas de flujo del fiordo para H4". **Es incompleto.** `figures/pd2_v4_diagnostics.json` (Task 6, parte B, versionado el 2026-11-12) ya tenía, para F1, la partición por bandas del trabajo de presión baroclínico de Kang y Fringer en cada estrecho, la misma magnitud y el mismo método que la Enmienda 3 hace decisivos para H4a:
+- Akselsundet: banda baja −0.997 GJ; Kelvin +0.052; cercana a la inercial −0.034; superinercial +0.011; seiche −0.009 (+ hacia fuera);
+- Mariasundet: −0.147, −0.034, −0.009, −0.001 y −0.005 GJ.
+
+La tabla del PD2 de `notes/pd2_validacion.md` los muestra. Se calcularon para V4, no para H4. Con ellos, la fracción de la banda baja de H4a y el signo de la suma de las bandas resueltas de F1 ya se podían deducir cuando se escribió la Enmienda 3.
+
+Lo demás de la Enmienda 3 es correcto: no se había ensamblado ni evaluado ningún número de H4 de la Task 7. El texto de la Enmienda 3 no se edita.
