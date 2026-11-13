@@ -180,3 +180,19 @@ KE_bc integrada en la vertical, en celdas a menos de 2R₁ de tierra (`post_hoc.
 1. **H4d F1/F1c:** el desenlace mecánico es "refutada", con η(F1) < 0 marcado. ¿Se reporta así, o se declara no interpretable por el signo? (Los rulings piden no reinterpretar.)
 2. **Deriva de la APE:** ¿se reporta solo como limitación (c), o se pide un diagnóstico aparte, por ejemplo con un perfil de referencia que se actualice? Sería *post hoc*.
 3. **H4b(i):** se cumple con o sin la deriva. ¿Basta con la sensibilidad de KE_bc ya reportada?
+
+## Comprobación *post hoc*: trabajo de presión con referencia móvil (ronda de correcciones 1)
+
+**Por qué.** p′ se construye con p̃ = ρ₀gη + g∫ρ′dz, y ρ′ se toma respecto al mismo ρ_b inicial fijo cuya deriva infla la APE. Por eso la deriva del fondo también entra en F_bc, con un término ∫p′_deriva(z) Q′(z) dz allí donde hay un intercambio baroclínico medio Q′. Ese término es de baja frecuencia: cae en la banda que hace a H4a "no concluyente" y fija el signo de η(F1).
+
+**Método, fijado aquí antes de calcular** (escrito y versionado antes de la primera corrida de la comprobación):
+1. **Referencia móvil.** En cada registro y en cada nivel k, ρ̄_caja(z_k, t) es la media de ρ en las celdas mojadas de la caja, ponderada por volumen (Δz·rA). La caja es el fiordo interior, o la bahía para R1 y R1k. En los niveles sin celdas mojadas de la caja se usa el ρ_b fijo; ninguna cara de los estrechos llega a esos niveles.
+2. ρ′_m = ρ − ρ̄_caja(z, t) en las celdas mojadas.
+3. p̃_m = ρ₀gη + g Σ ρ′_m dz, con la misma discretización que `budget.pressure_tilde`. p′_m = p̃_m menos su media vertical en la cara; u′ como siempre.
+4. F_bc,m = Σ u_n′ p′_m dz por cara, sumado por estrecho. Se reportan:
+   - la integral en el registro (trapecio, + hacia fuera);
+   - el reparto por bandas, con el mismo `validate.band_flux` y las mismas bandas;
+   - η_m = F_bc,m,out / (P_bt + P_bc), con el mismo denominador de `budget.json`.
+5. **Corridas:** F1 y F1c en 0–279.67 h; R1 y R1k en 0–120 h.
+6. **Perfil de fondo:** ρ̄_caja(z) en el primer y en el último registro de F1, F1c, F2, F3, R1, R1k y R2.
+7. **Salida:** `figures/posthoc_moving_reference.json`, de `analysis/posthoc_reference.py`. Es descriptivo; ningún veredicto congelado cambia.
