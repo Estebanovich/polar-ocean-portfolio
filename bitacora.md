@@ -743,3 +743,33 @@ La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue co
   - R1 cercana a la inercial marcada como no resoluble;
   - frases de la nota sin respaldo en un JSON, corregidas.
 - **Claves de caché:** ahora incluyen el código que conduce cada corrida (`compute`, la caja, el esfuerzo, el almacén). Se renombraron los 40 archivos, sin recalcular. Comprobación: R1 recalculada desde cero con las claves nuevas es idéntica bit a bit a los archivos renombrados (kf, faces y surface; diferencia 0.0). `partition.json` y `budget.json` reensamblados son idénticos byte a byte.
+
+## 2026-11-14 — Exp. 4, Task 8: Figura 0, README, `reproduce.sh` y cierre
+
+- **Figura 0** (`figures/fig0_schematic.{jpg,pdf}`, `figures/src/fig0_schematic.py`, VectorCraft 0.22.0 sin interfaz):
+  - (a) Sentinel-2 del 25 de marzo de 2024, con hielo fijo en el fiordo interior. Sobre la imagen: el dominio del modelo, la esponja, las secciones de Akselsundet y Mariasundet, el polígono del hielo y las estaciones de V2a y V2b. Recuadro de MODIS de Svalbard (5 de julio de 2023).
+  - (b) Vista en planta dibujada, con texturas y cinco procesos numerados: el pulso de viento, la respuesta cercana a la inercial, la onda de Kelvin interna ciclónica, la radiación por los estrechos y el hielo fijo. No hay resultados.
+  - `fetch_sat.py` escribe ahora en `figures/src/sat/`; las dos imágenes pesan menos de 1 MB y sus sha256 están en `data_external/SOURCES.md`.
+- **README** desde `README.template.md` con `scripts/render_readme.py`. Todos los números salen de `figures/*.json` y de `cases.yaml`, y una prueba falla si la plantilla tiene un número escrito a mano. Incluye las limitaciones de los rulings: V2a, V2b y V4 fallan con su clase; la banda baja domina; la deriva de la referencia fija; H4d del fiordo, refutada por el signo; el invierno a 200 m; el 50.0 % de batimetría interpolada; las copias modificadas de MITgcm; Mariasundet; y un fiordo y un evento, sin marea y sin termodinámica del hielo.
+- **`reproduce.sh`:**
+  - `--quick` regenera todo con `--recompute` en las cachés de `partition.py` y de `thesis_contrast.py`.
+  - El modo completo hace respaldo, campañas, pruebas de columna y de reinicio, `--quick` y la comparación (`scripts/compare_json.py`). Se probó solo en seco (`--dry-run`).
+  - Los dos modos se niegan a arrancar si hay una corrida activa, con `pfcommon.campaign`.
+- **`--quick` corrió de verdad** (01:09–08:27):
+  - 21 de los 23 JSON salen idénticos, entre ellos `validation.json`, `partition.json`, `budget.json`, `hypotheses.json` y `posthoc_moving_reference.json`.
+  - `v1_thesis.json` añade el campo `status` (código de la Task 5).
+  - `pd1_timing.json` añade `drag_check` y `open_boundary_distance` a dos corridas de diagnóstico del PD1, que se registraron antes de que existieran. Además, el `s_per_step` de una corrida que falló se calcula ahora con los pasos que corrió de verdad.
+  - `theory.json` cambia solo el orden de una clave.
+  - Los PDF solo cambian la fecha de los metadatos.
+  - Se versionan las salidas regeneradas.
+- **Cachés:**
+  - Las 40 cachés de la Task 7 se recalcularon desde cero y son idénticas bit a bit a las de antes; la comparación se hizo contra la copia `analysis_cache_pre_task8` de LaCie.
+  - F2 se recalculó además en un almacén nuevo aparte: idéntico bit a bit (54 min).
+  - La clave `surface` cambió porque se editó `validate.py`. La caché nueva es idéntica a la anterior.
+- **Pendientes cerrados:**
+  1. En la nota del PD3 se añadieron F1c (0.229 kg m⁻³, la deriva mayor) y el cambio de signo de la banda baja de F1c con la referencia móvil. El "0.930" de H4a es correcto: es el trabajo de presión. El 0.928 es el descriptivo F + A, y la nota ahora da los dos.
+  2. `pd2-merge` recupera los números del texto (1.65 m s⁻¹, 11 de 12 estaciones; −1.17/+0.32 GJ, 97.7 % en la banda baja) y busca los casos de `theory.json` por su contenido.
+  3. La relación de Poincaré es Gill (1982) §10.3, ec. 10.3.5, comprobada en la biblioteca de la tesis; antes se citaba como §10.4.
+  4. Lista de lecturas: el ISBN de Gill está verificado. Los DOI de Beletsky y de Arneborg y Liljebladh siguen [verificar], porque las copias locales confirman el volumen y la página pero no imprimen el DOI.
+- **Pruebas:** 989 pasan y 3 se omiten.
+- **PD final:** Esteban decide el merge y el push.
