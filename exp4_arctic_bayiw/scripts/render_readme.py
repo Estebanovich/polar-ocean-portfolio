@@ -36,7 +36,7 @@ NUMBER_WHITELIST = (
     r"\bH4[a-d]?\b", r"\bR_?1\b", r"\bc_?1\b", r"\bR₁", r"\bc₁", r"\bc_n\b",
     r"\bExp(?:eriment|\.)? [1-5]\b", r"\bPD[0-3]\b", r"^#+ [0-9]+(?:\.[0-9]+)*\.?",
     r"\b[Ee]qs?\. [0-9]+(?:\.[0-9]+)*(?:[–-][0-9]+)?", r"§[0-9]+(?:\.[0-9]+)*",
-    r"\b(?:Figure|Fig\.|Figures) [0-9](?:[a-e])?(?:[–-][0-9])?", r"\bAmendments? [1-3](?:[–-][1-3])?",
+    r"\b(?:Figure|Fig\.|Figures) [0-9](?:[a-e])?(?:[–-][0-9])?", r"\bAnimations? [1-4]\b", r"\bAmendments? [1-3](?:[–-][1-3])?",
     r"\bSentinel-2\b", r"\bMODIS\b", r"\bIBCAO\b", r"\bS100\b", r"\bTEOS-10\b", r"\bGGL90\b",
     r"\bM2\b", r"\bk = 1\b", r"\b(?:class )?\([a-d]\)", r"\(i{1,3}\)", r"\([1-5]\)", r"\bsha256\b", r"\b(?:i|ii)\b(?=\))",
     r"\bv5\.2\b", r"\bcheckpoint69j\b", r"\bUTM 33N\b", r"\bΣ₅",
@@ -118,6 +118,12 @@ def values() -> dict[str, str]:
     v["tau_max"], v["sigma_h"], v["center_h"] = f(w["tau_max"], 1), f(w["sigma_h"], 0), f(w["center_h"], 1)
     v["ice_h"], v["ice_A"] = f(fj["ice"]["h_m"], 0), f(fj["ice"]["A"], 0)
     v["pulse_end_h"] = f(w["center_h"] + 3 * w["sigma_h"], 1)
+    # fjord runs whose wind blows at another angle than the config (along-axis) one: cross-axis runs
+    cross = [n for n, c in cs["cases"].items()
+             if str(c.get("config", "")).startswith("fjord_vmf") and c.get("wind_angle_deg") is not None
+             and abs(float(c["wind_angle_deg"]) - float(fj["wind_angle_deg"])) > 1e-6]
+    assert cross, "README: the cross-axis fjord run is named in §2.3"
+    v["cross_axis_runs"] = " and ".join(cross)
     r1k = cs["cases"]["R1k"]
     v["R1k_t_end"] = f"{r1k['t_end_h']:.0f}"
     bay = cs["configs"]["bay_thesis"]                       # the bay runs keep the thesis set-up

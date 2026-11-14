@@ -118,3 +118,16 @@ def test_full_mode_build_control_is_compared_bit_for_bit(tmp_path):
     assert "R1b_short2h" in cmp_[0] and "R1_short2h" in cmp_[0]
     assert "/stored/R1_short2h" in cmp_[1]
     assert out.index("R1b --np 4") < out.index("compare_bitwise") < out.index("--cases R1k")
+
+
+# ---- Task 9 fix round 1: the animations, opt-in ---------------------------------------------------
+
+def test_animations_are_off_by_default_and_opt_in(tmp_path):
+    off = _run(["--quick", "--dry-run"], tmp_path).stdout
+    assert "animate.py" not in off
+    on = _run(["--quick", "--dry-run", "--animations"], tmp_path).stdout
+    assert "animate.py fjord-ice" in on and "animate.py bay-fjord" in on
+    # after the analysis, before the README (which embeds the GIFs)
+    assert on.index("figures.py") < on.index("animate.py") < on.index("render_readme.py")
+    full = _run(["--dry-run", "--animations"], tmp_path).stdout
+    assert "animate.py fjord-ice" in full

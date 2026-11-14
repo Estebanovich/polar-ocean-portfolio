@@ -803,3 +803,9 @@ Se corrigieron los puntos I1–I4 y los menores:
 - **I4, Exp. 2:** `exp2_isomip_cavity/` vuelve a ser idéntico a 433ebde. Los cambios del runner común son opcionales para el Exp. 4.
 - **Menores:** notas fechadas en `pd3_hipotesis.md` (3 bins en la banda baja de la bahía, W_NI con FFT circular, H4a literal); en `pd1_puente.md` la segunda §7 pasa a §9.
 - **Pruebas:** 1032 pasan y 3 se omiten.
+
+## 2026-11-14 — Exp. 4, Task 9, ronda de correcciones 1 (animaciones) y defectos A1–A3 de la revisión final
+
+- **Animaciones:** Esteban pidió conservar las dos versiones, así que ahora son cuatro GIF (≤ 5 MB cada uno): a₁ cruda y a₁′ filtrada (a₁ menos su media móvil centrada de exactamente un periodo inercial de cada corrida; sin relleno, se descartan los cuadros a menos de T_f/2 de los extremos). Los pies de los GIF crudos advierten que los rasgos del mismo signo pueden ser mezcla o deriva, no ondas. a₁ usa ahora drF·hFac en todo, incluida la profundidad donde se resuelve el modo. El recorte de la bahía es la bahía más un margen, con la escala fijada en la bahía. τ se muestrea cada 600 s.
+- **README:** nueva §3.6 "Animations (descriptive)", sin afirmar que el hielo quita las ondas. `reproduce.sh --animations` es opcional (unas 2 h).
+- **A1:** `run_stages` vuelve a comprobar el final de la última etapa por defecto, como en 433ebde; el Exp. 4 lo relaja de forma explícita (`check_last_end=False`). **A2/A3:** el resumen remite a las enmiendas (§2.6) y al −0.17 *post hoc*; la §2.3 nombra F5 como viento transversal, tomado de cases.yaml.
