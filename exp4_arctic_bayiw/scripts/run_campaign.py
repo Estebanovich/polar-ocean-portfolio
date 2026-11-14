@@ -188,7 +188,8 @@ def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1
             texts.update({k: (inputs[n] / "data.free").read_text() for k in range(2, len(plan) + 1)})
         print(f"[run_campaign] {n}: running in {run_dirs[n]} (stages {plan})", flush=True)
         st = cp.run_stages(run_dirs[n], inputs[n], build_dir, np_, len(plan), sh, RUN_SH,
-                           pickup_stems=stems[n], plan=plan, stage_data=texts.__getitem__)
+                           pickup_stems=stems[n], plan=plan, stage_data=texts.__getitem__,
+                           check_last_end=False)
         print(f"[run_campaign] {n}: {st}", flush=True)
         return st
 

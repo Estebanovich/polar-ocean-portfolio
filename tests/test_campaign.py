@@ -389,15 +389,29 @@ def test_run_stages_explicit_plan_must_be_contiguous(tmp_path):
                       plan=[(0, 40), (40, 80)])
 
 
-def test_run_stages_last_stage_end_need_not_be_on_checkpoint(tmp_path):
-    """Only intermediate stage ends need the permanent pickup; the run may end anywhere."""
+def test_run_stages_last_stage_end_need_not_be_on_checkpoint_when_opted_in(tmp_path):
+    """Opt-in (Exp. 4): only intermediate stage ends need the permanent pickup; the run may end
+    anywhere. Without the opt-in every stage end is checked, the last one too."""
     inp = _inp(tmp_path, DATA.replace("nTimeSteps = 120", "nTimeSteps = 40"))
     st = cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh",
-                       plan=[(0, 40), (40, 75)])
+                       plan=[(0, 40), (40, 75)], check_last_end=False)
     assert st == "OK"
     with pytest.raises(ValueError, match="pChkptFreq"):
+        cp.run_stages(tmp_path / "r1", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh",
+                      plan=[(0, 40), (40, 75)])
+    with pytest.raises(ValueError, match="pChkptFreq"):
         cp.run_stages(tmp_path / "r2", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh",
-                      plan=[(0, 35), (35, 80)])
+                      plan=[(0, 35), (35, 80)], check_last_end=False)
+
+
+def test_run_stages_default_checks_the_last_stage_end_as_at_433ebde(tmp_path):
+    """Default path (equal split, one namelist; Exp. 2): every stage end, the last included,
+    must fall on pChkptFreq. nIter0 = 10, two stages of 30 steps of 100 s: the intermediate end
+    (4000 s) is on the 4000 s checkpoint, the last (7000 s) is not."""
+    inp = _inp(tmp_path, DATA.replace("nIter0 = 0", "nIter0 = 10").replace("nTimeSteps = 120",
+                                                                          "nTimeSteps = 60"))
+    with pytest.raises(ValueError, match="stage end 7000 s"):
+        cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh")
 
 
 def test_finished_ok_needs_the_final_status_of_a_multi_stage_run(tmp_path):
