@@ -793,3 +793,13 @@ La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue co
 - **Caché:** como `validate.py` cambió, la clave `surface` pasó a 22a3d8316bdd. La única diferencia es un texto de `pd2_merge`, así que se copiaron los 13 archivos de la clave anterior con `cmp` idéntico. Con ellos, `assemble`, `hypotheses.py` y `figures.py` reproducen los JSON versionados.
 - **Figura 0:** sin cambios en esta ronda (Esteban la está revisando).
 - **Pruebas:** 996 pasan y 3 se omiten.
+
+## 2026-11-14 (tarde 2) — Exp. 4, Task 8: correcciones de la revisión final
+
+Se corrigieron los puntos I1–I4 y los menores:
+- **I1, puente:** se nombran las diferencias entre R2 y F1 (patrón espacial del viento, malla, Δt, dominio exterior), con el forzamiento, el Δt y la duración reales de cada corrida tomados de `cases.yaml`.
+- **I2, enmiendas:** el README dice qué se sabía al escribirlas. Con el numerador de la Enmienda 1, el cociente de H4d en la bahía sería −0.17 (*post hoc*, en `hypotheses.json`).
+- **I3, referencia móvil:** reanudar es opcional (`--resume`). `posthoc_reference.py` se volvió a correr desde cero y da un `posthoc_moving_reference.json` idéntico al versionado (`compare_json`).
+- **I4, Exp. 2:** `exp2_isomip_cavity/` vuelve a ser idéntico a 433ebde. Los cambios del runner común son opcionales para el Exp. 4.
+- **Menores:** notas fechadas en `pd3_hipotesis.md` (3 bins en la banda baja de la bahía, W_NI con FFT circular, H4a literal); en `pd1_puente.md` la segunda §7 pasa a §9.
+- **Pruebas:** 1032 pasan y 3 se omiten.
