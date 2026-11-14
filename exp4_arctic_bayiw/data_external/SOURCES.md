@@ -60,6 +60,13 @@ Made by `figures/src/fetch_sat.py` (STAC search and the Microsoft Planetary Comp
 | `vmf_s2_2023-07-05.jpg` | 5 Jul 2023, S2A and S2B passes (tile cloud cover 0.04 %), summer without ice | 2026-11-11 | `67454e695e6e4cc94377b2761fc90f8132a7340f83d503e2c09d51099db71ab8` |
 | `vmf_s2_2024-03-25.jpg` | 25 Mar 2024, S2A and S2B passes (cloud 5 %), landfast ice in the inner fjord, open water off Bellsund | 2026-11-11 | `4c8f3d3a28b81ecd3a0e0c49ccf1d4be68d4ab50e699902b2494b09c68228c68` |
 
+**Figure 0 images (Task 8, 2026-11-14).** `figures/src/fetch_sat.py` now writes into `figures/src/sat/` (tracked, as in Exp. 1; each file under 1 MB) the two images Figure 0 uses; the two images above (Task 1b) are no longer used.
+
+| File | Scene | Downloaded | SHA-256 |
+|---|---|---|---|
+| `figures/src/sat/vmf_s2_2024-03-25_domain.jpg` | Sentinel-2 L2A, 25 Mar 2024 (the same granules as above), box 451-559 km E, 8590-8658 km N (the model domain with a 4 km margin), 1404 x 884 px | 2026-11-14 | `526e30c0a13c7d21fa9dd8bcf07373751e87e6fee898cde92cb5754e6519236b` |
+| `figures/src/sat/svalbard_modis_2023-07-05.jpg` | MODIS Terra corrected reflectance, 5 Jul 2023, NASA Worldview/GIBS snapshot API, 76.3-80.9 N, 9-30 E (EPSG:4326, width scaled by cos 78.6 deg), 800 x 886 px | 2026-11-14 | `f46a820dc3e7ed795f842e44667b17fc475d58b759b9b7f3e19276d334c37a29` |
+
 ## Pending for Esteban
 
 Nothing was blocked: every source downloaded without login, key or licence acceptance. Two caveats: (1) only a window of IBCAO was downloaded (the full 100 m grid is 12.6 GB and was deliberately skipped); if the whole mosaic is wanted, download `ibcao_v5_2_2026_depth_100m.zip` from the CEDA URL above. (2) the IBCAO v5.2 release paper is the v5.0 one (no v5.2 paper exists yet).
