@@ -665,8 +665,9 @@ def summer_cases(th: dict) -> tuple[dict, dict]:
 
 
 def _poincare_width_note(th: dict) -> str:
-    """omega/f = (1 + (c1 pi / (W f))^2)^(1/2) (transverse Poincare mode, Gill 1982 sec. 10.4
-    [verificar]) for the 60 km box width, and the width that 1.09-1.14 f would need."""
+    """omega/f = (1 + (c1 pi / (W f))^2)^(1/2) (transverse Poincare mode, Gill 1982 sec. 10.3,
+    eq. 10.3.5, c_n for (gH)^(1/2); thesis library Gill_2016 .md l. 14593-14600) for the 60 km box
+    width, and the width that 1.09-1.14 f would need."""
     hmax, hmean = summer_cases(th)
     f = hmax["f_s-1"]
     cs = (hmean["c_n"][0], hmax["c_n"][0])
@@ -675,7 +676,7 @@ def _poincare_width_note(th: dict) -> str:
     return (f"The 60 km width alone does not explain it: omega/f = (1 + (c1 pi/(W f))^2)^(1/2) = "
             f"{r60[0]:.3f}-{r60[1]:.3f} for W = 60 km and c1 = {cs[0]:.2f}-{cs[1]:.2f} m/s; 1.09 f would need "
             f"W = {min(need[1.09]):.0f}-{max(need[1.09]):.0f} km and 1.14 f W = {min(need[1.14]):.0f}-"
-            f"{max(need[1.14]):.0f} km (Gill 1982 sec. 10.4 [verificar]).")
+            f"{max(need[1.14]):.0f} km (Gill 1982 sec. 10.3, eq. 10.3.5, with c1 for (gH)^(1/2)).")
 
 
 def _wind_pulse() -> dict:

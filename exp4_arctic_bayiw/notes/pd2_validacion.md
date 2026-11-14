@@ -163,6 +163,8 @@ V3 reproduce S&F14: c = 0.48 m s⁻¹ frente a sus 0.40–0.45 y los 0.42 de la 
 
 Actualizado en `figures/validation.json` (`V2a.classification`), que ahora se reconstruye con `validate.py pd2-merge`.
 
+*Nota de cita (Task 8, 2026-11-14).* La relación de Poincaré de esta nota cita «Gill 1982 §10.4 [verificar]». Comprobada en la biblioteca de la tesis (`Gill_2016 … .md`, l. 14593–14600), la fuente es **Gill 1982 §10.3, ec. 10.3.5**: ω_n² = f² + n²π²gH/W² en un canal de ancho W, con c₁ en lugar de √(gH) para el modo interno. El §10.4 es el de las ondas de Kelvin. Los números no cambian; la cita se corrigió en el código (`validate.py`, `pd2_v2_diagnostics.py`, `theory_numbers.py`) y en `validation.json`. El texto de arriba y el del PD0 §2 no se editan.
+
 ## Resultado 2: V4, limitación declarada y descriptivo *post hoc*
 
 **La limitación se declara** (PD0 §4): a 400 m el flujo baroclínico neto por los estrechos no converge (cambia de signo), así que V4 no puede acotar la incertidumbre de resolución de los cocientes de H4. V4a y V4b quedan en **FALLA**.
