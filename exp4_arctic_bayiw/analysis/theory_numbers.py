@@ -333,7 +333,8 @@ def case_numbers(z, n2, H_modes, f, L, perimeter, H_merian, W=None, n_modes=N_MO
 
     With the basin width W (m) it adds the width Burger number R_n / W and the lowest
     cross-basin Poincare frequency of each vertical mode, omega_n = sqrt(f^2 + c_n^2 (pi/W)^2)
-    (channel of width W, one cross-channel half wavelength; Gill 1982 Sec. 10.4 [verificar]),
+    (channel of width W, one cross-channel half wavelength; Gill 1982 sec. 10.3, eq. 10.3.5, with c_n
+    for (gH)^(1/2); thesis library Gill_2016 .md l. 14593-14600),
     given as omega_n / f.
     """
     c, _ = modes.vertical_modes(z, n2, H_modes, n_modes=n_modes)

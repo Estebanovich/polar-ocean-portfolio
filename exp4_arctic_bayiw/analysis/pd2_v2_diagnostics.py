@@ -8,7 +8,8 @@ Nothing here is a criterion and nothing changes a verdict of validate.py: these 
    (spectra.psd, one Hann window over 0-T_fin) and the rotary split (spectra.rotary) at the shelf
    station: is the 1.14 f peak local to the station or domain wide, and is it clockwise?
    The bounded-basin reference is the transverse Poincare frequency
-   omega_n = (f^2 + c_n^2 (pi/W)^2)^(1/2) (Gill 1982 sec. 10.4 [verificar]) [rad s^-1].
+   omega_n = (f^2 + c_n^2 (pi/W)^2)^(1/2) [rad s^-1] (Gill 1982 sec. 10.3, eq. 10.3.5, with c_n for
+   (gH)^(1/2); thesis library Gill_2016 .md l. 14593-14600).
 2. V2b: pycnocline displacement at the V2b stations: time of the forced response (wind pulse,
    centre 2.5 h, sigma 1 h; PD0 7) against the half-maximum arrival time, and the lag of the
    maximum cross-correlation of the Kelvin-band (PD0 3 band) displacement between successive
