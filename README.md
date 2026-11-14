@@ -19,7 +19,7 @@ Idealized, reproducible MITgcm experiments on polar ocean processes (ice–ocean
 4. **[Wind-driven internal waves in an Arctic fjord with and without landfast ice](exp4_arctic_bayiw/README.md)**. Van Mijenfjorden (Svalbard) with its measured bathymetry, and the rectangular bay of my MSc thesis rerun as a bridge:
    - the copy of the thesis is bit-identical to the original, and the model reproduces the tidally forced internal Kelvin wave of a published model study of this fjord; three pre-registered validation criteria fail and are reported as failed, among them a strait energy flux that is not resolution-converged;
    - the frequency partition of the radiated energy is inconclusive, because the net flux through the narrow straits is dominated by periods longer than the record; landfast ice removes most of the internal-wave energy of the inner fjord; summer and winter open water are not distinguishable; a boundary-layer closure (KPP) radiates a larger fraction of the wind work than the thesis closure in the bay, while in the fjord that hypothesis is refuted by the sign of the net flux;
-   - the bay radiates outward and near-inertially at both latitudes and the fjord does not: the geometry, not the latitude, changes the response.
+   - descriptively, the bay radiates outward and near-inertially at both latitudes and the fjord does not, which points to the geometry rather than the latitude; part of the fjord's low-frequency flux is an artefact of the fixed reference profile of the energy budget, and none of these fluxes is resolution-converged.
 
 How to run the model, the tests and the analysis: [RUNNING.md](RUNNING.md).
 

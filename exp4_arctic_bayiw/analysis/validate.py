@@ -756,8 +756,9 @@ def pd2_merge(val: dict, figures: Path | None = None, th: dict | None = None,
         "class": "(a)",
         "text": _v2b_text(val["V2b"], pulse),
         "pd2_decision": ("Esteban, PD2 2026-11-13: verdict stays FAIL, class (a): the pre-registered "
-                         "front-arrival metric is not defined under spatially uniform forcing. Gill (2016) "
-                         "sec. 10.10, pp. 399-401, eq. 10.10.21 (thesis library Gill_2016 .md l.15449-15486): "
+                         "front-arrival metric is not defined under spatially uniform forcing. Gill (1982) "
+                         "sec. 10.10, pp. 399-401, eq. 10.10.21 (thesis library Gill_2016 .md l.15449-15486, "
+                         "an Academic Press reprint of the 1982 edition): "
                          "with a uniform wind of finite duration the coastal response is 1 - cos(pi t), "
                          "independent of x, until the signal from the end of the coast arrives. Yao (1986), "
                          "doi:10.1080/07055900.1986.9649249 (Yao_1986 .md l.553-558): the forced response has "

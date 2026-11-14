@@ -773,3 +773,23 @@ La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue co
   4. Lista de lecturas: el ISBN de Gill está verificado. Los DOI de Beletsky y de Arneborg y Liljebladh siguen [verificar], porque las copias locales confirman el volumen y la página pero no imprimen el DOI.
 - **Pruebas:** 989 pasan y 3 se omiten.
 - **PD final:** Esteban decide el merge y el push.
+
+## 2026-11-14 (tarde) — Exp. 4, Task 8: ronda de correcciones 1 de la revisión
+
+- **`reproduce.sh`, modo completo:**
+  - `theory_numbers.py` corre antes de la primera campaña, porque `make_case.py` lee `figures/profiles_vmf.json`. `bathy_report.py` no hace falta antes: `make_case` construye la batimetría por su cuenta.
+  - Hace `mkdir -p` de la raíz nueva de corridas.
+  - El control de compilación compara bit a bit R1b_short2h con R1_short2h, ahora vuelto a correr, y R1_short2h con la corrida guardada.
+  - Las pruebas en seco cubren el orden, la raíz nueva y las dos comparaciones. Solo en seco: no se corrió MITgcm.
+- **README:**
+  - los conteos ("three", "four"), el 1/1.5 y el número de bandas resueltas salen de los JSON;
+  - dice que los números vienen de `figures/*.json` y de `cases.yaml`;
+  - `--quick` tarda horas;
+  - batimetría: 50.0 % interpolado y 1.4 % con código de tierra;
+  - Johnson y Garrett (2006) se cita siempre «as cited by Jackson et al., 2018», y queda [verificar] en `readinglist.md`.
+- **Gill:** el archivo `Gill_2016 … .md` es una reimpresión de Academic Press de la edición de 1982. Se cita Gill (1982) en el README, en `validation.json` y en el código, con una nota fechada en `pd2_validacion.md`; el PD0 no se toca.
+- **`render_readme.py`:** falla si falta la estación Seiche del puente, en lugar de escribir "[pending]".
+- **README principal:** el punto del puente dice "descriptivamente" y lleva la salvedad de la deriva.
+- **Caché:** como `validate.py` cambió, la clave `surface` pasó a 22a3d8316bdd. La única diferencia es un texto de `pd2_merge`, así que se copiaron los 13 archivos de la clave anterior con `cmp` idéntico. Con ellos, `assemble`, `hypotheses.py` y `figures.py` reproducen los JSON versionados.
+- **Figura 0:** sin cambios en esta ronda (Esteban la está revisando).
+- **Pruebas:** 996 pasan y 3 se omiten.

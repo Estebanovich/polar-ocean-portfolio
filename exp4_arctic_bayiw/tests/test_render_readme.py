@@ -88,3 +88,39 @@ def test_values_follow_the_json(monkeypatch):
 
 def test_committed_readme_is_up_to_date():
     assert rr.OUT.read_text() == rr.render(allow_pending=False)
+
+
+# ---- Task 8 fix round 1 -------------------------------------------------------------------------
+
+def test_missing_bridge_station_raises(monkeypatch):
+    real = rr._load
+
+    def fake(name):
+        d = real(name)
+        if name == "hypotheses.json":
+            d["post_hoc"]["bridge"]["R2"]["station_fraction"].pop("Seiche")
+        return d
+
+    monkeypatch.setattr(rr, "_load", fake)
+    with pytest.raises(KeyError, match="Seiche"):
+        rr.values()
+
+
+def test_counts_in_words_follow_the_json(monkeypatch):
+    v = rr.values()
+    assert (v["n_failed"], v["n_failed_Word"], v["n_hyp_Word"], v["n_resolved"]) == ("three", "Three", "Four", "four")
+    real = rr._load
+
+    def fake(name):
+        d = real(name)
+        if name == "validation.json":
+            d["summary"]["failed"] = ["V2a", "V4"]
+        return d
+
+    monkeypatch.setattr(rr, "_load", fake)
+    assert rr.values()["n_failed_Word"] == "Two"
+
+
+def test_factor_bounds_not_typed():
+    assert "1/1.5" not in rr.TEMPLATE.read_text()
+    assert re.search(r"[0-9]", rr.strip_allowed("between 1/1.5 and 1.5"))

@@ -39,7 +39,7 @@ NUMBER_WHITELIST = (
     r"\b(?:Figure|Fig\.|Figures) [0-9](?:[a-e])?(?:[–-][0-9])?", r"\bAmendments? [1-3](?:[–-][1-3])?",
     r"\bSentinel-2\b", r"\bMODIS\b", r"\bIBCAO\b", r"\bS100\b", r"\bTEOS-10\b", r"\bGGL90\b",
     r"\bM2\b", r"\bk = 1\b", r"\b(?:class )?\([a-d]\)", r"\(i{1,3}\)", r"\([1-5]\)", r"\bsha256\b", r"\b(?:i|ii)\b(?=\))",
-    r"\bv5\.2\b", r"\bcheckpoint69j\b", r"\bUTM 33N\b", r"\b1/1\.5\b", r"\bΣ₅",
+    r"\bv5\.2\b", r"\bcheckpoint69j\b", r"\bUTM 33N\b", r"\bΣ₅",
     r"\b(?:" + "|".join(CITATION_YEARS) + r")[a-b]?\b",
 )
 
@@ -57,6 +57,15 @@ def strip_allowed(text: str) -> str:
     for pat in NUMBER_WHITELIST:
         text = re.sub(pat, " ", text, flags=re.M)
     return text
+
+
+WORDS = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
+
+
+def word(n: int, cap: bool = False) -> str:
+    """Count -> English word (counts in the text come from the JSON too)."""
+    w = WORDS[n] if 0 <= n < len(WORDS) else str(n)
+    return w.capitalize() if cap else w
 
 
 def _load(name: str):
@@ -159,6 +168,7 @@ def values() -> dict[str, str]:
         v["si_period"] = rng(b["superinertial"]["period_h"], 1)
         v["seiche_period"] = f(b["seiche"]["period_h"][1], 1)
         v["ni_bins"] = f(b["near_inertial"]["n_bins"], 1)
+        v["n_resolved"] = word(sum(x["name"] != "low" for x in th["bands"]["fjord_78N_280h"]["bands"]))
         v["ni_lo"], v["ni_hi"] = (f(x, 2) for x in th["bands"]["fjord_78N_280h"]["ni_factors"])
     bt = _load("bathy_report.json")
     if bt:
@@ -169,6 +179,7 @@ def values() -> dict[str, str]:
         v["aks_sill"], v["mar_sill"] = f(s["Akselsundet"]["sill_depth_grid_m"], 0), f(s["Mariasundet"]["sill_depth_grid_m"], 0)
         tid = bt["tid_fraction"]["cells_inner"]
         v["tid_measured"], v["tid_interp"] = pct(tid["measured"]), pct(tid["indirect"])
+        v["tid_land"] = pct(tid["land"])
     v1 = _load("v1_thesis.json")
     if v1:
         v["V1_n"] = str(v1["n_common_eta_records"])
@@ -208,6 +219,7 @@ def values() -> dict[str, str]:
         v["V4a_tol"] = pct(t["V4a"]["max_rel_diff"], 0)
         v["V4b_tol"] = f(t["V4b"]["max_abs_diff"], 2)
         v["factor"] = f(t["factor_min"], 1)
+        v["factor_inv"] = f"1/{t['factor_min']:.1f}"
         v["H4a_low_max"] = f(t["H4a"]["low_band_max_frac"], 2)
         v["H4a_phi"] = f(t["H4a"]["phi_ni_support"], 1)
         v["H4b_max"] = f(t["H4b"]["energy_ratio_max"], 1)
@@ -217,6 +229,8 @@ def values() -> dict[str, str]:
         v["V4b_max"] = f(max(v4["V4b"]["abs_diff"].values()), 2)
         v["V4b_min"] = f(min(v4["V4b"]["abs_diff"].values()), 2)
         v["V4_verdict"] = "PASS" if v4["pass"] else "FAIL"
+        nf = len(val["summary"]["failed"])
+        v["n_failed"], v["n_failed_Word"] = word(nf), word(nf, True)
     d2 = _load("pd2_v2_diagnostics.json")
     if d2:
         pc = d2["V2a_peak_map"]["peak_over_f_percentiles"]
@@ -235,6 +249,8 @@ def values() -> dict[str, str]:
 
     h = _load("hypotheses.json")
     if h:
+        nh = sum(bool(re.fullmatch(r"H4[a-d]", k)) for k in h)
+        v["n_hyp"], v["n_hyp_Word"] = word(nh), word(nh, True)
         a = h["H4a"]
         v["H4a_low_share"] = f(a["low_band_share"], 3)
         v["H4a_low"] = gj(a["bands_out_J"]["low"], 3, True)
@@ -278,8 +294,9 @@ def values() -> dict[str, str]:
         for run in ("R1k", "R2", "F1"):
             s = br[run]["flux_share_signed"]
             v[f"br_{run}_low"], v[f"br_{run}_ni"] = f(s["low"], 2), f(s["near_inertial"], 2)
-        v["br_R2_station_ni"] = f(br["R2"]["station_fraction"]["Seiche"]["near_inertial"], 3) \
-            if "Seiche" in br["R2"]["station_fraction"] else PENDING
+        if "Seiche" not in br["R2"]["station_fraction"]:
+            raise KeyError("hypotheses.json post_hoc.bridge.R2.station_fraction has no 'Seiche' station")
+        v["br_R2_station_ni"] = f(br["R2"]["station_fraction"]["Seiche"]["near_inertial"], 3)
         cm = br["F1"]["station_fraction"]["coast_south_mean"]
         v["br_F1_coast_k"], v["br_F1_coast_ni"] = f(cm["kelvin_subinertial"], 2), f(cm["near_inertial"], 2)
         al = h["post_hoc"]["arneborg_liljebladh_net_in_J"]
