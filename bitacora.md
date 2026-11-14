@@ -728,3 +728,18 @@ La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue co
   - H4d F1/F1c: **refutada**, por aritmética literal y con bandera: η(F1) < 0, porque el intercambio medio entra.
 - **Hallazgo:** la APE exacta con el ρ_b inicial fijo deriva, porque el perfil de fondo se suaviza (F2 sin viento: de 0 a 1.15 GJ; R2: 149 GJ). Clase (c). No cambia H4b(i): el cociente de KE_bc sola, *post hoc*, es 0.0005. Los residuos D no miden disipación.
 - Lista de lecturas: Arneborg y Liljebladh (2001), en la biblioteca de la tesis.
+
+## 2026-11-13 (noche, 20) — Exp. 4, Task 7: ronda de correcciones 1 de la revisión
+
+- **Nota a la Enmienda 3** (commit aparte, aa7bf90): `pd2_v4_diagnostics.json` ya tenía la partición por bandas del trabajo de presión de F1 por estrecho, es decir las entradas de H4a. El texto de la Enmienda no se edita.
+- **H4d F1/F1c** (decisión de Esteban): se mantiene "refutada", con la bandera de η < 0. Se explica: viene del signo del término de intercambio neto de baja frecuencia, no de que KPP radie menos. η *post hoc* con las bandas resueltas: F1 −0.154 %, F1c +0.212 %, cociente −0.72.
+- **Comprobación *post hoc* con referencia móvil.** El método se fijó y se versionó antes de calcular (2af0db1): ρ′ respecto a la media de la caja ρ̄(z, t). Código en `analysis/posthoc_reference.py` y resultados en `figures/posthoc_moving_reference.json`. En F1, la banda baja pasa de −1.144 a −0.750 GJ: sigue entrando y sigue dominando (0.83). η(F1) pasa de −6.07 % a −3.63 %. La suma resuelta cambia de signo (−0.030 → +0.047 GJ). La deriva explica un tercio de la banda baja, no su signo. En la bahía la referencia apenas importa. Ningún veredicto cambia.
+- **Menores:**
+  - ventanas reales (0–279.67 h, 840 registros) en la nota y en el JSON;
+  - empates exactos en 1.5 y 1/1.5 tolerantes al redondeo (ningún cociente real está cerca);
+  - banderas de H4d por denominador y del lado del cierre, con pruebas;
+  - f de las figuras leído de `theory.json`;
+  - A&L con todas las corridas;
+  - R1 cercana a la inercial marcada como no resoluble;
+  - frases de la nota sin respaldo en un JSON, corregidas.
+- **Claves de caché:** ahora incluyen el código que conduce cada corrida (`compute`, la caja, el esfuerzo, el almacén). Se renombraron los 40 archivos, sin recalcular. Comprobación: R1 recalculada desde cero con las claves nuevas es idéntica bit a bit a los archivos renombrados (kf, faces y surface; diferencia 0.0). `partition.json` y `budget.json` reensamblados son idénticos byte a byte.
