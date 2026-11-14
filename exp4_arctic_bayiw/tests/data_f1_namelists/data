@@ -1,0 +1,91 @@
+# Exp. 4 fjord_vmf (Van Mijenfjorden), stage 1 (forced). Rendered by gendata/make_case.py from
+# cases.yaml (configs.fjord_vmf and the case); the placeholders are filled there and the per-case edit sets
+# (namelist_sets) are applied after. make_case derives data.free (the free stage) from this file
+# by removing the wind forcing only. Values and sources: notes/pd0_preregistro.md section 6 (mixing),
+# section 1.3 (EOS), notes/pd1_config.md (grid, time step, output).
+ &PARM01
+# KPP background viscosity and diffusivity (L94 eq. 29; pkg/kpp/kpp_routines.F:1197-1199)
+ viscAr=1.E-4,
+ diffKrT=1.E-5,
+ diffKrS=1.E-5,
+# Smagorinsky 2.2 + biharmonic Smagorinsky 1 (S&F14 section 4.1, p. 92); no constant viscAh
+ viscC2smag=2.2,
+ viscC4smag=1.,
+ diffKhT=0.,
+ diffKhS=0.,
+ no_slip_sides=.FALSE.,
+ no_slip_bottom=.FALSE.,
+ bottomDragQuadratic=2.5E-3,
+ tempAdvScheme=77,
+ saltAdvScheme=77,
+ implicitDiffusion=.TRUE.,
+# synchronous (default) or staggered time stepping of T/S vs the flow (doc/algorithm/algorithm.rst:
+# 690-715); cases.yaml stagger_time_step (0/1), PD1 item
+ staggerTimeStep=.TRUE.,
+ implicitViscosity=.TRUE.,
+ eosType='LINEAR',
+ tAlpha=3.0456e-05,
+ sBeta=0.00084068,
+ rhoNil=1026.96,
+ rhoConst=1026.96,
+ tRef=40*0.4676,
+ sRef=40*33.6395,
+ gravity=9.81,
+# f-plane at 78 N, f = 2 Omega sin 78 deg (plan, Configuracion)
+ f0=0.00014266,
+ beta=0.,
+ rigidLid=.FALSE.,
+ implicitFreeSurface=.TRUE.,
+ exactConserv=.TRUE.,
+ saltStepping=.TRUE.,
+ hFacMin=0.2,
+ hFacMinDr=2.0,
+ readBinaryPrec=64,
+ writeBinaryPrec=64,
+ useSingleCpuIO=.TRUE.,
+ &
+
+ &PARM02
+ cg2dTargetResidual=1.E-7,
+ cg2dMaxIters=1000,
+ &
+
+ &PARM03
+ nIter0=0,
+ nTimeSteps=1800,
+ deltaT=120,
+ pChkptFreq=216000,
+ chkptFreq=86400.,
+ dumpFreq=0.,
+ monitorFreq=1200.,
+ monitorSelect=2,
+# T/S forcing out of the Adams-Bashforth extrapolation: pkg/seaice requires it
+# (pkg/seaice/seaice_check.F:82-86; default 0 with forcing_In_AB, model/src/ini_parms.F:969,
+# 1099-1102). Set in every fjord case so F2/F3 differ only by the ice; with no surface heat or
+# salt flux the T/S forcing is zero.
+ tracForcingOutAB=1,
+ periodicExternalForcing=.TRUE.,
+ externForcingPeriod=1200,
+ externForcingCycle=217200,
+ &
+
+ &PARM04
+ usingCartesianGrid=.TRUE.,
+ delX=500*200.0,
+ delY=300*200.0,
+ xgOrigin=455000.0,
+ ygOrigin=8594000.0,
+ delR=1.5, 1.5, 1.501, 1.502, 1.507, 1.515, 1.528, 1.548,
+   1.577, 1.616, 1.667, 1.734, 1.817, 1.92, 2.044, 2.192,
+   2.368, 2.573, 2.81, 3.084, 3.395, 3.748, 4.145, 4.59,
+   5.087, 5.638, 6.247, 6.917, 7.652, 8.456, 9.333, 10.285,
+   11.318, 12.434, 13.638, 14.934, 16.327, 17.819, 19.415, 21.119,
+ &
+
+ &PARM05
+ bathyFile='bathy.bin',
+ hydrogThetaFile='T.init.bin',
+ hydrogSaltFile='S.init.bin',
+ zonalWindFile='taux.bin',
+ meridWindFile='tauy.bin',
+ &

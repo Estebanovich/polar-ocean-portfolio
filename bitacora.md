@@ -444,3 +444,374 @@
 - Nueva Figura 0 en matplotlib, con el estilo y los colores de método de las Figuras 1–4: (a) corte real de ISOMIP+ por la línea central coloreado por un perfil rampa, y el mapa de derretimiento; (b) el plano (Tbot, z_c) con cada prueba rotulada en su sitio y la hipótesis que sirve; (c) los métodos en un eje física → datos y la factorización de M7 (curva × patrón = mapa); (d) H3c como "honesto" frente a "seguro y equivocado". Los mapas y curvas son una ilustración calculada con la geometría de entrada (melt = TF₊² × patrón), declarada en el pie; no es salida de ningún modelo.
 - Ya no usa VectorCraft: se borró `fig0_protocol.commands.json`; `reproduce.sh` redibuja la figura si existe la geometría de ISOMIP+. Pie de figura reescrito por panel. `readinglist.md`: Rougier 2014 y Wong 2010 (este último por verificar).
 - Pruebas: 663 pasan y 3 se omiten bajo pyocean; 160 pasan y 1 se omite bajo anemoi.
+
+## 2026-11-11 (noche, 4) — Exp. 4: revisión de literatura
+
+- Revisión estándar (10 búsquedas en Consensus más la de reconocimiento; 218 artículos únicos) sobre ondas cercanas a la inercial en el Ártico, generación costera, transmisión del viento a través del hielo, teoría a latitud alta y modelado. Nota en `exp4_arctic_bayiw/notes/rev_literatura.md`. Se agregaron 47 artículos a `readinglist.md`, sección Exp. 4, con DOI.
+- Esteban recordó que su tesis tiene una biblioteca grande (`~/Documents/TESIS_InternalWaves-2/Literatura/`, 268 `.md`). Se buscó después de Consensus: tiene 12 de los citados y 11 pertinentes más (Davidson 2001, Alford 2020a, Pollard 1970, Gill 1984…), pero nada del Ártico ni del hielo.
+- **Hueco principal:** la generación costera de ondas cercanas a la inercial está estudiada en latitudes medias (Kelly 2019; Kelly et al. 2024), pero en el Ártico solo apareció Carmack & Kulikov (1998), con ondas de Kelvin internas. Ningún estudio de una costa o bahía ártica con y sin hielo.
+- **Corrección propia:** en el checkpoint dije que a 75–80°N la seiche podría quedar por debajo de f. Con los periodos de la tesis (seiche 3.4–4.3 h; modo baroclínico 4.5–6.5 h; periodo inercial 25 h a 28.6°N y 12.2–12.4 h a 75–80°N), la seiche sigue por encima de f: las bandas se acercan, pero no se cruzan.
+- **Propuesta para el diseño:** separar hielo fijo y hielo libre. Las observaciones muestran que el hielo libre también puede generar ondas.
+- El Exp. 3 se fusionó en `main` (433ebde) y se subió a GitHub; el Exp. 4 sigue en la rama `exp4-arctic-bayiw`, creada desde `main`.
+
+## 2026-11-11 (noche, 5) — Exp. 4: bahía real
+
+- Esteban se saltó las preguntas del diseño y pidió una bahía real con topografía real. Eligió Van Mijenfjorden/Isfjorden (Svalbard, ~78°N) y conservar la bahía de la tesis como control a f ártica.
+- Addendum a la revisión (§9 de `rev_literatura.md`): 3 búsquedas en Consensus y 2 de fuentes de datos. Van Mijenfjorden solo se ha modelado con marea (Støylen & Fer 2014, ondas de Kelvin internas); su respuesta al viento con y sin hielo no está estudiada. Batimetría IBCAO v5 (100 m) e hidrografía UNIS HD. 18 entradas nuevas en `readinglist.md`.
+- Spec escrito (documento de diseño local, fuera del repo), pendiente de aprobación.
+- **Mezcla (después de revisar la discusión de la tesis).** La tesis identifica la capa superficial como su limitación principal: sin parametrización de capa de mezcla, con viscosidad vertical de 1e-5 y celda superficial de 1 m, solo radiaba el 0.3 % y el 0.08 % del trabajo del viento, dos órdenes de magnitud menos que en el lago Superior. Propone KPP como trabajo futuro. Decisiones de Esteban:
+  - KPP en todas las corridas, con sensibilidades F1c (cierre de la tesis) y F1g (GGL90);
+  - R1k (la bahía de la tesis con KPP), para responder la pregunta abierta de la tesis;
+  - corridas de ~10 días.
+
+  Spec (§3.6, H4d) y plan actualizados. En `readinglist.md`: Large et al. 1994 y Pollard & Millard 1970, ambos ya en la biblioteca de la tesis.
+
+## 2026-11-11 (noche, 6) — Exp. 4, Task 0: datos externos, copia de la tesis y paquete
+
+- **IBCAO v5.2** (junio de 2026, CEDA/GEBCO; la versión vigente es 5.2, no 5.0). El mosaico y las 16 losas pesan 12 GB (> 2 GB), así que no se bajaron completos. Como los GeoTIFF de CEDA no están comprimidos y tienen una franja por fila, `scripts/fetch_ibcao_window.py` baja solo las filas de la ventana de Svalbard (2050 × 2600 celdas de 100 m, EPSG:3996) con peticiones HTTP por rango: profundidad, `sid` y `tid`. La tabla de fuentes (`ibcao-2026-source-data.csv`) se extrajo del zip de Bolin con el mismo método. Los bytes son los del original; el script reproduce los archivos bit a bit.
+- **Licencia IBCAO:** CEDA, Open Government Licence v3; Bolin Centre, ODC-By. Ambas permiten redistribuir con atribución; "no usar para navegación". Aun así, `data_external/` no se sube (regla del repositorio).
+- **Costa del NPI:** S100 Kartdata (SHP, 290 MB, sin registro), CC BY 4.0, con el texto de licencia que debe acompañar a las copias. Se extrajeron `S100_Land_f/l`.
+- **UNIS HD:** 1547 perfiles NetCDF dentro de 77.5–78.0°N y 13.5–17.5°E, de un total de 82 352 archivos (la base es por perfil, no por archivo grande); cada uno se verificó contra el sha256 de la API de NPI. Licencia CC BY 4.0; DOI 10.21334/unis-hydrography.
+- **Satélite:** dos mosaicos Sentinel-2 L2A (5 de julio de 2023, sin hielo; 25 de marzo de 2024, con hielo fijo en el fiordo interior y agua abierta frente a Bellsund) con `figures/src/fetch_sat.py`.
+- **Copia de la tesis:** `thesis_copy/` (archivos verbatim, comparados con `cmp`) más cuatro módulos auxiliares que importan los scripts de `Output_IWBay`. Ningún archivo supera 1 MB; los binarios de entrada no se copiaron.
+- `EXP4_RUNS` y `EXP4_BUILDS` en `pfcommon/paths.py`, con su prueba; `cases.yaml` es un esqueleto vacío.
+
+## 2026-11-11 (noche, 7) — Exp. 4, Task 1b: batimetría de Van Mijenfjorden para MITgcm
+
+- Se leyó completo Støylen & Fer (2014) en la versión en línea; no está en `literatura/`. Dan el ancho de Mariasundet (0.7 km, p. 96), un área de Akselsundet "parecida" a 20 m × 1300 m (p. 93) y las profundidades de sus secciones CTD (hasta 117 m, Tabla 1). No dan la profundidad del umbral ni la fuente de su batimetría. Con eso se fijaron los controles en `cases.yaml` antes de correr.
+- `gendata/bathy.py`: IBCAO v5.2 (100 m, EPSG:3996) → promedio de área en UTM 33N a 200 m → máscara con la costa del NPI S100 (manda el NPI si difieren) → limpieza (charcos, lagos, ensenadas de una celda, profundidad mínima de 3 m y celdas parciales como `ini_masks_etc.F`) → esponja con ∂h/∂n = 0. `gendata/vgrid.py`: 40 niveles, 1.5 m arriba, 25 niveles en 0–60 m, H = 240 m.
+- **Caja de 100 × 60 km**, no de 45: con 45 km la frontera sur cruzaría Van Keulenfjorden o Recherchefjorden. Queda para el PD1.
+- Resultados:
+  - los dos estrechos quedan abiertos con ≥ 3 celdas;
+  - umbral de Akselsundet: 22.4 m en la malla frente a 21.0 m en IBCAO;
+  - umbral de Mariasundet: 10.6 m frente a 11.2 m;
+  - profundidad máxima del fiordo interior: 119.0 m (S&F, 117 m);
+  - volumen del fiordo interior: +0.18 % frente a IBCAO.
+- **Falla** el ancho de Mariasundet frente a los 0.7 km de S&F. El NPI muestra dos pasos de 0.50 y 0.48 km separados por un islote, y la sección tiene 1.26 km de agua. Se clasificó (d) *post hoc*.
+- El 51 % del fiordo interior es dato interpolado de IBCAO: es una limitación para el README.
+- Vallunden no se quitó: su boca tiene ≥ 3 celdas en la costa del NPI. Pero IBCAO no tiene su profundidad, así que en el modelo mide 3 m.
+- La cabeza de Van Keulenfjorden tiene 42 km² de mar en IBCAO bajo tierra del NPI (frente de glaciar antiguo en el S100), y esa área se pierde.
+- Todo queda en `notes/pd1_batimetria.md` y `figures/bathy_report.{json,png,pdf}`. El `bathyFile` (1.2 MB) no se versiona.
+- **Corrección de la revisión de la Task 1b.** Las ediciones de máscara del PD1 ahora se escriben en `cases.yaml` (`force_land` / `force_sea`: polígono en UTM, semilla de relleno o ambos; `force_sea` puede exigir dato medido y profundidad mayor que 2 niveles) y se cuentan en el JSON.
+  - Vallunden queda cerrada por omisión (R6, 453 celdas).
+  - En la cabeza de Van Keulenfjorden se abre el mar de IBCAO con dato medido de más de 3 m, hasta 2 km de la esponja sur (R7, 455 celdas, 18.2 km²).
+  - Banda de 0–10 m del fiordo interior: 49.5 km² en la malla frente a 41.8 km² en IBCAO. Volumen: +0.06 %. Dato interpolado: 50 %.
+  - La falla del ancho de Mariasundet se reclasificó como (a), definición de la métrica, *post hoc* (R8).
+  - `build` comprueba ahora que la esponja conserva ∂h/∂n = 0.
+
+## 2026-11-11 (noche, 8) — Exp. 4, Task 2: perfiles, números de la teoría y borrador del PD0
+
+- `gendata/profiles.py`: lectura de UNIS HD (profundidad desde la presión con gsw; 68 de los 1547 archivos no tienen salinidad), selección por polígono, meses y años, control de calidad y perfil representativo (mediana por nivel de la malla del fiordo, extensión bajo el último dato y ajuste mínimo de estabilidad con la EOS lineal del modelo, solo en S). Pruebas sintéticas primero (fallaban al importar) y luego en verde.
+- Polígono del fiordo interior en `cases.yaml`: contiene 13 167 de las 13 169 celdas del fiordo interior de la Task 1b y ninguna de Bellsund.
+- Perfiles (1990–2019): verano, 842 de 871 tras el control de calidad (2010 aporta el 41 %); invierno, 36 de 46 (5 años). La tolerancia de inversiones (0.004 kg m⁻³) se eligió después de ver que con 0.001 se rechazaba el 67 % del invierno, una columna casi homogénea. Queda declarado en el PD0, con la tabla de sensibilidad.
+- `analysis/theory_numbers.py` → `figures/theory.json`, `figures/profiles_vmf.{json,png,pdf}`. Fiordo interior: L = 62.8 km, W = 8.4 km, P = 176.7 km (contorno de la máscara), H máx. 119 m y medio 62.6 m.
+  - Verano: c₁ = 0.37–0.57 m s⁻¹ (S&F14: 0.42), R₁ = 2.6–4.0 km, circuito de Kelvin 86–131 h.
+  - Invierno: c₁ = 0.06–0.19 m s⁻¹ y R₁ = 0.4–1.3 km, mal resuelto a 200 m.
+  - Bahía de la tesis: c₁ = 0.48 m s⁻¹, T_i = 25.0 h. Con el perfil de verano a 78°N: c₁ = 0.70 m s⁻¹.
+- Hallazgo teórico: el fiordo es estrecho frente a πR₁, así que el primer modo de Poincaré está en 1.4–1.8 f. En la bahía de la tesis está en 1.03–1.06 f. Se predice menos energía del modo 1 en la banda cercana a la inercial en el fiordo real.
+- La EOS lineal de la tesis (α = 2×10⁻⁴) exagera α de 2 a 6 veces a estas temperaturas; sube c₁ de verano un 10 %. Se declara.
+- Lecturas: Frank et al. 2023 (canalización del viento, solo Isfjorden), Fer et al. 2022 y Kawaguchi et al. 2024 (arrastre hielo–agua), y de nuevo Støylen & Fer 2014, que usaron MITgcm en este fiordo con Smagorinsky 2.2 y arrastre de 0.0025. Los PDF no se guardaron. `readinglist.md` actualizado.
+- `notes/pd0_preregistro.md`: **BORRADOR**, pendiente de aprobación de Esteban. Nada del fiordo corre antes del PD0.
+- Para la Task 3: la suma del `delR` de la tesis es 599.9 m, pero su plataforma mide 1000 m.
+
+## 2026-11-11 (noche, 9) — Exp. 4: PD0 aprobado
+
+Esteban aprobó el preregistro con cuatro decisiones (`notes/pd0_preregistro.md` §0):
+1. La malla de invierno se decide en el PD1: 100 m para F2 y F3 si caben.
+2. T_fin ≈ 280 h si cabe, si no 240 h, y los umbrales se integran en 0–T_fin.
+3. EOS lineal ajustada a Van Mijenfjorden para el fiordo y para R2/R3.
+4. El resto, tal como estaba.
+
+- **EOS ajustada** a TEOS-10 (gsw) en los perfiles representativos (66 niveles, 0–120 m): tα = 3.05×10⁻⁵ K⁻¹, sβ = 8.41×10⁻⁴, ρNil = 1026.96 kg m⁻³. El error en σ es de 0.017 kg m⁻³ como máximo; la tolerancia probada es 0.03. Los coeficientes y su procedencia están en `cases.yaml`.
+- **Números recalculados:** c₁ de verano 0.52 (H máx.) y 0.35 m s⁻¹ (H medio); R₁ = 3.6 y 2.5 km; T_K = 95 y 140 h. V2b pasa de [0.30, 0.69] a [0.28, 0.62] m s⁻¹, con la misma fórmula. Los valores con la EOS de la tesis quedan como sensibilidad.
+- **Bandas** comprobadas con 240 h y 280 h. Con 280 h caben 2.0 vueltas de Kelvin en el peor caso de verano; con 240 h, 1.7.
+- **Correcciones menores de la revisión:**
+  - `qc_check` devuelve el motivo del rechazo;
+  - la tolerancia de inversiones queda etiquetada *post hoc*;
+  - la sensibilidad TEOS-10 usa la longitud media de los perfiles y recorta y cuenta los N² negativos;
+  - las citas de MITgcm de la truncación de la columna de la tesis a 600 m;
+  - la relación del factor 2 de H4b con la regla del 1.5;
+  - las líneas de la figura van rasterizadas;
+  - V2a en la plataforma queda como punto propio.
+- **Desde ahora los umbrales están congelados.** Cualquier cambio requiere una enmienda fechada.
+
+## 2026-11-11/12 (noche, 10) — Exp. 4, Task 3: puente con la tesis (`bay_thesis`, V1, R1k)
+
+- **Referencia:** la corrida guardada de la tesis con bahía y estratificación "realistic" es `BayIW_Rectan/run_expand` (21 de junio). Tiene la salida MNC completa: η, T, S, U, V y W cada 900 s en 0–120 h, más los pickups. Las carpetas `Output_IWBay/{realistic,…}` están vacías.
+- **`bay_thesis`:** el código de la tesis sin `mnc`, con las mismas 8 teselas en 4 procesos (`GLOBAL_SUM_ORDER_TILES` mantiene el orden de las sumas). Los namelists son los de la tesis con cambios de E/S solamente: MDS en vez de MNC, nombres de archivo fijos, y `nIter0`/`nTimeSteps` en lugar de `startTime`/`endTime`. Batimetría, malla y T/S se copian byte a byte; el viento se regenera idéntico byte a byte. Se corre en dos etapas, forzada y libre, como la tesis (`run_stages` ahora admite un plan y un namelist por etapa).
+- **V1-exacto pasa bit a bit:** máx |Δη| = 0 en los 480 registros comunes; U, V y T idénticos; los pickups de las iteraciones 7200 y 14 400, idénticos byte a byte.
+- **f₀ resuelto:** la tesis corrió en un **plano β** (`beta = 1e-11`, el valor por omisión de MITgcm, `set_defaults.F:112`), no en un plano f. En la bahía f = 7.05–7.16×10⁻⁵ s⁻¹ (24.4–24.8 h). Los "~31 h" (0.0322 cph) de los scripts viejos son el f local cerca de la frontera sur (j ≈ 39). R2/R3 usan plano f a 78°N, y se declara.
+- **Build de KPP** (`bay_thesis_kpp`: `kpp`, halo de 4, `numDiags = 7*Nr`): R1 corrido con él (R1b) es idéntico bit a bit a R1 en 2 h. Con `numDiags = 20*Nr` el ejecutable pasaba de 2 GB de datos estáticos y fallaba al arrancar de forma aleatoria (región compartida de dyld).
+- **R1k** (R1 + `useKPP`, `viscAr` 1e-4, sin `ivdc_kappa`, `implicitViscosity`; tabla en `notes/pd1_puente.md`): 240 h OK en 4.5 h. R1: 1.9 h. H4d queda para la Task 7.
+- **R2/R3** generados y probados (f a 78°N con β = 0, perfil de verano en los niveles de la tesis, EOS ajustada, KPP y mezcla del PD0); se corren tras el PD1.
+- **Declarado:** la columna de la tesis está truncada a 600 m (plataforma de 1000 m). Se conserva y se declara.
+
+## 2026-11-12 (madrugada, 11) — Exp. 4, Task 4: configuración `fjord_vmf`, hielo y cronometraje → PD1
+
+- **Generadores:**
+  - `gendata/forcing.py`: el pulso de la tesis, igual a `make_meridional_wind_patch` con error < 1e-15. Se muestrea en los instantes de registro de MITgcm, (n − ½)·1200 s, con un registro de más para que el ciclo periódico no vuelva al registro 1 dentro de la etapa forzada. Viento hacia 192.412° (aguas abajo del fiordo) y +90° en F5.
+  - `gendata/ice.py`: máscara y campos de hielo (h = 1 m, A = 1, polígono del fiordo interior; 13 286 celdas).
+  - `make_case` para F1–F5, F1c, F1g, V3, V4 y los casos de cronometraje a 100 m.
+- **Builds:** un solo build (`config/fjord_vmf`, con `kpp`, `ggl90` y `seaice`, sin `exf`); `data.pkg` elige el cierre y el hielo. TDD: RED por `ImportError`; GREEN con 780 pruebas.
+- **Inestabilidad numérica.** Con la configuración del PD0 (paso sincrónico, esquema 77) aparece ruido de escala de malla en Bellsund y en la plataforma sur:
+  - a las 2.7 h con Δt 60 s, 3.3 h con 48 s, 4.3 h con 40 s y 6.3 h con 30 s;
+  - inicio × Δt es casi constante, y pasa igual con el cierre de la tesis;
+  - con `staggerTimeStep` desaparece: limpio en 12 h con 60 s y en 48 h con 120 s;
+  - 120 s es el mayor Δt que divide los 1200 s de los registros y deja el CFL advectivo (0.13) y el de ondas internas (0.42) ≤ 0.5.
+  - Va al PD1.
+- **Hielo (`notes/pd1_seaice.md`).**
+  - Ni el hielo fijo ni la deriva libre transmiten esfuerzo al océano bajo A = 1: `DWATN` solo lo calculan LSR, EVP, Krylov y JFNK. Confirmado en caja cerrada: τ_océano = 0.0 bajo el hielo durante 3 h, y en F4 el hielo se mueve a 0.2 m s⁻¹ sin arrastrar al océano. KPP y GGL90 sí usan el esfuerzo que deja `seaice`.
+  - Además, F2 y F4 **no arrancan**: `obcs_check` rechaza Orlanski con `seaice` y exige `exf`.
+  - Hallazgo de paso: `seaice` exige `tracForcingOutAB = 1`; queda en el `data` de todos los casos del fiordo.
+  - Opciones al PD1.
+- **Cronometraje (np = 5):**
+  - 0.50 s/paso a 200 m con Δt 60 s y 0.61 s/paso con Δt 120 s. Una corrida de 280 h tarda 2.3 o 1.45 h.
+  - Campaña con 120 s escalonado: 23.0 h a 280 h y 19.7 h a 240 h, frente a ~22 h disponibles.
+  - Disco: ~1.9 TB a 280 h (2.9 TB libres).
+- **100 m (R13):**
+  - la caja completa no enlaza (más de 4 GB de datos estáticos, `ADRP out of range`) y pediría ~17 GB de RAM;
+  - la subcaja (730 × 380) corre solo con el ejecutable re-enlazado (base de imagen de 16 GB; ~25 % de arranques fallan por ASLR), a 1.32 s/paso;
+  - la Task 1b no da batimetría a 100 m.
+- **V3:** en la corrida corta la marea por las fronteras no actuó (η ≈ 0); está sin depurar.
+- **Al PD1:** Δt y paso escalonado, T_fin, malla de invierno, las dos opciones de hielo, V3, polígono de F4 y los pendientes de batimetría (`notes/pd1_config.md` §6).
+- **Task 4, ronda de correcciones 1** (revisión):
+  - **Inestabilidad.** El aviso de `gad_check.F:94-107` ("potentially unstable time-stepping (Internal Wave) / need staggerTimeStep") está en el STDERR de todas las corridas sincrónicas. El esquema 33 no lo arreglaría, porque tampoco usa AB (`gad_init_fixed.F:148-157`). Las alternativas reales son un esquema con AB (2, 3, 4) o `implicitIntGravWave`; las dos exigen enmienda del PD0.
+  - **Hielo.** Se añade la opción `useHB87StressCoupling` para F4 (el océano recibe el viento sobre el hielo; no sirve para F2). La deriva libre de MITgcm no tiene inercia del hielo: (b).
+  - **V3.** La marea era cero por un error nuestro en las entradas: escribía U₀ en el archivo de fase (s) y no había archivo de amplitud (`OBCS_PARAMS.h:162`, `obcs_init_fixed.F:536-575`). Corregido (Am = ±U₀, Ph = T/4) y con prueba. Con la marea activa, η sigue el balance de volumen (0.169 frente a 0.167 m a 1.67 h), pero V3 diverge con Δt 120 y 60 s: corrientes de 1.3 m s⁻¹ en Mariasundet y CFL vertical > 1. Va al PD1.
+
+## 2026-11-12 (mañana, 12) — Exp. 4: PD1 decidido y aplicado (Task 4)
+
+Decisiones de Esteban (`notes/pd1_config.md` §0):
+1. **Paso de tiempo:** `staggerTimeStep` con Δt = 120 s en todas las corridas del fiordo. Clase (c); el motivo es el aviso de ondas internas de `gad_check.F`.
+2. **Hielo:** copias modificadas de `obcs_check.F` (relajado con `DISABLE_SEAICE_OBCS`) y `seaice_dynsolver.F` (calcula `DWATN` también sin reología) en `config/fjord_vmf/code`, con cabecera y sha256 de los originales. Una prueba exige que difieran solo en los bloques marcados. F4 usa el polígono de F2 (R15).
+3. **T_fin = 280 h** para todo, sin recortes; el presupuesto sube a ~31–32 h.
+4. **V3:** marea suave con rampa de un ciclo (copia modificada de `obcs_add_tides.F`).
+5. **Lo demás, como estaba:** invierno a 200 m con la limitación declarada, caja, malla, viscosidad y batimetría.
+
+Verificación:
+- **F1, 48 h, configuración final:** limpia (máx |w| 1.6×10⁻³ m s⁻¹, CFL 0.13, sin el aviso de `gad_check`), 0.62 s/paso.
+- **F2 y F4 arrancan con Orlanski.**
+  - F2: el esfuerzo bajo el hielo coincide exactamente (error 0.0) con ρ₀ C_w|Δu|Δu en el piso lineal de `SEAICEdWatMin`, hasta 4.4×10⁻³ N m⁻².
+  - F4: hasta 0.097 N m⁻², dentro del ~6 % (desfase de un paso del diagnóstico `SIuice`).
+  - Reinicio 10 + 10 frente a 20: idéntico bit a bit en los dos.
+- **V3:** con η₀ = 0.2 m diverge a los 1.7 ciclos; **con η₀ = 0.1 m es estable 2 ciclos** (corrientes de 0.56 m s⁻¹ en Mariasundet; CFL vertical 0.55 una vez). La amplitud no es realista y se declara. V3 se evalúa por la velocidad de fase de la onda de Kelvin interna frente al umbral congelado.
+- La campaña no se ha lanzado.
+- **Task 4, ronda de correcciones 2** (revisión del PD1):
+  - **V3 con η₀ = 0.15 m** (2 ciclos, Δt 120 s): completa, pero con CFL vertical 0.93 (0.2 m divergió con 1.14; 0.1 m llega a 0.55). Se queda **η₀ = 0.1 m**, la más cercana al CFL ≤ 0.5 del plan; 0.15 m está probada por si se prefiere.
+  - La estabilidad más allá de 2 ciclos no está probada. Regla R18: si V3 diverge, se repite una vez con 0.05 m, y si vuelve a diverger, validación no realizada.
+  - **Comprobación de F4** con la deriva libre del propio paso recalculada: en el interior del hielo, error ≤ 2.7 % del máximo de |τ|.
+  - **Nueva comprobación obligatoria tras F2/F4:** el hielo a ≥ 10 celdas de las fronteras abiertas, porque con `DISABLE_SEAICE_OBCS` el contacto sería silencioso (`OBCS_APPLY_UVICE` sigue poniendo u_hielo = 0 en la frontera en deriva libre).
+  - Prueba de que F4 parte del mismo hielo que F2 (R15). Citas de `gad_check.F` unificadas en 94-107.
+
+## 2026-11-12 (tarde, 13) — Exp. 4, Task 5: biblioteca de análisis y contraste con la tesis
+
+- **Biblioteca** en `exp4_arctic_bayiw/analysis/`:
+  - `load.py`: lee una corrida MDS como `xarray.Dataset` perezoso y llama a `require_ok` en cada etapa. ρ = rhoConst + RHOAnoma. El último estado se toma del pickup, porque el diagnóstico de la iteración final nunca se escribe (`forward_step.F:509-510`). Con eso R1 tiene los mismos 481 registros que la tesis, idénticos bit a bit en U, V, T, η y ρ.
+  - `spectra.py`: PSD y espectro rotatorio con una sola ventana de Hann; bandas que se solapan o con menos de 2Δf dan error.
+  - `flux.py`: Nash et al. (2005), réplica exacta de `energy_flux_IWBay.py` (R16).
+  - `budget.py`: balance de Kang y Fringer (2012), réplica de `balance_kang_fringer.py`, generalizado a una caja en escalera. El fiordo interior se cierra con las líneas de Akselsundet y Mariasundet de `bathy_report.json`, alargadas una celda. Con 0 m la caja no cierra (13 290 celdas). Incluye además la disipación laplaciana explícita de la tesis, solo como descriptiva.
+  - `modal.py`: modos de u = dφ/dz (R4) y la fracción local q de Alford (2020).
+- **Enmienda 1 del PD0** escrita en `notes/pd0_preregistro.md`: los flujos de H4 y el balance pasan a Kang y Fringer; H4d se evalúa con W = P_bt + P_bc. Ningún umbral cambia.
+- **Contraste con la tesis sobre R1** (los scripts de la tesis corren sobre la salida MNC de la tesis, importados de `thesis_copy/`):
+  - Nash, j = 323, i = 274–285: diferencia relativa máxima 1.1×10⁻⁹. ⟨F_bc⟩ = −283.66 W (etapa forzada) y −963.13 W (etapa libre); el signo + es hacia la bahía.
+  - Kang y Fringer en la caja de la bahía (0–120 h): todos los términos coinciden con `balance_kang_fringer.py`. El máximo es 7×10⁻⁹, en la APE exacta (redondeo de ρ amplificado en el nivel de reposo); el resto queda ≤ 3×10⁻¹⁰, incluidos D_bt y D_bc.
+  - La disipación viscosa explícita es idéntica a la de la tesis, y es el 69 % de D_bt y el 98 % de D_bc.
+  - Leer R1 desde LaCie lleva unos 20–25 min por pasada, porque los accesos son pequeños y dispersos. Las series de la biblioteca quedan guardadas en `analysis_cache`.
+- **Pendientes menores de la Task 3, resueltos:**
+  - nota R11 en `theory.json`;
+  - un pickup ausente queda registrado como "missing";
+  - doble import;
+  - la máscara de la bahía usa `bay_cells`;
+  - el helper de `wind_patch` está compartido.
+- **Ronda de correcciones 1 de la Task 5.**
+  - **Enmienda 2 del PD0** (decisión de Esteban): el numerador de H4d es solo el trabajo de presión baroclínico que sale, `F_bc_pressure_out`. F_bc + A_bc queda como descriptivo, y la Enmienda 1 no se edita. Al decidir ya se conocía el reparto de R1 (presión: 0.28 GJ hacia fuera; advección: 5.68 GJ hacia dentro), pero no se había calculado ningún cociente de H4d ni se había analizado la campaña.
+  - **Correcciones de código:**
+    - cachés con clave (corrida + hash de las fuentes) y la opción `--recompute`;
+    - el pickup se valida antes de usarse;
+    - una columna seca aporta cero al flujo;
+    - una caja que toca el borde del dominio da error;
+    - el forzamiento periódico usa el ciclo del namelist.
+  - Los JSON del contraste no cambian.
+
+## 2026-11-12 (tarde, 14) — Exp. 4, Task 6 parte A: validación V2–V4 (código), comprobación del hielo y pendientes
+
+La campaña (F1, F2, F3, F1c y V3 terminadas; F1g, V4, F5 y F4 en cola) sigue corriendo; en esta parte no se lanzó ninguna corrida.
+- **`analysis/validate.py`:**
+  - `THRESHOLDS` transcritos del PD0 (V1–V4, H4a–H4d, factor 1.5). Una prueba los lee del texto de `pd0_preregistro.md` y falla si alguno difiere; otra exige que cada enmienda diga que no cambia umbrales.
+  - Evaluadores de V2a (pico en la plataforma a ≤ 1Δf de f), V2b (frente de Kelvin en ≥ 3 estaciones, [0.28, 0.62] m s⁻¹ de `theory.json`), V3 (decaimiento 1–8 km, sentido ciclónico, 0.21–0.84 m s⁻¹) y V4 (V4a ≤ 25 %, V4b ≤ 0.10), probados en salidas sintéticas por los dos lados de cada umbral.
+  - Para V4 el flujo es el de Kang y Fringer (trabajo de presión baroclínico en las caras de los estrechos, como H4 tras las Enmiendas 1–2), leído solo cerca de los estrechos. El reparto por bandas es el coespectro exacto (Parseval): la suma de las bandas es la media.
+  - Lo que el PD0 no fija (nivel de la picnoclina, estaciones, regla de llegada del frente, ajuste armónico M2) se fijó aquí **antes de analizar cualquier salida**, y queda etiquetado como método, no PD0. Las estaciones se comprobaron sobre la malla real de F1 (solo malla y estado inicial): picnoclina a −6.8 m; plataforma en (j, i) = (114, 62), 153 m; 12 estaciones costeras sur cada 5 km (32–41 m, 200–600 m de la costa).
+  - S&F14 no está en las bibliotecas locales; se cita con [verificar] (ya está en `readinglist.md`).
+  - CLI `validate.py evaluate --f1 --v3 --v4` (require_ok en cada corrida) → `figures/validation.json`. Figura 1 en `analysis/fig1_validation.py`, probada solo con datos sintéticos.
+- **Comprobación obligatoria del hielo (`pd1_seaice.md` §8):** `analysis/ice_check.py` y `validate.py ice-check RUN` (código 1 si falla). Lee **todas las etapas**; la versión de la Task 4 solo leía la etapa forzada. Guarda el resultado con el sha256 del estado final en `figures/ice_ob_check.json`, y `load.run` rechaza toda corrida con hielo sin comprobación vigente que pase.
+- **Pendientes:**
+  - `restart_test.run()` acepta el ejecutor inyectado; una prueba lo corre de punta a punta con un ejecutor falso (reinicio idéntico y perturbado).
+  - El error del arrastre en el borde del hielo de F4 pasa de "~0.5" a 0.5–0.7 del máximo (0.51–0.67 medido).
+  - `notes/pd1_config.md`: el binario de la campaña es el de afc3526 (sha256 25bdc7f3…).
+  - `run_campaign.py --dry-run` informa ahora del plan (en stderr). F1g, F5 y F4 no recompilan; **V4 sí recompila `fjord_vmf_400`** (ejecutable anterior a las copias modificadas). Va como aviso.
+  - Receta del smoke de R2/R3 (2 h, sufijo `_smoke2h`), comprobada solo con `--dry-run`.
+- **Error encontrado y corregido:** `campaign.finished_ok` daba por terminada una corrida de dos etapas con la etapa 1 OK y la 2 corriendo (V3), así que `--skip-ok` la habría saltado. Ahora, sin `run_status_final.json`, un directorio con etapas no cuenta como terminado.
+
+## 2026-11-12 (noche, 15) — Exp. 4, Task 6 parte B: validación V2–V4 sobre las corridas reales → PD2
+
+- **Nota de corrección (2026-11-12, parte B):** la entrada anterior ("tarde, 14") dice "F1, F2, F3, F1c y V3 terminadas". No es exacto: cuando se escribió, V3 estaba en su etapa 2 (etapa 1 OK, etapa 2 RUNNING). Es el mismo caso que destapó el error de `finished_ok`. V3 terminó OK después. La entrada original no se edita.
+- **Menores de la revisión de la parte A** (TDD):
+  - el sello del hielo incluye nombre, tamaño y mtime de los `seaice.*.data`;
+  - la comprobación del hielo exige registros en cada etapa y que el último esté a ≤ 1 intervalo del final;
+  - `stage_dirs` solo acepta `stage<n>`;
+  - se comprueba `dataprec`;
+  - la prueba de flujo usa el sintético con viento, así que ya no es vacía;
+  - `go_to_PD2` vale `None` mientras falte algún criterio;
+  - la rampa de V3 sale de `case.json`;
+  - V2b informa de los huecos entre estaciones;
+  - el registro del flujo tiene que empezar en t = 0.
+- **Comprobación del hielo:** pasa en F2 y F4. Distancia mínima a las fronteras abiertas: 146 y 119 celdas (exigido ≥ 10), en 840 registros de las dos etapas. F5 no tiene hielo.
+- **R2/R3:** el smoke de 2 h está limpio en los dos (`numDiags` = 350 alcanza; 213 y 219 s). Las de 280 h corren una tras otra; tiempos en `notes/pd1_puente.md` cuando terminen.
+- **Lectura de LaCie.**
+  - La primera evaluación leía un valor por estación y registro y tardaba horas con R2 escribiendo en el mismo disco. Ahora se lee un nivel entero por registro, y en los estrechos solo los niveles mojados.
+  - **La caja del fiordo no cierra a 400 m:** la línea de Akselsundet termina al oeste de la punta de Akseløya, que se mueve al engrosar la malla. Para V4 se usa la caja de 200 m llevada a 400 m (`coarse_box`: 532.2 km², 10 caras en los estrechos). Es método, no PD0, decidido antes de calcular ningún flujo de V4.
+- **Resultados** (`figures/validation.json`, Figura 1):
+  - **V2a falla:** pico en 1.136 f, a 3.1 Δf. *Post hoc*: el desplazamiento al azul se ve en todo el dominio (mediana 1.09 f) y el giro es horario. Clase (c) provisional; falta descartar (a) con una prueba de columna.
+  - **V2b falla:** c = 1.65 m s⁻¹, porque las "llegadas" caen durante el pulso de viento uniforme. Clase (a), definición de la métrica.
+  - **V3 pasa:** decaimiento de 2.5 km, sentido hacia el este, c = 0.48 m s⁻¹, como S&F14.
+  - **V4 falla:** el neto cambia de signo (F1 −1.17 GJ hacia dentro; V4 +0.32 GJ hacia fuera). A 200 m el 97 % del neto está en la banda baja, y el bruto cae ×4 y ×10 en los estrechos a 400 m. Clase (c), resolución. El PD0 manda declarar la limitación.
+- **No se continúa** a la Task 7. Material para Esteban: `notes/pd2_validacion.md`.
+
+## 2026-11-13 (mañana, 16) — Exp. 4, PD2: decisiones de Esteban sobre V2a, V2b y V4
+
+- **V2a, prueba de columna** (*post hoc*; regla fijada antes de correr: ≤ 1Δf → (c), > 1Δf → (a)).
+  - Configuración: `config/fjord_vmf_column`, el código de `fjord_vmf` con un `SIZE.h` de 10 × 10 × 40 y 1 rango. Namelists copiados de F1, doblemente periódico (sin tierra, `useOBCS = .FALSE.`), columna de la estación de V2a a 153 m.
+  - Build: 1 min 57 s. Corrida: 76 s (np = 1, en paralelo con R3).
+  - El pico inercial sale en **1.005 f, a 0.11 Δf**: la frecuencia inercial del modelo es correcta. **V2a queda FALLA, clase (c)**: el desplazamiento al azul de F1 (mediana 1.09 f) se debe al dominio acotado.
+- **V4: limitación declarada** (regla del PD0), más un descriptivo *post hoc* del bruto y de cada banda resuelta por estrecho.
+  - Akselsundet, el 88 % del bruto de F1: los signos de las cuatro bandas se conservan, pero no los pesos (la cercana a la inercial pasa de 0.32 a 0.07; Kelvin, de 0.49 a 0.85).
+  - Mariasundet: pesos parecidos (diferencia ≤ 0.10), pero el flujo es 10 veces menor a 400 m.
+  - La partición no es robusta a la resolución. V4a y V4b siguen en FALLA.
+- **V2b, cierre:** FALLA, clase (a). Apoyos: Gill (2016) §10.10, ec. 10.10.21 (respuesta uniforme independiente de x) y Yao (1986) (el gradiente de fase forzado es la mitad del libre), con las líneas comprobadas en la biblioteca de la tesis.
+  - Descriptivo *post hoc*, método de la literatura: banda de Kelvin, t ≥ 6 h, primera cresta. Da **c = 0.92 ± 0.42 m s⁻¹**, con las crestas aún casi simultáneas; frente a V3, 0.48 m s⁻¹.
+  - Al probar el método en el sintético, antes de calcular F1, vi que hay que cortar el registro antes de filtrar (ondulación del filtro) y exigir un umbral de amplitud en los extremos. Está declarado.
+  - Nuevas entradas en `readinglist.md`: Gill 2016, Yao 1986, Hodges 2000 y Beletsky 1997 (están en la biblioteca de la tesis).
+- La Task 7 y H4a–H4d no se tocan.
+
+## 2026-11-13 (mañana, 17) — Exp. 4, Task 6 parte B: R2 y R3 terminados
+
+- R2 y R3 a 280 h, OK: 7.30 h y 7.04 h (≤ 8 h por corrida), 357 GB cada una. Detalle en `notes/pd1_puente.md` §7. Ningún proceso suelto; quedan 972 GB libres en LaCie.
+- Con esto termina la parte B de la Task 6. El PD2 está decidido (V2a (c) con la prueba de columna, V2b (a), V4 limitación declarada) y la Task 7 queda para después.
+
+## 2026-11-13 (mañana, 18) — Exp. 4, Task 6 parte B: ronda de correcciones 1 de la revisión
+
+- **Corrección de V2a** (de esta entrada y de la anterior, "mañana, 16", que no se edita). La prueba de columna **solo excluye un error en la frecuencia inercial** (Coriolis y paso de tiempo). No prueba nada que dependa de las fronteras: `useOBCS = .FALSE.`, sin esponja y sin gradientes laterales.
+  - La causa del desplazamiento al azul de F1 **no está identificada**. Candidatas: la geometría acotada y los modos laterales, las fronteras abiertas y la esponja, la vorticidad de fondo o el flujo medio.
+  - Con W = 60 km, Poincaré da solo ω/f = 1.008–1.018; para 1.09–1.14 f harían falta 14–26 km. Además, W ≫ R₁ sí se cumple: la afirmación contraria era errónea.
+  - La clase sigue siendo (c), por la regla fijada antes de la prueba, y el veredicto sigue en FALLA. Corregido en `notes/pd2_validacion.md` y en `validation.json`.
+- `validate.py pd2-merge` reconstruye los bloques del PD2 de `validation.json` a partir de los JSON *post hoc* y de textos fijos, sin tocar los veredictos (probado). En `pd2_column_test.json`, `pass` pasa a llamarse `within_1df`.
+- **Comprobación del hielo, más estricta:** una etapa cuyo único registro repite la frontera de la anterior cuenta como vacía, y se señalan los huecos a mitad de registro. Repetida en F2 y F4: pasan (146 y 119 celdas; 840 registros, intervalo de 10 iteraciones, sin huecos).
+- `free_wave_speed`: la señal es el desplazamiento de la picnoclina en k\*, usado como aproximación al modo 1, no una proyección modal. Hay pruebas que muestran por qué hacen falta el corte antes de filtrar y el umbral de ½ del máximo; el resultado de F1 no cambia.
+- `column_test.py run` hace la misma comprobación de procesos que los demás ejecutores, con `--allow-concurrent` explícito para la excepción declarada.
+- Los namelists de prueba pasan a modo 100644.
+
+## 2026-11-13 (tarde, 19) — Exp. 4, Task 7: hipótesis H4a–H4d y Figuras 2–4 → PD3
+
+- **Enmienda 3 del PD0** (Esteban, por el controlador): H4a, H4b(ii) y H4c(ii) las decide el trabajo de presión de Kang y Fringer (F_bc; F_bt en H4b(ii)), y F + A queda como descriptivo. Se escribió y se versionó (1c1f45c) antes de calcular ningún número de H4.
+- **Código nuevo:**
+  - `analysis/partition.py`: flujos por cara y por nivel, su partición por bandas, la energía de la caja sin la banda baja, W_NI, las estaciones y el ensamblado de `partition.json` y `budget.json`;
+  - `analysis/hypotheses.py`: evaluación mecánica;
+  - `analysis/figures.py`: Figuras 2–4.
+  
+  Todo con pruebas sintéticas contra `kf_budget`. La lectura pasa por un almacén local de la caja (una pasada por LaCie por corrida, ~20 min en el fiordo); es idéntica bit a bit a la lectura directa. `load.forcing_stress` lee los archivos de viento con memmap.
+- **Resultados** (`notes/pd3_hipotesis.md`):
+  - H4a: **no concluyente con T_fin** (banda baja 0.93).
+  - H4b(i): **se cumple** (0.228).
+  - H4b(ii): **no se cumple** (0.0067 frente a 0.0206 GJ).
+  - H4c: **no distinguible** (W_NI 0.83).
+  - H4d R1k/R1: **apoyada** (3.93; R1 da el 0.08 % de la tesis).
+  - H4d F1/F1c: **refutada**, por aritmética literal y con bandera: η(F1) < 0, porque el intercambio medio entra.
+- **Hallazgo:** la APE exacta con el ρ_b inicial fijo deriva, porque el perfil de fondo se suaviza (F2 sin viento: de 0 a 1.15 GJ; R2: 149 GJ). Clase (c). No cambia H4b(i): el cociente de KE_bc sola, *post hoc*, es 0.0005. Los residuos D no miden disipación.
+- Lista de lecturas: Arneborg y Liljebladh (2001), en la biblioteca de la tesis.
+
+## 2026-11-13 (noche, 20) — Exp. 4, Task 7: ronda de correcciones 1 de la revisión
+
+- **Nota a la Enmienda 3** (commit aparte, aa7bf90): `pd2_v4_diagnostics.json` ya tenía la partición por bandas del trabajo de presión de F1 por estrecho, es decir las entradas de H4a. El texto de la Enmienda no se edita.
+- **H4d F1/F1c** (decisión de Esteban): se mantiene "refutada", con la bandera de η < 0. Se explica: viene del signo del término de intercambio neto de baja frecuencia, no de que KPP radie menos. η *post hoc* con las bandas resueltas: F1 −0.154 %, F1c +0.212 %, cociente −0.72.
+- **Comprobación *post hoc* con referencia móvil.** El método se fijó y se versionó antes de calcular (2af0db1): ρ′ respecto a la media de la caja ρ̄(z, t). Código en `analysis/posthoc_reference.py` y resultados en `figures/posthoc_moving_reference.json`. En F1, la banda baja pasa de −1.144 a −0.750 GJ: sigue entrando y sigue dominando (0.83). η(F1) pasa de −6.07 % a −3.63 %. La suma resuelta cambia de signo (−0.030 → +0.047 GJ). La deriva explica un tercio de la banda baja, no su signo. En la bahía la referencia apenas importa. Ningún veredicto cambia.
+- **Menores:**
+  - ventanas reales (0–279.67 h, 840 registros) en la nota y en el JSON;
+  - empates exactos en 1.5 y 1/1.5 tolerantes al redondeo (ningún cociente real está cerca);
+  - banderas de H4d por denominador y del lado del cierre, con pruebas;
+  - f de las figuras leído de `theory.json`;
+  - A&L con todas las corridas;
+  - R1 cercana a la inercial marcada como no resoluble;
+  - frases de la nota sin respaldo en un JSON, corregidas.
+- **Claves de caché:** ahora incluyen el código que conduce cada corrida (`compute`, la caja, el esfuerzo, el almacén). Se renombraron los 40 archivos, sin recalcular. Comprobación: R1 recalculada desde cero con las claves nuevas es idéntica bit a bit a los archivos renombrados (kf, faces y surface; diferencia 0.0). `partition.json` y `budget.json` reensamblados son idénticos byte a byte.
+
+## 2026-11-14 — Exp. 4, Task 8: Figura 0, README, `reproduce.sh` y cierre
+
+- **Figura 0** (`figures/fig0_schematic.{jpg,pdf}`, `figures/src/fig0_schematic.py`, VectorCraft 0.22.0 sin interfaz):
+  - (a) Sentinel-2 del 25 de marzo de 2024, con hielo fijo en el fiordo interior. Sobre la imagen: el dominio del modelo, la esponja, las secciones de Akselsundet y Mariasundet, el polígono del hielo y las estaciones de V2a y V2b. Recuadro de MODIS de Svalbard (5 de julio de 2023).
+  - (b) Vista en planta dibujada, con texturas y cinco procesos numerados: el pulso de viento, la respuesta cercana a la inercial, la onda de Kelvin interna ciclónica, la radiación por los estrechos y el hielo fijo. No hay resultados.
+  - `fetch_sat.py` escribe ahora en `figures/src/sat/`; las dos imágenes pesan menos de 1 MB y sus sha256 están en `data_external/SOURCES.md`.
+- **README** desde `README.template.md` con `scripts/render_readme.py`. Todos los números salen de `figures/*.json` y de `cases.yaml`, y una prueba falla si la plantilla tiene un número escrito a mano. Incluye las limitaciones de los rulings: V2a, V2b y V4 fallan con su clase; la banda baja domina; la deriva de la referencia fija; H4d del fiordo, refutada por el signo; el invierno a 200 m; el 50.0 % de batimetría interpolada; las copias modificadas de MITgcm; Mariasundet; y un fiordo y un evento, sin marea y sin termodinámica del hielo.
+- **`reproduce.sh`:**
+  - `--quick` regenera todo con `--recompute` en las cachés de `partition.py` y de `thesis_contrast.py`.
+  - El modo completo hace respaldo, campañas, pruebas de columna y de reinicio, `--quick` y la comparación (`scripts/compare_json.py`). Se probó solo en seco (`--dry-run`).
+  - Los dos modos se niegan a arrancar si hay una corrida activa, con `pfcommon.campaign`.
+- **`--quick` corrió de verdad** (01:09–08:27):
+  - 21 de los 23 JSON salen idénticos, entre ellos `validation.json`, `partition.json`, `budget.json`, `hypotheses.json` y `posthoc_moving_reference.json`.
+  - `v1_thesis.json` añade el campo `status` (código de la Task 5).
+  - `pd1_timing.json` añade `drag_check` y `open_boundary_distance` a dos corridas de diagnóstico del PD1, que se registraron antes de que existieran. Además, el `s_per_step` de una corrida que falló se calcula ahora con los pasos que corrió de verdad.
+  - `theory.json` cambia solo el orden de una clave.
+  - Los PDF solo cambian la fecha de los metadatos.
+  - Se versionan las salidas regeneradas.
+- **Cachés:**
+  - Las 40 cachés de la Task 7 se recalcularon desde cero y son idénticas bit a bit a las de antes; la comparación se hizo contra la copia `analysis_cache_pre_task8` de LaCie.
+  - F2 se recalculó además en un almacén nuevo aparte: idéntico bit a bit (54 min).
+  - La clave `surface` cambió porque se editó `validate.py`. La caché nueva es idéntica a la anterior.
+- **Pendientes cerrados:**
+  1. En la nota del PD3 se añadieron F1c (0.229 kg m⁻³, la deriva mayor) y el cambio de signo de la banda baja de F1c con la referencia móvil. El "0.930" de H4a es correcto: es el trabajo de presión. El 0.928 es el descriptivo F + A, y la nota ahora da los dos.
+  2. `pd2-merge` recupera los números del texto (1.65 m s⁻¹, 11 de 12 estaciones; −1.17/+0.32 GJ, 97.7 % en la banda baja) y busca los casos de `theory.json` por su contenido.
+  3. La relación de Poincaré es Gill (1982) §10.3, ec. 10.3.5, comprobada en la biblioteca de la tesis; antes se citaba como §10.4.
+  4. Lista de lecturas: el ISBN de Gill está verificado. Los DOI de Beletsky y de Arneborg y Liljebladh siguen [verificar], porque las copias locales confirman el volumen y la página pero no imprimen el DOI.
+- **Pruebas:** 989 pasan y 3 se omiten.
+- **PD final:** Esteban decide el merge y el push.
+
+## 2026-11-14 (tarde) — Exp. 4, Task 8: ronda de correcciones 1 de la revisión
+
+- **`reproduce.sh`, modo completo:**
+  - `theory_numbers.py` corre antes de la primera campaña, porque `make_case.py` lee `figures/profiles_vmf.json`. `bathy_report.py` no hace falta antes: `make_case` construye la batimetría por su cuenta.
+  - Hace `mkdir -p` de la raíz nueva de corridas.
+  - El control de compilación compara bit a bit R1b_short2h con R1_short2h, ahora vuelto a correr, y R1_short2h con la corrida guardada.
+  - Las pruebas en seco cubren el orden, la raíz nueva y las dos comparaciones. Solo en seco: no se corrió MITgcm.
+- **README:**
+  - los conteos ("three", "four"), el 1/1.5 y el número de bandas resueltas salen de los JSON;
+  - dice que los números vienen de `figures/*.json` y de `cases.yaml`;
+  - `--quick` tarda horas;
+  - batimetría: 50.0 % interpolado y 1.4 % con código de tierra;
+  - Johnson y Garrett (2006) se cita siempre «as cited by Jackson et al., 2018», y queda [verificar] en `readinglist.md`.
+- **Gill:** el archivo `Gill_2016 … .md` es una reimpresión de Academic Press de la edición de 1982. Se cita Gill (1982) en el README, en `validation.json` y en el código, con una nota fechada en `pd2_validacion.md`; el PD0 no se toca.
+- **`render_readme.py`:** falla si falta la estación Seiche del puente, en lugar de escribir "[pending]".
+- **README principal:** el punto del puente dice "descriptivamente" y lleva la salvedad de la deriva.
+- **Caché:** como `validate.py` cambió, la clave `surface` pasó a 22a3d8316bdd. La única diferencia es un texto de `pd2_merge`, así que se copiaron los 13 archivos de la clave anterior con `cmp` idéntico. Con ellos, `assemble`, `hypotheses.py` y `figures.py` reproducen los JSON versionados.
+- **Figura 0:** sin cambios en esta ronda (Esteban la está revisando).
+- **Pruebas:** 996 pasan y 3 se omiten.
+
+## 2026-11-14 (tarde 2) — Exp. 4, Task 8: correcciones de la revisión final
+
+Se corrigieron los puntos I1–I4 y los menores:
+- **I1, puente:** se nombran las diferencias entre R2 y F1 (patrón espacial del viento, malla, Δt, dominio exterior), con el forzamiento, el Δt y la duración reales de cada corrida tomados de `cases.yaml`.
+- **I2, enmiendas:** el README dice qué se sabía al escribirlas. Con el numerador de la Enmienda 1, el cociente de H4d en la bahía sería −0.17 (*post hoc*, en `hypotheses.json`).
+- **I3, referencia móvil:** reanudar es opcional (`--resume`). `posthoc_reference.py` se volvió a correr desde cero y da un `posthoc_moving_reference.json` idéntico al versionado (`compare_json`).
+- **I4, Exp. 2:** `exp2_isomip_cavity/` vuelve a ser idéntico a 433ebde. Los cambios del runner común son opcionales para el Exp. 4.
+- **Menores:** notas fechadas en `pd3_hipotesis.md` (3 bins en la banda baja de la bahía, W_NI con FFT circular, H4a literal); en `pd1_puente.md` la segunda §7 pasa a §9.
+- **Pruebas:** 1032 pasan y 3 se omiten.
+
+## 2026-11-14 — Exp. 4, Task 9, ronda de correcciones 1 (animaciones) y defectos A1–A3 de la revisión final
+
+- **Animaciones:** Esteban pidió conservar las dos versiones, así que ahora son cuatro GIF (≤ 5 MB cada uno): a₁ cruda y a₁′ filtrada (a₁ menos su media móvil centrada de exactamente un periodo inercial de cada corrida; sin relleno, se descartan los cuadros a menos de T_f/2 de los extremos). Los pies de los GIF crudos advierten que los rasgos del mismo signo pueden ser mezcla o deriva, no ondas. a₁ usa ahora drF·hFac en todo, incluida la profundidad donde se resuelve el modo. El recorte de la bahía es la bahía más un margen, con la escala fijada en la bahía. τ se muestrea cada 600 s.
+- **README:** nueva §3.6 "Animations (descriptive)", sin afirmar que el hielo quita las ondas. `reproduce.sh --animations` es opcional (unas 2 h).
+- **A1:** `run_stages` vuelve a comprobar el final de la última etapa por defecto, como en 433ebde; el Exp. 4 lo relaja de forma explícita (`check_last_end=False`). **A2/A3:** el resumen remite a las enmiendas (§2.6) y al −0.17 *post hoc*; la §2.3 nombra F5 como viento transversal, tomado de cases.yaml.
+
+## 2026-11-14 — Exp. 4, Task 10 (animación Blender, descriptiva)
+
+- **Render completo** tras la aprobación del estilo por Esteban: toma A (F1, verano) y toma B (F3 | F2, invierno), una isopicna en 3-D sobre la batimetría del modelo y la tierra de IBCAO; color = desplazamiento con la media móvil de un periodo inercial quitada (269 cuadros, 6.3–95.7 h; los bordes del filtro se descartan). `figures/blender_shotA_F1.{mp4,gif}` y `figures/blender_shotB_F3F2.{mp4,gif}`; README §3.6 (Animaciones 5 y 6, descriptivas, sin afirmar que el hielo quita las ondas); `reproduce.sh --blender` opcional.
+- **Toma B:** escala fija ±1.5 m (decisión de Esteban); la esponja de frontera abierta de `data.obcs` (frontera + 10 celdas) en gris en ambas corridas. Saturación al render: F3 3.7 % media, 10.7 % peor cuadro; F2 2.4 % / 6.5 %. Queda una franja ruidosa justo dentro de la esponja que la máscara de configuración no cubre (anotado en el reporte).
+- **Task 10, corrección 1:** el filtro de media móvil (`animate.inertial_filter`) ya no propaga un NaN a todos los cuadros siguientes: un dato faltante anula solo las ventanas que lo contienen. Las a₁ de Task 9 no tienen NaN variables en el tiempo; los arreglos filtrados antes y después son idénticos, así que los GIF de Task 9 no cambian. Isopicna de invierno por regla en código (la más somera sobre el umbral de Akselsundet que conserva ≥ 98 % de columnas en F3 y F2): da k = 10, 1027.8135 kg m⁻³, la misma de antes. Centro mojado en celdas parciales; recorte sin solape con la máscara; se re-exportó y re-renderizó todo. Nota de ruido de frontera y saturación calculada en los pies y en la README: peor cuadro F1 9.6 % (6.3 h), F3 10.0 % (14.0 h), F2 5.8 % (14.3 h).

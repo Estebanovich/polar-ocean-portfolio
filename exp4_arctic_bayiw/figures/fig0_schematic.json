@@ -1,0 +1,14 @@
+{
+ "sentinel2": {
+  "file": "vmf_s2_2024-03-25_domain.jpg",
+  "date_text": "25 March 2024",
+  "year": "2024",
+  "credit": "Contains modified Copernicus Sentinel data (2024), processed by ESA"
+ },
+ "modis": {
+  "file": "svalbard_modis_2023-07-05.jpg",
+  "date_text": "5 July 2023",
+  "credit": "NASA Worldview/GIBS, MODIS Terra"
+ },
+ "source": "exp4_arctic_bayiw/figures/src/fetch_sat.py, fig0_schematic.py"
+}

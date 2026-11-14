@@ -1,0 +1,7 @@
+# KPP parameters (Large et al. 1994; pkg/kpp). Every parameter keeps the MITgcm default
+# (pkg/kpp/kpp_readparms.F), as approved in the PD0 section 6: Ricr = 0.3, Riinfty = 0.7,
+# difm0 = difs0 = dift0 = 5e-3 m2 s-1, difmcon = difscon = diftcon = 0.1 m2 s-1,
+# BVSQcon = -0.2e-4 s-2. The background viscosity and diffusivity are viscAr and diffKrT/S
+# of data (pkg/kpp/kpp_routines.F:1197-1199). Written only for cases with useKPP.
+ &KPP_PARM01
+ &

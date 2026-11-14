@@ -1,0 +1,31 @@
+# Exp. 4 fjord_vmf diagnostics (MDS, no MNC). Snapshots every 1200 s, the record interval of the
+# PD0 bands (Nyquist 1.5 cph; notes/pd0_preregistro.md section 3). Disk budget per stream:
+# notes/pd1_config.md. The edit sets add kpp2d/kpp3d (KPP), ggl90 (GGL90) and seaice (ice cases).
+#  1 state3d : U, V and density anomaly, full 3-D (energy flux of Nash et al. 2005 through the
+#              sounds, baroclinic energy of the inner fjord, spectra at the stations)
+#  2 state2d : free surface
+#  3 wlev    : vertical velocity at three levels, k = ${wlev_levels} (cell centres ${wlev_depths} m)
+#  4 surf    : stress the ocean receives after pkg/seaice (model/src/diags_oceanic_surf_flux.F:79-85,
+#              filled after SEAICE_MODEL: model/src/do_oceanic_phys.F:453, 1119): wind work
+ &DIAGNOSTICS_LIST
+  fields(1:3,1) = 'UVEL    ','VVEL    ','RHOAnoma',
+  fileName(1)   = 'state3d',
+  frequency(1)  = -1200.,
+  timePhase(1)  = 0.,
+  fields(1,2)   = 'ETAN    ',
+  fileName(2)   = 'state2d',
+  frequency(2)  = -1200.,
+  timePhase(2)  = 0.,
+  fields(1,3)   = 'WVEL    ',
+  levels(1:3,3) = ${wlev_levels},
+  fileName(3)   = 'wlev',
+  frequency(3)  = -1200.,
+  timePhase(3)  = 0.,
+  fields(1:2,4) = 'oceTAUX ','oceTAUY ',
+  fileName(4)   = 'surf',
+  frequency(4)  = -1200.,
+  timePhase(4)  = 0.,
+ &
+
+ &DIAG_STATIS_PARMS
+ &

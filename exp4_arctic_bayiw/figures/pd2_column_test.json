@@ -1,0 +1,17 @@
+{
+ "f_hz": 2.270424878655299e-05,
+ "f_peak_hz": 2.2817460317460315e-05,
+ "df_hz": 9.92063492063492e-07,
+ "offset_df": 0.11411722315458521,
+ "band_f": [
+  0.85,
+  1.2
+ ],
+ "horizontal_uniformity_max_abs_dev_m_s": 0.0,
+ "peak_over_f": 1.0049863588076244,
+ "record_h": 280.0,
+ "rule": "fixed before running (PD2, 2026-11-13): peak <= 1 df of f -> the model inertial frequency is right and the F1 blue shift is (c); > 1 df -> (a)",
+ "within_1df": true,
+ "v2a_class": "(c)",
+ "post_hoc": true
+}

@@ -124,10 +124,31 @@ def test_concurrency_allowed(np_each, mc):
     cp.check_concurrency(np_each, mc)
 
 
-@pytest.mark.parametrize("np_each,mc", [(1, 0), (1, 6), (5, 2), (2, 1), (3, 1), (6, 1), (0, 1)])
+@pytest.mark.parametrize("np_each,mc", [(1, 0), (1, 6), (5, 2), (2, 1), (3, 1), (4, 1), (6, 1), (0, 1)])
 def test_concurrency_rejected(np_each, mc):
+    """Default (Exps. 1-2): only np = 1 (up to 5 at a time) or one np = 5 run."""
     with pytest.raises(ValueError):
         cp.check_concurrency(np_each, mc)
+
+
+@pytest.mark.parametrize("np_each,mc", [(1, 1), (1, 5), (5, 1), (4, 1), (3, 1), (2, 1)])
+def test_concurrency_partial_np_opt_in_allowed(np_each, mc):
+    # opt-in (Exp. 4): one MPI run of 2..5 ranks uses no more than the np = 5 run of the global
+    # constraints (bay_thesis: the thesis tiles 4 x 2 of 140 x 176 need np = 4,
+    # exp4_arctic_bayiw/notes/pd1_puente.md)
+    cp.check_concurrency(np_each, mc, allow_partial_np=True)
+
+
+@pytest.mark.parametrize("np_each,mc", [(1, 0), (1, 6), (5, 2), (4, 2), (2, 2), (6, 1), (0, 1)])
+def test_concurrency_partial_np_opt_in_rejected(np_each, mc):
+    with pytest.raises(ValueError):
+        cp.check_concurrency(np_each, mc, allow_partial_np=True)
+
+
+def test_run_pool_passes_the_opt_in():
+    with pytest.raises(ValueError):
+        cp.run_pool(["a"], 4, 1, lambda c: "OK")
+    assert cp.run_pool(["a"], 4, 1, lambda c: "OK", allow_partial_np=True) == {"a": "OK"}
 
 
 @pytest.mark.parametrize("mc", [1, 2, 5])
@@ -200,13 +221,17 @@ class FakeModel:
                 (run / f.name).write_bytes(f.read_bytes())
         d = (run / "data").read_text()
         n0, n = cp.nml_int(d, "nIter0"), cp.nml_int(d, "nTimeSteps")
-        dt, ck = cp.nml_float(d, "deltaT"), cp.nml_float(d, "pChkptFreq")
+        dt = cp.nml_float(d, "deltaT")
+        try:
+            ck = cp.nml_float(d, "pChkptFreq")
+        except RuntimeError:              # a free stage without permanent checkpoints
+            ck = 0.0
         x = 1.0 if n0 == 0 else struct.unpack(">d", (run / f"pickup.{n0:010d}.data").read_bytes())[0]
         it = n0
         for _ in range(n):
             x = x * 1.0001 + 1e-3
             it += 1
-            if (it * dt) % ck == 0:
+            if ck > 0 and (it * dt) % ck == 0:
                 for stem in ("pickup",) + (("pickup_ptracers",) if self.extra else ()):
                     (run / f"{stem}.{it:010d}.data").write_bytes(struct.pack(">d", x))
                     (run / f"{stem}.{it:010d}.meta").write_text("meta")
@@ -312,3 +337,95 @@ def test_run_stages_nonzero_exit_fails_even_with_ok_status(tmp_path):
     st = cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 1, lambda c: fake(c) or 1, "run_mitgcm.sh")
     assert st == "FAILED"
     assert "code 1" in json.loads((tmp_path / "r" / "run_status_final.json").read_text())["reason"]
+
+
+def test_paths_exp4_defaults_and_overrides(monkeypatch):
+    import pfcommon.paths as paths
+    for k in ("EXP4_RUNS", "EXP4_BUILDS"):
+        monkeypatch.delenv(k, raising=False)
+    paths = importlib.reload(paths)
+    assert paths.EXP4_RUNS == Path("/Volumes/LaCie/portfolio_runs/exp4")
+    assert paths.EXP4_BUILDS == Path("/Volumes/ESTEBAN_MIT/portfolio_builds/exp4")
+    monkeypatch.setenv("EXP4_RUNS", "/tmp/r4")
+    monkeypatch.setenv("EXP4_BUILDS", "/tmp/b4")
+    paths = importlib.reload(paths)
+    assert paths.EXP4_RUNS == Path("/tmp/r4") and paths.EXP4_BUILDS == Path("/tmp/b4")
+    monkeypatch.delenv("EXP4_RUNS")
+    monkeypatch.delenv("EXP4_BUILDS")
+    importlib.reload(paths)
+
+
+# ---- explicit stage plans and per-stage namelists (Exp. 4 thesis two-stage runs) -------------
+
+FREE = DATA.replace(" pChkptFreq = 4000.,\n", " chkptFreq = 4000.,\n")
+
+
+def test_run_stages_explicit_plan_and_stage_data(tmp_path):
+    """Unequal stages (forced 40 steps, then free 80) and a different namelist after stage 1,
+    as the thesis runs (data.stage1 forced, data.stage2 free)."""
+    inp = _inp(tmp_path, DATA.replace("nTimeSteps = 120", "nTimeSteps = 40"))
+    (inp / "data.free").write_text(FREE)
+    fake = FakeModel()
+    texts = {1: (inp / "data").read_text(), 2: FREE}
+    st = cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 2, fake, "run_mitgcm.sh",
+                       plan=[(0, 40), (40, 80)], stage_data=lambda k: texts[k])
+    assert st == "OK"
+    d = [(i / "data").read_text() for i, _ in fake.calls]
+    assert [cp.nml_int(x, "nIter0") for x in d] == [0, 40]
+    assert [cp.nml_int(x, "nTimeSteps") for x in d] == [40, 80]
+    assert "pChkptFreq" in d[0] and "pChkptFreq" not in d[1] and "chkptFreq" in d[1]
+    fin = json.loads((tmp_path / "r" / "run_status_final.json").read_text())
+    assert fin["state"] == "OK" and fin["last_iter"] == fin["expected_last_iter"] == 120
+
+
+def test_run_stages_explicit_plan_must_be_contiguous(tmp_path):
+    inp = _inp(tmp_path)
+    for plan in ([(0, 40), (50, 70)], [(10, 40), (50, 70)], [(0, 0)]):
+        with pytest.raises(ValueError, match="plan"):
+            cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, len(plan), FakeModel(),
+                          "run_mitgcm.sh", plan=plan)
+    with pytest.raises(ValueError, match="plan"):
+        cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 3, FakeModel(), "run_mitgcm.sh",
+                      plan=[(0, 40), (40, 80)])
+
+
+def test_run_stages_last_stage_end_need_not_be_on_checkpoint_when_opted_in(tmp_path):
+    """Opt-in (Exp. 4): only intermediate stage ends need the permanent pickup; the run may end
+    anywhere. Without the opt-in every stage end is checked, the last one too."""
+    inp = _inp(tmp_path, DATA.replace("nTimeSteps = 120", "nTimeSteps = 40"))
+    st = cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh",
+                       plan=[(0, 40), (40, 75)], check_last_end=False)
+    assert st == "OK"
+    with pytest.raises(ValueError, match="pChkptFreq"):
+        cp.run_stages(tmp_path / "r1", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh",
+                      plan=[(0, 40), (40, 75)])
+    with pytest.raises(ValueError, match="pChkptFreq"):
+        cp.run_stages(tmp_path / "r2", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh",
+                      plan=[(0, 35), (35, 80)], check_last_end=False)
+
+
+def test_run_stages_default_checks_the_last_stage_end_as_at_433ebde(tmp_path):
+    """Default path (equal split, one namelist; Exp. 2): every stage end, the last included,
+    must fall on pChkptFreq. nIter0 = 10, two stages of 30 steps of 100 s: the intermediate end
+    (4000 s) is on the 4000 s checkpoint, the last (7000 s) is not."""
+    inp = _inp(tmp_path, DATA.replace("nIter0 = 0", "nIter0 = 10").replace("nTimeSteps = 120",
+                                                                          "nTimeSteps = 60"))
+    with pytest.raises(ValueError, match="stage end 7000 s"):
+        cp.run_stages(tmp_path / "r", inp, tmp_path / "b", 1, 2, FakeModel(), "run_mitgcm.sh")
+
+
+def test_finished_ok_needs_the_final_status_of_a_multi_stage_run(tmp_path):
+    """Stage 1 OK while stage 2 runs (or after it was killed before run_status_final.json was
+    written) is not a finished run: --skip-ok must not skip it (found in Exp. 4 Task 6, V3)."""
+    from pfcommon import campaign as cp
+    (tmp_path / "run_status.json").write_text(json.dumps(
+        {"state": "OK", "last_iter": 1800, "n_timesteps": 1800}))
+    assert cp.finished_ok(tmp_path, staged_layout=True)     # single-stage layout: OK
+    (tmp_path / "stage2").mkdir()
+    (tmp_path / "stage2" / "run_status.json").write_text(json.dumps(
+        {"state": "RUNNING", "last_iter": 1800, "n_timesteps": 6600}))
+    assert not cp.finished_ok(tmp_path, staged_layout=True)  # opt-in (Exp. 4)
+    assert cp.finished_ok(tmp_path)                          # default (Exps. 1-2): unchanged
+    (tmp_path / "run_status_final.json").write_text(json.dumps(
+        {"state": "OK", "last_iter": 8400, "expected_last_iter": 8400}))
+    assert cp.finished_ok(tmp_path, staged_layout=True) and cp.finished_ok(tmp_path)
