@@ -8,7 +8,7 @@ Usage::
     animate.py bay-fjord [--runs R1 F1]   -> figures/anim_bay_vs_fjord_{raw,filt}.gif
         common options: [--out-dir DIR] [--t-end-h 96] [--step-s S] [--stride N] [--dpi D]
                         [--max-mb 5] [--frame-png PREFIX] [--frame-h H ...] [--save-frames NPZ]
-                        [--check-scales] [--runs-root EXP4_RUNS]
+                        [--fields raw filt] [--check-scales] [--runs-root EXP4_RUNS]
 
 One pass over the run records writes both GIFs of a pair. No number of these animations enters
 the README claims; no hypothesis or criterion uses them.
@@ -127,6 +127,26 @@ RAW_CAVEAT = ("Same-sign features that persist from frame to frame (coastal frin
 NO_ICE_WIND = "; there is no wind under the ice in F2."
 BRIDGE = ("The bay-fjord bridge is not resolution-converged, and the fixed t = 0 reference profile "
           "drifts during the runs.")
+
+
+FILTER_NOTE = ("The 1-T$_f$ running-mean filter attenuates sub-inertial signal (Kelvin waves, slow "
+               "seiches) and has ripple above f; $a_1'$ shows mainly near- and super-inertial "
+               "oscillations.")
+SHALLOW_NOTE_FACTOR = 2.0  # footer note when shallow columns hold >= this x their area share
+
+
+def saturation_note(scales: dict, factor: float = SHALLOW_NOTE_FACTOR) -> str:
+    """Footer sentence, computed from check_scales at render time: the runs whose saturated pixels
+    lie in columns shallower than SHALLOW_REPORT_M at least ``factor`` times as often as those
+    columns occur among the shown pixels (saturation concentrated there); "" if none."""
+    key = f"share_of_saturated_in_columns_shallower_than_{SHALLOW_REPORT_M:g}m"
+    area = f"fraction_of_shown_pixels_in_columns_shallower_than_{SHALLOW_REPORT_M:g}m"
+    hits = [(n, v[key], v[area]) for n, v in scales.items()
+            if isinstance(v, dict) and v.get(key) is not None and v.get(area)
+            and v[key] >= factor * v[area]]
+    return " ".join(f"{n}: saturation concentrates in columns shallower than {SHALLOW_REPORT_M:g} m "
+                    f"({100 * sh:.0f} % of its saturated pixels, {100 * ar:.0f} % of its area)."
+                    for n, sh, ar in hits)
 
 
 def filt_definition(tf_h: dict) -> str:
@@ -658,6 +678,8 @@ def check_scales(prep: dict, fld: str) -> dict:
                   "limit_region": "bay" if is_bay_run(r["case"]) else "all wet cells",
                   f"share_of_saturated_in_columns_shallower_than_{SHALLOW_REPORT_M:g}m":
                       (float(hits[:, shal].sum() / nh) if nh else None),
+                  f"fraction_of_shown_pixels_in_columns_shallower_than_{SHALLOW_REPORT_M:g}m":
+                      float(np.mean(shal[np.isfinite(e[0])])) if np.isfinite(e[0]).any() else None,
                   "frames": len(e)}
         if fld == "filt":
             out[n]["T_f_h"] = tf_s(r["f"]) / 3600.0
@@ -692,7 +714,9 @@ def figure_for(kind: str, prep: dict, fld: str):
                 "inertially filtered mode-1 displacement $a_1'$ (running 1-T$_f$ mean removed)")
         sup = (f"DESCRIPTIVE: {what}\nopen water vs landfast ice, same winter profile and wind "
                f"pulse; shared fixed scale $\\pm${L:g} m")
-        foot = (A1_DEF + "\n" + (RAW_CAVEAT + NO_ICE_WIND if fld == "raw" else filt_definition(tf_h)))
+        foot = (A1_DEF + "\n" + (RAW_CAVEAT + NO_ICE_WIND if fld == "raw" else
+                                  " ".join(x for x in (filt_definition(tf_h), FILTER_NOTE,
+                                                       saturation_note(check_scales(prep, fld))) if x)))
     else:
         for n, r in rr.items():
             bay = is_bay_run(r["case"])
@@ -706,7 +730,9 @@ def figure_for(kind: str, prep: dict, fld: str):
                "fixed colour scales (different profiles, depths, f and wind footprints: amplitudes "
                "not comparable between panels)")
         foot = (A1_DEF + " " + BRIDGE + "\n" +
-                (RAW_CAVEAT + "." if fld == "raw" else filt_definition(tf_h)))
+                (RAW_CAVEAT + "." if fld == "raw" else
+                 " ".join(x for x in (filt_definition(tf_h), FILTER_NOTE,
+                                      saturation_note(check_scales(prep, fld))) if x)))
     return build_figure(panels, t, prep["onset_s"], sup, foot, tau_t_s=t_tau, cbar_label=sym)
 
 
@@ -734,6 +760,8 @@ def main(argv: list | None = None) -> int:
                     help="time(s) of the --frame-png still(s) [h]")
     ap.add_argument("--save-frames", type=Path, default=None,
                     help="also write the raw a_1 frames, times and land masks to this .npz")
+    ap.add_argument("--fields", nargs="+", choices=("raw", "filt"), default=["raw", "filt"],
+                    help="which GIFs to write (default both)")
     ap.add_argument("--check-scales", action="store_true",
                     help="only report the fixed scales and their saturation (all frames); no GIF")
     a = ap.parse_args(argv)
@@ -746,7 +774,7 @@ def main(argv: list | None = None) -> int:
                             **{f"a1_{n}": e for n, e in prep["raw"]["eta"].items()},
                             **{f"land_{n}": r["land"] for n, r in prep["runs"].items()})
     over = False
-    for fld in ("raw", "filt"):
+    for fld in a.fields:
         cs = check_scales(prep, fld)
         if a.check_scales:
             res[fld] = {"scales": cs}

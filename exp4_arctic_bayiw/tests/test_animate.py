@@ -217,3 +217,23 @@ def test_mode1_amplitude_is_undefined_in_columns_shallower_than_the_minimum_dept
     a = an.mode1_amplitude(rho, rho_b, RC, drF, hfac, 1020.0)
     assert an.MIN_DEPTH_M == 10.0
     assert np.isnan(a[0, 0]) and np.isfinite(a[0, 1]) and np.isfinite(a[0, 2])
+
+
+# ---- fix round 2: footer notes computed at render time --------------------------------------------
+
+def test_filter_note_names_the_sub_inertial_attenuation():
+    s = an.FILTER_NOTE
+    for w in ("sub-inertial", "Kelvin", "seiches"):
+        assert w in s
+
+
+def test_saturation_note_only_where_the_shallow_columns_are_over_represented():
+    key = f"share_of_saturated_in_columns_shallower_than_{an.SHALLOW_REPORT_M:g}m"
+    area = f"fraction_of_shown_pixels_in_columns_shallower_than_{an.SHALLOW_REPORT_M:g}m"
+    scales = {"R1": {key: 0.0, area: 0.1}, "F1": {key: 0.4564, area: 0.15}, "shared": False,
+              "step_s": 3600.0}
+    note = an.saturation_note(scales)
+    assert "F1" in note and "R1" not in note
+    assert f"shallower than {an.SHALLOW_REPORT_M:g} m" in note and "46 %" in note and "15 %" in note
+    # 4.5 % of the saturated pixels in 7 % of the area: not concentrated
+    assert an.saturation_note({"F3": {key: 0.045, area: 0.07}, "F2": {key: None, area: 0.07}}) == ""

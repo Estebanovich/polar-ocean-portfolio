@@ -155,7 +155,7 @@ Four animations show the response to the wind pulse in plan view over the first 
 
 ![Animation 2](figures/anim_fjord_ice_filt.gif)
 
-*Animation 2.* The same runs, a₁′. In open water the inner fjord shows bands of opposite sign along its two coasts that change from frame to frame; under the ice a₁′ of the inner fjord stays close to zero on this scale, while outside the ice the two runs look alike. The filter attenuates oscillations slower than the inertial period, so a slow wave would be weakened here too.
+*Animation 2.* The same runs, a₁′. In open water the inner fjord shows bands of opposite sign along its two coasts that change from frame to frame; under the ice a₁′ of the inner fjord stays close to zero on this scale (no wind stress under the ice in F2), while outside the ice the two runs look alike. The running-mean filter attenuates sub-inertial signal (Kelvin waves, slow seiches) and has ripple above f, so a₁′ shows mainly near- and super-inertial oscillations.
 
 ![Animation 3](figures/anim_bay_vs_fjord_raw.gif)
 
@@ -163,7 +163,7 @@ Four animations show the response to the wind pulse in plan view over the first 
 
 ![Animation 4](figures/anim_bay_vs_fjord_filt.gif)
 
-*Animation 4.* The same runs, a₁′, each filtered with its own inertial period. In the bay the two side walls carry displacements of opposite sign; in the fjord the signal is spread over the basin and the shelf.
+*Animation 4.* The same runs, a₁′, each filtered with its own inertial period. In the bay the two side walls carry displacements of opposite sign; in the fjord the signal is spread over the basin and the shelf. As in Animation 2, the filter attenuates sub-inertial signal (Kelvin waves, slow seiches) and has ripple above f: a₁′ shows mainly near- and super-inertial oscillations.
 
 ## 4. Discussion
 
