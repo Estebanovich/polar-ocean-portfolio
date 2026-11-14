@@ -50,7 +50,7 @@ PKG = Path(__file__).resolve().parents[1]
 FIG = PKG / "figures"
 PD0_LABEL = {"supported": "apoyada", "alternative": "alternativa", "mixed": "mixta",
              "inconclusive_T_fin": "no concluyente con T_fin", "refuted": "refutada",
-             "not_distinguishable": "no distinguible"}
+             "not_distinguishable": "no distinguible", "undefined": "no definido (denominador nulo)"}
 WINTER_WARNING = ("PD0 5 (H4c): the winter mode 1 is poorly resolved at 200 m (R1/dx = 1.7-6.6, "
                   "PD0 2.3 point 1; winter at 200 m is a declared limitation, PD1). A supported "
                   "H4c may be partly a resolution effect.")
@@ -67,6 +67,14 @@ WINDOWS_NOTE = ("Windows: fjord runs 0-279.67 h (840 records every 1200 s; the s
 FACTOR_NOTE = ("PD0 5: the factor-1.5 rule (H4c, H4d) is kept as frozen. It rests on the V4a "
                "resolution bound (25 %); V4 FAILED (figures/validation.json: V4a and V4b), so that "
                "bound is not demonstrated. No threshold is changed.")
+
+
+def _div(num: float, den: float, tag: str, flags: list) -> float | None:
+    """num / den, or None with a flag when den == 0 (final review, Minor 2: flag, never raise)."""
+    if den == 0:
+        flags.append(f"{tag}: denominator == 0 (ratio undefined)")
+        return None
+    return num / den
 
 
 def _phi(b: dict) -> tuple[dict, float]:
@@ -105,10 +113,11 @@ def h4b(e_f2: float, e_f3: float, f_bc_in: float, f_bt_in: float, fa_bc_in: floa
         fa_bt_in: float | None = None, residuals: dict | None = None, ke_only: dict | None = None) -> dict:
     """H4b (i) energy ratio and (ii) the source through the straits (F2): baroclinic against
     barotropic pressure work (Enmienda 3); F + A descriptive. J."""
-    ratio = e_f2 / e_f3
+    fl: list = []
+    ratio = _div(e_f2, e_f3, "E_in_F3", fl)
     r = {"i": {"E_in_F2_J": e_f2, "E_in_F3_J": e_f3, "ratio": ratio,
                "threshold": T["H4b"]["energy_ratio_max"],
-               "met": bool(ratio <= T["H4b"]["energy_ratio_max"])},
+               "met": bool(ratio is not None and ratio <= T["H4b"]["energy_ratio_max"]), "flags": fl},
          "ii": {"F_bc_in_J": f_bc_in, "F_bt_in_J": f_bt_in,
                 "met": bool(f_bc_in >= abs(f_bt_in))}}
     if fa_bc_in is not None:
@@ -148,14 +157,14 @@ def h4c(w_ni_f1: float, w_ni_f3: float, f_res_f1: float, f_res_f3: float,
     thr = T["H4c"]["ratio_min"]
     flags = [f"{k} <= 0" for k, v in (("w_ni_f1", w_ni_f1), ("w_ni_f3", w_ni_f3),
                                        ("f_res_f1", f_res_f1), ("f_res_f3", f_res_f3)) if v <= 0]
-    ri, rii = w_ni_f1 / w_ni_f3, f_res_f1 / f_res_f3
-    out = _ratio_rule([ri, rii], thr)
+    ri, rii = _div(w_ni_f1, w_ni_f3, "w_ni_f3", flags), _div(f_res_f1, f_res_f3, "f_res_f3", flags)
+    out = "undefined" if ri is None or rii is None else _ratio_rule([ri, rii], thr)
     r = {"i": {"W_NI_F1_J": w_ni_f1, "W_NI_F3_J": w_ni_f3, "ratio": ri},
          "ii": {"F_res_out_F1_J": f_res_f1, "F_res_out_F3_J": f_res_f3, "ratio": rii},
          "threshold": thr, "outcome": out, "outcome_pd0": PD0_LABEL[out], "flags": flags,
          "warning": WINTER_WARNING}
     if fa_res is not None:
-        r["ii"]["descriptive_F_plus_A"] = {**fa_res, "ratio": fa_res["F1"] / fa_res["F3"]}
+        r["ii"]["descriptive_F_plus_A"] = {**fa_res, "ratio": _div(fa_res["F1"], fa_res["F3"], "fa_res_f3", [])}
     return r
 
 
@@ -169,16 +178,31 @@ def h4d_pair(kpp: dict, closure: dict) -> dict:
             flags.append(f"{tag}: numerator F_bc_pressure_out <= 0 ({num:.4g} J)")
         if den <= 0:
             flags.append(f"{tag}: denominator P_bt + P_bc <= 0 ({den:.4g} J)")
-        eta[tag] = num / den
-    ratio = eta["kpp"] / eta["closure"]
-    out = _ratio_rule([ratio], thr)
+        eta[tag] = _div(num, den, f"{tag}: P_bt + P_bc", flags)
+    ratio = (_div(eta["kpp"], eta["closure"], "closure: eta", flags)
+             if eta["kpp"] is not None and eta["closure"] is not None else None)
+    out = "undefined" if ratio is None else _ratio_rule([ratio], thr)
+    fa = {t: -b["totals_in_J"]["FA_bc"] for t, b in (("kpp", kpp), ("closure", closure))}
+    fl_fa: list = []
+    eta_fa = {t: _div(fa[t], b["P_bt_J"] + b["P_bc_J"], t, fl_fa) for t, b in (("kpp", kpp), ("closure", closure))}
+    r_fa = (_div(eta_fa["kpp"], eta_fa["closure"], "closure: eta", fl_fa)
+            if None not in eta_fa.values() else None)
     return {"eta_kpp": eta["kpp"], "eta_closure": eta["closure"], "ratio": ratio, "threshold": thr,
             "outcome": out, "outcome_pd0": PD0_LABEL[out], "flags": flags,
             "numerator_J": {"kpp": kpp["F_bc_pressure_out_J"], "closure": closure["F_bc_pressure_out_J"]},
             "W_wind_J": {"kpp": kpp["P_bt_J"] + kpp["P_bc_J"],
                          "closure": closure["P_bt_J"] + closure["P_bc_J"]},
-            "eta_prime_kpp_descriptive": kpp["F_bc_pressure_out_J"] / kpp["P_bc_J"],
-            "eta_prime_closure_descriptive": closure["F_bc_pressure_out_J"] / closure["P_bc_J"],
+            "eta_prime_kpp_descriptive": _div(kpp["F_bc_pressure_out_J"], kpp["P_bc_J"], "kpp: P_bc", []),
+            "eta_prime_closure_descriptive": _div(closure["F_bc_pressure_out_J"], closure["P_bc_J"],
+                                                  "closure: P_bc", []),
+            "post_hoc_amendment1_numerator": {
+                "label": ("POST HOC descriptive (final review I2): eta with the numerator of Enmienda 1 "
+                          "point 2, F_bc + A_bc out, over the same P_bt + P_bc; Enmienda 2 replaced it "
+                          "by the pressure work alone; not a verdict: 'literal_rule_would_read' is the "
+                          "frozen ratio rule applied to it for disclosure only"),
+                "FA_bc_out_J": fa, "eta_kpp": eta_fa["kpp"], "eta_closure": eta_fa["closure"],
+                "ratio": r_fa, "flags": fl_fa,
+                "literal_rule_would_read": "undefined" if r_fa is None else _ratio_rule([r_fa], thr)},
             "descriptive_FA_bc_out_J": {"kpp": -kpp["totals_in_J"]["FA_bc"],
                                         "closure": -closure["totals_in_J"]["FA_bc"]}}
 

@@ -120,6 +120,17 @@ def values() -> dict[str, str]:
     v["pulse_end_h"] = f(w["center_h"] + 3 * w["sigma_h"], 1)
     r1k = cs["cases"]["R1k"]
     v["R1k_t_end"] = f"{r1k['t_end_h']:.0f}"
+    bay = cs["configs"]["bay_thesis"]                       # the bay runs keep the thesis set-up
+    v["bay_dt"], v["bay_forced"] = f"{bay['deltaT']:.0f}", f"{bay['forced_h']:.0f}"
+    bw = bay["wind"]
+    v["bay_tau"], v["bay_sigma"], v["bay_center"] = f(bw["max_tau"], 1), f(bw["sigma_t_h"], 0), f(bw["center_t_h"], 1)
+    v["bay_patch_r"] = str(bw["radius"])
+    v["R1_t_end"] = f"{cs['cases']['R1'].get('t_end_h', bay['t_end_h']):.0f}"
+    v["R2_t_end"] = f"{cs['cases']['R2']['t_end_h']:.0f}"
+    assert cs["cases"]["R3"]["t_end_h"] == cs["cases"]["R2"]["t_end_h"], "README: 'R2 and R3' share a duration"
+    mods = sorted(d.parent.name for d in (EXP / "config").glob("*/code")
+                  if all((d / x).exists() for x in ("obcs_check.F", "seaice_dynsolver.F", "obcs_add_tides.F")))
+    v["mod_configs"] = ", ".join(f"`{m}`" for m in mods)
 
     th = _load("theory.json")
     if th:
@@ -150,6 +161,7 @@ def values() -> dict[str, str]:
         v["fj_axis"] = f(g["axis_angle_deg"], 1)
         v["wind_from"] = f"{th['wind']['down_fjord_from_direction_deg_true_utm']:03.0f}"
         bg = th["thesis_bay_geometry"]
+        v["bay_dx"] = f(sum(bg["dx_bay_m"]) / len(bg["dx_bay_m"]) / 1e3, 1)
         v["bay_L"], v["bay_W"], v["bay_H"] = f(bg["length_m"] / 1e3, 0), f(bg["width_m"] / 1e3, 1), f(bg["max_depth_m"], 0)
         v["c1_bay"], v["c1_bay78"] = f(bay["c_n"][0]), f(b78["c_n"][0])
         v["R1_bay"], v["R1_bay78"] = f(bay["rossby_radius_m"][0] / 1e3, 1), f(b78["rossby_radius_m"][0] / 1e3, 1)
@@ -274,6 +286,10 @@ def values() -> dict[str, str]:
         v["H4c_F1"], v["H4c_F3"] = gj(c4["ii"]["F_res_out_F1_J"], 4, True), gj(c4["ii"]["F_res_out_F3_J"], 5, True)
         v["H4c_outcome"] = _outcome(c4["outcome"])
         d = h["H4d"]["R1k_vs_R1"]
+        a1 = d["post_hoc_amendment1_numerator"]
+        v["a1_R_ratio"] = f(a1["ratio"], 2)
+        v["a1_R1k_eta"], v["a1_R1_eta"] = pct(a1["eta_kpp"], 2), pct(a1["eta_closure"], 2)
+        v["a1_R_outcome"] = PD0_WORD[a1["literal_rule_would_read"]]
         v["R1_window"] = f"{d['window_h'][1]:.0f}"
         v["H4d_R1k_eta"], v["H4d_R1_eta"] = pct(d["eta_kpp"], 2), pct(d["eta_closure"], 3)
         v["H4d_R_ratio"] = f(d["ratio"], 2)
@@ -319,6 +335,10 @@ def values() -> dict[str, str]:
         v["ape_F2_end"] = gj(r["F2"]["energy_J"]["ape"]["end"], 2)
         v["ke_F2_end"] = gj(r["F2"]["energy_J"]["ke_bc"]["end"], 3)
         v["P_F1"] = gj(r["F1"]["P_J"], 1)
+        v["r1_F_out"] = gj(r["R1"]["F_bc_pressure_out_J"], 2)
+        v["r1_A_in"] = gj(r["R1"]["totals_in_J"]["A_bc"], 2)
+        _expect(r["R1"]["F_bc_pressure_out_J"] > 0 and r["R1"]["totals_in_J"]["A_bc"] > 0,
+                "R1: pressure work out of the bay and advection into it")
     f0 = _load("fig0_schematic.json")
     if f0:
         v["fig0_date"], v["fig0_year"] = f0["sentinel2"]["date_text"], f0["sentinel2"]["year"]
@@ -342,13 +362,70 @@ def values() -> dict[str, str]:
         v["drift_F1"] = f(pd_["F1"]["max_abs_change_kg_m-3"], 3)
         v["drift_F2"] = f(pd_["F2"]["max_abs_change_kg_m-3"], 3)
         v["drift_bay"] = rng([pd_["R1"]["max_abs_change_kg_m-3"], pd_["R1k"]["max_abs_change_kg_m-3"]], 3)
+    if val and h:
+        check_prose(val, h, mr)
     return v
 
 
-def _outcome(o: str) -> str:
-    return {"inconclusive_T_fin": "inconclusive with T_fin", "not_distinguishable": "not distinguishable",
+PD0_WORD = {"inconclusive_T_fin": "inconclusive with T_fin", "not_distinguishable": "not distinguishable",
             "supported": "supported", "refuted": "refuted", "alternative": "alternative (Kelvin)",
-            "mixed": "mixed"}[o]
+            "mixed": "mixed", "undefined": "undefined (zero denominator)"}
+
+
+def _outcome(o: str) -> str:
+    return PD0_WORD[o]
+
+
+def _expect(cond: bool, what: str) -> None:
+    """The README prose states this in fixed words; refuse to render if the JSON says otherwise."""
+    if not cond:
+        raise ValueError(f"README prose no longer matches the metrics: expected {what}")
+
+
+def check_prose(val: dict, h: dict, mr: dict | None) -> None:
+    """Signs and outcomes behind every fixed word of README.template.md (final review, Minor 11)."""
+    _expect(not val["V2a"]["pass"] and not val["V2b"]["pass"] and val["V3"]["pass"] and not val["V4"]["pass"],
+            "V2a, V2b and V4 fail and V3 passes")
+    _expect(val["V3"]["sense"]["direction"] == "east", "V3 travelling east along the south coast (cyclonic)")
+    v4 = val["V4"]["V4a"]
+    _expect(v4["F1_out_J"] < 0 < v4["V4_out_J"], "V4: inward at 200 m, outward at 400 m")
+    a = h["H4a"]
+    _expect(a["outcome"] == "inconclusive_T_fin" and a["bands_out_J"]["low"] < 0 and a["resolved_sum_out_J"] < 0,
+            "H4a inconclusive, low band and resolved sum inward")
+    b = h["H4b"]
+    _expect(b["i"]["met"] and not b["ii"]["met"], "H4b(i) met and H4b(ii) not met")
+    c = h["H4c"]
+    _expect(c["outcome"] == "not_distinguishable" and c["ii"]["F_res_out_F1_J"] < 0 and c["ii"]["F_res_out_F3_J"] < 0,
+            "H4c not distinguishable with both resolved fluxes inward")
+    thr = c["threshold"]
+    _expect(1 / thr < c["i"]["ratio"] < thr, "H4c(i) in neither tail")
+    dr, df = h["H4d"]["R1k_vs_R1"], h["H4d"]["F1_vs_F1c"]
+    _expect(dr["outcome"] == "supported" and df["outcome"] == "refuted" and df["numerator_J"]["kpp"] < 0,
+            "H4d supported in the bay and refuted in the fjord with an inward F1 numerator")
+    _expect(dr["W_wind_J"]["kpp"] < dr["W_wind_J"]["closure"] and dr["numerator_J"]["kpp"] > dr["numerator_J"]["closure"],
+            "H4d bay: less wind work and a larger radiated flux with KPP")
+    _expect(dr["post_hoc_amendment1_numerator"]["literal_rule_would_read"] != "supported",
+            "the Amendment 1 numerator would not support H4d in the bay")
+    k = h["post_hoc"]["band_flux_per_strait"]["F1c"]["total"]["resolved_out_J"]["kelvin_subinertial"]
+    _expect(k > 0, "F1c: the Kelvin band carries the net outward")
+    al = h["post_hoc"]["arneborg_liljebladh_net_in_J"]
+    _expect(al["F1"]["total"]["F_bc_in_J"] > 0 and al["F1c"]["total"]["F_bc_in_J"] < 0
+            and al["R1"]["total"]["F_bc_in_J"] < 0 and al["R2"]["total"]["F_bc_in_J"] < 0,
+            "A&L band: enters in F1, leaves in F1c, R1 and R2")
+    br = h["post_hoc"]["bridge"]
+    for run in ("R1k", "R2"):
+        s_ = br[run]["flux_share_signed"]
+        _expect(s_["near_inertial"] > s_["low"] > 0, f"{run}: outward and mostly near-inertial")
+    _expect(br["F1"]["flux_share_signed"]["low"] < 0, "F1: low-band share inward")
+    if mr:
+        R = mr["runs"]
+        tb = R["F1"]["total"]["band_out_J"]
+        _expect(R["F1"]["low_band_out_J"] < 0 and R["F1"]["eta"] < 0, "moving reference: F1 low band and eta still negative")
+        _expect(abs(tb["low"]) / sum(abs(x) for x in tb.values()) > h["general"]["thresholds"]["H4a"]["low_band_max_frac"]
+                and sum(tb[x] for x in BANDS) > 0 > a["resolved_sum_out_J"],
+                "moving reference: low band still dominant, F1 resolved sum changes sign")
+        _expect(R["F1c"]["low_band_out_J"] > 0 > h["post_hoc_h4d_resolved_bands"]["F1c"]["low_out_J"],
+                "moving reference: the F1c low band turns outward")
 
 
 def _sci(x: float) -> str:

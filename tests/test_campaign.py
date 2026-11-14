@@ -119,18 +119,36 @@ def test_check_free_space(tmp_path):
 
 # ---- concurrency -------------------------------------------------------------------
 
-@pytest.mark.parametrize("np_each,mc", [(1, 1), (1, 3), (1, 5), (5, 1), (4, 1), (2, 1), (3, 1)])
+@pytest.mark.parametrize("np_each,mc", [(1, 1), (1, 3), (1, 5), (5, 1)])
 def test_concurrency_allowed(np_each, mc):
-    # one MPI run of 2..5 ranks uses no more than the np = 5 run of the global constraints
-    # (Exp. 4 bay_thesis: the thesis tiles 4 x 2 of 140 x 176 need np = 4, see
-    # exp4_arctic_bayiw/notes/pd1_puente.md)
     cp.check_concurrency(np_each, mc)
 
 
-@pytest.mark.parametrize("np_each,mc", [(1, 0), (1, 6), (5, 2), (4, 2), (2, 2), (6, 1), (0, 1)])
+@pytest.mark.parametrize("np_each,mc", [(1, 0), (1, 6), (5, 2), (2, 1), (3, 1), (4, 1), (6, 1), (0, 1)])
 def test_concurrency_rejected(np_each, mc):
+    """Default (Exps. 1-2): only np = 1 (up to 5 at a time) or one np = 5 run."""
     with pytest.raises(ValueError):
         cp.check_concurrency(np_each, mc)
+
+
+@pytest.mark.parametrize("np_each,mc", [(1, 1), (1, 5), (5, 1), (4, 1), (3, 1), (2, 1)])
+def test_concurrency_partial_np_opt_in_allowed(np_each, mc):
+    # opt-in (Exp. 4): one MPI run of 2..5 ranks uses no more than the np = 5 run of the global
+    # constraints (bay_thesis: the thesis tiles 4 x 2 of 140 x 176 need np = 4,
+    # exp4_arctic_bayiw/notes/pd1_puente.md)
+    cp.check_concurrency(np_each, mc, allow_partial_np=True)
+
+
+@pytest.mark.parametrize("np_each,mc", [(1, 0), (1, 6), (5, 2), (4, 2), (2, 2), (6, 1), (0, 1)])
+def test_concurrency_partial_np_opt_in_rejected(np_each, mc):
+    with pytest.raises(ValueError):
+        cp.check_concurrency(np_each, mc, allow_partial_np=True)
+
+
+def test_run_pool_passes_the_opt_in():
+    with pytest.raises(ValueError):
+        cp.run_pool(["a"], 4, 1, lambda c: "OK")
+    assert cp.run_pool(["a"], 4, 1, lambda c: "OK", allow_partial_np=True) == {"a": "OK"}
 
 
 @pytest.mark.parametrize("mc", [1, 2, 5])
@@ -388,11 +406,12 @@ def test_finished_ok_needs_the_final_status_of_a_multi_stage_run(tmp_path):
     from pfcommon import campaign as cp
     (tmp_path / "run_status.json").write_text(json.dumps(
         {"state": "OK", "last_iter": 1800, "n_timesteps": 1800}))
-    assert cp.finished_ok(tmp_path)                         # single-stage layout: OK
+    assert cp.finished_ok(tmp_path, staged_layout=True)     # single-stage layout: OK
     (tmp_path / "stage2").mkdir()
     (tmp_path / "stage2" / "run_status.json").write_text(json.dumps(
         {"state": "RUNNING", "last_iter": 1800, "n_timesteps": 6600}))
-    assert not cp.finished_ok(tmp_path)
+    assert not cp.finished_ok(tmp_path, staged_layout=True)  # opt-in (Exp. 4)
+    assert cp.finished_ok(tmp_path)                          # default (Exps. 1-2): unchanged
     (tmp_path / "run_status_final.json").write_text(json.dumps(
         {"state": "OK", "last_iter": 8400, "expected_last_iter": 8400}))
-    assert cp.finished_ok(tmp_path)
+    assert cp.finished_ok(tmp_path, staged_layout=True) and cp.finished_ok(tmp_path)

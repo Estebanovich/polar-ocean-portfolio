@@ -20,7 +20,7 @@ Method (fixed in notes/pd3_hipotesis.md, commit 2af0db1, BEFORE computing):
 
 Descriptive only: no frozen verdict changes. Output: figures/posthoc_moving_reference.json.
 
-Usage: posthoc_reference.py [--out figures/posthoc_moving_reference.json]
+Usage: posthoc_reference.py [--out figures/posthoc_moving_reference.json] [--resume]
 """
 from __future__ import annotations
 
@@ -172,10 +172,12 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path, default=PKG / "figures" / "posthoc_moving_reference.json")
     ap.add_argument("--runs-root", type=Path, default=EXP4_RUNS)
     ap.add_argument("--store-root", type=Path, default=None, help="local disk for the box store")
+    ap.add_argument("--resume", action="store_true",
+                    help="keep the runs and profiles already in --out (default: regenerate everything)")
     a = ap.parse_args(argv)
     th = va.load_theory()
     bud = json.loads((PKG / "figures" / "budget.json").read_text())["runs"]
-    res = json.loads(a.out.read_text()) if a.out.exists() else {}
+    res = json.loads(a.out.read_text()) if a.resume and a.out.exists() else {}
     res["label"] = LABEL
     res.setdefault("runs", {})
     res.setdefault("profile_drift", {})

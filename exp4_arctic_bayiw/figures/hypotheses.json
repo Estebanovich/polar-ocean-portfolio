@@ -52,6 +52,7 @@
    "ratio": 0.22750098261918916,
    "threshold": 0.5,
    "met": true,
+   "flags": [],
    "post_hoc_ke_bc_only": {
     "label": "POST HOC sensitivity (written after seeing the exact-APE drift of the winter runs): ratio of the high-passed KE_bc alone; not the criterion",
     "KE_bc_hp_F2_J": 581475.4462502556,
@@ -132,6 +133,18 @@
    },
    "eta_prime_kpp_descriptive": 0.0032479867559326034,
    "eta_prime_closure_descriptive": 0.0008213722101375159,
+   "post_hoc_amendment1_numerator": {
+    "label": "POST HOC descriptive (final review I2): eta with the numerator of Enmienda 1 point 2, F_bc + A_bc out, over the same P_bt + P_bc; Enmienda 2 replaced it by the pressure work alone; not a verdict: 'literal_rule_would_read' is the frozen ratio rule applied to it for disclosure only",
+    "FA_bc_out_J": {
+     "kpp": 268449815.1231867,
+     "closure": -5399241840.911466
+    },
+    "eta_kpp": 0.0025943411743354692,
+    "eta_closure": -0.015590654646700525,
+    "ratio": -0.16640360736131846,
+    "flags": [],
+    "literal_rule_would_read": "refuted"
+   },
    "descriptive_FA_bc_out_J": {
     "kpp": 268449815.1231867,
     "closure": -5399241840.911466
@@ -161,6 +174,18 @@
    },
    "eta_prime_kpp_descriptive": -0.06365710355612687,
    "eta_prime_closure_descriptive": 0.0019041947998240812,
+   "post_hoc_amendment1_numerator": {
+    "label": "POST HOC descriptive (final review I2): eta with the numerator of Enmienda 1 point 2, F_bc + A_bc out, over the same P_bt + P_bc; Enmienda 2 replaced it by the pressure work alone; not a verdict: 'literal_rule_would_read' is the frozen ratio rule applied to it for disclosure only",
+    "FA_bc_out_J": {
+     "kpp": -1192229251.7260256,
+     "closure": 351908812.29216224
+    },
+    "eta_kpp": -0.061769798423233026,
+    "eta_closure": 0.009627195535025118,
+    "ratio": -6.416177816115362,
+    "flags": [],
+    "literal_rule_would_read": "refuted"
+   },
    "descriptive_FA_bc_out_J": {
     "kpp": -1192229251.7260256,
     "closure": 351908812.29216224

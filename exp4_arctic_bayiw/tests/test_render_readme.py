@@ -124,3 +124,34 @@ def test_counts_in_words_follow_the_json(monkeypatch):
 def test_factor_bounds_not_typed():
     assert "1/1.5" not in rr.TEMPLATE.read_text()
     assert re.search(r"[0-9]", rr.strip_allowed("between 1/1.5 and 1.5"))
+
+
+# ---- final review: fixed prose words are checked against the JSON (Minor 11) ------------------
+
+@pytest.mark.parametrize("name, mutate, what", [
+    ("hypotheses.json", lambda d: d["H4a"]["bands_out_J"].update(low=1.0), "H4a"),
+    ("hypotheses.json", lambda d: d["H4d"]["R1k_vs_R1"].update(outcome="refuted"), "H4d"),
+    ("hypotheses.json", lambda d: d["H4c"]["i"].update(ratio=2.0), "neither tail"),
+    ("hypotheses.json", lambda d: d["post_hoc"]["bridge"]["R2"]["flux_share_signed"].update(low=-0.1), "R2"),
+    ("validation.json", lambda d: d["V3"].update({"pass": False}), "V3 passes"),
+    ("posthoc_moving_reference.json", lambda d: d["runs"]["F1c"].update(low_band_out_J=-1.0), "F1c"),
+])
+def test_prose_mismatch_refuses_to_render(monkeypatch, name, mutate, what):
+    real = rr._load
+
+    def fake(n):
+        d = real(n)
+        if n == name:
+            mutate(d)
+        return d
+
+    monkeypatch.setattr(rr, "_load", fake)
+    with pytest.raises(ValueError, match=what):
+        rr.values()
+
+
+def test_amendment_1_ratio_is_rendered_from_the_json():
+    v = rr.values()
+    assert v["a1_R_ratio"] == "-0.17" and v["a1_R_outcome"] == "refuted"
+    assert (v["r1_F_out"], v["r1_A_in"]) == ("0.28", "5.68")
+    assert "`fjord_vmf_400`" in v["mod_configs"] and "`fjord_vmf_column`" in v["mod_configs"]

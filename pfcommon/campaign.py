@@ -91,19 +91,20 @@ def check_overrides(names: list[str], overrides: dict | None, spec: dict) -> dic
     return out
 
 
-def check_concurrency(np_each: int, max_concurrent: int) -> None:
-    """Allowed: np = 1 with 1..5 concurrent runs, or one MPI run (max_concurrent = 1) of
-    2..5 ranks. Anything else raises ValueError (global constraints: <= 5 MPI processes in
-    total; one MPI run at a time). A run of fewer than 5 ranks is allowed because some
-    decompositions need it: the Exp. 4 thesis bay keeps the thesis tiles (8 tiles of
-    140 x 176) for a bit-for-bit reproduction, which runs on 4 ranks."""
+def check_concurrency(np_each: int, max_concurrent: int, allow_partial_np: bool = False) -> None:
+    """Allowed: np = 1 with 1..5 concurrent runs, or np = 5 with exactly 1. Anything else
+    raises ValueError (global constraints: <= 5 MPI processes in total).
+
+    ``allow_partial_np`` (opt-in, Exp. 4): one MPI run (max_concurrent = 1) of 2..5 ranks is
+    also allowed, because the Exp. 4 thesis bay keeps the thesis tiles (8 tiles of 140 x 176)
+    for a bit-for-bit reproduction, which runs on 4 ranks. Exps. 1-2 keep the default."""
     if np_each == 1 and 1 <= max_concurrent <= MAX_SERIAL_CONCURRENT:
         return
-    if 1 < np_each <= MAX_NP and max_concurrent == 1:
+    if max_concurrent == 1 and (np_each == MAX_NP or (allow_partial_np and 1 < np_each <= MAX_NP)):
         return
+    alt = f"one run of np=2..{MAX_NP} (max_concurrent 1)" if allow_partial_np else f"np={MAX_NP} with 1"
     raise ValueError(f"np={np_each} with max_concurrent={max_concurrent} not allowed: use np=1 "
-                     f"with max_concurrent 1..{MAX_SERIAL_CONCURRENT}, or one run of "
-                     f"np=2..{MAX_NP} (max_concurrent 1)")
+                     f"with max_concurrent 1..{MAX_SERIAL_CONCURRENT}, or {alt}")
 
 
 # ---- environment checks ------------------------------------------------------------------
@@ -184,10 +185,12 @@ def _status(run_dir: Path) -> dict | None:
         return None
 
 
-def finished_ok(run_dir: Path) -> bool:
+def finished_ok(run_dir: Path, staged_layout: bool = False) -> bool:
     """True if the run is OK and complete. run_status_final.json (written by run_stages)
-    wins when present; otherwise run_status.json must be OK with last_iter >= n_timesteps, and a
-    multi-stage layout (stage<k>/ or input_stage<k>/) without the final file is not finished."""
+    wins when present; otherwise run_status.json must be OK with last_iter >= n_timesteps.
+
+    ``staged_layout`` (opt-in, Exp. 4): a multi-stage layout (stage<k>/ or input_stage<k>/)
+    without the final file is not finished. Exps. 1-2 keep the default."""
     run_dir = Path(run_dir)
     fin = run_dir / "run_status_final.json"
     try:
@@ -196,8 +199,8 @@ def finished_ok(run_dir: Path) -> bool:
             return st.get("state") == "OK" and st.get("last_iter") == st.get("expected_last_iter")
         # a multi-stage run (stage<k>/ or input_stage<k>/ present) is finished only when
         # run_stages wrote run_status_final.json; stage 1 OK alone is not enough
-        if any(p.is_dir() for p in run_dir.glob("stage[0-9]*")) or \
-                any(p.is_dir() for p in run_dir.glob("input_stage[0-9]*")):
+        if staged_layout and (any(p.is_dir() for p in run_dir.glob("stage[0-9]*"))
+                              or any(p.is_dir() for p in run_dir.glob("input_stage[0-9]*"))):
             return False
         st = json.loads((run_dir / "run_status.json").read_text())
     except (OSError, json.JSONDecodeError):
@@ -220,11 +223,11 @@ def _write_final(run_dir: Path, state: str, stages: dict, expected: int,
 # ---- concurrency ---------------------------------------------------------------------------
 
 def run_pool(cases: list[str], np_each: int, max_concurrent: int,
-             run_one: Callable[[str], str]) -> dict[str, str]:
+             run_one: Callable[[str], str], allow_partial_np: bool = False) -> dict[str, str]:
     """Run ``run_one(case)`` for every case with at most ``max_concurrent`` at a time
     (``check_concurrency``). Returns {case: state} in the order of ``cases``; a case whose
     ``run_one`` raises gets "ERROR: <message>" and the others go on."""
-    check_concurrency(np_each, max_concurrent)
+    check_concurrency(np_each, max_concurrent, allow_partial_np)
 
     def guarded(case):
         try:
