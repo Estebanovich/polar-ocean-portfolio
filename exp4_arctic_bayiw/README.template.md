@@ -165,6 +165,16 @@ Four animations show the response to the wind pulse in plan view over the first 
 
 *Animation 4.* The same runs, a₁′, each filtered with its own inertial period. In the bay the two side walls carry displacements of opposite sign; in the fjord the signal is spread over the basin and the shelf. As in Animation 2, the filter attenuates sub-inertial signal (Kelvin waves, slow seiches) and has ripple above f: a₁′ shows mainly near- and super-inertial oscillations.
 
+Two further animations draw one isopycnal in three dimensions over the model bathymetry, with the land from IBCAO, seen from the southwest over Bellsund looking up the fjord (`analysis/blender_export.py`, `analysis/blender_render.py`; Blender). They are descriptive in the same sense. The surface is the depth of the isopycnal in each density snapshot; its colour is the displacement of the isopycnal from its initial depth, positive upward, minus its centred running mean over one inertial period, with the frames that lack a full window left out. The running-mean filter attenuates sub-inertial signal (Kelvin waves, slow seiches), so the colours show mainly near- and super-inertial oscillations, not the Kelvin waves of the fjord. The vertical exaggeration is {{bl_ve_sea}}× below sea level and {{bl_ve_land}}× on land, and each animation has one fixed colour scale.
+
+[![Animation 5](figures/blender_shotA_F1.gif)](figures/blender_shotA_F1.mp4)
+
+*Animation 5.* Summer, open water (F1): the isopycnal {{blA_sigma}} kg m⁻³, at {{blA_z}} m at the start, the level of strongest stratification below the surface mixed layer; scale ±{{blA_lim}} m. Click for the MP4.
+
+[![Animation 6](figures/blender_shotB_F3F2.gif)](figures/blender_shotB_F3F2.mp4)
+
+*Animation 6.* Late winter, open water (F3, left) and landfast ice (F2, right; the white slab marks the ice cells), same profile and wind pulse, one shared scale of ±{{blB_lim}} m. The winter profile is a staircase whose surface step the pulse mixes away within hours, so the isopycnal is {{blB_sigma}} kg m⁻³, at {{blB_z}} m: of the steps above the sill of Akselsundet, the one whose isopycnal stays in the largest share of the water columns over the whole record in both runs; it sits on a density step of only {{blB_step}} kg m⁻³, so metre-scale values along the coasts may be mixing rather than internal waves. Under the ice of F2 there is no wind stress, so the two panels differ in forcing and mixing as well as in waves. The open boundaries and their {{blB_sponge}}-cell sponges are masked in grey. Click for the MP4.
+
 ## 4. Discussion
 
 ### 4.1 What the experiment shows

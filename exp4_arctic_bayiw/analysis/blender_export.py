@@ -8,6 +8,7 @@ Usage (pyocean env; LaCie read-only)::
     blender_export.py A  --out DIR [--t-end-h 96]    # shot A: F1, summer profile
     blender_export.py B  --out DIR [--t-end-h 96]    # shot B: F3 open water | F2 landfast ice
     blender_export.py probe --runs F3 F2 [--every-h 3] [--t-end-h 96]   # isopycnal candidates
+    blender_export.py restyle --scene DIR [--limit L] [--mask-sponge]  # after the style gate
 
 No number of this animation enters the README claims; no hypothesis or criterion uses it.
 
@@ -210,6 +211,56 @@ def write_meta(meta: Meta, path: Path) -> None:
     d = asdict(meta)
     d["lut_diverging"] = _lut("diverging")
     Path(path).write_text(json.dumps(d, indent=1))
+
+
+def sponge_mask(data_obcs: str, shape) -> np.ndarray:
+    """(ny, nx) bool: the open-boundary rows/columns of data.obcs (OB_Iwest, OB_Ieast, OB_Jsouth,
+    OB_Jnorth; 1-based, negative counts from the far end) plus, with useOBCSsponge, the
+    spongeThickness cells inward of each (pkg/obcs/obcs_sponge.F:68-69, j = OB - jsl for
+    jsl = 1..spongeThickness; the weight of the last one is zero, :74-77)."""
+    import re
+    ny, nx = shape
+    txt = re.sub(r"(?m)^\s*#.*$", "", data_obcs)
+
+    def val(key):
+        m = re.search(rf"\b{key}\s*=\s*([^\n]*)", txt, flags=re.I)
+        return m.group(1).strip().rstrip(",") if m else None
+
+    sponge = (val("useOBCSsponge") or ".FALSE.").upper().strip(".") == "TRUE"
+    T = int(float(val("spongeThickness") or 0)) if sponge else 0
+    m = np.zeros((ny, nx), bool)
+    for key, axis, n in (("OB_Iwest", 1, nx), ("OB_Ieast", 1, nx), ("OB_Jsouth", 0, ny),
+                         ("OB_Jnorth", 0, ny)):
+        v = val(key)
+        if v is None:
+            continue
+        idx = [int(x) for x in re.findall(r"(?:\d+\*)?(-?\d+)", v)]
+        idx = [i for i in idx if i != 0]
+        if not idx:
+            continue
+        i = idx[0]
+        k = i - 1 if i > 0 else n + i                        # 0-based index of the OB row
+        inward = 1 if key in ("OB_Iwest", "OB_Jsouth") else -1
+        ks = [k + inward * j for j in range(T + 1) if 0 <= k + inward * j < n]
+        if axis == 1:
+            m[:, ks] = True
+        else:
+            m[ks, :] = True
+    return m
+
+
+def saturation_stats(frames: dict, L: float) -> dict:
+    """{run: {mean, worst, worst_index}}: per frame the fraction of the finite pixels with
+    |x| >= L, its mean over the frames and the worst frame."""
+    out = {}
+    for n, a in frames.items():
+        a = np.asarray(a, float)
+        fr = []
+        for x in a:
+            x = x[np.isfinite(x)]
+            fr.append(float(np.mean(np.abs(x) >= L)) if x.size else 0.0)
+        out[n] = {"mean": float(np.mean(fr)), "worst": float(np.max(fr)), "worst_index": int(np.argmax(fr))}
+    return out
 
 
 # ---- model runs ---------------------------------------------------------------------------------
@@ -436,10 +487,56 @@ def export(shot: str, root: Path, out: Path, t_end_h: float, still_h, ve: float 
     return asdict(meta)
 
 
+def restyle(scene: Path, root: Path, limit: float | None, mask_sponge: bool) -> dict:
+    """Update an exported scene without re-reading the frames (Esteban, gate approval 2026-11-14):
+
+    * records the density step of the chosen interface (rho_b[k+1] - rho_b[k]) in meta.json;
+    * ``limit``: a fixed colour limit set by decision (the percentile value is kept as
+      ``colour_limit_p99_5_m``);
+    * ``mask_sponge``: terrain.npz on the whole model grid, with the open-boundary rows and the
+      sponge of data.obcs (sponge_mask, identical in every run of the shot, asserted) to be shown in
+      grey; the frames keep the sponge-free data crop, placed at ``view_offset``."""
+    scene = Path(scene)
+    meta = json.loads((scene / "meta.json").read_text())
+    runs = {n: open_run(root / n) for n in meta["runs"]}
+    for n, r in runs.items():
+        k = meta["sigma"][n]["k_upper"]
+        meta["sigma"][n]["step_kg_m3"] = float(r["rho_b"][k + 1] - r["rho_b"][k])
+    if limit is not None:
+        meta["extra"].setdefault("colour_limit_p99_5_m", meta["colour_limit_m"])
+        meta["colour_limit_m"] = float(limit)
+        meta["extra"]["colour_limit_rule"] = "fixed by decision at the style gate (Esteban, 2026-11-14)"
+    if mask_sponge:
+        r0 = runs[meta["runs"][0]]
+        shape = r0["land"].shape
+        masks = [sponge_mask((r["run_dir"] / "data.obcs").read_text(), shape) for r in runs.values()]
+        if any(not np.array_equal(m, masks[0]) for m in masks):
+            raise ValueError("the sponge differs between the runs of the shot")
+        ds = r0["ds"]
+        land = r0["land"]
+        ter = {"xc_m": ds["XC"].values[0], "yc_m": ds["YC"].values[:, 0], "depth_m": ds["Depth"].values,
+               "land": land, "elev_m": land_elevation(r0["case"], land), "sponge": masks[0]}
+        for n, r in runs.items():
+            if r["ice"] is not None:
+                ter[f"ice_{n}"] = r["ice"]
+        np.savez_compressed(scene / "terrain.npz", **ter)
+        c = meta["crop"]
+        meta["view_offset"] = {"j": c["j0"], "i": c["i0"]}
+        txt = (r0["run_dir"] / "data.obcs").read_text()
+        import re
+        th = re.search(r"spongeThickness\s*=\s*(\d+)", txt)
+        meta["extra"]["sponge_cells"] = int(th.group(1)) if th else 0
+    (scene / "meta.json").write_text(json.dumps(meta, indent=1))
+    return meta
+
+
 def main(argv=None) -> int:
     from pfcommon.paths import EXP4_RUNS
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("what", choices=["A", "B", "probe"])
+    ap.add_argument("what", choices=["A", "B", "probe", "restyle"])
+    ap.add_argument("--scene", type=Path)
+    ap.add_argument("--limit", type=float, default=None)
+    ap.add_argument("--mask-sponge", action="store_true")
     ap.add_argument("--runs-root", type=Path, default=EXP4_RUNS)
     ap.add_argument("--out", type=Path)
     ap.add_argument("--runs", nargs="+", default=["F3", "F2"])
@@ -450,6 +547,11 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     if a.what == "probe":
         probe({n: open_run(a.runs_root / n) for n in a.runs}, a.every_h, a.t_end_h)
+        return 0
+    if a.what == "restyle":
+        m = restyle(a.scene, a.runs_root, a.limit, a.mask_sponge)
+        print(json.dumps({k: m[k] for k in ("sigma", "colour_limit_m")} | {"view_offset": m.get("view_offset")},
+                         indent=1))
         return 0
     m = export(a.what, a.runs_root, a.out, a.t_end_h, a.still_h, a.ve)
     print(json.dumps({k: m[k] for k in ("shot", "sigma", "colour_limit_m", "crop")} | {"extra": m["extra"]},

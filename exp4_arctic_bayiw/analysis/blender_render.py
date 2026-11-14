@@ -58,7 +58,8 @@ ICE_ALPHA = 0.6
 ICE_EMISSION = 0.35                                        # keeps the slab white under the sun
 LAND_RGB = ((0.70, 0.68, 0.64), (0.86, 0.85, 0.83))       # coast .. highest land, neutral warm grey
 SEA_RGB = ((0.62, 0.72, 0.79), (0.26, 0.35, 0.45))        # shallow .. deepest, muted blue-grey
-NAN_RGB = (0.70, 0.70, 0.70)                               # isopycnal without a filtered colour
+NAN_RGB = (0.70, 0.70, 0.70)
+SPONGE_RGB = (0.55, 0.55, 0.55)                            # masked open-boundary sponge                               # isopycnal without a filtered colour
 CAM_LOC_KM = (-30.0, -38.0, 55.0)                          # southwest of Bellsund, above it
 CAM_TARGET_KM = (50.0, 27.0, -3.0)                         # mid-fjord
 CAM_LENS_MM = 30.0
@@ -74,10 +75,20 @@ def load_scene(d: Path) -> tuple:
     return meta, ter
 
 
-def km_coords(ter: dict) -> tuple:
-    x = (ter["xc_m"] - ter["xc_m"][0]) / 1e3
-    y = (ter["yc_m"] - ter["yc_m"][0]) / 1e3
+def km_coords(ter: dict, meta: dict | None = None) -> tuple:
+    """(X, Y) [km] of the terrain cell centres from the SW corner of the DATA crop (the frames), so
+    the camera frames the same box whether or not the terrain extends over the sponge."""
+    off = (meta or {}).get("view_offset", {"j": 0, "i": 0})
+    x = (ter["xc_m"] - ter["xc_m"][off["i"]]) / 1e3
+    y = (ter["yc_m"] - ter["yc_m"][off["j"]]) / 1e3
     return np.meshgrid(x, y)
+
+
+def data_slice(meta: dict, shape) -> tuple:
+    """Slices of the terrain grid that hold the frames (the data crop)."""
+    off = meta.get("view_offset", {"j": 0, "i": 0})
+    c = meta["crop"]
+    return (slice(off["j"], off["j"] + c["j1"] - c["j0"]), slice(off["i"], off["i"] + c["i1"] - c["i0"]))
 
 
 def terrain_height_rgb(ter: dict, ve: float, ve_land: float) -> tuple:
@@ -210,9 +221,11 @@ def render_main(args) -> int:
     ve = float(meta["ve"])
     L = float(meta["colour_limit_m"])
     lut = np.asarray(meta["lut_diverging"])
-    frames = stills(meta) if args.stills else args.frames
-    X, Y = km_coords(ter)
+    frames = stills(meta) if args.stills else (list(range(len(meta["frames"]))) if args.all else args.frames)
+    X, Y = km_coords(ter, meta)
     ny, nx = X.shape
+    dsl = data_slice(meta, X.shape)
+    Xd, Yd = X[dsl], Y[dsl]
     out = Path(args.scene) / "panels"
     out.mkdir(exist_ok=True)
     timing = []
@@ -243,6 +256,18 @@ def render_main(args) -> int:
             pr.inputs["Emission Color"].default_value = (1.0, 1.0, 1.0, 1.0)
             pr.inputs["Emission Strength"].default_value = ICE_EMISSION
             slab.data.materials.append(im)
+        sp = ter.get("sponge")
+        if sp is not None:                       # open boundary + sponge (data.obcs) masked in grey
+            dx = float(X[0, 1] - X[0, 0])
+            j, i = np.nonzero(sp & ~ter["land"].astype(bool))
+            xc, yc = X[j, i], Y[j, i]
+            zs = float(meta["sigma"][run]["z_m"]) * ve / 1e3
+            c = np.stack([np.stack([xc - dx / 2, yc - dx / 2], -1), np.stack([xc + dx / 2, yc - dx / 2], -1),
+                          np.stack([xc + dx / 2, yc + dx / 2], -1), np.stack([xc - dx / 2, yc + dx / 2], -1)], 1)
+            vs = np.concatenate([c, np.full(c.shape[:2] + (1,), zs)], -1).reshape(-1, 3)
+            spo = _bl_mesh(bpy, "sponge", vs, np.arange(vs.shape[0]).reshape(-1, 4), smooth=False)
+            spo.data.materials.append(_bl_material(bpy, "sponge_m", alpha=ISO_ALPHA, rgb=SPONGE_RGB,
+                                                   roughness=0.8))
         iso_m = _bl_material(bpy, "iso_m", alpha=ISO_ALPHA, roughness=0.7)
         for k in frames:
             t0 = time.time()
@@ -250,7 +275,7 @@ def render_main(args) -> int:
             z, col = fr["z_m"], fr["colour_m"]
             ok = np.isfinite(z)
             rgb = lut_colour(col, L, lut, nan_rgb=NAN_RGB)
-            verts = np.stack([X, Y, np.where(ok, z, 0.0) * ve / 1e3], -1).reshape(-1, 3)
+            verts = np.stack([Xd, Yd, np.where(ok, z, 0.0) * ve / 1e3], -1).reshape(-1, 3)
             faces = quad_faces(ok)
             old = bpy.data.objects.get("iso")
             if old is not None:
@@ -341,9 +366,16 @@ def compose_frame(meta: dict, scene: Path, k: int, out_png: Path, dpi: int = 100
     notes = ["Descriptive only: no number from this animation enters the analysis.",
              "Grey on the isopycnal: no filtered value (isopycnal absent in part of the window); "
              "holes: outcropped or meeting the bed."]
+    if "sponge_cells" in meta["extra"]:
+        notes.append("Grey strip along the W, N and S edges: the open boundary and its "
+                     f"{meta['extra']['sponge_cells']}-cell sponge (data.obcs), masked in both runs.")
     if "F2" in runs:
         notes.append("Under the F2 landfast ice the ocean receives no wind stress.")
-    fig.text(1 - 14 / W, 18 / H, "\n".join(textwrap.fill(n, 62) for n in notes), fontsize=10,
+    step = sig.get("step_kg_m3")
+    if step is not None and step < 0.01:
+        notes.append(f"The isopycnal sits on a {step:.4f} kg m$^{{-3}}$ step: metre-scale coastal values "
+                     "may be mixing rather than waves.")
+    fig.text(1 - 14 / W, 12 / H, "\n".join(textwrap.fill(n, 70) for n in notes), fontsize=9.5,
              ha="right", va="bottom", color="0.3", linespacing=1.35)
     out_png = Path(out_png)
     out_png.parent.mkdir(parents=True, exist_ok=True)
@@ -354,23 +386,93 @@ def compose_frame(meta: dict, scene: Path, k: int, out_png: Path, dpi: int = 100
 def compose_main(args) -> int:
     meta = json.loads((Path(args.scene) / "meta.json").read_text())
     if args.stills:
-        for s in meta["extra"]["stills"]:
-            compose_frame(meta, args.scene, s["index"],
-                          Path(args.out_dir) / f"{args.name}_{int(round(s['requested_h'])):02d}h.png")
-    else:
-        for k in args.frames:
-            compose_frame(meta, args.scene, int(k), Path(args.out_dir) / "frames" / f"{int(k):04d}.png")
+        for s_ in meta["extra"]["stills"]:
+            compose_frame(meta, args.scene, s_["index"],
+                          Path(args.out_dir) / f"{args.name}_{int(round(s_['requested_h'])):02d}h.png")
+        return 0
+    frames = list(range(len(meta["frames"]))) if args.all else args.frames
+    for k in frames:
+        compose_frame(meta, args.scene, int(k), Path(args.out_dir) / "frames" / f"{int(k):04d}.png")
+    if args.all:                                   # saturation of the fixed scale, at render time
+        from exp4_arctic_bayiw.analysis.blender_export import saturation_stats
+        L = float(meta["colour_limit_m"])
+        col = {r: np.stack([np.load(Path(args.scene) / "frames" / r / f"{k:04d}.npz")["colour_m"]
+                            for k in frames]) for r in meta["runs"]}
+        st = saturation_stats(col, L)
+        for r in st:
+            st[r]["worst_t_h"] = (meta["frames"][frames[st[r]["worst_index"]]]["t_s"] - meta["onset_s"]) / 3600
+        st["limit_m"] = L
+        st["frames"] = len(frames)
+        (Path(args.out_dir) / "saturation.json").write_text(json.dumps(st, indent=1))
+        print(json.dumps(st, indent=1))
     return 0
 
 
 def movie_main(args) -> int:
+    """H.264 MP4 (ffmpeg; crf raised until <= --max-mb-mp4) and a GIF preview (Pillow; the frame
+    stride doubles until <= --max-mb-gif) of OUT/frames/*.png."""
+    import shutil
     import subprocess
+
+    from PIL import Image
     fr = Path(args.out_dir) / "frames"
-    mp4 = Path(args.out_dir) / f"{args.name}.mp4"
-    subprocess.run(["ffmpeg", "-y", "-framerate", str(args.fps), "-i", str(fr / "%04d.png"),
-                    "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-pix_fmt",
-                    "yuv420p", "-crf", "23", str(mp4)], check=True)
-    return 0
+    dest = Path(args.movie_out or args.out_dir)
+    dest.mkdir(parents=True, exist_ok=True)
+    mp4 = dest / f"{args.name}.mp4"
+    pngs = sorted(fr.glob("*.png"))
+    res = {"frames": len(pngs), "fps": args.fps}
+    if shutil.which("ffmpeg") is None:
+        raise SystemExit("ffmpeg not found")
+    for crf in (23, 26, 29, 32, 35):
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(args.fps), "-i",
+                        str(fr / "%04d.png"), "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+                        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", str(crf),
+                        "-movflags", "+faststart", str(mp4)], check=True)
+        mb = mp4.stat().st_size / 1e6
+        res.update(mp4=str(mp4), mp4_mb=mb, crf=crf)
+        if mb <= args.max_mb_mp4:
+            break
+    gif = dest / f"{args.name}.gif"
+    stride = 1
+    while True:
+        sel = pngs[::stride]
+        ims = []
+        for p_ in sel:
+            im = Image.open(p_).convert("RGB")
+            w = args.gif_width
+            im = im.resize((w, int(round(im.height * w / im.width))), Image.LANCZOS)
+            ims.append(im.quantize(colors=128, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE))
+        ims[0].save(gif, save_all=True, append_images=ims[1:], duration=int(1000 * stride / args.fps),
+                    loop=0, optimize=True)
+        mb = gif.stat().st_size / 1e6
+        if mb <= args.max_mb_gif or stride >= 64:
+            break
+        stride *= 2
+    res.update(gif=str(gif), gif_mb=mb, gif_stride=stride, gif_frames=len(sel), gif_width=args.gif_width)
+    print(json.dumps(res, indent=1))
+    (Path(args.out_dir) / "movie.json").write_text(json.dumps(res, indent=1))
+    # the numbers the README quotes (render_readme.py), next to the MP4 and GIF
+    meta = json.loads((Path(args.scene) / "meta.json").read_text())
+    satp = Path(args.out_dir) / "saturation.json"
+    r0 = meta["runs"][0]
+    sig = meta["sigma"][r0]
+    t = [f_["t_s"] for f_ in meta["frames"]]
+    summary = {
+        "shot": meta["shot"], "runs": meta["runs"],
+        "sigma_kg_m3": sig["sigma"], "sigma_depth_t0_m": -sig["z_m"], "step_kg_m3": sig.get("step_kg_m3"),
+        "sigma_rule": sig["rule"], "ve_sea": meta["ve"], "ve_land": meta["ve_land"],
+        "colour_limit_m": meta["colour_limit_m"],
+        "colour_limit_rule": meta["extra"].get("colour_limit_rule", "nice ceiling of the 99.5th percentile of |zeta'|"),
+        "T_f_h": meta["extra"]["T_f_h"],
+        "t_first_h": (t[0] - meta["onset_s"]) / 3600, "t_last_h": (t[-1] - meta["onset_s"]) / 3600,
+        "frames": len(t), "sponge_cells": meta["extra"].get("sponge_cells"),
+        "saturation": json.loads(satp.read_text()) if satp.exists() else None,
+        "mp4": {"file": mp4.name, "mb": round(res["mp4_mb"], 2), "crf": res["crf"], "fps": args.fps},
+        "gif": {"file": gif.name, "mb": round(res["gif_mb"], 2), "stride": res["gif_stride"],
+                "width_px": args.gif_width},
+    }
+    (dest / f"{args.name}.json").write_text(json.dumps(summary, indent=1) + "\n")
+    return 0 if res["mp4_mb"] <= args.max_mb_mp4 and mb <= args.max_mb_gif else 1
 
 
 def main(argv=None) -> int:
@@ -381,6 +483,11 @@ def main(argv=None) -> int:
     ap.add_argument("--scene", type=Path, required=True)
     ap.add_argument("--frames", type=int, nargs="+", default=[])
     ap.add_argument("--stills", action="store_true")
+    ap.add_argument("--all", action="store_true", help="every exported frame")
+    ap.add_argument("--max-mb-mp4", type=float, default=20.0)
+    ap.add_argument("--max-mb-gif", type=float, default=5.0)
+    ap.add_argument("--gif-width", type=int, default=720)
+    ap.add_argument("--movie-out", type=Path, default=None, help="directory of the MP4 and GIF")
     ap.add_argument("--res", type=int, nargs=2, default=list(RES))
     ap.add_argument("--samples", type=int, default=32)
     ap.add_argument("--out-dir", type=Path)
