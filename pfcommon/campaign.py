@@ -293,7 +293,8 @@ def stage_plan(n_iter0: int, n_total: int, n_stages: int) -> list[tuple[int, int
 def run_stages(run_dir: Path, inp: Path, build_dir: Path, np_: int, n_stages: int,
                sh: Callable[[list], int], run_sh, pickup_stems=("pickup",),
                plan: list[tuple[int, int]] | None = None,
-               stage_data: Callable[[int], str] | None = None) -> str:
+               stage_data: Callable[[int], str] | None = None,
+               check_last_end: bool = True) -> str:
     """Run case input ``inp`` in ``n_stages`` chained restart stages (ruling R2).
 
     Stage 1 runs in ``run_dir``, stage k > 1 in ``run_dir/stage<k>``. With more than one
@@ -313,12 +314,30 @@ def run_stages(run_dir: Path, inp: Path, build_dir: Path, np_: int, n_stages: in
     ``stage_data`` (optional) gives the ``data`` text of stage k (1-based) before its
     nIter0 / nTimeSteps are set, e.g. a forced first stage and free later stages (the
     thesis data.stage1 / data.stage2); by default every stage uses ``inp/data``. The
-    pChkptFreq check uses the namelist of the stage that ends there, and only the
-    intermediate stage ends are checked (the last one needs no pickup)."""
+    pChkptFreq check uses the namelist of the stage that ends there. Every stage end is
+    checked, the last one included; ``check_last_end=False`` (opt-in, Exp. 4) checks only
+    the intermediate ends (the last one needs no pickup). Without ``plan``, ``stage_data``
+    and the opt-in, the checks are those of 433ebde (Exp. 2)."""
     run_dir, inp = Path(run_dir), Path(inp)
     text = (inp / "data").read_text()
     n0, ntot = nml_int(text, "nIter0"), nml_int(text, "nTimeSteps")
-    if plan is None:
+    default = plan is None and stage_data is None and check_last_end
+    if default:                       # 433ebde, unchanged (Exp. 2)
+        plan = stage_plan(n0, ntot, n_stages)
+        expected = n0 + ntot
+        if n_stages > 1:
+            try:
+                ck = nml_float(text, "pChkptFreq")
+            except RuntimeError:
+                ck = 0.0
+            if ck > 0:
+                dt = nml_float(text, "deltaT")
+                for a, n in plan:
+                    t_end = (a + n) * dt
+                    if abs(t_end / ck - round(t_end / ck)) > 1e-9:
+                        raise ValueError(f"stage end {t_end:g} s is not a multiple of pChkptFreq {ck:g} s")
+            set_namelist_ints(text, {"nIter0": n0, "nTimeSteps": ntot})   # validates the namelist
+    elif plan is None:
         plan = stage_plan(n0, ntot, n_stages)
     else:
         plan = [(int(a), int(n)) for a, n in plan]
@@ -329,10 +348,11 @@ def run_stages(run_dir: Path, inp: Path, build_dir: Path, np_: int, n_stages: in
         for (a, n), (b, _) in zip(plan, plan[1:] + [(None, None)]):
             if n <= 0 or (b is not None and b != a + n):
                 raise ValueError(f"stage plan {plan} is not contiguous with nTimeSteps > 0")
-    expected = plan[-1][0] + plan[-1][1]
     texts = {k: (stage_data(k) if stage_data else text) for k in range(1, len(plan) + 1)}
-    if n_stages > 1:
-        for k, (a, n) in enumerate(plan[:-1], 1):
+    if not default:
+        expected = plan[-1][0] + plan[-1][1]
+    if n_stages > 1 and not default:
+        for k, (a, n) in enumerate(plan if check_last_end else plan[:-1], 1):
             try:
                 ck = nml_float(texts[k], "pChkptFreq")
             except RuntimeError:

@@ -99,7 +99,8 @@ def run(inp: Path, run_dir: Path, build: Path = EXP4_BUILDS / "fjord_vmf_column"
     nf = cp.nml_int((inp / "data.free").read_text(), "nTimeSteps")
     texts = {1: (inp / "data").read_text(), 2: (inp / "data.free").read_text()}
     return cp.run_stages(Path(run_dir), inp, Path(build), 1, 2, sh, REPO / "scripts" / "run_mitgcm.sh",
-                         plan=[(0, n1), (n1, nf)], stage_data=texts.__getitem__)
+                         plan=[(0, n1), (n1, nf)], stage_data=texts.__getitem__,
+                         check_last_end=False)
 
 
 def analyse(run_dir: Path) -> dict:
