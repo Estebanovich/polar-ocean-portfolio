@@ -9,36 +9,6 @@ from exp4_arctic_bayiw.analysis import animate as an
 
 # ---- mode-1 displacement amplitude on a synthetic stratification ----------------------------------
 
-def _tanh_setup(nz=30):
-    drF = np.full(nz, 4.0)
-    RF = -np.r_[0.0, np.cumsum(drF)]
-    RC = 0.5 * (RF[:-1] + RF[1:])
-    rho_b = 1025.0 - 1.5 * np.tanh((RC + 25.0) / 6.0)
-    return drF, RC, rho_b
-
-
-def test_mode1_amplitude_recovers_a_mode1_displacement_in_columns_of_different_depth():
-    drF, RC, rho_b = _tanh_setup()
-    rho0, g = 1025.0, 9.81
-    nz, ny, nx = len(drF), 2, 3
-    kb = np.array([[30, 30, 20], [12, 2, 25]])                # wet levels per column (2: too shallow)
-    hfac = (np.arange(nz)[:, None, None] < kb[None]).astype(float)
-    A = np.array([[1.5, -0.7, 2.0], [0.3, 9.0, -1.1]])        # mode-1 amplitude [m]
-    rho = np.tile(rho_b[:, None, None], (1, ny, nx))
-    for j in range(ny):
-        for i in range(nx):
-            sh = an.mode1_shape(rho_b, RC, drF, int(kb[j, i]), rho0, g)
-            if sh is None:
-                continue
-            w, n2 = sh
-            # N_b^2 zeta = (g / rho0) rho', zeta = A W_1
-            rho[:kb[j, i], j, i] += rho0 / g * n2 * A[j, i] * w
-    a = an.mode1_amplitude(rho, rho_b, RC, drF, hfac, rho0, g)
-    assert np.isnan(a[1, 1])
-    m = ~np.isnan(a)
-    np.testing.assert_allclose(a[m], A[m], rtol=1e-10)
-
-
 def test_mode1_amplitude_of_a_small_uniform_lift_in_linear_stratification():
     # linear rho_b: zeta = d at every level; projection on W_1 = sin(pi z / H) gives
     # d int W dz / int W^2 dz = d (2H/pi) / (H/2) = 4 d / pi
@@ -54,9 +24,89 @@ def test_mode1_amplitude_of_a_small_uniform_lift_in_linear_stratification():
 
 # ---- clock --------------------------------------------------------------------------------------
 
-def test_bay_crop_is_the_wind_patch_up_to_the_bay_head():
-    assert an.bay_crop({"cx": 280, "cy": 310, "radius": 60}, 352, 560) == (250, 352, 220, 341)
-    assert an.bay_crop({"cx": 10, "cy": 5, "radius": 60}, 352, 560, margin=1.5) == (0, 352, 0, 101)
+def _linear_column(nz, dz):
+    drF = np.full(nz, dz)
+    RC = -(np.arange(nz) + 0.5) * dz
+    return drF, RC, 1020.0 - 0.01 * RC                      # rho_b linear in z (constant N^2)
+
+
+def test_mode1_amplitude_uniform_lift_gives_4d_over_pi_at_several_depths():
+    # independent of mode1_shape: linear N^2 -> W_1 = sin(pi z / H) for every H, and a uniform lift
+    # zeta = d projects to d int W dz / int W^2 dz = 4 d / pi (positive: lifted isopycnals, + up)
+    nz = 200
+    drF, RC, rho_b = _linear_column(nz, 0.5)
+    kb = np.array([[200, 120, 60]])                          # H = 100, 60, 30 m
+    hfac = (np.arange(nz)[:, None, None] < kb[None]).astype(float)
+    d = 0.2
+    rho = np.tile((rho_b + 0.01 * d)[:, None, None], (1, 1, 3))   # rho_b(z - d) = rho_b + 0.01 d
+    a = an.mode1_amplitude(rho, rho_b, RC, drF, hfac, 1020.0)
+    np.testing.assert_allclose(a[0], 4 * d / np.pi, rtol=3e-3)
+    a_down = an.mode1_amplitude(np.tile((rho_b - 0.01 * d)[:, None, None], (1, 1, 3)), rho_b, RC,
+                                drF, hfac, 1020.0)
+    np.testing.assert_allclose(a_down[0], -4 * d / np.pi, rtol=3e-3)
+
+
+def test_mode1_amplitude_with_a_partial_bottom_cell_uses_the_wet_thickness():
+    # column of 12 cells of 2.5 m with hFac = 0.2 in the last one: wet depth H' = 27.5 + 0.5 = 28 m.
+    # zeta = d sin(pi z / H') is the exact mode 1 of the wet column (linear N^2), so a_1 = d.
+    nz = 40
+    drF, RC, rho_b = _linear_column(nz, 2.5)
+    hfac = np.zeros((nz, 1, 1))
+    hfac[:11] = 1.0
+    hfac[11] = 0.2
+    dz = drF * hfac[:, 0, 0]
+    zc = -(np.cumsum(dz) - dz / 2)                           # centres of the wet thickness
+    Hw = dz.sum()
+    assert Hw == pytest.approx(28.0)
+    d = 0.5
+    zeta = np.where(dz > 0, d * np.sin(np.pi * -zc / Hw), 0.0)
+    rho = (rho_b + 0.01 * zeta)[:, None, None]
+    a = an.mode1_amplitude(rho, rho_b, RC, drF, hfac, 1020.0)
+    assert a[0, 0] == pytest.approx(d, rel=1e-2)
+
+
+# ---- inertial-period filter ----------------------------------------------------------------------
+
+def test_inertial_filter_removes_trend_and_constant_and_keeps_the_oscillation():
+    f = 1.4266e-4
+    T = 2 * np.pi / f                                        # 12.23 h, not a multiple of the step
+    t = np.arange(0, 96 * 3600 + 1, 1200.0)
+    A = 1.3
+    osc = A * np.sin(2 * np.pi * t / T)
+    x = (osc + 2.0e-5 * t - 4.0)[:, None, None] * np.ones((1, 2, 3))
+    tk, xf = an.inertial_filter(x, t, T)
+    keep = (tk[:, None] == t[None, :]).any(axis=0)
+    assert xf.shape == (len(tk), 2, 3)
+    np.testing.assert_allclose(xf, np.broadcast_to(osc[keep][:, None, None], xf.shape), atol=0.01 * A)
+
+
+def test_inertial_filter_drops_the_frames_without_a_full_window():
+    T = 10 * 3600.0
+    t = np.arange(0, 48 * 3600 + 1, 3600.0)
+    tk, xf = an.inertial_filter(np.zeros((len(t), 1, 1)), t, T)
+    np.testing.assert_array_equal(tk, np.arange(5, 44) * 3600.0)      # 5 h .. 43 h
+    assert xf.shape[0] == len(tk)
+    tk2, _ = an.inertial_filter(np.zeros((len(t), 1, 1)), t, T + 1.0)   # 5 h no longer complete
+    assert tk2[0] == 6 * 3600.0 and tk2[-1] == 42 * 3600.0
+    with pytest.raises(ValueError):
+        an.inertial_filter(np.zeros((5, 1, 1)), t[:5], T)                  # record shorter than T
+
+
+# ---- views ---------------------------------------------------------------------------------------
+
+def test_bay_crop_is_the_bay_plus_one_bay_width_and_one_bay_length():
+    ny, nx = 60, 80
+    land = np.zeros((ny, nx), bool)
+    land[40:] = True                                         # coast row 40, land to the north
+    land[40:55, 30:36] = False                               # bay: 6 cells wide, 15 long
+    bay = an.bay_mask(land)
+    assert bay.sum() == 6 * 15 and bay[40:55, 30:36].all()
+    assert an.bay_crop(land) == (40 - 15, 60, 30 - 6, 36 + 6)
+
+
+def test_bay_runs_are_told_apart_by_one_rule():
+    assert an.is_bay_run({"params": {"nx": 560}})
+    assert not an.is_bay_run({"params": {"bbox_utm": [0, 1, 2, 3]}})
 
 
 def test_pulse_onset_is_centre_minus_two_and_a_half_sigma_clipped_at_zero():
@@ -160,9 +210,7 @@ def test_stride_doubles_until_the_gif_fits_the_budget(tmp_path):
 
 def test_mode1_amplitude_is_undefined_in_columns_shallower_than_the_minimum_depth():
     nz = 20
-    drF = np.full(nz, 2.0)
-    RC = -(np.arange(nz) + 0.5) * 2.0
-    rho_b = 1020.0 - 0.01 * RC
+    drF, RC, rho_b = _linear_column(nz, 2.0)
     kb = np.array([[4, 5, 20]])                               # 8 m, 10 m, 40 m deep
     hfac = (np.arange(nz)[:, None, None] < kb[None]).astype(float)
     rho = np.tile(rho_b[:, None, None], (1, 1, 3)) + 0.001

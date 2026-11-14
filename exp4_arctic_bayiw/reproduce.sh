@@ -5,6 +5,8 @@
 #   bash exp4_arctic_bayiw/reproduce.sh                     # full: inputs, builds and every run, then --quick, then
 #                                                           #       the regenerated JSONs compared with the committed ones
 #   bash exp4_arctic_bayiw/reproduce.sh [--quick] --dry-run # print the plan; run nothing, write nothing
+#   add --animations to also redraw the four descriptive GIFs (analysis/animate.py; off by default:
+#   about 2 h of reads from the run disk, one full 3-D density snapshot per frame)
 #
 # Environment (see the repository RUNNING.md):
 #   PY       Python with numpy/scipy/matplotlib/xarray/pyyaml/gsw/pyproj (default: the pyocean conda env)
@@ -32,12 +34,13 @@ PY="${PY:-/opt/anaconda3/envs/pyocean/bin/python}"
 export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-0}"
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
 
-QUICK=0; DRY=0
+QUICK=0; DRY=0; ANIM=0
 for a in "$@"; do
   case "$a" in
     --quick) QUICK=1 ;;
     --dry-run) DRY=1 ;;
-    -h|--help) sed -n '2,28p' "$0"; exit 0 ;;
+    --animations) ANIM=1 ;;
+    -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
     *) echo "unknown option: $a" >&2; exit 2 ;;
   esac
 done
@@ -133,6 +136,14 @@ if [ -n "${VECTORCRAFT_CLI:-}" ]; then
   step "Figure 0 (VectorCraft)"; run "$PY" "$F/src/fig0_schematic.py" --cli "$VECTORCRAFT_CLI"
 else
   echo; echo "=== Figure 0 kept as committed (set VECTORCRAFT_CLI to redraw it)"
+fi
+
+if [ "$ANIM" -eq 1 ]; then
+  step "descriptive animations (raw and inertially filtered a1; about 2 h of reads)"
+  run "$PY" "$A/animate.py" fjord-ice --runs-root "$R"
+  run "$PY" "$A/animate.py" bay-fjord --runs-root "$R"
+else
+  echo; echo "=== animations kept as committed (add --animations to redraw them)"
 fi
 
 step "README"; run "$PY" "$S/render_readme.py"
