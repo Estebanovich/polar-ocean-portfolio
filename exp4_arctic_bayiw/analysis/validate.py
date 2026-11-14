@@ -104,8 +104,8 @@ def load_theory(path: Path | None = None) -> dict:
 
 def v2b_range(th: dict) -> tuple[float, float]:
     """[0.8 c1(H mean), 1.2 c1(H max)] [m s^-1], summer, fitted EOS (PD0 4, V2b; theory.json)."""
-    c_mean = th["cases"]["vmf_summer_Hmean"]["c_n"][0]
-    c_max = th["cases"]["vmf_summer"]["c_n"][0]
+    hmax, hmean = summer_cases(th)
+    c_mean, c_max = hmean["c_n"][0], hmax["c_n"][0]
     T = THRESHOLDS["V2b"]
     return T["c1_factor_mean_depth"] * c_mean, T["c1_factor_max_depth"] * c_max
 
@@ -507,7 +507,7 @@ def station_rules(th: dict, dx: float) -> dict:
     R1(H mean) from land, so that every station is inside the Kelvin trapping scale and in water
     where the pycnocline displacement is that of the mode-1 wave (theory.json, summer, H mean)."""
     return {"min_depth_m": 0.5 * th["fjord_geometry"]["mean_depth_m"],
-            "max_coast_cells": int(th["cases"]["vmf_summer_Hmean"]["rossby_radius_m"][0] // dx)}
+            "max_coast_cells": int(summer_cases(th)[1]["rossby_radius_m"][0] // dx)}
 
 
 def _geometry(ds, th: dict):
@@ -526,7 +526,7 @@ def v2_from_run(ds, th: dict) -> dict:
     """V2a and V2b on F1 (0-T_fin, every record)."""
     p = _case_params(ds)
     wet, inner, _, rho_b, k, deep, rules = _geometry(ds, th)
-    f = th["cases"]["vmf_summer"]["f_s-1"]
+    f = summer_cases(th)[0]["f_s-1"]
     t = ds["time"].values.astype(float)
     js, is_ = shelf_station(wet, inner, p["ob_sides"], int(p["n_sponge"]))
     uu = level_values(ds, "U", 0, [(js, is_), (js, is_ + 1)])
@@ -650,11 +650,26 @@ def v4_from_runs(ds_f1, ds_v4) -> dict:
 
 # ---- PD2 blocks (Esteban, PD2 2026-11-13): rebuilt from the post hoc JSONs, never by hand -------
 
+def summer_cases(th: dict) -> tuple[dict, dict]:
+    """(H max, H mean) theory cases of the fjord summer profile, found by content rather than by
+    key: profile 'vmf_summer' with the fitted EOS; H mean is the case whose mode depth equals the
+    Merian (mean) depth, H max the deeper one (theory_numbers.py, PD0 2.2)."""
+    cs = [c for c in th["cases"].values()
+          if c.get("profile") == "vmf_summer" and c.get("eos") == "fitted_vmf"]
+    mean = [c for c in cs if np.isclose(c["H_modes_m"], c["H_merian_m"])]
+    deep = [c for c in cs if c["H_modes_m"] > c["H_merian_m"] * (1 + 1e-9)]
+    if len(mean) != 1 or len(deep) != 1:
+        raise ValueError(f"theory.json: expected one summer H-mean and one summer H-max case, found "
+                         f"{len(mean)} and {len(deep)}")
+    return deep[0], mean[0]
+
+
 def _poincare_width_note(th: dict) -> str:
     """omega/f = (1 + (c1 pi / (W f))^2)^(1/2) (transverse Poincare mode, Gill 1982 sec. 10.4
     [verificar]) for the 60 km box width, and the width that 1.09-1.14 f would need."""
-    f = th["cases"]["vmf_summer"]["f_s-1"]
-    cs = (th["cases"]["vmf_summer_Hmean"]["c_n"][0], th["cases"]["vmf_summer"]["c_n"][0])
+    hmax, hmean = summer_cases(th)
+    f = hmax["f_s-1"]
+    cs = (hmean["c_n"][0], hmax["c_n"][0])
     r60 = [float(np.sqrt(1 + (np.pi * c / (60e3 * f)) ** 2)) for c in cs]
     need = {q: [float(np.pi * c / f / np.sqrt(q ** 2 - 1) / 1e3) for c in cs] for q in (1.09, 1.14)}
     return (f"The 60 km width alone does not explain it: omega/f = (1 + (c1 pi/(W f))^2)^(1/2) = "
@@ -663,7 +678,48 @@ def _poincare_width_note(th: dict) -> str:
             f"{max(need[1.14]):.0f} km (Gill 1982 sec. 10.4 [verificar]).")
 
 
-def pd2_merge(val: dict, figures: Path | None = None, th: dict | None = None) -> dict:
+def _wind_pulse() -> dict:
+    """centre_h and sigma_h of the fjord wind pulse (cases.yaml configs.fjord_vmf.wind, PD0 7)."""
+    import yaml
+    w = yaml.safe_load((PKG / "cases.yaml").read_text())["configs"]["fjord_vmf"]["wind"]
+    return {"center_h": float(w["center_h"]), "sigma_h": float(w["sigma_h"])}
+
+
+def _v2b_text(v2b: dict, pulse: dict) -> str:
+    """V2b class (a) text with its numbers (fitted c, stations that cross half-maximum before the
+    pulse is over, i.e. before centre + 3 sigma, and the range of their arrival times)."""
+    arr = np.asarray(v2b["arrival_s"], float) / 3600.0
+    end = pulse["center_h"] + 3 * pulse["sigma_h"]
+    early = arr[arr <= end]
+    return ("Our error in the definition of the pre-registered metric: with a spatially uniform wind "
+            "every coastal station responds locally during the pulse (half-maximum reached at "
+            f"{early.min():.1f}-{early.max():.1f} h at {early.size} of {arr.size} stations, before the "
+            f"pulse centre + 3 sigma = {end:.1f} h; all arrivals {arr.min():.1f}-{arr.max():.1f} h), so "
+            "the first-arrival time measures the forced response, not a propagating Kelvin front, and "
+            f"the fitted c = {v2b['c_m_s']:.2f} m/s is not a phase speed.")
+
+
+def _v4_text(v4a: dict, d4: dict) -> str:
+    """V4 class (c) text with its numbers, from validation.json V4a and pd2_v4_diagnostics.json."""
+    f1, v4 = d4["F1"], d4["V4"]
+    low = sum(x["band_out_J"]["low"] for x in f1.values())
+    res = sum(sum(v for k, v in x["band_out_J"].items() if k != "low") for x in f1.values())
+    net = sum(x["net_out_J"] for x in f1.values())
+    per = "; ".join(
+        f"{s}: {f1[s]['gross_J'] / 1e9:.2f} -> {v4[s]['gross_J'] / 1e9:.2f} GJ "
+        f"(x{v4[s]['gross_J'] / f1[s]['gross_J']:.2f}), {f1[s]['wet_levels_max']} -> "
+        f"{v4[s]['wet_levels_max']} wet levels, {f1[s]['open_faces']} -> {v4[s]['open_faces']} faces"
+        for s in f1)
+    return ("Numerical choice (resolution): the net outward baroclinic pressure work changes sign "
+            f"between 200 m ({v4a['F1_out_J'] / 1e9:+.2f} GJ) and 400 m ({v4a['V4_out_J'] / 1e9:+.2f} GJ). "
+            f"At 200 m the net is {100 * low / net:.1f} % in the unresolved low band (time-mean exchange); "
+            f"the four resolved bands add up to {res / 1e9:+.3f} GJ, so the V4b fractions are "
+            f"ill-conditioned. Gross strait flux, 200 -> 400 m: {per}. 400 m does not resolve the strait "
+            "exchange. PD0 4: if V4 fails, the limitation is declared.")
+
+
+def pd2_merge(val: dict, figures: Path | None = None, th: dict | None = None,
+              pulse: dict | None = None) -> dict:
     """Rebuild the PD2 blocks of validation.json (classification, pd2_decision, column_test,
     descriptive_free_wave, note_on_lag_correlation) from figures/pd2_column_test.json,
     pd2_v2_diagnostics.json, pd2_v2b_free_wave.json, pd2_v4_diagnostics.json and
@@ -674,7 +730,8 @@ def pd2_merge(val: dict, figures: Path | None = None, th: dict | None = None) ->
     th = th or load_theory()
     rd = lambda n: json.loads((figures / n).read_text())  # noqa: E731
     col, d2, fw = rd("pd2_column_test.json"), rd("pd2_v2_diagnostics.json"), rd("pd2_v2b_free_wave.json")
-    rd("pd2_v4_diagnostics.json"); rd("pd2_v4_descriptive.json")             # must exist
+    d4 = rd("pd2_v4_diagnostics.json"); rd("pd2_v4_descriptive.json")        # must exist
+    pulse = pulse or _wind_pulse()
     out = json.loads(json.dumps(val))
     pm, rot = d2["V2a_peak_map"], d2["V2a_station_rotary"]
     pc = pm["peak_over_f_percentiles"]
@@ -696,9 +753,7 @@ def pd2_merge(val: dict, figures: Path | None = None, th: dict | None = None) ->
                         "source": "figures/pd2_column_test.json; scripts/column_test.py (post hoc)"}}
     out["V2b"]["classification"] = {
         "class": "(a)",
-        "text": ("Our error in the definition of the pre-registered metric: with a spatially uniform wind "
-                 "every coastal station responds locally during the pulse, so the first-arrival time "
-                 "measures the forced response, not a propagating Kelvin front."),
+        "text": _v2b_text(val["V2b"], pulse),
         "pd2_decision": ("Esteban, PD2 2026-11-13: verdict stays FAIL, class (a): the pre-registered "
                          "front-arrival metric is not defined under spatially uniform forcing. Gill (2016) "
                          "sec. 10.10, pp. 399-401, eq. 10.10.21 (thesis library Gill_2016 .md l.15449-15486): "
@@ -723,10 +778,7 @@ def pd2_merge(val: dict, figures: Path | None = None, th: dict | None = None) ->
     out["V3"]["classification"] = "not needed (pass)"
     out["V4"]["classification"] = {
         "class": "(c)",
-        "text": ("Numerical choice (resolution): the net outward baroclinic pressure work changes sign "
-                 "between 200 m and 400 m; at 200 m the net is almost all in the unresolved low band, so "
-                 "the V4b fractions are ill-conditioned, and the gross strait flux drops 4x (Akselsundet) "
-                 "and 10x (Mariasundet) at 400 m."),
+        "text": _v4_text(val["V4"]["V4a"], d4),
         "pd2_decision": ("limitation declared (PD0 4 rule; Esteban, PD2 2026-11-13); post hoc descriptive "
                          "per strait in figures/pd2_v4_descriptive.json"),
         "evidence": "figures/pd2_v4_diagnostics.json, figures/pd2_v4_descriptive.json (post hoc)",

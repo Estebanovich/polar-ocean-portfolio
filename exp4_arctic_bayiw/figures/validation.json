@@ -1064,7 +1064,7 @@
   "stations_successive": true,
   "classification": {
    "class": "(a)",
-   "text": "Our error in the definition of the pre-registered metric: with a spatially uniform wind every coastal station responds locally during the pulse, so the first-arrival time measures the forced response, not a propagating Kelvin front.",
+   "text": "Our error in the definition of the pre-registered metric: with a spatially uniform wind every coastal station responds locally during the pulse (half-maximum reached at 2.0-3.7 h at 11 of 12 stations, before the pulse centre + 3 sigma = 5.5 h; all arrivals 2.0-9.8 h), so the first-arrival time measures the forced response, not a propagating Kelvin front, and the fitted c = 1.65 m/s is not a phase speed.",
    "pd2_decision": "Esteban, PD2 2026-11-13: verdict stays FAIL, class (a): the pre-registered front-arrival metric is not defined under spatially uniform forcing. Gill (2016) sec. 10.10, pp. 399-401, eq. 10.10.21 (thesis library Gill_2016 .md l.15449-15486): with a uniform wind of finite duration the coastal response is 1 - cos(pi t), independent of x, until the signal from the end of the coast arrives. Yao (1986), doi:10.1080/07055900.1986.9649249 (Yao_1986 .md l.553-558): the forced response has about half the free-wave alongshore phase gradient, so a free wave cannot be told from the forced response by phase alone.",
    "note_on_lag_correlation": "The earlier post hoc lag correlation (0.64 m/s) spans the forced period and is therefore expected to be biased high (Yao 1986).",
    "evidence": "figures/pd2_v2_diagnostics.json (post hoc)",
@@ -1493,7 +1493,7 @@
   "box_method": "F1: budget.fjord_box; V4: coarse_box (the F1 box mapped to 400 m; method, not PD0, fixed in Task 6 part B before any V4 flux was computed)",
   "classification": {
    "class": "(c)",
-   "text": "Numerical choice (resolution): the net outward baroclinic pressure work changes sign between 200 m and 400 m; at 200 m the net is almost all in the unresolved low band, so the V4b fractions are ill-conditioned, and the gross strait flux drops 4x (Akselsundet) and 10x (Mariasundet) at 400 m.",
+   "text": "Numerical choice (resolution): the net outward baroclinic pressure work changes sign between 200 m (-1.17 GJ) and 400 m (+0.32 GJ). At 200 m the net is 97.7 % in the unresolved low band (time-mean exchange); the four resolved bands add up to -0.030 GJ, so the V4b fractions are ill-conditioned. Gross strait flux, 200 -> 400 m: Akselsundet: 1.57 -> 0.38 GJ (x0.24), 21 -> 20 wet levels, 6 -> 4 faces; Mariasundet: 0.21 -> 0.02 GJ (x0.11), 11 -> 6 wet levels, 8 -> 6 faces. 400 m does not resolve the strait exchange. PD0 4: if V4 fails, the limitation is declared.",
    "pd2_decision": "limitation declared (PD0 4 rule; Esteban, PD2 2026-11-13); post hoc descriptive per strait in figures/pd2_v4_descriptive.json",
    "evidence": "figures/pd2_v4_diagnostics.json, figures/pd2_v4_descriptive.json (post hoc)",
    "post_hoc_evidence": true

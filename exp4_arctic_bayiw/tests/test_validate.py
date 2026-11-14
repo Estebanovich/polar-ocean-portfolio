@@ -654,6 +654,11 @@ def test_ice_check_flags_a_gap_in_the_middle_of_the_record(tmp_path):
     assert not res["passes"] and "gap" in res["reason"]
 
 
+_BAND0 = {"low": -0.9e9, "kelvin_subinertial": 0.0, "near_inertial": 0.0, "superinertial": 0.0, "seiche": 0.0}
+_V4D = {r: {"A": {"net_out_J": -1e9, "gross_J": 1e9, "band_out_J": _BAND0, "wet_levels_max": 5,
+                  "open_faces": 3}} for r in ("F1", "V4")}
+
+
 def test_pd2_merge_rebuilds_the_pd2_blocks(tmp_path):
     figs = tmp_path
     (figs / "pd2_column_test.json").write_text(json.dumps(
@@ -665,10 +670,13 @@ def test_pd2_merge_rebuilds_the_pd2_blocks(tmp_path):
     (figs / "pd2_v2b_free_wave.json").write_text(json.dumps(
         {"extremum": "crest", "arrival_h": [9.0], "n_stations": 12, "t_min_h": 6.0, "band_hz": [1, 2],
          "c_m_s": 0.92, "c_stderr_m_s": 0.42, "reference": {"V3_c_m_s": 0.48}}))
-    (figs / "pd2_v4_diagnostics.json").write_text(json.dumps({"F1": {}, "V4": {}}))
+    v4d = json.loads(json.dumps(_V4D))
+    (figs / "pd2_v4_diagnostics.json").write_text(json.dumps(v4d))
     (figs / "pd2_v4_descriptive.json").write_text(json.dumps({"post_hoc": "x"}))
-    val = {"V2a": {"pass": False, "classification": "pending"}, "V2b": {"pass": False},
-           "V3": {"pass": True}, "V4": {"pass": False}, "summary": {"failed": ["V2a", "V2b", "V4"]}}
+    val = {"V2a": {"pass": False, "classification": "pending"},
+           "V2b": {"pass": False, "c_m_s": 1.65, "arrival_s": [7200.0, 36000.0]},
+           "V3": {"pass": True}, "V4": {"pass": False, "V4a": {"F1_out_J": -1e9, "V4_out_J": 3e8}},
+           "summary": {"failed": ["V2a", "V2b", "V4"]}}
     out = va.pd2_merge(val, figs)
     assert out["V2a"]["pass"] is False and out["V2b"]["pass"] is False      # verdicts untouched
     assert out["V2a"]["classification"]["class"] == "(c)"
@@ -685,3 +693,64 @@ def test_pd2_merge_rebuilds_the_pd2_blocks(tmp_path):
     p.write_text(json.dumps(val))
     assert va.main(["pd2-merge", "--validation", str(p), "--figures", str(figs)]) == 0
     assert json.loads(p.read_text())["V2a"]["classification"]["class"] == "(c)"
+
+
+# ---- Task 8: pd2-merge keeps the in-text numbers and finds the theory cases by content -----------
+
+def _pd2_figs(figs: Path) -> None:
+    (figs / "pd2_column_test.json").write_text(json.dumps(
+        {"peak_over_f": 1.005, "offset_df": 0.11, "within_1df": True}))
+    (figs / "pd2_v2_diagnostics.json").write_text(json.dumps(
+        {"V2a_peak_map": {"peak_over_f_percentiles": {"5": 1.0, "50": 1.09, "95": 1.18}},
+         "V2a_station_rotary": {"cw_peak_over_f": 1.136}}))
+    (figs / "pd2_v2b_free_wave.json").write_text(json.dumps({"c_m_s": 0.92, "c_stderr_m_s": 0.42}))
+    band = lambda low: {"low": low, "kelvin_subinertial": 0.0, "near_inertial": 0.0,  # noqa: E731
+                        "superinertial": 0.0, "seiche": 0.0}
+    (figs / "pd2_v4_diagnostics.json").write_text(json.dumps(
+        {"F1": {"A": {"net_out_J": -0.9e9, "gross_J": 1.6e9, "band_out_J": band(-0.88e9), "wet_levels_max": 21,
+                      "open_faces": 6},
+                "B": {"net_out_J": -0.3e9, "gross_J": 0.2e9, "band_out_J": band(-0.29e9), "wet_levels_max": 11,
+                      "open_faces": 8}},
+         "V4": {"A": {"net_out_J": 0.3e9, "gross_J": 0.4e9, "band_out_J": band(0.2e9), "wet_levels_max": 20,
+                      "open_faces": 4},
+                "B": {"net_out_J": 0.02e9, "gross_J": 0.02e9, "band_out_J": band(0.0), "wet_levels_max": 6,
+                      "open_faces": 6}}}))
+    (figs / "pd2_v4_descriptive.json").write_text(json.dumps({"post_hoc": "x"}))
+
+
+def _theory_renamed() -> dict:
+    """theory.json cases under other keys: pd2_merge must find them by content, not by name."""
+    th = va.load_theory()
+    ren = {"vmf_summer": "summer_Hmax_x", "vmf_summer_Hmean": "summer_Hbar_x"}
+    th = json.loads(json.dumps(th))
+    th["cases"] = {ren.get(k, k): v for k, v in th["cases"].items()}
+    return th
+
+
+def test_pd2_merge_v2b_and_v4_texts_carry_the_numbers(tmp_path):
+    _pd2_figs(tmp_path)
+    s = 5000.0 * np.arange(12)
+    arr = np.r_[np.full(11, 3.0), 9.8] * 3600.0
+    val = {"V2a": {"pass": False}, "V3": {"pass": True},
+           "V2b": {"pass": False, "c_m_s": 1.6455, "arrival_s": arr.tolist(), "s_m": s.tolist()},
+           "V4": {"pass": False, "V4a": {"F1_out_J": -1.2e9, "V4_out_J": 0.32e9}}}
+    out = va.pd2_merge(val, tmp_path, th=_theory_renamed(), pulse={"center_h": 2.5, "sigma_h": 1.0})
+    t2 = out["V2b"]["classification"]["text"]
+    assert "c = 1.65 m/s" in t2 and "11 of 12 stations" in t2 and "3.0-9.8 h" in t2
+    t4 = out["V4"]["classification"]["text"]
+    assert "-1.20 GJ" in t4 and "+0.32 GJ" in t4
+    assert "97.5 %" in t4                          # low band (-0.88 - 0.29) of the net (-1.2) of F1
+    assert "1.80 -> 0.42 GJ" not in t4 and "1.60 -> 0.40 GJ" in t4 and "11 -> 6 wet levels" in t4
+    assert out["V2b"]["pass"] is False and out["V4"]["pass"] is False
+
+
+def test_pd2_merge_finds_theory_cases_by_content():
+    th = _theory_renamed()
+    hmax, hmean = va.summer_cases(th)
+    assert hmax["H_modes_m"] > hmean["H_modes_m"]
+    assert hmean["H_modes_m"] == pytest.approx(hmean["H_merian_m"])
+    assert va._poincare_width_note(th) == va._poincare_width_note(va.load_theory())
+    bad = json.loads(json.dumps(th))
+    bad["cases"] = {k: v for k, v in bad["cases"].items() if k != "summer_Hbar_x"}
+    with pytest.raises(ValueError, match="summer"):
+        va.summer_cases(bad)
