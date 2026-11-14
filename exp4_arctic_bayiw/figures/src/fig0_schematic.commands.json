@@ -1,0 +1,4126 @@
+[
+ {
+  "command": "file.new",
+  "params": {
+   "width": 1100,
+   "height": 1395,
+   "units": "Points",
+   "backgroundContents": "white",
+   "name": "fig0_schematic"
+  }
+ },
+ {
+  "command": "file.place",
+  "params": {
+   "path": "/Users/estebancruz/Phd_project/portfolio/exp4_arctic_bayiw/figures/src/sat/vmf_s2_2024-03-25_domain.jpg",
+   "rect": [
+    40.0,
+    56.0,
+    1020.0,
+    642.2222222222222
+   ],
+   "link": false
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 77.77777777777777,
+   "y": 93.77777777777777,
+   "width": 18.888888888888886,
+   "height": 566.6666666666665
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 38
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 77.77777777777777,
+   "y": 93.77777777777777,
+   "width": 944.4444444444443,
+   "height": 18.888888888888886
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 38
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 77.77777777777777,
+   "y": 641.5555555555555,
+   "width": 944.4444444444443,
+   "height": 18.8888888888888
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 38
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 77.77777777777777,
+   "y": 93.77777777777777,
+   "width": 944.4444444444443,
+   "height": 566.6666666666665
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 3.6
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 77.77777777777777,
+   "y": 93.77777777777777,
+   "width": 944.4444444444443,
+   "height": 566.6666666666665
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffd400"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.0,
+   "dash": [
+    7,
+    4
+   ]
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 82.77777777777777,
+   "y": 105.77777777777777,
+   "width": 336,
+   "height": 15
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 85.77777777777777,
+   "y": 115.77777777777777,
+   "text": "model domain: open boundaries and sponge to the west, north and south",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 406.92 317.89 L 406.92 307.69 L 389.44 301.56 L 389.44 226.00 L 1031.67 74.89 L 1031.67 433.78 L 502.78 433.78 L 460.84 386.74 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#38b6ff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.4,
+   "dash": [
+    4,
+    3
+   ]
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 406.82005000000015,
+   "y1": 317.8969944444402,
+   "x2": 406.948777777778,
+   "y2": 307.7653722222201
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ff3b30"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 3.2,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 455.22669999999994,
+   "y1": 380.4201611111033,
+   "x2": 466.50440555555593,
+   "y2": 392.99411666667083
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ff3b30"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 3.2,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 192.43333333333334,
+   "y": 440.76666666666665,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffd400"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 434.21111111111117,
+   "y": 346.3222222222222,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 509.76666666666677,
+   "y": 374.65555555555557,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 538.1,
+   "y": 350.1,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 573.9888888888889,
+   "y": 340.65555555555557,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 619.3222222222222,
+   "y": 321.76666666666665,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 657.1,
+   "y": 316.09999999999997,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 728.8777777777779,
+   "y": 289.65555555555557,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 764.7666666666667,
+   "y": 283.9888888888889,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 796.8777777777777,
+   "y": 242.4333333333333,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 834.6555555555556,
+   "y": 255.65555555555554,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 876.2111111111112,
+   "y": 240.54444444444442,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 927.2111111111111,
+   "y": 253.76666666666662,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 427.22222222222223,
+   "y1": 345.9444444444444,
+   "x2": 475.22222222222223,
+   "y2": 409.9444444444444
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 474.22222222222223,
+   "y": 410.9444444444444,
+   "width": 47.6,
+   "height": 16
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 477.22222222222223,
+   "y": 421.9444444444444,
+   "text": "Aksel\u00f8ya",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 406.948777777778,
+   "y1": 307.7653722222201,
+   "x2": 376.948777777778,
+   "y2": 255.7653722222201
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 283.948777777778,
+   "y": 240.7653722222201,
+   "width": 63.2,
+   "height": 16
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 286.948777777778,
+   "y": 251.7653722222201,
+   "text": "Akselsundet",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#b0201a",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 466.50440555555593,
+   "y1": 392.99411666667083,
+   "x2": 506.50440555555593,
+   "y2": 432.99411666667083
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 505.50440555555593,
+   "y": 433.99411666667083,
+   "width": 63.2,
+   "height": 16
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 508.50440555555593,
+   "y": 444.99411666667083,
+   "text": "Mariasundet",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#b0201a",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 641.4444444444445,
+   "y": 187.55555555555554,
+   "width": 276,
+   "height": 17
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 644.4444444444445,
+   "y": 199.55555555555554,
+   "text": "Van Mijenfjorden (inner fjord, landfast ice)",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 181.66666666666669,
+   "y": 339.3333333333333,
+   "text": "Bellsund",
+   "size": 13,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 181.66666666666669,
+   "y": 361.99999999999994,
+   "text": "open water",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 547.0,
+   "y": 550.7777777777777,
+   "width": 89.98,
+   "height": 15.5
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 550.0,
+   "y": 561.2777777777777,
+   "text": "Van Keulenfjorden",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 70.22222222222223,
+   "y": 499.88888888888886,
+   "text": "shelf",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 751.7777777777778,
+   "y": 599.9444444444443,
+   "width": 106.44444444444444,
+   "height": 26
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 80
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 757.7777777777778,
+   "y1": 617.9444444444443,
+   "x2": 852.2222222222223,
+   "y2": 617.9444444444443
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.4,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 757.7777777777778,
+   "y": 612.9444444444443,
+   "text": "10 km",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 965.5555555555555,
+   "y1": 641.3888888888888,
+   "x2": 965.5555555555555,
+   "y2": 613.3888888888888
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.0,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 965.5555555555555,
+   "y": 608.3888888888888,
+   "text": "N",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 46.0,
+   "y": 598.2222222222222,
+   "width": 300,
+   "height": 80
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 82
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 50.0,
+   "y1": 656.2222222222222,
+   "x2": 72.0,
+   "y2": 656.2222222222222
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 3.6,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 50.0,
+   "y1": 656.2222222222222,
+   "x2": 72.0,
+   "y2": 656.2222222222222
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffd400"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.0,
+   "cap": "round",
+   "dash": [
+    7,
+    4
+   ]
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 80.0,
+   "y": 660.2222222222222,
+   "text": "model domain",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 50.0,
+   "y1": 608.2222222222222,
+   "x2": 72.0,
+   "y2": 608.2222222222222
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ff3b30"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 3.2,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 80.0,
+   "y": 612.2222222222222,
+   "text": "strait sections: they close the inner-fjord box",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 50.0,
+   "y1": 624.2222222222222,
+   "x2": 72.0,
+   "y2": 624.2222222222222
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#38b6ff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.8,
+   "cap": "round",
+   "dash": [
+    4,
+    3
+   ]
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 80.0,
+   "y": 628.2222222222222,
+   "text": "inner-fjord polygon: landfast ice on its sea cells (late winter)",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 58.0,
+   "y": 638.2222222222222,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffd400"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 70.0,
+   "y": 645.2222222222222,
+   "text": "shelf station (V2a)",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 178.0,
+   "y": 638.2222222222222,
+   "width": 6.8,
+   "height": 6.8
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 190.0,
+   "y": 645.2222222222222,
+   "text": "south-coast stations (V2b)",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "file.place",
+  "params": {
+   "path": "/Users/estebancruz/Phd_project/portfolio/exp4_arctic_bayiw/figures/src/sat/svalbard_modis_2023-07-05.jpg",
+   "rect": [
+    882.0,
+    66.0,
+    168.0,
+    186.06
+   ],
+   "link": false
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 882.0,
+   "y": 66.0,
+   "width": 168.0,
+   "height": 186.06
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 915.19 206.89 L 948.09 207.01 L 948.89 185.28 L 914.54 185.15 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ff3b30"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.6
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 966.0,
+   "y": 245.06,
+   "text": "Svalbard",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 40.0,
+   "y": 42.0,
+   "text": "(a)",
+   "size": 13,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66.0,
+   "y": 42.0,
+   "text": "Van Mijenfjorden, Svalbard: Sentinel-2, 25 March 2024 (landfast ice), and the model domain",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 40.0,
+   "y": 713.2222222222222,
+   "text": "Imagery: (a) contains modified Copernicus Sentinel data (2024), processed by ESA; inset: MODIS Terra true colour, 5 July 2023, NASA Worldview/GIBS. UTM 33N, grid north up.",
+   "size": 8.0,
+   "font": "Helvetica",
+   "color": "#555555"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 40,
+   "y": 768.2222222222222,
+   "width": 1020,
+   "height": 440.0
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "gradient": {
+    "kind": "linear",
+    "angle": 90,
+    "stops": [
+     {
+      "offset": 0,
+      "color": "#9c907f"
+     },
+     {
+      "offset": 1,
+      "color": "#d8d2c8"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "texture.texturizer",
+   "params": {
+    "texture": "sandstone",
+    "scaling": 110,
+    "relief": 4,
+    "lightDirection": "topLeft"
+   }
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 40.00 838.22 L 150.00 830.22 L 230.00 863.22 L 280.00 899.69 L 280.00 899.69 L 290.00 901.44 L 300.00 903.22 L 310.00 905.00 L 320.00 906.75 L 330.00 908.45 L 340.00 910.06 L 350.00 911.56 L 360.00 912.92 L 370.00 914.14 L 380.00 915.18 L 390.00 916.03 L 400.00 916.69 L 410.00 917.15 L 420.00 917.41 L 430.00 917.46 L 440.00 917.32 L 450.00 916.99 L 460.00 916.49 L 470.00 915.83 L 480.00 915.05 L 490.00 914.15 L 500.00 913.17 L 510.00 912.13 L 520.00 911.07 L 530.00 910.00 L 540.00 908.96 L 550.00 907.98 L 560.00 907.09 L 570.00 906.30 L 580.00 905.65 L 590.00 905.16 L 600.00 904.83 L 610.00 904.69 L 620.00 904.75 L 630.00 905.01 L 640.00 905.47 L 650.00 906.13 L 660.00 906.99 L 670.00 908.04 L 680.00 909.25 L 690.00 910.62 L 700.00 912.12 L 710.00 913.73 L 720.00 915.43 L 730.00 917.18 L 740.00 918.96 L 750.00 920.74 L 760.00 922.49 L 770.00 924.19 L 780.00 925.79 L 790.00 927.29 L 800.00 928.66 L 810.00 929.86 L 820.00 930.90 L 830.00 931.75 L 840.00 932.41 L 850.00 932.87 L 860.00 933.12 L 870.00 933.17 L 880.00 933.02 L 890.00 932.69 L 900.00 932.19 L 910.00 931.53 L 920.00 930.74 L 930.00 929.84 L 940.00 928.86 L 950.00 927.82 L 960.00 926.76 L 970.00 925.69 L 980.00 924.65 L 990.00 923.67 L 1000.00 922.78 L 1003.82 923.71 L 1009.30 928.53 L 1014.14 937.14 L 1018.02 948.96 L 1020.67 963.17 L 1021.92 978.82 L 1021.67 994.83 L 1019.94 1010.11 L 1016.85 1023.63 L 1012.62 1034.46 L 1007.52 1041.86 L 1001.92 1045.33 L 1000.00 1045.56 L 990.00 1045.29 L 980.00 1044.80 L 970.00 1044.13 L 960.00 1043.30 L 950.00 1042.36 L 940.00 1041.35 L 930.00 1040.33 L 920.00 1039.34 L 910.00 1038.42 L 900.00 1037.62 L 890.00 1036.98 L 880.00 1036.54 L 870.00 1036.33 L 860.00 1036.36 L 850.00 1036.65 L 840.00 1037.20 L 830.00 1038.02 L 820.00 1039.08 L 810.00 1040.37 L 800.00 1041.85 L 790.00 1043.50 L 780.00 1045.27 L 770.00 1047.12 L 760.00 1049.00 L 750.00 1050.86 L 740.00 1052.66 L 730.00 1054.35 L 720.00 1055.90 L 710.00 1057.25 L 700.00 1058.39 L 690.00 1059.28 L 680.00 1059.92 L 670.00 1060.30 L 660.00 1060.42 L 650.00 1060.28 L 640.00 1059.91 L 630.00 1059.34 L 620.00 1058.59 L 610.00 1057.70 L 600.00 1056.73 L 590.00 1055.71 L 580.00 1054.69 L 570.00 1053.73 L 560.00 1052.86 L 550.00 1052.13 L 540.00 1051.57 L 530.00 1051.23 L 520.00 1051.12 L 510.00 1051.27 L 500.00 1051.67 L 490.00 1052.34 L 480.00 1053.27 L 470.00 1054.43 L 460.00 1055.81 L 450.00 1057.37 L 440.00 1059.08 L 430.00 1060.89 L 420.00 1062.76 L 410.00 1064.64 L 400.00 1066.48 L 390.00 1068.24 L 380.00 1069.87 L 370.00 1071.33 L 360.00 1072.59 L 350.00 1073.63 L 340.00 1074.41 L 330.00 1074.93 L 320.00 1075.19 L 310.00 1075.20 L 300.00 1074.95 L 290.00 1074.49 L 280.00 1073.83 L 230.00 1113.22 L 150.00 1154.22 L 40.00 1148.22 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "gradient": {
+    "kind": "linear",
+    "angle": 0,
+    "stops": [
+     {
+      "offset": 0,
+      "color": "#a7cde4"
+     },
+     {
+      "offset": 0.45,
+      "color": "#6fa6cb"
+     },
+     {
+      "offset": 1,
+      "color": "#2f6f9f"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "texture.grain",
+   "params": {
+    "intensity": 10,
+    "contrast": 50,
+    "grainType": "soft"
+   }
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "distort.roughen",
+   "params": {
+    "size": 1.4,
+    "relative": false,
+    "detail": 22,
+    "points": "smooth",
+    "seed": 3
+   }
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 292.00 927.22 L 312.00 923.22 L 318.00 993.09 L 310.00 1061.95 L 290.00 1058.95 L 284.00 993.09 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "gradient": {
+    "kind": "linear",
+    "angle": 90,
+    "stops": [
+     {
+      "offset": 0,
+      "color": "#9c907f"
+     },
+     {
+      "offset": 1,
+      "color": "#d8d2c8"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#857a6b"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.8
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "texture.texturizer",
+   "params": {
+    "texture": "sandstone",
+    "scaling": 90,
+    "relief": 3,
+    "lightDirection": "topLeft"
+   }
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 760.00 922.49 L 760.00 922.49 L 770.00 924.19 L 780.00 925.79 L 790.00 927.29 L 800.00 928.66 L 810.00 929.86 L 820.00 930.90 L 830.00 931.75 L 840.00 932.41 L 850.00 932.87 L 860.00 933.12 L 870.00 933.17 L 880.00 933.02 L 890.00 932.69 L 900.00 932.19 L 910.00 931.53 L 920.00 930.74 L 930.00 929.84 L 940.00 928.86 L 950.00 927.82 L 960.00 926.76 L 970.00 925.69 L 980.00 924.65 L 990.00 923.67 L 1000.00 922.78 L 1003.82 923.71 L 1009.30 928.53 L 1014.14 937.14 L 1018.02 948.96 L 1020.67 963.17 L 1021.92 978.82 L 1021.67 994.83 L 1019.94 1010.11 L 1016.85 1023.63 L 1012.62 1034.46 L 1007.52 1041.86 L 1001.92 1045.33 L 1000.00 1045.56 L 990.00 1045.29 L 980.00 1044.80 L 970.00 1044.13 L 960.00 1043.30 L 950.00 1042.36 L 940.00 1041.35 L 930.00 1040.33 L 920.00 1039.34 L 910.00 1038.42 L 900.00 1037.62 L 890.00 1036.98 L 880.00 1036.54 L 870.00 1036.33 L 860.00 1036.36 L 850.00 1036.65 L 840.00 1037.20 L 830.00 1038.02 L 820.00 1039.08 L 810.00 1040.37 L 800.00 1041.85 L 790.00 1043.50 L 780.00 1045.27 L 770.00 1047.12 L 760.00 1049.00 L 760.00 1049.00 L 754.00 1049.00 L 760.94 1038.45 L 752.21 1027.91 L 747.52 1017.37 L 757.46 1006.83 L 759.59 996.29 L 749.10 985.75 L 749.67 975.20 L 760.01 964.66 L 756.78 954.12 L 747.27 943.58 L 752.96 933.04 L 761.00 922.49 Z"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "gradient": {
+    "kind": "linear",
+    "angle": 90,
+    "stops": [
+     {
+      "offset": 0,
+      "color": "#dce9f2"
+     },
+     {
+      "offset": 1,
+      "color": "#f2f7fb"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#7d9db0"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "texture.texturizer",
+   "params": {
+    "texture": "canvas",
+    "scaling": 80,
+    "relief": 2,
+    "lightDirection": "topLeft"
+   }
+  }
+ },
+ {
+  "command": "effect.apply",
+  "params": {
+   "effect": "distort.roughen",
+   "params": {
+    "size": 1.2,
+    "relative": false,
+    "detail": 18,
+    "points": "corner",
+    "seed": 21
+   }
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 800 940.6556492332923 L 814 968.6556492332923 L 806 1011.8500600489979 L 820 1031.8500600489979"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#c7d9e5"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 860 945.115804688456 L 874 973.115804688456 L 866 1006.3605687804786 L 880 1026.3605687804786"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#c7d9e5"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 925 942.3045809520355 L 939 970.3045809520355 L 931 1009.8257212759736 L 945 1029.8257212759736"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#c7d9e5"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 720,
+   "y1": 958.2222222222222,
+   "x2": 520,
+   "y2": 958.2222222222222
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#3a3a3a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 4.2,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 700,
+   "y1": 990.2222222222222,
+   "x2": 460,
+   "y2": 990.2222222222222
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#3a3a3a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 4.2,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 720,
+   "y1": 1022.2222222222222,
+   "x2": 540,
+   "y2": 1022.2222222222222
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#3a3a3a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 4.2,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.rectangle",
+  "params": {
+   "x": 512,
+   "y": 782.2222222222222,
+   "width": 178,
+   "height": 72
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 85
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 520,
+   "y1": 840.2222222222222,
+   "x2": 680,
+   "y2": 840.2222222222222
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 520,
+   "y1": 840.2222222222222,
+   "x2": 520,
+   "y2": 792.2222222222222
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 520.0 839.8 L 524.0 838.8 L 528.0 836.5 L 532.0 831.9 L 536.0 824.5 L 540.0 814.7 L 544.0 805.1 L 548.0 799.1 L 552.0 799.1 L 556.0 805.1 L 560.0 814.7 L 564.0 824.5 L 568.0 831.9 L 572.0 836.5 L 576.0 838.8 L 580.0 839.8 L 584.0 840.1 L 588.0 840.2 L 592.0 840.2 L 596.0 840.2 L 600.0 840.2 L 604.0 840.2 L 608.0 840.2 L 612.0 840.2 L 616.0 840.2 L 620.0 840.2 L 624.0 840.2 L 628.0 840.2 L 632.0 840.2 L 636.0 840.2 L 640.0 840.2 L 644.0 840.2 L 648.0 840.2 L 652.0 840.2 L 656.0 840.2 L 660.0 840.2 L 664.0 840.2 L 668.0 840.2 L 672.0 840.2 L 676.0 840.2 L 680.0 840.2"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#3a3a3a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.0,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 524,
+   "y": 796.2222222222222,
+   "text": "\u03c4",
+   "size": 10,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 670,
+   "y": 852.2222222222222,
+   "text": "t",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 572,
+   "y": 812.2222222222222,
+   "text": "one pulse of wind,",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 572,
+   "y": 824.2222222222222,
+   "text": "then free (no wind)",
+   "size": 8.6,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 416.0 962.4 L 417.6 959.2 L 419.8 956.4 L 422.5 954.1 L 425.6 952.5 L 429.0 951.5 L 432.6 951.2 L 436.1 951.7 L 439.5 952.9 L 442.5 954.8 L 445.0 957.3 L 447.0 960.2 L 448.3 963.5 L 449.0 967.0 L 448.8 970.6 L 448.0 974.0 L 446.4 977.2 L 444.2 980.0 L 441.5 982.3 L 438.4 984.0 L 435.0 985.0 L 431.4 985.2 L 427.9 984.7 L 424.5 983.5 L 421.5 981.6 L 419.0 979.1 L 417.0 976.2"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#d1495b"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.2,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 416.0 1014.4 L 417.6 1011.2 L 419.8 1008.4 L 422.5 1006.1 L 425.6 1004.5 L 429.0 1003.5 L 432.6 1003.2 L 436.1 1003.7 L 439.5 1004.9 L 442.5 1006.8 L 445.0 1009.3 L 447.0 1012.2 L 448.3 1015.5 L 449.0 1019.0 L 448.8 1022.6 L 448.0 1026.0 L 446.4 1029.2 L 444.2 1032.0 L 441.5 1034.3 L 438.4 1036.0 L 435.0 1037.0 L 431.4 1037.2 L 427.9 1036.7 L 424.5 1035.5 L 421.5 1033.6 L 419.0 1031.1 L 417.0 1028.2"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#d1495b"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.2,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 390.0 1055.2 L 400.0 1053.5 L 410.0 1051.6 L 420.0 1049.8 L 430.0 1047.9 L 440.0 1046.1 L 450.0 1044.4 L 460.0 1042.8 L 470.0 1041.4 L 480.0 1040.3 L 490.0 1039.3 L 500.0 1038.7 L 510.0 1038.3 L 520.0 1038.1 L 530.0 1038.2 L 540.0 1038.6 L 550.0 1039.1 L 560.0 1039.9 L 570.0 1040.7 L 580.0 1041.7 L 590.0 1042.7 L 600.0 1043.7 L 610.0 1044.7 L 620.0 1045.6 L 630.0 1046.3 L 640.0 1046.9 L 650.0 1047.3 L 660.0 1047.4 L 670.0 1047.3 L 680.0 1046.9 L 690.0 1046.3 L 700.0 1045.4 L 710.0 1044.3 L 720.0 1042.9 L 730.0 1041.4 L 740.0 1039.7 L 750.0 1037.9 L 760.0 1036.0 L 770.0 1034.1 L 780.0 1032.3 L 790.0 1030.5 L 800.0 1028.9 L 810.0 1027.4 L 820.0 1026.1 L 830.0 1025.0 L 840.0 1024.2 L 850.0 1023.7 L 860.0 1023.4 L 870.0 1023.3 L 880.0 1023.5 L 890.0 1024.0 L 900.0 1024.6 L 910.0 1025.4 L 920.0 1026.3 L 930.0 1027.3 L 940.0 1028.4 L 950.0 1029.4 L 960.0 1030.3 L 970.0 1031.1 L 980.0 1031.8 L 1003.1 1029.6 L 1005.2 1023.8 L 1006.9 1015.3 L 1008.2 1004.6 L 1008.9 992.6 L 1009.0 980.0 L 1008.5 967.6 L 1007.4 956.4 L 1005.8 947.1 L 1003.8 940.3 L 990.0 936.7 L 980.0 937.7 L 970.0 938.7 L 960.0 939.8 L 950.0 940.8 L 940.0 941.9 L 930.0 942.8 L 920.0 943.7 L 910.0 944.5 L 900.0 945.2 L 890.0 945.7 L 880.0 946.0 L 870.0 946.2 L 860.0 946.1 L 850.0 945.9 L 840.0 945.4 L 830.0 944.8 L 820.0 943.9 L 810.0 942.9 L 800.0 941.7 L 790.0 940.3 L 780.0 938.8 L 770.0 937.2 L 760.0 935.5 L 750.0 933.7 L 740.0 932.0 L 730.0 930.2 L 720.0 928.4 L 710.0 926.7 L 700.0 925.1 L 690.0 923.6 L 680.0 922.3 L 670.0 921.0 L 660.0 920.0 L 650.0 919.1 L 640.0 918.5 L 630.0 918.0 L 620.0 917.7 L 610.0 917.7 L 600.0 917.8 L 590.0 918.2 L 580.0 918.7 L 570.0 919.3 L 560.0 920.1 L 550.0 921.0 L 540.0 922.0 L 530.0 923.0 L 520.0 924.1 L 510.0 925.1 L 500.0 926.2 L 490.0 927.2 L 480.0 928.0 L 470.0 928.8 L 460.0 929.5 L 450.0 930.0 L 440.0 930.3 L 430.0 930.5 L 420.0 930.4 L 410.0 930.2 L 400.0 929.7"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.6,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 410,
+   "y1": 1062.6368965724153,
+   "x2": 413,
+   "y2": 1040.6368965724153
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 422,
+   "y1": 919.4317052852025,
+   "x2": 425,
+   "y2": 941.4317052852025
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 444,
+   "y1": 1056.3807848380093,
+   "x2": 447,
+   "y2": 1034.3807848380093
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 456,
+   "y1": 918.7071947703379,
+   "x2": 459,
+   "y2": 940.7071947703379
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 478,
+   "y1": 1051.4830641937087,
+   "x2": 481,
+   "y2": 1029.4830641937087
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 490,
+   "y1": 916.1521504455475,
+   "x2": 493,
+   "y2": 938.1521504455475
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 512,
+   "y1": 1049.217205753428,
+   "x2": 515,
+   "y2": 1027.217205753428
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 524,
+   "y1": 912.6384807879464,
+   "x2": 527,
+   "y2": 934.6384807879464
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 546,
+   "y1": 1049.8825417800042,
+   "x2": 549,
+   "y2": 1027.8825417800042
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 558,
+   "y1": 909.2598401937895,
+   "x2": 561,
+   "y2": 931.2598401937895
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 580,
+   "y1": 1052.6934729597417,
+   "x2": 583,
+   "y2": 1030.6934729597417
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 592,
+   "y1": 907.0786486001961,
+   "x2": 595,
+   "y2": 929.0786486001961
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 614,
+   "y1": 1056.070244572866,
+   "x2": 617,
+   "y2": 1034.070244572866
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 626,
+   "y1": 906.8803361546726,
+   "x2": 629,
+   "y2": 928.8803361546726
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 648,
+   "y1": 1058.2236657259189,
+   "x2": 651,
+   "y2": 1036.2236657259189
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 660,
+   "y1": 908.9916602113183,
+   "x2": 663,
+   "y2": 930.9916602113183
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 682,
+   "y1": 1057.8173478073475,
+   "x2": 685,
+   "y2": 1035.8173478073475
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 694,
+   "y1": 913.2051209420754,
+   "x2": 697,
+   "y2": 935.2051209420754
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 716,
+   "y1": 1054.462345910849,
+   "x2": 719,
+   "y2": 1032.462345910849
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 728,
+   "y1": 918.8269594842006,
+   "x2": 731,
+   "y2": 940.8269594842006
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 750,
+   "y1": 1048.8611201505132,
+   "x2": 753,
+   "y2": 1026.8611201505132
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 762,
+   "y1": 924.837635857356,
+   "x2": 765,
+   "y2": 946.837635857356
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 784,
+   "y1": 1042.5475320453495,
+   "x2": 787,
+   "y2": 1020.5475320453495
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 796,
+   "y1": 930.1276654497748,
+   "x2": 799,
+   "y2": 952.1276654497748
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 818,
+   "y1": 1037.3191118714485,
+   "x2": 821,
+   "y2": 1015.3191118714485
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 830,
+   "y1": 933.7542611876125,
+   "x2": 833,
+   "y2": 955.7542611876125
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 852,
+   "y1": 1034.5717335263212,
+   "x2": 855,
+   "y2": 1012.5717335263212
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 864,
+   "y1": 935.1594158024262,
+   "x2": 867,
+   "y2": 957.1594158024262
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 886,
+   "y1": 1034.7829556427728,
+   "x2": 889,
+   "y2": 1012.7829556427728
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 898,
+   "y1": 934.298978155774,
+   "x2": 901,
+   "y2": 956.298978155774
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 920,
+   "y1": 1037.335261416135,
+   "x2": 923,
+   "y2": 1015.3352614161349
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 932,
+   "y1": 931.6528661289019,
+   "x2": 935,
+   "y2": 953.6528661289019
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 954,
+   "y1": 1040.7446219043131,
+   "x2": 957,
+   "y2": 1018.7446219043131
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 966,
+   "y1": 928.1140536669565,
+   "x2": 969,
+   "y2": 950.1140536669565
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.1,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 70
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 690,
+   "y1": 1058.284446430294,
+   "x2": 690,
+   "y2": 1033.284446430294
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 686,
+   "y1": 1033.284446430294,
+   "x2": 694,
+   "y2": 1033.284446430294
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.0,
+   "cap": "round"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 696,
+   "y": 1050.284446430294,
+   "text": "~R1",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.setRangeStyle",
+  "params": {
+   "start": 2,
+   "end": 3,
+   "size": 6.3,
+   "baselineShift": -1.98
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 570,
+   "y": 1081.727355974573,
+   "text": "Kelvin wave: coast on its right",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#5b3f8f",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.line",
+  "params": {
+   "x1": 470,
+   "y1": 1041.4323663530602,
+   "x2": 520,
+   "y2": 1038.1222565963458
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#5b3f8f"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.6,
+   "endArrow": "Triangle",
+   "cap": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 330.0 917.2 L 327.0 919.1 L 324.0 920.6 L 321.0 921.2 L 318.0 920.9 L 315.0 919.6 L 312.0 917.8 L 309.0 915.8 L 306.0 914.2 L 303.0 913.3 L 300.0 913.4 L 297.0 914.4 L 294.0 916.1 L 291.0 918.1 L 288.0 919.9 L 285.0 921.0 L 282.0 921.2 L 279.0 920.4 L 276.0 918.9 L 273.0 916.9 L 270.0 915.0 L 267.0 913.7 L 264.0 913.2 L 261.0 913.7 L 258.0 915.1 L 255.0 917.0 L 252.0 918.9 L 249.0 920.4 L 246.0 921.2 L 243.0 921.0 L 240.0 919.8 L 237.0 918.0 L 234.0 916.1 L 231.0 914.4 L 228.0 913.4 L 225.0 913.3 L 222.0 914.2 L 219.0 915.9 L 216.0 917.8 L 213.0 919.6 L 210.0 920.9 L 207.0 921.2 L 204.0 920.6 L 201.0 919.1 L 198.0 917.2 L 195.0 915.3 L 192.0 913.8 L 189.0 913.2 L 186.0 913.6 L 183.0 914.9"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 3.2,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 260.0 944.9 L 256.5 943.1 L 253.2 941.0 L 250.3 938.6 L 247.6 936.0 L 245.4 933.2 L 243.5 930.2 L 242.0 927.1 L 240.9 923.9 L 240.2 920.6 L 240.0 917.2 L 240.2 913.9 L 240.9 910.6 L 242.0 907.3 L 243.5 904.2 L 245.4 901.2 L 247.6 898.4 L 250.3 895.8 L 253.2 893.4 L 256.5 891.3 L 260.0 889.5"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 45
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 245.0 965.7 L 238.9 962.5 L 233.2 958.8 L 228.0 954.7 L 223.4 950.1 L 219.4 945.2 L 216.1 940.0 L 213.4 934.5 L 211.5 928.9 L 210.4 923.1 L 210.0 917.2 L 210.4 911.4 L 211.5 905.6 L 213.4 899.9 L 216.1 894.4 L 219.4 889.2 L 223.4 884.3 L 228.0 879.8 L 233.2 875.6 L 238.9 871.9 L 245.0 868.7"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 45
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 230.0 986.5 L 221.2 981.9 L 213.1 976.7 L 205.7 970.8 L 199.1 964.2 L 193.4 957.2 L 188.6 949.8 L 184.9 941.9 L 182.2 933.9 L 180.5 925.6 L 180.0 917.2 L 180.5 908.9 L 182.2 900.6 L 184.9 892.5 L 188.6 884.7 L 193.4 877.2 L 199.1 870.2 L 205.7 863.7 L 213.1 857.8 L 221.2 852.5 L 230.0 847.9"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 45
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 330.0 1067.0 L 327.0 1068.9 L 324.0 1070.3 L 321.0 1070.9 L 318.0 1070.6 L 315.0 1069.3 L 312.0 1067.5 L 309.0 1065.6 L 306.0 1063.9 L 303.0 1063.0 L 300.0 1063.1 L 297.0 1064.1 L 294.0 1065.8 L 291.0 1067.8 L 288.0 1069.6 L 285.0 1070.7 L 282.0 1070.9 L 279.0 1070.1 L 276.0 1068.6 L 273.0 1066.7 L 270.0 1064.8 L 267.0 1063.4 L 264.0 1063.0 L 261.0 1063.5 L 258.0 1064.8 L 255.0 1066.7 L 252.0 1068.6 L 249.0 1070.2 L 246.0 1070.9 L 243.0 1070.7 L 240.0 1069.6 L 237.0 1067.8 L 234.0 1065.8 L 231.0 1064.1 L 228.0 1063.1 L 225.0 1063.1 L 222.0 1064.0 L 219.0 1065.6 L 216.0 1067.6 L 213.0 1069.4 L 210.0 1070.6 L 207.0 1070.9 L 204.0 1070.3 L 201.0 1068.8 L 198.0 1066.9 L 195.0 1065.0 L 192.0 1063.6 L 189.0 1063.0 L 186.0 1063.3 L 183.0 1064.6"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 2.42,
+   "endArrow": "Triangle",
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 260.0 1094.7 L 256.5 1092.8 L 253.2 1090.7 L 250.3 1088.4 L 247.6 1085.8 L 245.4 1083.0 L 243.5 1080.0 L 242.0 1076.8 L 240.9 1073.6 L 240.2 1070.3 L 240.0 1067.0 L 240.2 1063.6 L 240.9 1060.3 L 242.0 1057.1 L 243.5 1053.9 L 245.4 1051.0 L 247.6 1048.1 L 250.3 1045.5 L 253.2 1043.2 L 256.5 1041.1 L 260.0 1039.2"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 45
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 245.0 1115.5 L 238.9 1112.3 L 233.2 1108.6 L 228.0 1104.4 L 223.4 1099.9 L 219.4 1095.0 L 216.1 1089.7 L 213.4 1084.3 L 211.5 1078.6 L 210.4 1072.8 L 210.0 1067.0 L 210.4 1061.1 L 211.5 1055.3 L 213.4 1049.6 L 216.1 1044.2 L 219.4 1039.0 L 223.4 1034.0 L 228.0 1029.5 L 233.2 1025.3 L 238.9 1021.6 L 245.0 1018.5"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 45
+  }
+ },
+ {
+  "command": "path.create",
+  "params": {
+   "d": "M 230.0 1136.2 L 221.2 1131.7 L 213.1 1126.4 L 205.7 1120.5 L 199.1 1114.0 L 193.4 1107.0 L 188.6 1099.5 L 184.9 1091.7 L 182.2 1083.6 L 180.5 1075.3 L 180.0 1067.0 L 180.5 1058.6 L 182.2 1050.3 L 184.9 1042.2 L 188.6 1034.4 L 193.4 1027.0 L 199.1 1019.9 L 205.7 1013.4 L 213.1 1007.5 L 221.2 1002.2 L 230.0 997.7"
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "none": true
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#b8322a"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 0.9,
+   "cap": "round",
+   "join": "round"
+  }
+ },
+ {
+  "command": "object.setProps",
+  "params": {
+   "opacity": 45
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 70,
+   "y": 878.2222222222222,
+   "text": "shelf",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 70,
+   "y": 892.2222222222222,
+   "text": "and Bellsund",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 296,
+   "y": 873.2222222222222,
+   "text": "Akselsundet",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 296,
+   "y": 1106.9539901006854,
+   "text": "Mariasundet (narrow)",
+   "size": 9,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 324,
+   "y": 997.0881061614538,
+   "text": "island",
+   "size": 8.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 860,
+   "y": 921.115804688456,
+   "text": "landfast ice (late winter)",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#1f4e79",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 640,
+   "y": 891.4696649766115,
+   "text": "inner fjord",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 726,
+   "y": 981.2222222222222,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 735,
+   "y": 994.4222222222222,
+   "text": "1",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 391,
+   "y": 985.2222222222222,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 400,
+   "y": 998.4222222222222,
+   "text": "2",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 531,
+   "y": 1066.573881696356,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 540,
+   "y": 1079.773881696356,
+   "text": "3",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 201,
+   "y": 888.2222222222222,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 210,
+   "y": 901.4222222222222,
+   "text": "4",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 891,
+   "y": 975.9029364190175,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 900,
+   "y": 989.1029364190175,
+   "text": "5",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 20,
+   "y": 758.2222222222222,
+   "text": "(b)",
+   "size": 13,
+   "font": "Helvetica",
+   "color": "#222222",
+   "style": "Bold"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 46,
+   "y": 758.2222222222222,
+   "text": "Processes after a wind pulse (plan view, not to scale; the fjord axis is drawn horizontal)",
+   "size": 11,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 40,
+   "y": 1233.2222222222222,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 49,
+   "y": 1246.4222222222222,
+   "text": "1",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66,
+   "y": 1246.2222222222222,
+   "text": "a pulse of wind along the fjord axis, toward the mouth; then the fjord is left to ring",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 40,
+   "y": 1257.2222222222222,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 49,
+   "y": 1270.4222222222222,
+   "text": "2",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66,
+   "y": 1270.2222222222222,
+   "text": "near-inertial response: currents turning clockwise at the inertial period",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 40,
+   "y": 1281.2222222222222,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 49,
+   "y": 1294.4222222222222,
+   "text": "3",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66,
+   "y": 1294.2222222222222,
+   "text": "internal Kelvin wave, trapped within about one Rossby radius of the coast, travelling cyclonically",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 40,
+   "y": 1305.2222222222222,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 49,
+   "y": 1318.4222222222222,
+   "text": "4",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66,
+   "y": 1318.2222222222222,
+   "text": "radiation of internal-wave energy through the two straits to Bellsund and the shelf",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ },
+ {
+  "command": "shape.ellipse",
+  "params": {
+   "x": 40,
+   "y": 1329.2222222222222,
+   "width": 18,
+   "height": 18
+  }
+ },
+ {
+  "command": "paint.setFill",
+  "params": {
+   "color": "#1d1d1d"
+  }
+ },
+ {
+  "command": "paint.setStroke",
+  "params": {
+   "color": "#ffffff"
+  }
+ },
+ {
+  "command": "stroke.set",
+  "params": {
+   "weight": 1.2
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 49,
+   "y": 1342.4222222222222,
+   "text": "5",
+   "size": 10.5,
+   "font": "Helvetica",
+   "color": "#ffffff",
+   "style": "Bold",
+   "justify": "center"
+  }
+ },
+ {
+  "command": "text.create",
+  "params": {
+   "x": 66,
+   "y": 1342.2222222222222,
+   "text": "landfast ice: the wind does not reach the water; the fixed ice puts a drag on its surface",
+   "size": 9.5,
+   "font": "Helvetica",
+   "color": "#222222"
+  }
+ }
+]
