@@ -239,7 +239,9 @@ def inertial_filter(x, t_s, T: float) -> tuple:
     the integral exact for the piecewise-linear interpolant of the uniformly sampled x (nt, ...),
     so T need not be a multiple of the step. Only the frames whose whole window lies inside the
     record are kept (t - T/2 >= t_0 and t + T/2 <= t_end; no padding). A centred boxcar removes a
-    constant and a linear trend exactly and a sinusoid of period T to O((dt/T)^2)."""
+    constant and a linear trend exactly and a sinusoid of period T to O((dt/T)^2). A missing (NaN)
+    sample blanks only the frames whose window overlaps its interpolation support (the window
+    plus one step on either side); it does not reach other frames (Task 10 fix round 1)."""
     t = np.asarray(t_s, float)
     x = np.asarray(x)
     dt = float(t[1] - t[0])
@@ -250,16 +252,27 @@ def inertial_filter(x, t_s, T: float) -> tuple:
     if not keep.any():
         raise ValueError(f"record of {t[-1] - t[0]:.0f} s is shorter than the window {T:.0f} s")
     xd = x.astype(np.float64)
+    bad = ~np.isfinite(xd)
+    x0 = np.where(bad, 0.0, xd)                       # integrate with the missing samples at 0 ...
     C = np.concatenate([np.zeros((1,) + xd.shape[1:]),
-                        np.cumsum(0.5 * (xd[1:] + xd[:-1]) * dt, axis=0)])
+                        np.cumsum(0.5 * (x0[1:] + x0[:-1]) * dt, axis=0)])
+    nb = np.concatenate([np.zeros((1,) + xd.shape[1:]), np.cumsum(bad, axis=0)])   # ... and count them
 
     def cint(tq):                                   # int_{t0}^{tq} of the linear interpolant
         k = int(np.clip(np.floor((tq - t[0]) / dt + 1e-9), 0, len(t) - 2))
         sx = tq - t[k]
-        return C[k] + xd[k] * sx + (xd[k + 1] - xd[k]) * sx * sx / (2 * dt)
+        return C[k] + x0[k] * sx + (x0[k + 1] - x0[k]) * sx * sx / (2 * dt)
+
+    def nbad(t_lo, t_hi):
+        """Missing samples whose interpolation support (one step either side) overlaps the window:
+        indices floor(lo) .. ceil(hi) in steps from t0."""
+        i0 = int(np.clip(np.floor((t_lo - t[0]) / dt + 1e-9), 0, len(t) - 1))
+        i1 = int(np.clip(np.ceil((t_hi - t[0]) / dt - 1e-9), 0, len(t) - 1))
+        return nb[i1 + 1] - nb[i0]
 
     idx = np.flatnonzero(keep)
-    out = np.stack([xd[n] - (cint(t[n] + T / 2) - cint(t[n] - T / 2)) / T for n in idx])
+    out = np.stack([np.where(nbad(t[n] - T / 2, t[n] + T / 2) > 0, np.nan,
+                             xd[n] - (cint(t[n] + T / 2) - cint(t[n] - T / 2)) / T) for n in idx])
     return t[idx], out.astype(x.dtype if np.issubdtype(x.dtype, np.floating) else np.float64)
 
 

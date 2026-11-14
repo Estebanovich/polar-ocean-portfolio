@@ -374,12 +374,18 @@ def values() -> dict[str, str]:
         v["blA_sigma"], v["blA_z"] = f(ba["sigma_kg_m3"], 3), f(ba["sigma_depth_t0_m"], 0)
         v["blA_lim"] = f"{ba['colour_limit_m']:g}"
         v["bl_ve_sea"], v["bl_ve_land"] = f"{ba['ve_sea']:g}", f"{ba['ve_land']:g}"
+        sa = ba["saturation"]["F1"]
+        v["blA_sat"], v["blA_sat_t"] = pct(sa["worst"]), f(sa["worst_t_h"], 1)
     if bb:
         assert bb["ve_sea"] == ba["ve_sea"] and bb["ve_land"] == ba["ve_land"], "README: one VE for both shots"
         v["blB_sigma"], v["blB_z"] = f(bb["sigma_kg_m3"], 3), f(bb["sigma_depth_t0_m"], 0)
         v["blB_step"] = f(bb["step_kg_m3"], 4)
         v["blB_lim"] = f"{bb['colour_limit_m']:g}"
         v["blB_sponge"] = word(int(bb["sponge_cells"]))
+        v["blB_share"] = f"{100 * bb['sigma_min_share']:.0f}"
+        for r in ("F3", "F2"):
+            sr = bb["saturation"][r]
+            v[f"blB_sat_{r}"], v[f"blB_sat_{r}_t"] = pct(sr["worst"]), f(sr["worst_t_h"], 1)
     if val and h:
         check_prose(val, h, mr)
     return v
