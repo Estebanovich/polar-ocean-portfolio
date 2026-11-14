@@ -78,3 +78,32 @@ def test_moving_pass_on_the_local_store_equals_the_full_dataset(tmp_path):
     b = ph.moving_pressure_work(ds, mask, groups, rho_b, progress=False)
     for g in groups:
         np.testing.assert_array_equal(a["series_moving"][g], b["series_moving"][g])
+
+
+# ---- final-review fix I3: resuming is opt-in --------------------------------------------------
+
+def _complete_output(tmp_path):
+    import json
+    out = tmp_path / "posthoc.json"
+    runs = {n: {"eta": 9.0, "eta_resolved": 9.0, "low_band_out_J": 9.0} for n in ("F1", "F1c", "R1", "R1k_0_120h")}
+    out.write_text(json.dumps({"runs": runs, "profile_drift": {r: {} for r in
+                                                               ("F1", "F1c", "F2", "F3", "R1", "R1k", "R2")}}))
+    return out
+
+
+def test_default_regenerates_instead_of_keeping_the_old_output(tmp_path, monkeypatch):
+    from exp4_arctic_bayiw.analysis import load
+    out = _complete_output(tmp_path)
+
+    def no_read(*a, **k):
+        raise RuntimeError("would read the run")
+    monkeypatch.setattr(load, "run", no_read)
+    with pytest.raises(RuntimeError, match="would read"):
+        ph.main(["--out", str(out), "--runs-root", str(tmp_path)])
+
+
+def test_resume_keeps_the_runs_already_in_the_output(tmp_path, monkeypatch):
+    from exp4_arctic_bayiw.analysis import load
+    out = _complete_output(tmp_path)
+    monkeypatch.setattr(load, "run", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("read")))
+    assert ph.main(["--out", str(out), "--runs-root", str(tmp_path), "--resume"]) == 0

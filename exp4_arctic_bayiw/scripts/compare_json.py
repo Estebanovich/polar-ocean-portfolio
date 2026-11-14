@@ -16,6 +16,12 @@ import sys
 from pathlib import Path
 
 
+# files not compared, with the reason (reported, never silently skipped)
+EXCLUDED = {"ice_ob_check.json": ("keyed by absolute run paths (validate.py ice-check stamps): a rerun under "
+                                  "another run root adds keys; the check itself runs again in reproduce.sh "
+                                  "and fails the script if the ice reaches the open boundaries")}
+
+
 def diff(a, b, path: str = "") -> list[tuple[str, float | None]]:
     """[(path, relative difference or None for a non-numeric or structural difference)]."""
     num = (int, float)
@@ -42,8 +48,11 @@ def diff(a, b, path: str = "") -> list[tuple[str, float | None]]:
 def compare_dirs(old: Path, new: Path) -> dict:
     old, new = Path(old), Path(new)
     files = [old] if old.is_file() else sorted(old.glob("*.json"))
-    rep = {"identical": [], "differ": {}, "missing_in_new": []}
+    rep = {"identical": [], "differ": {}, "missing_in_new": [], "excluded": {}}
     for f in files:
+        if f.name in EXCLUDED:
+            rep["excluded"][f.name] = EXCLUDED[f.name]
+            continue
         g = new if new.is_file() else new / f.name
         if not g.exists():
             rep["missing_in_new"].append(f.name)
@@ -66,6 +75,8 @@ def main(argv=None) -> int:
         return 2
     rep = compare_dirs(Path(a[0]), Path(a[1]))
     print(f"identical: {len(rep['identical'])} files")
+    for n, why in rep["excluded"].items():
+        print(f"excluded: {n}: {why}")
     for n, d in rep["differ"].items():
         print(f"DIFFERS: {n}: {d['n']} values, max relative difference {d['max_rel']}, "
               f"non-numeric {d['non_numeric']}, first {d['first']}")

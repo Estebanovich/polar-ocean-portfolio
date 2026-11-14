@@ -41,3 +41,17 @@ def test_compare_dirs(tmp_path):
     assert rep["missing_in_new"] == ["c.json"]
     assert cj.main([str(old), str(new)]) == 1
     assert cj.main([str(old / "a.json").rsplit("/", 1)[0], str(old)]) == 0
+
+
+def test_ice_check_stamps_are_excluded_with_a_reason(tmp_path):
+    """figures/ice_ob_check.json is keyed by absolute run paths: a rerun root adds keys, so the
+    comparison skips it and says why (final review, Minor 8)."""
+    cj = _cj()
+    old, new = tmp_path / "old", tmp_path / "new"
+    old.mkdir(), new.mkdir()
+    (old / "ice_ob_check.json").write_text(json.dumps({"/a/F2": {"passes": True}}))
+    (new / "ice_ob_check.json").write_text(json.dumps({"/a/F2": {"passes": True}, "/b/F2": {"passes": True}}))
+    rep = cj.compare_dirs(old, new)
+    assert rep["differ"] == {} and "ice_ob_check.json" in rep["excluded"]
+    assert "absolute" in rep["excluded"]["ice_ob_check.json"]
+    assert cj.main([str(old), str(new)]) == 0

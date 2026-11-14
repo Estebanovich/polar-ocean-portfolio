@@ -128,7 +128,7 @@ R1 → R2 cambia a la vez f (y β), perfil, EOS y mezcla; está declarado en el 
   Para R2/R3 a 280 h, con KPP y la mezcla del PD0: ~5.3 h cada una, por extrapolación de R1k, que no lleva la mezcla del PD0. Están por debajo de las 8 h por corrida.
 - **Disco:** R1 ocupa 150 GB y R1k 308 GB en LaCie (snapshots 3D cada 900 s, como la tesis). R2/R3 a 280 h ocuparán ~360 GB cada una.
 
-## 7. R2 y R3 corridos (Task 6, parte B; 2026-11-12/13)
+## 9. R2 y R3 corridos (Task 6, parte B; 2026-11-12/13)
 
 - **Smoke de 2 h (ruling R12):** `R2_smoke2h` y `R3_smoke2h` (240 pasos, build `bay_thesis_kpp`, 4 rangos) salen OK. `DIAGNOSTICS_SET_POINTERS` usa 302 niveles, con `numDiags` = 350 (7*Nr), así que alcanza. `STDERR.0000` vacío, máx |w| ≈ 1×10⁻⁵ m s⁻¹, CFL W_hf ≈ 9×10⁻⁴. Reloj: 213 y 219 s. **No hizo falta recompilar.**
 - **280 h** (`run_campaign.py --config bay_thesis_kpp --cases 'R[23]' --np 4 --max-concurrent 1 --skip-ok`), una tras otra, las dos OK en las dos etapas (33 600 pasos):

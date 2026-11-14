@@ -110,7 +110,7 @@ def plan_campaign(config: str, pattern: str, np_: int, *, overrides: dict | None
         rd = Path(runs_root) / f"{n}{run_suffix}"
         p = case_params(spec, n, overrides)
         action = "run"
-        if skip_ok and cp.finished_ok(rd):
+        if skip_ok and cp.finished_ok(rd, staged_layout=True):
             want = _requested(spec, n, overrides)
             have = json.loads((rd / "input" / "case.json").read_text())["params"]
             bad = [f"{k}: run has {have.get(k)}, requested {want[k]}" for k in SKIP_KEYS
@@ -137,7 +137,7 @@ def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1
                  sh: Callable[[list], int] = _sh, pgrep: Callable[[], str] | None = None,
                  skip_ok: bool = False, disk_usage=None) -> dict[str, str]:
     """Build ``config`` once, then generate and run the selected cases. Returns {case: state}."""
-    cp.check_concurrency(np_, max_concurrent)
+    cp.check_concurrency(np_, max_concurrent, allow_partial_np=True)
     spec = load_cases(cases_file)
     names = cp.select_cases(spec["cases"], config, pattern)
     overrides = cp.check_overrides(names, overrides, spec)
@@ -153,7 +153,7 @@ def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1
     done: set[str] = set()
     if skip_ok:
         for n in names:
-            if not cp.finished_ok(run_dirs[n]):
+            if not cp.finished_ok(run_dirs[n], staged_layout=True):
                 continue
             want = _requested(spec, n, overrides)
             have = json.loads((run_dirs[n] / "input" / "case.json").read_text())["params"]
@@ -195,7 +195,7 @@ def run_campaign(config: str, pattern: str, np_: int, *, max_concurrent: int = 1
     results = {n: "OK" for n in done}
     for n in done:
         print(f"[run_campaign] {n}: already OK in {run_dirs[n]}, skipped (--skip-ok)", flush=True)
-    results.update(cp.run_pool(todo, np_, max_concurrent, run_one))
+    results.update(cp.run_pool(todo, np_, max_concurrent, run_one, allow_partial_np=True))
     left = cp.other_mitgcm_processes(pgrep)
     if left:
         raise RuntimeError("processes left after the campaign: " + " | ".join(left))

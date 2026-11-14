@@ -271,3 +271,40 @@ def test_evaluate_reports_windows_and_the_low_band_caveat(tmp_path):
     assert out["H4d"]["R1k_vs_R1"]["window_h"] == [0.0, 120.0]
     assert "fixed-reference drift" in out["general"]["low_band_caveat"]
     assert "post_hoc_h4d_resolved_bands" in out
+
+
+# ---- final-review fixes -------------------------------------------------------------------------
+
+def test_h4a_literal_rule_can_support_with_an_inward_resolved_flux():
+    """Pinned (final review, Minor 3): the PD0 rule is applied literally; when the resolved sum is
+    inward the phis change sign and an inward flux can come out 'supported', with the flag."""
+    r = hy.h4a(_bands(0.0, 1.0, -4.0, 0.5, 0.5))                  # resolved sum -2, NI carries it
+    assert r["resolved_net_inward"] is True
+    assert r["phi"]["near_inertial"] == pytest.approx(2.0)
+    assert r["outcome"] == "supported"
+
+
+def test_zero_denominators_are_flagged_not_raised():
+    r = hy.h4b(1.0, 0.0, 1.0, 1.0)
+    assert r["i"]["ratio"] is None and r["i"]["met"] is False and r["i"]["flags"]
+    c = hy.h4c(1.0, 0.0, 1.0, 1.0)
+    assert c["i"]["ratio"] is None and c["outcome"] == "undefined" and any("== 0" in f for f in c["flags"])
+    k, cl = _pair(1.0, 0.0, 0.0, 1.0, 50.0, 50.0)
+    d = hy.h4d_pair(k, cl)
+    assert d["eta_kpp"] is None and d["ratio"] is None and d["outcome"] == "undefined"
+    assert any("denominator" in f for f in d["flags"])
+    k, cl = _pair(1.0, 50.0, 50.0, 0.0, 50.0, 50.0)                # eta_closure = 0
+    d = hy.h4d_pair(k, cl)
+    assert d["ratio"] is None and d["outcome"] == "undefined"
+
+
+def test_h4d_reports_the_amendment_1_numerator_as_post_hoc():
+    k, cl = _pair(3.0, 50.0, 50.0, 1.0, 50.0, 50.0)
+    k["totals_in_J"]["FA_bc"] = -2.0                                 # F + A out: +2 (KPP)
+    cl["totals_in_J"]["FA_bc"] = 4.0                                 # F + A out: -4 (closure)
+    d = hy.h4d_pair(k, cl)
+    p = d["post_hoc_amendment1_numerator"]
+    assert "POST HOC" in p["label"] and "not a verdict" in p["label"]
+    assert p["eta_kpp"] == pytest.approx(0.02) and p["eta_closure"] == pytest.approx(-0.04)
+    assert p["ratio"] == pytest.approx(-0.5) and p["literal_rule_would_read"] == "refuted"
+    assert d["outcome"] == "supported"                               # the verdict is untouched

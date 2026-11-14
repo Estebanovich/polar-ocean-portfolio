@@ -141,9 +141,9 @@ Fracción con signo del trabajo de presión saliente, F_b / Σ₅|F_b| (`post_ho
 
 - En la bahía, a f de la tesis o a 78°N, la banda cercana a la inercial lleva la mayor parte del flujo resuelto, y el neto sale.
 - En el fiordo real, el neto lo domina la banda baja y entra.
-- La energía cinética superficial en las estaciones va en la misma dirección. En el interior de R2 es 0.995 cercana a la inercial; en la costa sur de F1 es 0.56 de Kelvin y 0.09 cercana a la inercial.
+- La energía cinética superficial en las estaciones va en la misma dirección. En el interior de R2 es 0.995 cercana a la inercial; en la costa sur de F1 es 0.56 de Kelvin y 0.08 cercana a la inercial (0.0846; decía 0.09, corregido en la revisión final, 2026-11-14).
 - R3 (sin bahía) no tiene caja ni flujo; su estación de plataforma es 0.999 cercana a la inercial.
-- Como predecía el PD0 §2.3, punto 3, el cambio respecto a la tesis lo pone la geometría, no f: R2, con f de 78°N y el perfil de verano, sigue siendo cercano a la inercial.
+- Como predecía el PD0 §2.3, punto 3, el cambio respecto a la tesis lo pone la geometría, no f: R2, con f de 78°N y el perfil de verano, sigue siendo cercano a la inercial. *(Matizado por la nota de la revisión final, 2026-11-14, al final de esta nota.)*
 
 ### Fracción de energía atrapada (PD0 §3, secundario)
 
@@ -216,3 +216,20 @@ KE_bc integrada en la vertical, en celdas a menos de 2R₁ de tierra (`post_hoc.
 - **En la bahía (R1, R1k) la referencia apenas importa:** el perfil cambia ≤ 0.006 kg m⁻³ y η cambia un 6–14 %. El cociente de H4d R1k/R1 sería 3.68 con la referencia móvil, frente al 3.93 congelado; es descriptivo.
 - **Alcance de la comprobación:** la referencia móvil solo quita la parte horizontalmente uniforme de la deriva (la media de la caja). Una deriva con estructura horizontal, o un intercambio medio real, quedan dentro. Lo que queda en la banda baja de F1 (−0.75 GJ) **no está demostrado que sea un intercambio físico**: tampoco está demostrado que no lo sea.
 - Ningún veredicto congelado cambia.
+
+## Notas de la revisión final (2026-11-14)
+
+Notas fechadas; el texto de arriba no se reescribe.
+
+1. **Puente: la atribución a la geometría era excesiva.** Arriba dice que el cambio respecto a la tesis "lo pone la geometría, no f". R2 y F1 difieren también en otras cosas, verificadas en el `case.json` de cada corrida y en `cases.yaml`:
+   - el **patrón espacial del viento**: R1, R1k, R2 y R3 tienen la mancha local de la tesis (radio de 60 celdas centrado en la bahía, `configs.bay_thesis.wind`), y el fiordo un pulso uniforme a lo largo del eje. Las dos tienen el mismo pulso en el tiempo;
+   - la **malla horizontal**: unos 5.1 km en la bahía frente a 200 m;
+   - el **paso de tiempo**: 30 s frente a 120 s escalonado;
+   - el **dominio exterior**: la malla de la tesis, con el mar limitado a la profundidad de su malla vertical;
+   - las **duraciones** de la bahía: R1 120 h, R1k 240 h y R2/R3 280 h.
+
+   Que R2 siga siendo cercano a la inercial con el f de 78°N muestra que **f sola** no explica el cambio. Es coherente con la geometría, pero el puente no puede aislarla de esas diferencias. Además, el término de baja frecuencia del fiordo lleva la deriva de la referencia, y ningún flujo está convergido en resolución (V4). Es descriptivo. El README lo dice así (§2.3, §3.5 y §5).
+2. **Banda baja de la bahía (descriptivo, no se recalcula).** Los registros de la bahía tienen n = T/dt + 1 muestras (R1 481, R1k 961, R2 y R3 1121), así que su Δf es 1/(T + dt). El bin 2 cae entonces justo bajo el borde nominal de 2Δf y la banda baja toma 3 bins en lugar de 2. Las corridas del fiordo, con 840 muestras, tienen exactamente 2. Afecta solo a números descriptivos: las fracciones del puente, los *post hoc* de R1/R1k y la banda de Kelvin de R1. No afecta a H4d, que no usa bandas, ni a ningún veredicto.
+3. **W_NI con FFT circular sin ventana (descriptivo, no se recalcula).** H4c(i) filtra la velocidad superficial con una FFT sin ventana, y el viento actúa solo en las primeras horas. Por eso la velocidad cercana a la inercial en el momento del forzamiento lleva el efecto del extremo final del registro (el periodo circular). F1 y F3 se tratan igual, así que el cociente (0.83) es probablemente robusto, pero los valores absolutos de W_NI (6.05 y 7.33 GJ) llevan esta salvedad.
+4. **H4a se aplica literalmente.** Si la suma resuelta entra (≤ 0), las φ_b cambian de signo. Con una banda baja ≤ 0.25, un flujo resuelto que entra podría salir "apoyada" o "alternativa", solo con la bandera `resolved_net_inward`. Aquí no ocurre (banda baja 0.930). Hay una prueba que fija ese comportamiento (`test_h4a_literal_rule_can_support_with_an_inward_resolved_flux`).
+5. **H4d con el numerador de la Enmienda 1 (*post hoc*, descriptivo).** Con F_bc + A_bc en el numerador, el par de la bahía da η = 0.26 % (R1k) frente a −1.56 % (R1), cociente −0.17, que la regla congelada leería como "refutada". Está en `hypotheses.json` → `H4d.*.post_hoc_amendment1_numerator`, y el README lo declara junto al único "apoyada" del experimento.
