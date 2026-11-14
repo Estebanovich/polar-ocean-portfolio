@@ -62,11 +62,13 @@
   "pickups": {
     "pickup.0000007200.data": {
       "bitwise_equal": true,
+      "status": "compared",
       "iter_ours": 7200,
       "iter_thesis": 7200
     },
     "pickup.ckptA.data": {
       "bitwise_equal": true,
+      "status": "compared",
       "iter_ours": 14400,
       "iter_thesis": 14400
     }

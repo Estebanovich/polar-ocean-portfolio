@@ -421,7 +421,6 @@
   "thesis_bay_thesis_f": {
    "f_s-1": 6.97e-05,
    "inertial_period_h": 25.040591850707738,
-   "inertial_period_note": "f0 of the thesis beta plane (f = f0 + beta yC, model/src/ini_cori.F:77, beta = 1e-11 default): 1-3 % below the local f of the bay (7.05e-5 to 7.16e-5 s^-1 at rows j 324-347, R1 case.json), so this period is 1-3 % longer than the local inertial period (24.4-24.8 h)",
    "H_modes_m": 164.00000000000006,
    "L_m": 120983.6,
    "perimeter_m": 302598.8,
@@ -482,7 +481,8 @@
     956.5225629455816
    ],
    "profile": "thesis realistic (feb_temp/feb_salt, column 0,0)",
-   "eos": "thesis"
+   "eos": "thesis",
+   "inertial_period_note": "f0 of the thesis beta plane (f = f0 + beta yC, model/src/ini_cori.F:77, beta = 1e-11 default): 1-3 % below the local f of the bay (7.05e-5 to 7.16e-5 s^-1 at rows j 324-347, R1 case.json), so this period is 1-3 % longer than the local inertial period (24.4-24.8 h)"
   },
   "thesis_bay_78N_vmf_summer": {
    "f_s-1": 0.0001426550023862197,
