@@ -87,3 +87,12 @@ def test_fig4_renders(tmp_path):
     rec = fg.fig4_ice_maps(_maps(), tmp_path)
     assert (tmp_path / "fig4_ice_maps.png").exists()
     assert rec["box_total_ke_bc_J"]["F3"]["near_inertial"] > rec["box_total_ke_bc_J"]["F2"]["near_inertial"]
+
+
+def test_fig2_takes_f_from_theory_json(tmp_path):
+    from exp4_arctic_bayiw.analysis import validate as va
+    th = va.load_theory()
+    rec = fg.fig2_spectra_partition(_partition(), tmp_path)
+    assert rec["f_cph"]["fjord"] == th["bands"]["fjord_78N_280h"]["f_cph"]
+    assert rec["f_cph"]["thesis"] == th["bands"]["bay_thesis_f_240h"]["f_cph"]
+    assert not hasattr(fg, "F_CPH")

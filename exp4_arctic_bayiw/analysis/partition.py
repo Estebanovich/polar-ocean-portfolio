@@ -717,14 +717,17 @@ def _key(funcs=(), files=()) -> str:
 
 
 _LIB = Path(__file__).resolve().parent
+# the run driver (box, background profile, stress choice, local store) makes every cache too
+# (review fix 8); resolved at call time, after the module is fully defined
+DRIVER: tuple = ()
+_FILES = (_LIB / "budget.py", _LIB / "load.py")
 KEYS = {
-    "kf": lambda: _key(files=(_LIB / "budget.py", _LIB / "load.py")),
-    "faces": lambda: _key((face_series,), (_LIB / "budget.py", _LIB / "load.py")),
+    "kf": lambda: _key(DRIVER, _FILES),
+    "faces": lambda: _key((face_series,) + DRIVER, _FILES),
     "surface": lambda: _key((wind_points, surface_series, wind_work, band_pass, _keep, _stations_of,
-                             tau_from_diagnostics),
-                            (_LIB / "load.py", _LIB / "validate.py", _LIB / "budget.py")),
-    "energy": lambda: _key((level_energy, band_power, high_pass, _keep, _rfft_weights, _band_of_bins),
-                           (_LIB / "budget.py", _LIB / "load.py")),
+                             tau_from_diagnostics) + DRIVER, _FILES + (_LIB / "validate.py",)),
+    "energy": lambda: _key((level_energy, band_power, high_pass, _keep, _rfft_weights, _band_of_bins)
+                           + DRIVER, _FILES),
 }
 
 
@@ -1055,6 +1058,7 @@ def assemble(cache: Path, th: dict, runs=FJORD_RUNS + BAY_RUNS, out_dir: Path | 
 
 
 # keys frozen at import: a later edit of this file cannot rename a running process's caches
+DRIVER = (compute, _box, bay_box, tau_from_diagnostics, build_store, store_dataset, _StoreArray, crop_tau)
 FROZEN_KEYS: dict = {}
 FROZEN_KEYS.update({k: f() for k, f in KEYS.items()})
 

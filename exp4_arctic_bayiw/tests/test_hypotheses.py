@@ -211,3 +211,63 @@ def test_h4b_post_hoc_ke_only_ratio_is_descriptive_and_does_not_change_the_verdi
     ph = r["i"]["post_hoc_ke_bc_only"]
     assert ph["ratio"] == pytest.approx(0.02) and ph["label"].startswith("POST HOC")
     assert "met" not in ph
+
+
+# ---- fix round 1 -------------------------------------------------------------------------------------
+
+def test_h4d_flags_a_non_positive_denominator():
+    kpp, clo = _pair(1.0, -60.0, 50.0, 1.0, 50.0, 50.0)        # P_bt + P_bc = -10 (kpp)
+    r = hy.h4d_pair(kpp, clo)
+    assert any(f.startswith("kpp: denominator") for f in r["flags"])
+
+
+def test_h4d_flags_the_closure_side():
+    kpp, clo = _pair(1.0, 50.0, 50.0, -2.0, 50.0, 50.0)
+    r = hy.h4d_pair(kpp, clo)
+    assert any(f.startswith("closure: numerator") for f in r["flags"])
+    assert not any(f.startswith("kpp") for f in r["flags"])
+
+
+@pytest.mark.parametrize("kn, cn, outcome", [(2.0, 3.0, "refuted"), (3.0, 2.0, "supported"),
+                                             (0.2, 0.3, "refuted"), (0.3, 0.2, "supported")])
+def test_h4d_tie_at_exactly_the_factor_counts(kn, cn, outcome):
+    """eta ratios that equal 1.5 or 1/1.5 in exact arithmetic are ties (>= / <=) even when the
+    floating-point quotient is one ulp off (0.02/0.03 = 0.6666666666666667 > 1/1.5)."""
+    kpp, clo = _pair(kn, 50.0, 50.0, cn, 50.0, 50.0)
+    assert hy.h4d_pair(kpp, clo)["outcome"] == outcome
+
+
+def test_h4c_tie_is_robust_to_rounding():
+    assert hy.h4c(w_ni_f1=0.2, w_ni_f3=0.3, f_res_f1=0.2, f_res_f3=0.3)["outcome"] == "refuted"
+
+
+def test_post_hoc_resolved_band_eta_for_h4d():
+    part = {"F1": {"straits": {"total": {"F_bc_out_J": _bands(-10.0, 1.0, 2.0, 0.5, 0.5)}}},
+            "F1c": {"straits": {"total": {"F_bc_out_J": _bands(0.1, 1.0, 0.5, 0.25, 0.25)}}}}
+    bud = {"F1": {"P_J": 100.0}, "F1c": {"P_J": 200.0}}
+    r = hy.post_hoc_h4d_resolved(part, bud)
+    assert r["label"].startswith("POST HOC") and "outcome" not in r
+    assert r["F1"]["eta_resolved"] == pytest.approx(4.0 / 100.0)
+    assert r["F1c"]["eta_resolved"] == pytest.approx(2.0 / 200.0)
+    assert r["ratio_F1_over_F1c"] == pytest.approx(4.0)
+    assert "low-frequency" in r["explanation"]
+
+
+def test_evaluate_reports_windows_and_the_low_band_caveat(tmp_path):
+    part, bud = _synthetic_jsons()
+    for r in part["runs"].values():
+        r["record"] = {"n": 840, "dt_s": 1200.0, "t_last_h": 279.6666666666667}
+    part["runs"]["F1c"] = {"straits": {"total": {"F_bc_out_J": _bands(0.1, 1.0, 1.0, 1.0, 1.0),
+                                                 "FA_bc_out_J": _bands(0.1, 1.0, 1.0, 1.0, 1.0)}},
+                           "record": {"n": 840, "dt_s": 1200.0, "t_last_h": 279.6666666666667}}
+    for b in bud["runs"].values():
+        b["P_J"] = b["P_bt_J"] + b["P_bc_J"]
+        b["window_h"] = [0.0, 279.6666666666667]
+    bud["runs"]["R1k_0_120h"]["window_h"] = [0.0, 120.0]
+    (tmp_path / "partition.json").write_text(json.dumps(part))
+    (tmp_path / "budget.json").write_text(json.dumps(bud))
+    out = hy.evaluate(tmp_path / "partition.json", tmp_path / "budget.json")
+    assert out["H4a"]["window"] == {"t_h": [0.0, 279.6666666666667], "n_records": 840}
+    assert out["H4d"]["R1k_vs_R1"]["window_h"] == [0.0, 120.0]
+    assert "fixed-reference drift" in out["general"]["low_band_caveat"]
+    assert "post_hoc_h4d_resolved_bands" in out

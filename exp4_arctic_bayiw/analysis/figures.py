@@ -52,7 +52,14 @@ BAND_COLOURS = {"low": "#BBBBBB", "kelvin_subinertial": style.OKABE_ITO[0],
 RUN_COLOURS = {"F1": style.OKABE_ITO[0], "F1c": style.OKABE_ITO[3], "F2": style.OKABE_ITO[4],
                "F3": style.OKABE_ITO[1], "R1": "#888888", "R1k": style.OKABE_ITO[7],
                "R2": style.OKABE_ITO[2], "R3": style.OKABE_ITO[5]}
-F_CPH = {"fjord": 0.0817353, "thesis": 0.0399352}      # theory.json f (78 N; thesis f0)
+
+
+def f_cph(th: dict | None = None) -> dict:
+    """f [cph] at 78 N and the thesis f0, from theory.json (the PD0 section 3 band tables)."""
+    if th is None:
+        from exp4_arctic_bayiw.analysis import validate as va
+        th = va.load_theory()
+    return {"fjord": th["bands"]["fjord_78N_280h"]["f_cph"], "thesis": th["bands"]["bay_thesis_f_240h"]["f_cph"]}
 
 
 def _write_json(rec: dict, stem: Path) -> None:
@@ -69,11 +76,12 @@ FLUX_RUNS = (("F1", "F1 straits"), ("F1c", "F1c straits"), ("F3", "F3 straits"),
              ("F2", "F2 straits"), ("R1k", "R1k mouth"), ("R2", "R2 mouth"))
 
 
-def fig2_spectra_partition(part: dict, out_dir: Path) -> dict:
+def fig2_spectra_partition(part: dict, out_dir: Path, th: dict | None = None) -> dict:
     style.apply()
+    F_CPH = f_cph(th)
     P = part["runs"]
     fig, (a, b, c) = plt.subplots(1, 3, figsize=(10.0, 3.8), gridspec_kw={"width_ratios": [1.3, 1, 1]})
-    rec = {"spectra_stations": [], "station_share": {}, "flux_share": {}}
+    rec = {"spectra_stations": [], "station_share": {}, "flux_share": {}, "f_cph": F_CPH}
     for run, st, lab, ls in SPECTRA:
         if run not in P or st not in P[run].get("spectra", {}):
             continue

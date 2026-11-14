@@ -36,7 +36,14 @@
    "resolved_sum_out_J": -18679398.218906038,
    "low_band_share": 0.9278743643980434
   },
-  "run": "F1"
+  "run": "F1",
+  "window": {
+   "t_h": [
+    0.0,
+    279.6666666666667
+   ],
+   "n_records": 840
+  }
  },
  "H4b": {
   "i": {
@@ -65,6 +72,13 @@
   "budget_residual_D_bc_rel": {
    "F2": -52.181192314324306,
    "F3": 0.78018988730124
+  },
+  "window": {
+   "t_h": [
+    0.0,
+    279.6666666666667
+   ],
+   "n_records": 840
   }
  },
  "H4c": {
@@ -90,7 +104,14 @@
    "f_res_f1 <= 0",
    "f_res_f3 <= 0"
   ],
-  "warning": "PD0 5 (H4c): the winter mode 1 is poorly resolved at 200 m (R1/dx = 1.7-6.6, PD0 2.3 point 1; winter at 200 m is a declared limitation, PD1). A supported H4c may be partly a resolution effect."
+  "warning": "PD0 5 (H4c): the winter mode 1 is poorly resolved at 200 m (R1/dx = 1.7-6.6, PD0 2.3 point 1; winter at 200 m is a declared limitation, PD1). A supported H4c may be partly a resolution effect.",
+  "window": {
+   "t_h": [
+    0.0,
+    279.6666666666667
+   ],
+   "n_records": 840
+  }
  },
  "H4d": {
   "R1k_vs_R1": {
@@ -116,8 +137,8 @@
     "closure": -5399241840.911466
    },
    "window_h": [
-    0,
-    120
+    0.0,
+    120.0
    ]
   },
   "F1_vs_F1c": {
@@ -144,11 +165,37 @@
     "kpp": -1192229251.7260256,
     "closure": 351908812.29216224
    },
-   "window": "0-T_fin"
+   "window_h": [
+    0.0,
+    279.6666666666667
+   ]
   }
+ },
+ "post_hoc_h4d_resolved_bands": {
+  "label": "POST HOC descriptive (PI decision 2026-11-13): eta from the 4 resolved bands only; never a verdict, the frozen H4d outcome stands",
+  "explanation": "The literal H4d F1/F1c 'refutada' comes from the sign of the low-frequency net exchange term (the unresolved > 140 h band of the strait pressure work, which also shares the fixed-reference drift), not from KPP radiating less.",
+  "runs": [
+   "F1",
+   "F1c"
+  ],
+  "F1": {
+   "resolved_out_J": -29652331.44878208,
+   "low_out_J": -1144408334.5802736,
+   "P_J": 19301167919.589664,
+   "eta_resolved": -0.0015362972630628498
+  },
+  "F1c": {
+   "resolved_out_J": 77519598.84704588,
+   "low_out_J": -9726786.797526015,
+   "P_J": 36553616368.533035,
+   "eta_resolved": 0.002120709427638962
+  },
+  "ratio_F1_over_F1c": -0.7244261014924837
  },
  "general": {
   "factor_rule_note": "PD0 5: the factor-1.5 rule (H4c, H4d) is kept as frozen. It rests on the V4a resolution bound (25 %); V4 FAILED (figures/validation.json: V4a and V4b), so that bound is not demonstrated. No threshold is changed.",
+  "low_band_caveat": "The KF pressure work uses p' from rho' relative to the FIXED initial rho_b (Enmienda 1). The background profile drifts during the runs (the exact APE grows even without wind, F2), so the low band of the strait pressure work shares the fixed-reference drift: a term int p'_drift(z) Q'(z) dz wherever there is a mean baroclinic exchange Q'. The low band (which makes H4a inconclusive and sets the sign of eta(F1)) cannot be attributed to physical exchange without the POST HOC moving-reference check (figures/posthoc_moving_reference.json).",
+  "windows": "Windows: fjord runs 0-279.67 h (840 records every 1200 s; the state after the last step is not a diagnostic record); R1 and R1k_0_120h 0-120 h (481 records every 900 s); R2/R3 0-280 h (1121 records every 900 s).",
   "flux_definition": "PD0 Enmienda 3 (2026-11-13): H4a, H4b(ii), H4c(ii) and H4d are decided by the KF pressure work (F_bc; F_bt in H4b(ii)); F + A is descriptive",
   "thresholds": {
    "factor_min": 1.5,

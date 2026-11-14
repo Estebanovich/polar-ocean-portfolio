@@ -390,3 +390,15 @@ def test_cache_keys_are_frozen_at_import(tmp_path, monkeypatch):
     k = pa.cache_file(tmp_path, "faces", "F1").name
     monkeypatch.setitem(pa.KEYS, "faces", lambda: "000000000000")
     assert pa.cache_file(tmp_path, "faces", "F1").name == k
+
+
+def test_cache_keys_include_the_run_driver(monkeypatch):
+    """Review fix 8: the box, the background profile, the stress choice and the store are part of
+    what makes a kf/faces/energy/surface cache, so their source keys it."""
+    for f in (pa.compute, pa._box, pa.bay_box, pa.tau_from_diagnostics, pa.build_store,
+              pa.store_dataset, pa._StoreArray, pa.crop_tau):
+        assert f in pa.DRIVER
+    before = {k: f() for k, f in pa.KEYS.items()}
+    monkeypatch.setattr(pa, "DRIVER", (pa.window,))
+    after = {k: f() for k, f in pa.KEYS.items()}
+    assert all(before[k] != after[k] for k in before)

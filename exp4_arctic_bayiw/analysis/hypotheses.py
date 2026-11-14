@@ -54,6 +54,16 @@ PD0_LABEL = {"supported": "apoyada", "alternative": "alternativa", "mixed": "mix
 WINTER_WARNING = ("PD0 5 (H4c): the winter mode 1 is poorly resolved at 200 m (R1/dx = 1.7-6.6, "
                   "PD0 2.3 point 1; winter at 200 m is a declared limitation, PD1). A supported "
                   "H4c may be partly a resolution effect.")
+LOW_BAND_CAVEAT = (
+    "The KF pressure work uses p' from rho' relative to the FIXED initial rho_b (Enmienda 1). The "
+    "background profile drifts during the runs (the exact APE grows even without wind, F2), so the "
+    "low band of the strait pressure work shares the fixed-reference drift: a term int p'_drift(z) "
+    "Q'(z) dz wherever there is a mean baroclinic exchange Q'. The low band (which makes H4a "
+    "inconclusive and sets the sign of eta(F1)) cannot be attributed to physical exchange without "
+    "the POST HOC moving-reference check (figures/posthoc_moving_reference.json).")
+WINDOWS_NOTE = ("Windows: fjord runs 0-279.67 h (840 records every 1200 s; the state after the last "
+                "step is not a diagnostic record); R1 and R1k_0_120h 0-120 h (481 records every 900 s); "
+                "R2/R3 0-280 h (1121 records every 900 s).")
 FACTOR_NOTE = ("PD0 5: the factor-1.5 rule (H4c, H4d) is kept as frozen. It rests on the V4a "
                "resolution bound (25 %); V4 FAILED (figures/validation.json: V4a and V4b), so that "
                "bound is not demonstrated. No threshold is changed.")
@@ -116,10 +126,17 @@ def h4b(e_f2: float, e_f3: float, f_bc_in: float, f_bt_in: float, fa_bc_in: floa
     return r
 
 
+def _tie(x: float, thr: float) -> bool:
+    """Exact-arithmetic ties (x = thr) count as on the threshold even when the floating-point
+    quotient is one ulp off (0.02/0.03 > 1/1.5); relative tolerance 1e-12, rounding only."""
+    import math
+    return math.isclose(x, thr, rel_tol=1e-12, abs_tol=0.0)
+
+
 def _ratio_rule(rs: list, thr: float) -> str:
-    if all(x >= thr for x in rs):
+    if all(x >= thr or _tie(x, thr) for x in rs):
         return "supported"
-    if all(x <= 1.0 / thr for x in rs):
+    if all(x <= 1.0 / thr or _tie(x, 1.0 / thr) for x in rs):
         return "refuted"
     return "not_distinguishable"
 
@@ -220,6 +237,25 @@ def post_hoc(P: dict, bathy: dict | None = None, th: dict | None = None) -> dict
     return out
 
 
+def post_hoc_h4d_resolved(P: dict, B: dict) -> dict:
+    """PI decision (Esteban, 2026-11-13): eta with the resolved bands of the outward KF pressure
+    work only, eta_res = sum_4 resolved F_bc_out / (P_bt + P_bc), for F1 and F1c and their ratio.
+    POST HOC, never a verdict."""
+    out = {"label": "POST HOC descriptive (PI decision 2026-11-13): eta from the 4 resolved bands "
+                    "only; never a verdict, the frozen H4d outcome stands",
+           "explanation": ("The literal H4d F1/F1c 'refutada' comes from the sign of the low-frequency "
+                           "net exchange term (the unresolved > 140 h band of the strait pressure work, "
+                           "which also shares the fixed-reference drift), not from KPP radiating less."),
+           "runs": ["F1", "F1c"]}
+    for r in ("F1", "F1c"):
+        b = P[r]["straits"]["total"]["F_bc_out_J"]
+        res = sum(b[k] for k in RESOLVED)
+        out[r] = {"resolved_out_J": res, "low_out_J": b["low"], "P_J": B[r]["P_J"],
+                  "eta_resolved": res / B[r]["P_J"]}
+    out["ratio_F1_over_F1c"] = out["F1"]["eta_resolved"] / out["F1c"]["eta_resolved"]
+    return out
+
+
 def evaluate(partition: Path | None = None, budget: Path | None = None, out: Path | None = None) -> dict:
     """H4a-H4d from partition.json and budget.json; writes hypotheses.json (``out``)."""
     P = json.loads(Path(partition or FIG / "partition.json").read_text())["runs"]
@@ -228,6 +264,8 @@ def evaluate(partition: Path | None = None, budget: Path | None = None, out: Pat
     res = {}
     res["H4a"] = h4a(tot("F1", "F_bc_out_J"), tot("F1", "FA_bc_out_J"))
     res["H4a"]["run"] = "F1"
+    rec = P["F1"].get("record", {})
+    res["H4a"]["window"] = {"t_h": [0.0, rec.get("t_last_h")], "n_records": rec.get("n")}
     b2 = B["F2"]["totals_in_J"]
     res["H4b"] = h4b(P["F2"]["energy"]["totals"]["E_in_hp_J"], P["F3"]["energy"]["totals"]["E_in_hp_J"],
                      b2["F_bc"], b2["F_bt"], b2["FA_bc"], b2["FA_bt"],
@@ -237,9 +275,15 @@ def evaluate(partition: Path | None = None, budget: Path | None = None, out: Pat
     fares = {r: sum(tot(r, "FA_bc_out_J")[k] for k in RESOLVED) for r in ("F1", "F3")}
     res["H4c"] = h4c(P["F1"]["wind_work_J"]["bands"]["near_inertial"],
                      P["F3"]["wind_work_J"]["bands"]["near_inertial"], fres["F1"], fres["F3"], fares)
-    res["H4d"] = {"R1k_vs_R1": {**h4d_pair(B["R1k_0_120h"], B["R1"]), "window_h": [0, 120]},
-                  "F1_vs_F1c": {**h4d_pair(B["F1"], B["F1c"]), "window": "0-T_fin"}}
-    res["general"] = {"factor_rule_note": FACTOR_NOTE,
+    res["H4d"] = {"R1k_vs_R1": {**h4d_pair(B["R1k_0_120h"], B["R1"]),
+                                "window_h": B["R1k_0_120h"].get("window_h")},
+                  "F1_vs_F1c": {**h4d_pair(B["F1"], B["F1c"]), "window_h": B["F1"].get("window_h")}}
+    for h in ("H4b", "H4c"):
+        res[h]["window"] = res["H4a"]["window"]
+    if all("P_J" in B[r] for r in ("F1", "F1c")) and "F1c" in P:
+        res["post_hoc_h4d_resolved_bands"] = post_hoc_h4d_resolved(P, B)
+    res["general"] = {"factor_rule_note": FACTOR_NOTE, "low_band_caveat": LOW_BAND_CAVEAT,
+                      "windows": WINDOWS_NOTE,
                       "flux_definition": ("PD0 Enmienda 3 (2026-11-13): H4a, H4b(ii), H4c(ii) and H4d "
                                           "are decided by the KF pressure work (F_bc; F_bt in H4b(ii)); "
                                           "F + A is descriptive"),
