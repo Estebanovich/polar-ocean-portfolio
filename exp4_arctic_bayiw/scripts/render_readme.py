@@ -30,13 +30,15 @@ BAND_SHORT = {"low": "low", "kelvin_subinertial": "K", "near_inertial": "NI", "s
 
 # Digits allowed in the template outside placeholders: labels and citation years, never results.
 CITATION_YEARS = ("2027", "1982", "1986", "1994", "1997", "2000", "2001", "2005", "2006", "2012", "2014",
-                  "2016", "2017", "2018", "2020", "2022", "2023", "2024", "2026")
+                  "2016", "2017", "2018", "2019", "2020", "2022", "2023", "2024", "2026")
 NUMBER_WHITELIST = (
     r"\b(?:R1k|R1b|R[1-3]|F1c|F1g|F[1-5]|V[1-4][ab]?)\b",           # run and criterion names
     r"\bH4[a-d]?\b", r"\bR_?1\b", r"\bc_?1\b", r"\bR₁", r"\bc₁", r"\bc_n\b",
     r"\bExp(?:eriment|\.)? [1-5]\b", r"\bPD[0-3]\b", r"^#+ [0-9]+(?:\.[0-9]+)*\.?",
     r"\b[Ee]qs?\. [0-9]+(?:\.[0-9]+)*(?:[–-][0-9]+)?", r"§[0-9]+(?:\.[0-9]+)*",
-    r"\b(?:Figure|Fig\.|Figures) [0-9](?:[a-e])?(?:[–-][0-9])?", r"\bAnimations? [1-6]\b", r"\bAmendments? [1-3](?:[–-][1-3])?",
+    r"\b(?:Figure|Fig\.|Figures) [0-9](?:[a-e])?(?:[–-][0-9])?", r"\bAnimations? [1-6](?:[–-][1-6]| and [1-6])?\b",
+    r"\bAmendments? [1-3](?:[–-][1-3])?", r"\bTables? [1-3](?: and [1-3])?\b",
+    r"\b[Ss]ections? [1-5][a-g]?(?:(?:[–-]| and )[1-5][a-g]?)?\b", r"^[1-9]\. ",
     r"\bSentinel-2\b", r"\bMODIS\b", r"\bIBCAO\b", r"\bS100\b", r"\bTEOS-10\b", r"\bGGL90\b",
     r"\bM2\b", r"\bMP4\b", r"\bk = 1\b", r"\b(?:class )?\([a-d]\)", r"\(i{1,3}\)", r"\([1-5]\)", r"\bsha256\b", r"\b(?:i|ii)\b(?=\))",
     r"\bv5\.2\b", r"\bcheckpoint69j\b", r"\bUTM 33N\b", r"\bΣ₅",
@@ -66,6 +68,19 @@ def word(n: int, cap: bool = False) -> str:
     """Count -> English word (counts in the text come from the JSON too)."""
     w = WORDS[n] if 0 <= n < len(WORDS) else str(n)
     return w.capitalize() if cap else w
+
+
+FRACTION_WORDS = ((0.1, "about a tenth"), (0.2, "about a fifth"), (0.25, "about a quarter"),
+                  (1 / 3, "about a third"), (0.5, "about half"))
+
+
+def frac_words(x: float, tol: float = 0.15) -> str:
+    """Fraction -> plain words ("about a quarter") for the Significance Statement; refuses when
+    no simple fraction lies within ``tol`` (relative) of x, so the words cannot drift from the JSON."""
+    c, w = min(FRACTION_WORDS, key=lambda cw: abs(x - cw[0]))
+    if abs(x - c) > tol * c:
+        raise ValueError(f"README prose no longer matches the metrics: no simple fraction for {x:.3f}")
+    return w
 
 
 def _load(name: str):
@@ -122,7 +137,7 @@ def values() -> dict[str, str]:
     cross = [n for n, c in cs["cases"].items()
              if str(c.get("config", "")).startswith("fjord_vmf") and c.get("wind_angle_deg") is not None
              and abs(float(c["wind_angle_deg"]) - float(fj["wind_angle_deg"])) > 1e-6]
-    assert cross, "README: the cross-axis fjord run is named in §2.3"
+    assert cross, "README: the cross-axis fjord run is named in section 2c"
     v["cross_axis_runs"] = " and ".join(cross)
     r1k = cs["cases"]["R1k"]
     v["R1k_t_end"] = f"{r1k['t_end_h']:.0f}"
@@ -260,6 +275,8 @@ def values() -> dict[str, str]:
         v["v4_aks_ratio"] = f(d4["V4"]["Akselsundet"]["gross_J"] / d4["F1"]["Akselsundet"]["gross_J"], 2)
         v["v4_mar_ratio"] = f(d4["V4"]["Mariasundet"]["gross_J"] / d4["F1"]["Mariasundet"]["gross_J"], 2)
         v["aks_gross_share"] = pct(d4["F1"]["Akselsundet"]["gross_J"] / g1, 0)
+        if h_ := _load("hypotheses.json"):
+            check_gross(d4, h_)
     ice = _load("ice_ob_check.json")
     if ice:
         m = [x["min_cells"] for x in ice.values()]
@@ -283,6 +300,7 @@ def values() -> dict[str, str]:
         v["H4b_ratio"] = f(b4["i"]["ratio"], 3)
         v["H4b_i"] = "met" if b4["i"]["met"] else "not met"
         v["H4b_ke_ratio"] = f"{b4['i']['post_hoc_ke_bc_only']['ratio']:.4f}"
+        v["H4b_frac_words"] = frac_words(b4["i"]["ratio"])
         v["H4b_Fbc"], v["H4b_Fbt"] = gj(b4["ii"]["F_bc_in_J"], 4), gj(b4["ii"]["F_bt_in_J"], 4)
         v["H4b_ii"] = "met" if b4["ii"]["met"] else "not met"
         c4 = h["H4c"]
@@ -368,7 +386,7 @@ def values() -> dict[str, str]:
         v["drift_F1"] = f(pd_["F1"]["max_abs_change_kg_m-3"], 3)
         v["drift_F2"] = f(pd_["F2"]["max_abs_change_kg_m-3"], 3)
         v["drift_bay"] = rng([pd_["R1"]["max_abs_change_kg_m-3"], pd_["R1k"]["max_abs_change_kg_m-3"]], 3)
-    # the Blender animations of §3.6 (analysis/blender_render.py movie writes these summaries)
+    # the Blender animations of appendix D (analysis/blender_render.py movie writes these summaries)
     ba, bb = _load("blender_shotA_F1.json"), _load("blender_shotB_F3F2.json")
     if ba:
         v["blA_sigma"], v["blA_z"] = f(ba["sigma_kg_m3"], 3), f(ba["sigma_depth_t0_m"], 0)
@@ -406,6 +424,43 @@ def _expect(cond: bool, what: str) -> None:
         raise ValueError(f"README prose no longer matches the metrics: expected {what}")
 
 
+def check_gross(d4: dict, h: dict) -> None:
+    """'the residual of a larger gross exchange': |net| of F1 below its gross strait flux."""
+    gross = sum(x["gross_J"] for x in d4["F1"].values())
+    _expect(abs(h["H4d"]["F1_vs_F1c"]["numerator_J"]["kpp"]) < gross,
+            "F1: the net strait flux is smaller than the gross exchange")
+
+
+SECTIONS_RE = re.compile(r"\b[Ss]ections? ([1-5][a-g]?)(?:(?:[–-]| and )([1-5][a-g]?))?\b")
+APPENDIX_RE = re.compile(r"\b[Aa]ppendix ([A-Z])\b")
+
+
+def check_cross_refs(text: str) -> None:
+    """Every 'section 2f' and 'appendix B' in the template points to an existing heading
+    ('## 2. ...' + '### f. ...', '## Appendix B: ...'); the old '§2.6' style is refused except for
+    book sections (Gill 1982, §10.3) and the notes (`notes/x.md` §7)."""
+    sec, top = set(), None
+    for line in text.splitlines():
+        m = re.match(r"^## ([1-5])\. ", line)
+        if m:
+            top = m.group(1); sec.add(top); continue
+        m = re.match(r"^### ([a-g])\. ", line)
+        if m and top:
+            sec.add(top + m.group(1))
+        elif line.startswith("## "):
+            top = None
+    apps = set(re.findall(r"^## Appendix ([A-Z]):", text, flags=re.M))
+    body = re.sub(r"```.*?```", " ", text.split("\n## References", 1)[0], flags=re.S)
+    bad = sorted({r for m in SECTIONS_RE.finditer(body) for r in m.groups() if r and r not in sec}
+                 | {f"appendix {a}" for a in APPENDIX_RE.findall(body) if a not in apps})
+    for m in re.finditer(r"§[0-9.]+", body):
+        before = body[max(0, m.start() - 12):m.start()]
+        if not (re.search(r"Gill 1982, $", before) or before.endswith("` ")):
+            bad.append(m.group(0))
+    if bad:
+        raise ValueError(f"README cross-references point to no heading: {bad}")
+
+
 def check_prose(val: dict, h: dict, mr: dict | None) -> None:
     """Signs and outcomes behind every fixed word of README.template.md (final review, Minor 11)."""
     _expect(not val["V2a"]["pass"] and not val["V2b"]["pass"] and val["V3"]["pass"] and not val["V4"]["pass"],
@@ -418,6 +473,8 @@ def check_prose(val: dict, h: dict, mr: dict | None) -> None:
             "H4a inconclusive, low band and resolved sum inward")
     b = h["H4b"]
     _expect(b["i"]["met"] and not b["ii"]["met"], "H4b(i) met and H4b(ii) not met")
+    _expect(b["i"]["post_hoc_ke_bc_only"]["ratio"] <= b["i"]["threshold"],
+            "H4b(i) holds with the kinetic energy alone too ('either number')")
     c = h["H4c"]
     _expect(c["outcome"] == "not_distinguishable" and c["ii"]["F_res_out_F1_J"] < 0 and c["ii"]["F_res_out_F3_J"] < 0,
             "H4c not distinguishable with both resolved fluxes inward")
@@ -428,6 +485,7 @@ def check_prose(val: dict, h: dict, mr: dict | None) -> None:
             "H4d supported in the bay and refuted in the fjord with an inward F1 numerator")
     _expect(dr["W_wind_J"]["kpp"] < dr["W_wind_J"]["closure"] and dr["numerator_J"]["kpp"] > dr["numerator_J"]["closure"],
             "H4d bay: less wind work and a larger radiated flux with KPP")
+    _expect(abs(df["eta_kpp"]) < 0.1, "F1: the net strait flux is small against the wind work (|eta| < 0.1)")
     _expect(dr["post_hoc_amendment1_numerator"]["literal_rule_would_read"] != "supported",
             "the Amendment 1 numerator would not support H4d in the bay")
     k = h["post_hoc"]["band_flux_per_strait"]["F1c"]["total"]["resolved_out_J"]["kelvin_subinertial"]
@@ -461,6 +519,7 @@ def _sci(x: float) -> str:
 
 def render(allow_pending: bool) -> str:
     text = TEMPLATE.read_text()
+    check_cross_refs(text)
     v = values()
     missing = sorted({k for k in re.findall(r"\{\{(\w+)\}\}", text) if k not in v})
     if missing and not allow_pending:

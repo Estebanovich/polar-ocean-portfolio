@@ -149,7 +149,7 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 | ✔ | Fang et al. (2026). Upper-ocean variability in the Amundsen Basin during early winter: insights from MOSAiC. *Elementa* (abierto; hielo amortiguando el viento) | https://doi.org/10.1525/elementa.2023.00095 |
 | 📁 ★ | Alford, MacKinnon, Simmons & Nash (2016). Near-inertial internal gravity waves in the ocean. *Annu. Rev. Mar. Sci.* 8 (revisión; ya en la biblioteca de la tesis) | https://doi.org/10.1146/annurev-marine-010814-015746 |
 | ⬜ ★ | Rippeth & Fine (2022). Turbulent mixing in a changing Arctic Ocean. *Oceanography* 35 (revisión, acceso abierto: plataformas frente a cuencas) | https://doi.org/10.5670/oceanog.2022.103 |
-| 📁 ★ | Kelly (2019). Coastally generated near-inertial waves. *JPO* (teoría de la generación costera) | https://doi.org/10.1175/JPO-D-18-0148.1 |
+| 📁 ★ | Kelly (2019). Coastally generated near-inertial waves. *JPO* 49, 2979–2995 (teoría de la generación costera). Estado: en la biblioteca de la tesis, resumen verificado (in thesis library, abstract checked); citado en el README del Exp. 4 (2026-11-14) | https://doi.org/10.1175/JPO-D-18-0148.1 |
 | 📁 ★ | Kelly, Green et al. (2024). Direct observations of coastally generated near-inertial waves during a wind event. *JGR Oceans* (lago Superior; flujo forzado frente a flujo de onda) | https://doi.org/10.1029/2024JC020932 |
 | 📁 | Green, Kelly et al. (2025). Synoptic observations of near-inertial motions in an enclosed basin. *JGR Oceans* | https://doi.org/10.1029/2024JC021828 |
 | 📁 | Stokes, Kelly & Lucas (2025). Low-mode near-inertial wave generation. *JPO* | https://doi.org/10.1175/JPO-D-25-0050.1 |

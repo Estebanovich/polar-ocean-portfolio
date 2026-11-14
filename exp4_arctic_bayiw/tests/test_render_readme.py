@@ -155,3 +155,43 @@ def test_amendment_1_ratio_is_rendered_from_the_json():
     assert v["a1_R_ratio"] == "-0.17" and v["a1_R_outcome"] == "refuted"
     assert (v["r1_F_out"], v["r1_A_in"]) == ("0.28", "5.68")
     assert "`fjord_vmf_400`" in v["mod_configs"] and "`fjord_vmf_column`" in v["mod_configs"]
+
+
+# ---- JPO-style rewrite (2026-11-14): guards behind the new fixed words and cross-references ----
+
+@pytest.mark.parametrize("name, mutate, what", [
+    ("hypotheses.json", lambda d: d["H4b"]["i"]["post_hoc_ke_bc_only"].update(ratio=0.9), "either number"),
+    ("hypotheses.json", lambda d: d["H4d"]["F1_vs_F1c"].update(eta_kpp=-0.5), "small against the wind work"),
+    ("hypotheses.json", lambda d: d["H4b"]["i"].update(ratio=0.4), "no simple fraction"),
+    ("hypotheses.json", lambda d: d["H4d"]["F1_vs_F1c"]["numerator_J"].update(kpp=1.0), "H4d"),
+    ("validation.json", lambda d: d["V4"]["V4a"].update(F1_out_J=1.0), "V4"),
+    ("pd2_v4_diagnostics.json", lambda d: [x.update(gross_J=1.0) for x in d["F1"].values()], "gross exchange"),
+])
+def test_new_prose_guards_refuse_to_render(monkeypatch, name, mutate, what):
+    real = rr._load
+
+    def fake(n):
+        d = real(n)
+        if n == name:
+            mutate(d)
+        return d
+
+    monkeypatch.setattr(rr, "_load", fake)
+    with pytest.raises(ValueError, match=what):
+        rr.values()
+
+
+def test_fraction_words():
+    assert rr.frac_words(0.228) == "about a quarter"
+    assert rr.values()["H4b_frac_words"] == "about a quarter"
+    with pytest.raises(ValueError):
+        rr.frac_words(0.4)
+
+
+def test_cross_references_resolve():
+    rr.check_cross_refs(rr.TEMPLATE.read_text())
+    head = "## 2. Methods\n\n### a. Model\n\n## Appendix A: Validation\n\n"
+    rr.check_cross_refs(head + "See section 2a, appendix A and Gill 1982, §10.3.\n")
+    for bad in ("see section 2b.", "see section 3a.", "see appendix B.", "as in §2.6.", "sections 2a and 2c"):
+        with pytest.raises(ValueError, match="cross-references"):
+            rr.check_cross_refs(head + bad + "\n")
