@@ -169,11 +169,11 @@ Two further animations draw one isopycnal in three dimensions over the model bat
 
 [![Animation 5](figures/blender_shotA_F1.gif)](figures/blender_shotA_F1.mp4)
 
-*Animation 5.* Summer, open water (F1): the isopycnal {{blA_sigma}} kg m⁻³, at {{blA_z}} m at the start, the level of strongest stratification below the surface mixed layer; scale ±{{blA_lim}} m. Click for the MP4.
+*Animation 5.* Summer, open water (F1): the isopycnal {{blA_sigma}} kg m⁻³, at {{blA_z}} m at the start, the level of strongest stratification below the surface mixed layer; scale ±{{blA_lim}} m; in the worst frame {{blA_sat}} % of the pixels lie beyond it (at {{blA_sat_t}} h). Click for the MP4.
 
 [![Animation 6](figures/blender_shotB_F3F2.gif)](figures/blender_shotB_F3F2.mp4)
 
-*Animation 6.* Late winter, open water (F3, left) and landfast ice (F2, right; the white slab marks the ice cells), same profile and wind pulse, one shared scale of ±{{blB_lim}} m. The winter profile is a staircase whose surface step the pulse mixes away within hours, so the isopycnal is {{blB_sigma}} kg m⁻³, at {{blB_z}} m: of the steps above the sill of Akselsundet, the one whose isopycnal stays in the largest share of the water columns over the whole record in both runs; it sits on a density step of only {{blB_step}} kg m⁻³, so metre-scale values along the coasts may be mixing rather than internal waves. Under the ice of F2 there is no wind stress, so the two panels differ in forcing and mixing as well as in waves. The open boundaries and their {{blB_sponge}}-cell sponges are masked in grey. Click for the MP4.
+*Animation 6.* Late winter, open water (F3, left) and landfast ice (F2, right; the white slab marks the ice cells), same profile and wind pulse, one shared scale of ±{{blB_lim}} m. The winter profile is a staircase whose surface step the pulse mixes away within hours, so the isopycnal is {{blB_sigma}} kg m⁻³, at {{blB_z}} m: the shallowest step above the sill of Akselsundet whose isopycnal stays in at least {{blB_share}} % of its initial water columns throughout the record in both runs; it sits on a density step of only {{blB_step}} kg m⁻³, so metre-scale values along the coasts may be mixing rather than internal waves. Under the ice of F2 there is no wind stress, so the two panels differ in forcing and mixing as well as in waves. The open boundaries and their {{blB_sponge}}-cell sponges are masked in grey; the dark band just inside the grey strip on the western and southern edges is open-boundary noise, not internal waves. In the worst frame {{blB_sat_F3}} % of the pixels of F3 (at {{blB_sat_F3_t}} h) and {{blB_sat_F2}} % of those of F2 (at {{blB_sat_F2_t}} h) lie beyond the scale. Click for the MP4.
 
 ## 4. Discussion
 

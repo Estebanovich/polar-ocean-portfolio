@@ -59,7 +59,7 @@ ICE_EMISSION = 0.35                                        # keeps the slab whit
 LAND_RGB = ((0.70, 0.68, 0.64), (0.86, 0.85, 0.83))       # coast .. highest land, neutral warm grey
 SEA_RGB = ((0.62, 0.72, 0.79), (0.26, 0.35, 0.45))        # shallow .. deepest, muted blue-grey
 NAN_RGB = (0.70, 0.70, 0.70)
-SPONGE_RGB = (0.55, 0.55, 0.55)                            # masked open-boundary sponge                               # isopycnal without a filtered colour
+SPONGE_RGB = (0.55, 0.55, 0.55)                            # masked open-boundary sponge
 CAM_LOC_KM = (-30.0, -38.0, 55.0)                          # southwest of Bellsund, above it
 CAM_TARGET_KM = (50.0, 27.0, -3.0)                         # mid-fjord
 CAM_LENS_MM = 30.0
@@ -103,6 +103,28 @@ def terrain_height_rgb(ter: dict, ve: float, ve_land: float) -> tuple:
     lrgb = (1 - a) * np.array(LAND_RGB[0]) + a * np.array(LAND_RGB[1])
     srgb = (1 - b) * np.array(SEA_RGB[0]) + b * np.array(SEA_RGB[1])
     return z, np.where(land[..., None], lrgb, srgb)
+
+
+def saturation_note(sat: dict) -> str:
+    """Footer sentence from saturation_stats (+ worst_t_h): the worst-frame share and time per run."""
+    runs = [k for k, v in sat.items() if isinstance(v, dict)]
+    parts = [f"{r} {100 * sat[r]['worst']:.1f} % at {sat[r]['worst_t_h']:.1f} h" for r in runs]
+    return "Pixels beyond the fixed scale, worst frame: " + ", ".join(parts) + "."
+
+
+def scene_saturation(meta: dict, scene: Path) -> dict:
+    """saturation_stats of the colour field over every exported frame, with the worst-frame time."""
+    from exp4_arctic_bayiw.analysis.blender_export import saturation_stats
+    L = float(meta["colour_limit_m"])
+    n = len(meta["frames"])
+    col = {r: np.stack([np.load(Path(scene) / "frames" / r / f"{k:04d}.npz")["colour_m"]
+                        for k in range(n)]) for r in meta["runs"]}
+    st = saturation_stats(col, L)
+    for r in meta["runs"]:
+        st[r]["worst_t_h"] = (meta["frames"][st[r]["worst_index"]]["t_s"] - meta["onset_s"]) / 3600
+    st["limit_m"] = L
+    st["frames"] = n
+    return st
 
 
 def stills(meta: dict) -> list:
@@ -299,7 +321,8 @@ PANEL_TITLE = {"F1": "F1: summer profile, open water",
                "F2": "F2: winter profile, landfast ice (white slab = AREA.bin ice cells)"}
 
 
-def compose_frame(meta: dict, scene: Path, k: int, out_png: Path, dpi: int = 100) -> None:
+def compose_frame(meta: dict, scene: Path, k: int, out_png: Path, dpi: int = 100,
+                  sat: dict | None = None) -> None:
     """One overlay frame: header band (label, isopycnal, what colour and geometry show, VE, clock),
     the panel(s) side by side on white, footer band (wind pulse, colour bar, notes)."""
     import textwrap
@@ -315,7 +338,7 @@ def compose_frame(meta: dict, scene: Path, k: int, out_png: Path, dpi: int = 100
     w0, h0 = imgs[0].size
     imgs = [im.crop((0, int(CROP_TOP * h0), w0, h0)) for im in imgs]    # fixed crop: empty sky
     w, h = imgs[0].size
-    HEAD, FOOT = 150, 150                                     # px
+    HEAD, FOOT = 150, 200                                     # px
     W, H = w * len(imgs), h + HEAD + FOOT
     fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi, facecolor="white")
     for q, (r, im) in enumerate(zip(runs, imgs)):
@@ -364,18 +387,23 @@ def compose_frame(meta: dict, scene: Path, k: int, out_png: Path, dpi: int = 100
     cb.set_label(f"$\\zeta'$ (m, + up); fixed scale $\\pm${L:g} m for every frame", fontsize=11)
     cb.ax.tick_params(labelsize=10)
     notes = ["Descriptive only: no number from this animation enters the analysis.",
-             "Grey on the isopycnal: no filtered value (isopycnal absent in part of the window); "
-             "holes: outcropped or meeting the bed."]
+             "Grey on the isopycnal: no filtered value (the isopycnal was absent at t = 0 or in a "
+             "snapshot within one step of the averaging window); holes: outcropped or meeting the bed."]
+    if sat is not None:
+        notes.append(saturation_note(sat))
     if "sponge_cells" in meta["extra"]:
         notes.append("Grey strip along the W, N and S edges: the open boundary and its "
-                     f"{meta['extra']['sponge_cells']}-cell sponge (data.obcs), masked in both runs.")
+                     f"{meta['extra']['sponge_cells']}-cell sponge (data.obcs), masked in both runs. "
+                     "The dark band just inside it on the W and S edges is open-boundary noise, "
+                     "not internal waves.")
     if "F2" in runs:
         notes.append("Under the F2 landfast ice the ocean receives no wind stress.")
     step = sig.get("step_kg_m3")
     if step is not None and step < 0.01:
         notes.append(f"The isopycnal sits on a {step:.4f} kg m$^{{-3}}$ step: metre-scale coastal values "
                      "may be mixing rather than waves.")
-    fig.text(1 - 14 / W, 12 / H, "\n".join(textwrap.fill(n, 70) for n in notes), fontsize=9.5,
+    fig.text(1 - 14 / W, 10 / H, "\n".join(textwrap.fill(n, 84 if len(runs) > 1 else 72) for n in notes),
+             fontsize=9.5,
              ha="right", va="bottom", color="0.3", linespacing=1.35)
     out_png = Path(out_png)
     out_png.parent.mkdir(parents=True, exist_ok=True)
@@ -385,26 +413,19 @@ def compose_frame(meta: dict, scene: Path, k: int, out_png: Path, dpi: int = 100
 
 def compose_main(args) -> int:
     meta = json.loads((Path(args.scene) / "meta.json").read_text())
+    sat = scene_saturation(meta, args.scene)       # saturation of the fixed scale, at render time
+    out = Path(args.out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "saturation.json").write_text(json.dumps(sat, indent=1))
+    print(json.dumps(sat, indent=1))
     if args.stills:
         for s_ in meta["extra"]["stills"]:
             compose_frame(meta, args.scene, s_["index"],
-                          Path(args.out_dir) / f"{args.name}_{int(round(s_['requested_h'])):02d}h.png")
+                          out / f"{args.name}_{int(round(s_['requested_h'])):02d}h.png", sat=sat)
         return 0
     frames = list(range(len(meta["frames"]))) if args.all else args.frames
     for k in frames:
-        compose_frame(meta, args.scene, int(k), Path(args.out_dir) / "frames" / f"{int(k):04d}.png")
-    if args.all:                                   # saturation of the fixed scale, at render time
-        from exp4_arctic_bayiw.analysis.blender_export import saturation_stats
-        L = float(meta["colour_limit_m"])
-        col = {r: np.stack([np.load(Path(args.scene) / "frames" / r / f"{k:04d}.npz")["colour_m"]
-                            for k in frames]) for r in meta["runs"]}
-        st = saturation_stats(col, L)
-        for r in st:
-            st[r]["worst_t_h"] = (meta["frames"][frames[st[r]["worst_index"]]]["t_s"] - meta["onset_s"]) / 3600
-        st["limit_m"] = L
-        st["frames"] = len(frames)
-        (Path(args.out_dir) / "saturation.json").write_text(json.dumps(st, indent=1))
-        print(json.dumps(st, indent=1))
+        compose_frame(meta, args.scene, int(k), out / "frames" / f"{int(k):04d}.png", sat=sat)
     return 0
 
 
@@ -452,6 +473,7 @@ def movie_main(args) -> int:
     print(json.dumps(res, indent=1))
     (Path(args.out_dir) / "movie.json").write_text(json.dumps(res, indent=1))
     # the numbers the README quotes (render_readme.py), next to the MP4 and GIF
+    from exp4_arctic_bayiw.analysis.blender_export import WINTER_MIN_SHARE
     meta = json.loads((Path(args.scene) / "meta.json").read_text())
     satp = Path(args.out_dir) / "saturation.json"
     r0 = meta["runs"][0]
@@ -461,6 +483,7 @@ def movie_main(args) -> int:
         "shot": meta["shot"], "runs": meta["runs"],
         "sigma_kg_m3": sig["sigma"], "sigma_depth_t0_m": -sig["z_m"], "step_kg_m3": sig.get("step_kg_m3"),
         "sigma_rule": sig["rule"], "ve_sea": meta["ve"], "ve_land": meta["ve_land"],
+        "sigma_min_share": WINTER_MIN_SHARE if meta["extra"].get("probe") else None,
         "colour_limit_m": meta["colour_limit_m"],
         "colour_limit_rule": meta["extra"].get("colour_limit_rule", "nice ceiling of the 99.5th percentile of |zeta'|"),
         "T_f_h": meta["extra"]["T_f_h"],

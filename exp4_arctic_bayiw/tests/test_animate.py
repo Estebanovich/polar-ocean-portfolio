@@ -237,3 +237,27 @@ def test_saturation_note_only_where_the_shallow_columns_are_over_represented():
     assert f"shallower than {an.SHALLOW_REPORT_M:g} m" in note and "46 %" in note and "15 %" in note
     # 4.5 % of the saturated pixels in 7 % of the area: not concentrated
     assert an.saturation_note({"F3": {key: 0.045, area: 0.07}, "F2": {key: None, area: 0.07}}) == ""
+
+
+# ---- Task 10 fix round 1: a missing sample blanks only the windows that contain it --------------
+
+def test_inertial_filter_one_missing_sample_blanks_only_its_windows():
+    f = 1.4266e-4
+    T = 2 * np.pi / f
+    dt = 1200.0
+    t = np.arange(0.0, 100 * 3600.0 + 1, dt)
+    x = (np.sin(2 * np.pi * t / (9 * 3600.0)) + 1e-5 * t)[:, None]
+    ref_t, ref = an.inertial_filter(x, t, T)
+    xn = x.copy()
+    s = int(round(10 * 3600.0 / dt))                    # the sample at 10 h
+    xn[s] = np.nan
+    tk, xf = an.inertial_filter(xn, t, T)
+    assert np.array_equal(tk, ref_t)
+    d = np.abs(tk - t[s])
+    # windows that contain 10 h are blank; the piecewise-linear integral also uses the sample over
+    # one step on either side, so windows reaching within one step of it are blank too
+    assert np.all(np.isnan(xf[d <= T / 2, 0]))
+    far = d >= T / 2 + dt
+    assert far.sum() > 200                               # almost every frame stays valid
+    assert np.all(np.isfinite(xf[far, 0]))
+    assert np.allclose(xf[far, 0], ref[far, 0])          # and unchanged

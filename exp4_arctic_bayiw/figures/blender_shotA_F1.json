@@ -18,8 +18,8 @@
  "sponge_cells": null,
  "saturation": {
   "F1": {
-   "mean": 0.004489488057479754,
-   "worst": 0.09610974440228495,
+   "mean": 0.0045411362802354706,
+   "worst": 0.09639238111255939,
    "worst_index": 0,
    "worst_t_h": 6.333333333333333
   },
@@ -28,13 +28,13 @@
  },
  "mp4": {
   "file": "blender_shotA_F1.mp4",
-  "mb": 1.68,
+  "mb": 1.67,
   "crf": 23,
   "fps": 12
  },
  "gif": {
   "file": "blender_shotA_F1.gif",
-  "mb": 4.29,
+  "mb": 4.28,
   "stride": 4,
   "width_px": 720
  }

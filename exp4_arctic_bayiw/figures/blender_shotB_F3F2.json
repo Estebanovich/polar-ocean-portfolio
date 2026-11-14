@@ -7,9 +7,10 @@
  "sigma_kg_m3": 1027.8134772126725,
  "sigma_depth_t0_m": 16.97775,
  "step_kg_m3": 0.0036078649436603882,
- "sigma_rule": "winter staircase: the interface (N_b^2 >= 5e-6 s^-2, shallower than the 22.4 m Akselsundet sill) whose isopycnal keeps the largest share of its t = 0 columns over 0-96 h in both F3 and F2 (probe); the top-cell max-N_b^2 step is mixed away in 3 h",
+ "sigma_rule": "winter staircase: the shallowest interface (N_b^2 >= 5e-06 s^-2) no deeper than the Akselsundet sill (22.43 m) whose isopycnal keeps >= 98 % of its t = 0 columns at every probed time (every 3 h, 0-96 h) in every run",
  "ve_sea": 20.0,
  "ve_land": 2.0,
+ "sigma_min_share": 0.98,
  "colour_limit_m": 1.5,
  "colour_limit_rule": "fixed by decision at the style gate (Esteban, 2026-11-14)",
  "T_f_h": 12.234187943322091,
@@ -19,14 +20,14 @@
  "sponge_cells": 10,
  "saturation": {
   "F3": {
-   "mean": 0.03719392407833433,
-   "worst": 0.10669785434753272,
+   "mean": 0.03588774872618802,
+   "worst": 0.10046252210583594,
    "worst_index": 23,
    "worst_t_h": 14.0
   },
   "F2": {
-   "mean": 0.023701077357544377,
-   "worst": 0.06497654679472861,
+   "mean": 0.02243802811079027,
+   "worst": 0.05827516325151993,
    "worst_index": 24,
    "worst_t_h": 14.333333333333334
   },
@@ -35,13 +36,13 @@
  },
  "mp4": {
   "file": "blender_shotB_F3F2.mp4",
-  "mb": 2.66,
+  "mb": 2.69,
   "crf": 23,
   "fps": 12
  },
  "gif": {
   "file": "blender_shotB_F3F2.gif",
-  "mb": 4.71,
+  "mb": 4.68,
   "stride": 2,
   "width_px": 720
  }

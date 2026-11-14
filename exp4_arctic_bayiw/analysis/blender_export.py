@@ -14,7 +14,7 @@ No number of this animation enters the README claims; no hypothesis or criterion
 
 Field. The isopycnal sigma is extracted from every 3-D density snapshot (one every 1200 s) as the
 depth z_s(x, y, t) of the first crossing rho = sigma from the surface down, linear between the
-level centres (isopycnal_depth; NaN where the column is denser than sigma at the top cell, i.e.
+level centres, the wet centre for a partial bottom cell (isopycnal_depth; NaN where the column is denser than sigma at the top cell, i.e.
 outcropped, or lighter at its last wet cell, i.e. the isopycnal meets the bed). Its displacement
 from t = 0 is zeta = z_s(t) - z_s(0) [m, + up] (displacement). The GEOMETRY of the surface is the
 raw z_s(t). Its COLOUR is the inertially filtered zeta' = zeta minus its centred running mean over
@@ -32,14 +32,16 @@ Isopycnal choice (rule per shot; the numbers are written to meta.json):
   (max_n2_sigma with min_depth_m = the depth of the uniform top layer). ``probe`` checks that the
   pulse does not mix it away (coverage of the wet columns over the record).
 * Shot B (F3 | F2, winter): the max-N_b^2 rule picks the top cell, whose 0.03 kg m^-3 surface step
-  the pulse mixes away within 3 h (Task 9). The winter profile is a staircase. sigma is taken at the
-  stratified interface (N_b^2 above WINTER_N2_MIN) whose isopycnal keeps the largest share of its
-  t = 0 columns over the whole record in both runs, among those shallower than the Akselsundet sill
-  (22 m) so the surface spans the inner fjord under the ice; ``probe`` prints the table that was
-  used. One sigma for both runs (same profile).
+  the pulse mixes away within 3 h (Task 9). The winter profile is a staircase. sigma is the
+  SHALLOWEST stratified interface (N_b^2 >= WINTER_N2_MIN) no deeper than the Akselsundet sill
+  (figures/bathy_report.json, so the surface spans the inner fjord under the ice) whose isopycnal
+  keeps >= WINTER_MIN_SHARE of its t = 0 columns at every probed time (every 3 h, 0-96 h) in both
+  runs (probe + choose_winter_sigma; Esteban, fix round 1). One sigma for both runs (same profile);
+  the probe table is written to meta.json.
 
-Scene. Domain cropped to Bellsund + Van Mijenfjorden: the 10-cell open-boundary sponges on the W,
-N and S sides removed (n_sponge, ob_sides of case.json). Seafloor = - Depth (model grid). Land =
+Scene. Domain cropped to Bellsund + Van Mijenfjorden: the open-boundary rows and their sponges of
+data.obcs (sponge_mask: the OB row plus spongeThickness cells, W, N and S) removed from the frames
+(crop_outside); shot B shows them as a grey strip (restyle --mask-sponge). Seafloor = - Depth (model grid). Land =
 IBCAO v5.2 100 m elevation (Jakobsson et al. 2024) area-averaged onto the model land cells (the
 same source and averaging as gendata/bathy.to_model_grid), 0 at the coast. One vertical
 exaggeration VE for seafloor, land, isopycnal and ice (stated in the overlay). Landfast ice (F2):
@@ -66,18 +68,20 @@ VE = 20.0                       # vertical exaggeration below sea level (seafloo
 VE_LAND = 2.0                   # vertical exaggeration of the land relief (IBCAO up to ~1000 m)
 PCTL = 99.5                     # colour limit: nice ceiling of this percentile of |zeta'|
 WINTER_N2_MIN = 5e-6            # [s^-2] interfaces weaker than this are not candidates (winter)
-SILL_DEPTH_M = 22.4             # Akselsundet sill, figures/bathy_report.json sill_depth_grid_m
+WINTER_MIN_SHARE = 0.98         # the winter isopycnal keeps >= this share of its columns (all runs)
 G = 9.81
 SHOTS = {"A": ["F1"], "B": ["F3", "F2"]}
 
 
 # ---- pure pieces --------------------------------------------------------------------------------
 
-def isopycnal_depth(rho, RC, hfac, sigma: float) -> np.ndarray:
+def isopycnal_depth(rho, RC, hfac, sigma: float, drF=None) -> np.ndarray:
     """Depth z [m, negative] of the first crossing rho = sigma from the top cell down, linear between
-    the level centres RC (nz,); rho, hfac (nz, ny, nx). Only the wet levels (hfac > 0) count. NaN
-    where the top wet cell is already >= sigma (outcropped), where no wet level reaches sigma
-    (the isopycnal meets the bed) and on land."""
+    the level centres; rho, hfac (nz, ny, nx). Only the wet levels (hfac > 0) count. NaN where the
+    top wet cell is already >= sigma (outcropped), where no wet level reaches sigma (the isopycnal
+    meets the bed) and on land. With drF, the centre of a partial bottom cell is its wet centre
+    RF_k - hFac drF_k / 2 (RF_k = RC_k + drF_k / 2, the top face; partial cells of
+    model/src/ini_masks_etc.F:105-121 fill the cell from its top); without, the nominal RC."""
     rho = np.asarray(rho, float)
     wet = np.asarray(hfac) > 0
     r = np.where(wet, rho, -np.inf)                         # dry levels never reach sigma
@@ -88,7 +92,13 @@ def isopycnal_depth(rho, RC, hfac, sigma: float) -> np.ndarray:
     r1 = np.take_along_axis(rho, kk[None], 0)[0]
     r0 = np.take_along_axis(rho, (kk - 1)[None], 0)[0]
     RC = np.asarray(RC, float)
-    z1, z0 = RC[kk], RC[kk - 1]
+    if drF is None:
+        zc = np.broadcast_to(RC[:, None, None], rho.shape)
+    else:
+        dr = np.asarray(drF, float)[:, None, None]
+        zc = RC[:, None, None] + dr / 2 - np.asarray(hfac, float) * dr / 2
+    z1 = np.take_along_axis(zc, kk[None], 0)[0]
+    z0 = np.take_along_axis(zc, (kk - 1)[None], 0)[0]
     with np.errstate(invalid="ignore", divide="ignore"):
         w = (sigma - r0) / (r1 - r0)
     z = z0 + w * (z1 - z0)
@@ -213,13 +223,11 @@ def write_meta(meta: Meta, path: Path) -> None:
     Path(path).write_text(json.dumps(d, indent=1))
 
 
-def sponge_mask(data_obcs: str, shape) -> np.ndarray:
-    """(ny, nx) bool: the open-boundary rows/columns of data.obcs (OB_Iwest, OB_Ieast, OB_Jsouth,
-    OB_Jnorth; 1-based, negative counts from the far end) plus, with useOBCSsponge, the
-    spongeThickness cells inward of each (pkg/obcs/obcs_sponge.F:68-69, j = OB - jsl for
-    jsl = 1..spongeThickness; the weight of the last one is zero, :74-77)."""
+def obcs_params(data_obcs: str) -> dict:
+    """{'sponge': useOBCSsponge, 'thickness': spongeThickness (0 without the sponge), 'ob': {key:
+    first non-zero index}} of a data.obcs namelist (OB_Iwest, OB_Ieast, OB_Jsouth, OB_Jnorth;
+    1-based, negative counts from the far end)."""
     import re
-    ny, nx = shape
     txt = re.sub(r"(?m)^\s*#.*$", "", data_obcs)
 
     def val(key):
@@ -227,26 +235,79 @@ def sponge_mask(data_obcs: str, shape) -> np.ndarray:
         return m.group(1).strip().rstrip(",") if m else None
 
     sponge = (val("useOBCSsponge") or ".FALSE.").upper().strip(".") == "TRUE"
-    T = int(float(val("spongeThickness") or 0)) if sponge else 0
-    m = np.zeros((ny, nx), bool)
-    for key, axis, n in (("OB_Iwest", 1, nx), ("OB_Ieast", 1, nx), ("OB_Jsouth", 0, ny),
-                         ("OB_Jnorth", 0, ny)):
+    ob = {}
+    for key in ("OB_Iwest", "OB_Ieast", "OB_Jsouth", "OB_Jnorth"):
         v = val(key)
-        if v is None:
-            continue
-        idx = [int(x) for x in re.findall(r"(?:\d+\*)?(-?\d+)", v)]
+        idx = [int(x) for x in re.findall(r"(?:\d+\*)?(-?\d+)", v)] if v else []
         idx = [i for i in idx if i != 0]
-        if not idx:
-            continue
-        i = idx[0]
+        if idx:
+            ob[key] = idx[0]
+    return {"sponge": sponge, "thickness": int(float(val("spongeThickness") or 0)) if sponge else 0,
+            "ob": ob}
+
+
+def sponge_mask(data_obcs: str, shape) -> np.ndarray:
+    """(ny, nx) bool: the open-boundary rows/columns of data.obcs (obcs_params) plus, with
+    useOBCSsponge, the spongeThickness cells inward of each (pkg/obcs/obcs_sponge.F:68-69,
+    j = OB - jsl for jsl = 1..spongeThickness; the weight of the last one is zero, :74-77)."""
+    ny, nx = shape
+    p = obcs_params(data_obcs)
+    T = p["thickness"]
+    m = np.zeros((ny, nx), bool)
+    for key, i in p["ob"].items():
+        n = nx if key.startswith("OB_I") else ny
         k = i - 1 if i > 0 else n + i                        # 0-based index of the OB row
         inward = 1 if key in ("OB_Iwest", "OB_Jsouth") else -1
         ks = [k + inward * j for j in range(T + 1) if 0 <= k + inward * j < n]
-        if axis == 1:
+        if key.startswith("OB_I"):
             m[:, ks] = True
         else:
             m[ks, :] = True
     return m
+
+
+def crop_outside(mask) -> dict:
+    """The largest index box of whole rows and columns with no masked cell: the masked edge strips
+    (sponge_mask) removed, so the frames never overlap the grey mask."""
+    m = np.asarray(mask, bool)
+    rows = np.flatnonzero(~m.all(axis=1))
+    cols = np.flatnonzero(~m.all(axis=0))
+    j0, j1, i0, i1 = rows[0], rows[-1] + 1, cols[0], cols[-1] + 1
+    while m[j0, i0:i1].any() and j0 < j1:
+        j0 += 1
+    while m[j1 - 1, i0:i1].any() and j1 > j0:
+        j1 -= 1
+    while m[j0:j1, i0].any() and i0 < i1:
+        i0 += 1
+    while m[j0:j1, i1 - 1].any() and i1 > i0:
+        i1 -= 1
+    return {"j0": int(j0), "j1": int(j1), "i0": int(i0), "i1": int(i1)}
+
+
+def ice_cells(area_path: Path, shape) -> np.ndarray:
+    """Landfast-ice cells: AREA.bin (big-endian float64, the actual model input) >= 0.5."""
+    return np.fromfile(area_path, ">f8").reshape(shape) >= 0.5
+
+
+def top_layer_depth(rho_b, drF) -> float:
+    """Bottom face [m] of the uniform top layer of rho_b (levels equal to the top one within
+    1e-6 kg m^-3); the top cell alone if the profile is stratified from the surface."""
+    rb = np.asarray(rho_b, float)
+    k = int(np.flatnonzero(np.abs(rb - rb[0]) > 1e-6)[0]) - 1
+    return float(np.sum(np.asarray(drF, float)[:k + 1]))
+
+
+def choose_winter_sigma(rows: list, sill_m: float, min_share: float = 0.98,
+                        n2_min: float | None = None) -> dict:
+    """The winter isopycnal (rule of Esteban's fix round 1): among the probe rows (stratified
+    interfaces, N_b^2 >= n2_min) no deeper than the sill, the SHALLOWEST whose isopycnal keeps at
+    least min_share of its t = 0 columns at every probed time in every run. ValueError if none."""
+    n2_min = WINTER_N2_MIN if n2_min is None else n2_min
+    ok = [r for r in rows if r["n2_s-2"] >= n2_min and -r["z_m"] <= sill_m
+          and all(v["share_min"] >= min_share for v in r["runs"].values())]
+    if not ok:
+        raise ValueError("no interface above the sill keeps the share in every run")
+    return min(ok, key=lambda r: -r["z_m"])
 
 
 def saturation_stats(frames: dict, L: float) -> dict:
@@ -265,14 +326,19 @@ def saturation_stats(frames: dict, L: float) -> dict:
 
 # ---- model runs ---------------------------------------------------------------------------------
 
-def _crop(case: dict, shape) -> dict:
-    """Index box without the open-boundary sponges (n_sponge cells on each ob_side)."""
-    p = case["params"]
-    n = int(p["n_sponge"])
-    sides = set(p["ob_sides"])
-    ny, nx = shape
-    return {"j0": n if "S" in sides else 0, "j1": ny - n if "N" in sides else ny,
-            "i0": n if "W" in sides else 0, "i1": nx - n if "E" in sides else nx}
+def _sponge(run_dir: Path, shape) -> np.ndarray:
+    return sponge_mask((Path(run_dir) / "data.obcs").read_text(), shape)
+
+
+def _crop(run_dir: Path, shape) -> dict:
+    """Index box of the frames: the grid without the open boundaries and sponges of data.obcs."""
+    return crop_outside(_sponge(run_dir, shape))
+
+
+def sill_depth_m() -> float:
+    """Akselsundet sill depth on the model grid [m] (figures/bathy_report.json)."""
+    rep = json.loads((REPO / "exp4_arctic_bayiw" / "figures" / "bathy_report.json").read_text())
+    return float(rep["sounds"]["Akselsundet"]["sill_depth_grid_m"])
 
 
 def _sl(c: dict):
@@ -306,7 +372,9 @@ def open_run(run_dir: Path) -> dict:
     r = {"ds": ds, "hfac": hfac, "rho_b": rho_b, "land": ~wet3.any(axis=0),
          "f": animate._f0(run_dir), "onset_s": animate._onset(run_dir),
          "case": animate._case(run_dir), "run_dir": Path(run_dir)}
-    r["ice"] = animate._ice(r)
+    ice = r["case"].get("actual", {}).get("ice")
+    r["ice"] = (ice_cells(r["run_dir"] / "AREA.bin", r["land"].shape)
+                if ice and ice.get("mode") not in (None, "none") else None)
     return r
 
 
@@ -314,7 +382,7 @@ def iso_frames(r: dict, t_s, sigma: float, crop: dict) -> np.ndarray:
     """(nt, ny_c, nx_c) isopycnal depth at the record times t_s (one 3-D snapshot each), cropped."""
     ds = r["ds"]
     tm = ds["time"].values
-    RC = ds["RC"].values
+    RC, drF = ds["RC"].values, ds["drF"].values
     js, is_ = _sl(crop)
     hf = r["hfac"][:, js, is_]
     out = []
@@ -323,7 +391,7 @@ def iso_frames(r: dict, t_s, sigma: float, crop: dict) -> np.ndarray:
         if abs(tm[n] - t) > 1e-6:
             raise ValueError(f"{r['run_dir']}: no record at t = {t} s")
         rho = ds["RHO"].isel(time=n).values[:, js, is_]
-        out.append(isopycnal_depth(rho, RC, hf, sigma).astype(np.float32))
+        out.append(isopycnal_depth(rho, RC, hf, sigma, drF=drF).astype(np.float32))
     return np.stack(out)
 
 
@@ -334,38 +402,36 @@ def record_times(r: dict, t_end_h: float) -> np.ndarray:
     return t[(t >= r["onset_s"] - 1e-6) & (t <= t1)]
 
 
-def sigma_for_shot(shot: str, runs: dict) -> dict:
-    """The sigma of a shot by the rule of the module docstring."""
+def _interface(rb, RC, rho0: float, k: int) -> dict:
+    return {"sigma": float(0.5 * (rb[k] + rb[k + 1])), "k_upper": k, "k_lower": k + 1,
+            "z_m": float(0.5 * (RC[k] + RC[k + 1])),
+            "n2_s-2": float(G / rho0 * (rb[k + 1] - rb[k]) / (RC[k] - RC[k + 1])),
+            "step_kg_m3": float(rb[k + 1] - rb[k])}
+
+
+def sigma_for_shot(shot: str, runs: dict, every_h: float = 3.0, t_end_h: float = 96.0) -> dict:
+    """The sigma of a shot by the rule of the module docstring, applied in code. Shot B runs the
+    probe (every_h, 0..t_end_h) and keeps its table under ``probe``."""
     r = next(iter(runs.values()))
     rb, RC = r["rho_b"], r["ds"]["RC"].values
     rho0 = float(r["ds"].attrs["rho0"])
     if shot == "A":
-        kml = int(np.flatnonzero(np.abs(rb - rb[0]) > 1e-6)[0]) - 1     # last level of the top layer
-        ml = float(-RC[kml] + 0.5 * r["ds"]["drF"].values[kml])          # its bottom face [m]
+        ml = top_layer_depth(rb, r["ds"]["drF"].values)
         s = max_n2_sigma(rb, RC, min_depth_m=ml, rho0=rho0)
+        s = _interface(rb, RC, rho0, s["k_upper"])
         s["rule"] = ("half-way density of the max-N_b^2 interface of the t = 0 reference below the "
                      f"uniform top layer ({ml:.2f} m)")
         return s
-    s = WINTER_CHOICE
-    if s is None:
-        raise RuntimeError("shot B sigma not fixed: run `probe` and set WINTER_CHOICE")
-    k = s["k_upper"]
-    n2 = G / rho0 * (rb[k + 1] - rb[k]) / (RC[k] - RC[k + 1])
-    return {"sigma": float(0.5 * (rb[k] + rb[k + 1])), "k_upper": k, "k_lower": k + 1,
-            "z_m": float(0.5 * (RC[k] + RC[k + 1])), "n2_s-2": float(n2), "rule": s["rule"]}
-
-
-# Chosen from the ``probe`` table (F3 and F2, every 3 h, 0-96 h; Task 10 report): among the
-# interfaces with N_b^2 >= WINTER_N2_MIN shallower than the Akselsundet sill, the one whose isopycnal
-# keeps the largest minimum share of its t = 0 columns in both runs: k = 10/11 at 17.0 m
-# (N_b^2 2.0e-5 s^-2, the strongest of them too), share >= 0.983 in F3 and >= 0.989 in F2, median
-# raw displacement at 96 h -0.16 m (F3) and -0.04 m (F2). The 4.5-6 m interfaces keep their columns
-# but sink by ~6.5 m (median) as the pulse deepens the mixed layer; the 1.5-3 m ones are mixed away.
-WINTER_CHOICE: dict | None = {
-    "k_upper": 10,
-    "rule": ("winter staircase: the interface (N_b^2 >= 5e-6 s^-2, shallower than the 22.4 m "
-             "Akselsundet sill) whose isopycnal keeps the largest share of its t = 0 columns over "
-             "0-96 h in both F3 and F2 (probe); the top-cell max-N_b^2 step is mixed away in 3 h")}
+    sill = sill_depth_m()
+    rows = probe(runs, every_h, t_end_h, max_depth_m=sill)
+    c = choose_winter_sigma(rows, sill)
+    s = _interface(rb, RC, rho0, c["k_upper"])
+    s["rule"] = (f"winter staircase: the shallowest interface (N_b^2 >= {WINTER_N2_MIN:g} s^-2) no deeper "
+                 f"than the Akselsundet sill ({sill:.2f} m) whose isopycnal keeps >= "
+                 f"{100 * WINTER_MIN_SHARE:g} % of its t = 0 columns at every probed time "
+                 f"(every {every_h:g} h, 0-{t_end_h:g} h) in every run")
+    s["probe"] = rows
+    return s
 
 
 def probe(runs: dict, every_h: float, t_end_h: float, max_depth_m: float = 60.0) -> list:
@@ -379,7 +445,7 @@ def probe(runs: dict, every_h: float, t_end_h: float, max_depth_m: float = 60.0)
     n2 = G / rho0 * (rb[1:] - rb[:-1]) / (RC[:-1] - RC[1:])
     zi = 0.5 * (RC[:-1] + RC[1:])
     cand = [k for k in range(len(n2)) if n2[k] >= WINTER_N2_MIN and -zi[k] <= max_depth_m]
-    crop = _crop(r0["case"], r0["land"].shape)
+    crop = _crop(r0["run_dir"], r0["land"].shape)
     sigmas = [0.5 * (rb[k] + rb[k + 1]) for k in cand]
     js, is_ = _sl(crop)
     rows = [{"k_upper": k, "z_m": float(zi[k]), "n2_s-2": float(n2[k]), "sigma": float(s), "runs": {}}
@@ -390,12 +456,13 @@ def probe(runs: dict, every_h: float, t_end_h: float, max_depth_m: float = 60.0)
         step = max(1, int(round(every_h * 3600 / float(np.median(np.diff(t))))))
         idx = np.flatnonzero((t >= r["onset_s"]) & (t <= r["onset_s"] + t_end_h * 3600 + 1e-6))[::step]
         hf = r["hfac"][:, js, is_]
+        drF = ds["drF"].values
         z = np.empty((len(cand), len(idx)) + hf.shape[1:], np.float32)
         for q, n_t in enumerate(idx):                       # one 3-D read per time, all candidates
             rho = ds["RHO"].isel(time=int(n_t)).values[:, js, is_]
             for c, s in enumerate(sigmas):
-                z[c, q] = isopycnal_depth(rho, RC, hf, s)
-        ice = (r["ice"][js, is_] >= 0.5) if r["ice"] is not None else None
+                z[c, q] = isopycnal_depth(rho, RC, hf, s, drF=drF)
+        ice = r["ice"][js, is_] if r["ice"] is not None else None
         for c, row in enumerate(rows):
             have0 = np.isfinite(z[c, 0])
             cov = [float(np.mean(np.isfinite(zz[have0]))) if have0.any() else 0.0 for zz in z[c]]
@@ -412,9 +479,39 @@ def probe(runs: dict, every_h: float, t_end_h: float, max_depth_m: float = 60.0)
     return rows
 
 
-def export(shot: str, root: Path, out: Path, t_end_h: float, still_h, ve: float = VE) -> dict:
-    """Write terrain.npz, frames/<run>/<NNNN>.npz (isopycnal depth and colour per kept frame) and
-    meta.json of one shot into ``out``."""
+def write_terrain(out: Path, runs: dict, crop: dict, mask_sponge: bool) -> dict:
+    """terrain.npz: the data crop, or with ``mask_sponge`` the whole grid plus the open-boundary
+    and sponge mask of data.obcs (identical in every run, asserted). Returns the meta keys to set."""
+    names = list(runs)
+    r0 = runs[names[0]]
+    ds, land = r0["ds"], r0["land"]
+    for r in runs.values():
+        if not np.array_equal(r["land"], land):
+            raise ValueError("the runs of a shot must share the grid")
+    elev = land_elevation(r0["case"], land)
+    js, is_ = _sl(crop) if not mask_sponge else (slice(None), slice(None))
+    ter = {"xc_m": ds["XC"].values[0, is_], "yc_m": ds["YC"].values[js, 0],
+           "depth_m": ds["Depth"].values[js, is_], "land": land[js, is_], "elev_m": elev[js, is_]}
+    for n, r in runs.items():
+        if r["ice"] is not None:
+            ter[f"ice_{n}"] = r["ice"][js, is_]
+    keys = {"elev_max_m": float(ter["elev_m"].max()), "depth_max_m": float(ter["depth_m"].max())}
+    if mask_sponge:
+        masks = [_sponge(r["run_dir"], land.shape) for r in runs.values()]
+        if any(not np.array_equal(m, masks[0]) for m in masks):
+            raise ValueError("the sponge differs between the runs of the shot")
+        ter["sponge"] = masks[0]
+        keys["view_offset"] = {"j": crop["j0"], "i": crop["i0"]}
+        keys["sponge_cells"] = obcs_params((r0["run_dir"] / "data.obcs").read_text())["thickness"]
+    np.savez_compressed(Path(out) / "terrain.npz", **ter)
+    return keys
+
+
+def export(shot: str, root: Path, out: Path, t_end_h: float, still_h, ve: float = VE,
+           mask_sponge: bool = False) -> dict:
+    """Write terrain.npz, frames/<run>/<NNNN>.npz (isopycnal depth and colour per kept frame),
+    raw_<run>.npz (the raw isopycnal depth at every record read, for re-filtering without the run
+    disk) and meta.json of one shot into ``out``."""
     names = SHOTS[shot]
     runs = {n: open_run(root / n) for n in names}
     onsets = {r["onset_s"] for r in runs.values()}
@@ -423,28 +520,16 @@ def export(shot: str, root: Path, out: Path, t_end_h: float, still_h, ve: float 
         raise ValueError("the runs of a shot must share the onset and f")
     onset, f = onsets.pop(), fs.pop()
     r0 = runs[names[0]]
-    crop = _crop(r0["case"], r0["land"].shape)
-    js, is_ = _sl(crop)
-    sig = sigma_for_shot(shot, runs)
+    crop = _crop(r0["run_dir"], r0["land"].shape)
+    sig = sigma_for_shot(shot, runs, t_end_h=t_end_h)
     out = Path(out)
     (out / "frames").mkdir(parents=True, exist_ok=True)
-    ds = r0["ds"]
-    land = r0["land"]
-    elev = land_elevation(r0["case"], land)
-    for r in runs.values():
-        if not np.array_equal(r["land"], land):
-            raise ValueError("the runs of a shot must share the grid")
-    terrain = {"xc_m": ds["XC"].values[0, is_], "yc_m": ds["YC"].values[js, 0],
-               "depth_m": ds["Depth"].values[js, is_], "land": land[js, is_],
-               "elev_m": elev[js, is_]}
-    for n, r in runs.items():
-        if r["ice"] is not None:
-            terrain[f"ice_{n}"] = r["ice"][js, is_]
-    np.savez_compressed(out / "terrain.npz", **terrain)
+    tkeys = write_terrain(out, runs, crop, mask_sponge)
     zs, zf, tk, cover = {}, {}, None, {}
     for n, r in runs.items():
         t = record_times(r, t_end_h)
         z = iso_frames(r, t, sig["sigma"], crop)
+        np.savez_compressed(out / f"raw_{n}.npz", t_s=t, z_m=z)
         zeta = displacement(z, z[0][None])
         tkn, zfn = filtered_colour(zeta, t, f)
         keep = np.isin(t, tkn)
@@ -472,6 +557,7 @@ def export(shot: str, root: Path, out: Path, t_end_h: float, still_h, ve: float 
     t_tau = np.arange(onset, onset + t_end_h * 3600.0 + 1e-6, animate.TAU_STEP_S)
     taus = {n: animate._tau_peak(r["ds"], t_tau) for n, r in runs.items()}
     tau_same = all(np.allclose(v, taus[names[0]]) for v in taus.values())
+    probe_rows = sig.pop("probe", None)
     meta = Meta(shot=shot, runs=names, sigma={n: sig for n in names}, ve=ve, ve_land=VE_LAND, colour_limit_m=L,
                 colour_field="filt", onset_s=float(onset), f={n: float(f) for n in names},
                 frames=frames, crop=crop,
@@ -481,51 +567,32 @@ def export(shot: str, root: Path, out: Path, t_end_h: float, still_h, ve: float 
                        "T_f_h": tf_s(f) / 3600.0, "t_end_h": t_end_h,
                        "ice_h_m": {n: (r["case"]["actual"]["ice"].get("h_m") if r["ice"] is not None
                                        else None) for n, r in runs.items()},
-                       "elev_max_m": float(terrain["elev_m"].max()),
-                       "depth_max_m": float(terrain["depth_m"].max())})
+                       "probe": probe_rows,
+                       **{k: v for k, v in tkeys.items() if k != "view_offset"}})
     write_meta(meta, out / "meta.json")
+    if "view_offset" in tkeys:
+        d = json.loads((out / "meta.json").read_text())
+        d["view_offset"] = tkeys["view_offset"]
+        (out / "meta.json").write_text(json.dumps(d, indent=1))
     return asdict(meta)
 
 
 def restyle(scene: Path, root: Path, limit: float | None, mask_sponge: bool) -> dict:
-    """Update an exported scene without re-reading the frames (Esteban, gate approval 2026-11-14):
-
-    * records the density step of the chosen interface (rho_b[k+1] - rho_b[k]) in meta.json;
-    * ``limit``: a fixed colour limit set by decision (the percentile value is kept as
-      ``colour_limit_p99_5_m``);
-    * ``mask_sponge``: terrain.npz on the whole model grid, with the open-boundary rows and the
-      sponge of data.obcs (sponge_mask, identical in every run of the shot, asserted) to be shown in
-      grey; the frames keep the sponge-free data crop, placed at ``view_offset``."""
+    """Apply the style-gate decisions (Esteban, 2026-11-14) to an exported scene without re-reading
+    the frames: ``limit``, a fixed colour limit set by decision (the percentile value is kept as
+    ``colour_limit_p99_5_m``); ``mask_sponge``, the terrain on the whole grid with the open
+    boundaries and sponges of data.obcs shown in grey (write_terrain)."""
     scene = Path(scene)
     meta = json.loads((scene / "meta.json").read_text())
-    runs = {n: open_run(root / n) for n in meta["runs"]}
-    for n, r in runs.items():
-        k = meta["sigma"][n]["k_upper"]
-        meta["sigma"][n]["step_kg_m3"] = float(r["rho_b"][k + 1] - r["rho_b"][k])
     if limit is not None:
         meta["extra"].setdefault("colour_limit_p99_5_m", meta["colour_limit_m"])
         meta["colour_limit_m"] = float(limit)
         meta["extra"]["colour_limit_rule"] = "fixed by decision at the style gate (Esteban, 2026-11-14)"
     if mask_sponge:
-        r0 = runs[meta["runs"][0]]
-        shape = r0["land"].shape
-        masks = [sponge_mask((r["run_dir"] / "data.obcs").read_text(), shape) for r in runs.values()]
-        if any(not np.array_equal(m, masks[0]) for m in masks):
-            raise ValueError("the sponge differs between the runs of the shot")
-        ds = r0["ds"]
-        land = r0["land"]
-        ter = {"xc_m": ds["XC"].values[0], "yc_m": ds["YC"].values[:, 0], "depth_m": ds["Depth"].values,
-               "land": land, "elev_m": land_elevation(r0["case"], land), "sponge": masks[0]}
-        for n, r in runs.items():
-            if r["ice"] is not None:
-                ter[f"ice_{n}"] = r["ice"]
-        np.savez_compressed(scene / "terrain.npz", **ter)
-        c = meta["crop"]
-        meta["view_offset"] = {"j": c["j0"], "i": c["i0"]}
-        txt = (r0["run_dir"] / "data.obcs").read_text()
-        import re
-        th = re.search(r"spongeThickness\s*=\s*(\d+)", txt)
-        meta["extra"]["sponge_cells"] = int(th.group(1)) if th else 0
+        runs = {n: open_run(root / n) for n in meta["runs"]}
+        keys = write_terrain(scene, runs, meta["crop"], True)
+        meta["view_offset"] = keys.pop("view_offset")
+        meta["extra"].update(keys)
     (scene / "meta.json").write_text(json.dumps(meta, indent=1))
     return meta
 
@@ -554,6 +621,8 @@ def main(argv=None) -> int:
                          indent=1))
         return 0
     m = export(a.what, a.runs_root, a.out, a.t_end_h, a.still_h, a.ve)
+    m = {**m, "sigma": {n: {k: v for k, v in s_.items() if k != "probe"} for n, s_ in m["sigma"].items()}}
+    m["extra"] = {k: v for k, v in m["extra"].items() if k not in ("tau_t_s", "tau_peak_Nm2", "probe")}
     print(json.dumps({k: m[k] for k in ("shot", "sigma", "colour_limit_m", "crop")} | {"extra": m["extra"]},
                      indent=1))
     return 0

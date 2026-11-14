@@ -52,13 +52,31 @@ def test_isopycnal_depth_is_nan_where_outcropped_too_shallow_or_land():
     assert np.isnan(z[0, 3])          # outcropped: the top cell already denser than sigma
 
 
-def test_isopycnal_depth_ignores_dry_levels_under_a_partial_bottom():
+def test_isopycnal_depth_ignores_dry_levels_even_when_they_hold_dense_values():
+    # below the bed the file may hold anything; a dense value there must not count as a crossing
     RC, drF = _column(nz=10, dz=10.0)
-    rho = (1025.0 - 0.01 * RC)[:, None, None].copy()
+    rho = (1025.0 - 0.01 * RC)[:, None, None].copy()      # wet levels 0..5: 1025.05 .. 1025.55
     hfac = np.ones_like(rho)
     hfac[6:] = 0.0
-    rho[6:] = 0.0                      # MITgcm writes 0 (+ rhoConst offset) below the bed
+    rho[6:] = 2000.0
     assert np.isnan(be.isopycnal_depth(rho, RC, hfac, 1025.8)[0, 0])
+    hfac[6:] = 1.0                                        # the same column without the wet mask
+    assert np.isfinite(be.isopycnal_depth(rho, RC, hfac, 1025.8)[0, 0])
+
+
+def test_isopycnal_depth_uses_the_wet_centre_of_a_partial_bottom_cell():
+    # level 5 is the bed cell with hFac = 0.4: its wet centre is at RF5 - 0.5 * 0.4 * 10 = -52 m,
+    # not at the nominal RC5 = -55 m; sigma half-way between levels 4 and 5 sits half-way between
+    # -45 m and -52 m
+    RC, drF = _column(nz=10, dz=10.0)
+    rho = np.where(np.arange(10) < 5, 1025.0, 1026.0)[:, None, None]
+    hfac = np.ones_like(rho)
+    hfac[5] = 0.4
+    hfac[6:] = 0.0
+    z = be.isopycnal_depth(rho, RC, hfac, 1025.5, drF=drF)
+    assert z[0, 0] == pytest.approx(0.5 * (-45.0 - 52.0))
+    z_nominal = be.isopycnal_depth(rho, RC, hfac, 1025.5)          # without drF: nominal centres
+    assert z_nominal[0, 0] == pytest.approx(-50.0)
 
 
 # ---- displacement sign ---------------------------------------------------------------------------
@@ -229,3 +247,62 @@ def test_saturation_stats_mean_and_worst_frame_per_run():
     assert s["F3"]["worst"] == pytest.approx(2 / 3)
     assert s["F3"]["mean"] == pytest.approx((0 + 0.25 + 2 / 3) / 3)
     assert s["F3"]["worst_index"] == 2
+
+
+# ---- fix round 1: the isopycnal rules, the ice cells and the crop in code -------------------------
+
+def test_top_layer_depth_is_the_bottom_face_of_the_uniform_top_layer():
+    drF = np.array([1.5, 1.5, 1.5, 2.0, 2.0])
+    rb = np.array([24.38, 24.38, 24.50, 24.68, 24.91])
+    assert be.top_layer_depth(rb, drF) == pytest.approx(3.0)
+    assert be.top_layer_depth(np.array([1.0, 1.1, 1.2]), np.ones(3)) == pytest.approx(1.0)
+
+
+def _row(k, z, n2, shares):
+    return {"k_upper": k, "z_m": -z, "n2_s-2": n2, "sigma": 1027.0 + k,
+            "runs": {n: {"share_min": s} for n, s in shares.items()}}
+
+
+def test_winter_choice_is_the_shallowest_level_above_the_sill_kept_in_both_runs():
+    rows = [_row(2, 4.5, 4e-5, {"F3": 0.959, "F2": 0.971}),     # sinks, keeps < 98 %
+            _row(7, 12.1, 1.3e-5, {"F3": 0.979, "F2": 0.985}),   # 97.9 % in F3: out
+            _row(10, 17.0, 2.0e-5, {"F3": 0.983, "F2": 0.989}),  # the first that passes
+            _row(11, 18.7, 7.5e-6, {"F3": 0.990, "F2": 0.990}),  # passes, but deeper
+            _row(13, 22.46, 1.0e-5, {"F3": 0.999, "F2": 0.999}),  # below the 22.43 m sill
+            _row(9, 15.0, 1e-7, {"F3": 1.0, "F2": 1.0})]         # unstratified: not a candidate
+    c = be.choose_winter_sigma(rows, sill_m=22.43)
+    assert c["k_upper"] == 10
+    with pytest.raises(ValueError):
+        be.choose_winter_sigma(rows[:2], sill_m=22.43)
+
+
+def test_ice_cells_from_area_bin(tmp_path):
+    a = np.array([[0.0, 0.49, 0.5], [1.0, 0.2, 0.0]])
+    a.astype(">f8").tofile(tmp_path / "AREA.bin")
+    m = be.ice_cells(tmp_path / "AREA.bin", (2, 3))
+    assert m.dtype == bool
+    assert np.array_equal(m, [[False, False, True], [True, False, False]])
+
+
+def test_crop_is_the_box_outside_the_sponge_mask():
+    m = be.sponge_mask(DATA_OBCS, (8, 8))           # W, S, N: the OB row + 2 cells
+    c = be.crop_outside(m)
+    assert c == {"j0": 3, "j1": 5, "i0": 3, "i1": 8}
+    assert not m[c["j0"]:c["j1"], c["i0"]:c["i1"]].any()
+
+
+def test_obcs_params_reads_the_sponge_switch_and_thickness():
+    p = be.obcs_params(DATA_OBCS)
+    assert p["sponge"] is True and p["thickness"] == 2
+    q = be.obcs_params(DATA_OBCS.replace("useOBCSsponge=.TRUE.", "useOBCSsponge=.FALSE."))
+    assert q["sponge"] is False and q["thickness"] == 0
+
+
+def test_saturation_note_names_the_worst_frame_of_each_run():
+    from exp4_arctic_bayiw.analysis import blender_render as br
+    sat = {"F3": {"mean": 0.037, "worst": 0.10669, "worst_index": 23, "worst_t_h": 14.0},
+           "F2": {"mean": 0.024, "worst": 0.06498, "worst_index": 24, "worst_t_h": 14.3333},
+           "limit_m": 1.5, "frames": 269}
+    s = br.saturation_note(sat)
+    assert s == ("Pixels beyond the fixed scale, worst frame: F3 10.7 % at 14.0 h, "
+                 "F2 6.5 % at 14.3 h.")
