@@ -9,7 +9,7 @@ In an idealized midlatitude bay, the baroclinic energy flux from a wind pulse le
 
 ## Significance Statement
 
-Wind over a fjord sets slow waves oscillating below the surface. The waves either stir the fjord or carry energy to the open sea. In a simple model bay, most of that energy left. We tested a real Arctic fjord in Svalbard, which opens to the sea through two narrow channels and freezes in winter. There, the net exchange through the channels is small, directed into the fjord, and dominated by slow motions that the simulations cannot fully resolve. Winter ice, by shielding the water from the wind, leaves about a quarter of the wave energy inside it, by the measure we fixed in advance. The results rest on one fjord and one wind event, and several model checks failed.
+Wind over a fjord sets slow waves oscillating below the surface. The waves either stir the fjord or carry energy to the open sea. In a simple model bay, most of that energy left. We tested a real Arctic fjord in Svalbard, which opens to the sea through two narrow channels and freezes in winter. There, the net exchange through the channels is small, directed into the fjord, and dominated by slow motions that the simulations cannot fully resolve. Under winter ice, which shields the water from the wind, the wave energy inside the fjord falls well below that of open water. The results rest on one fjord and one wind event, and several model checks failed.
 
 ## 1. Introduction
 
