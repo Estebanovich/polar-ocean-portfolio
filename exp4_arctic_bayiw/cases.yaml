@@ -1,0 +1,347 @@
+# Exp. 4 case registry (Van Mijenfjorden internal waves and the thesis rectangular bay).
+# Filled by later tasks; parses with yaml.safe_load.
+#
+# configs:   base parameters per MITgcm configuration
+#   bay_thesis   rectangular bay of the MSc thesis (BayIW_Rectan), f-plane
+#   fjord_vmf    Van Mijenfjorden, UTM 33N, 200 m grid, f at 78 N
+#
+# cases:   overrides per case (ID: configuration, profile, surface and forcing)
+#   R1    bay_thesis, thesis f, thesis "realistic" profile, open water, thesis wind patch
+#   R1k   as R1 with KPP
+#   R2    bay_thesis, f at 78 N, summer VMF profile, open water, thesis wind patch
+#   R3    as R2 without the bay
+#   F1    fjord_vmf, summer, open water, along-axis pulse
+#   F2    fjord_vmf, late winter, landfast ice
+#   F3    fjord_vmf, late winter, open water
+#   F4    fjord_vmf, late winter, drifting ice (optional)
+#   F5    fjord_vmf, summer, open water, cross-axis pulse
+#   F1c   as F1 with the thesis closure (constant 1e-5 vertical viscosity and diffusivity)
+#   F1g   as F1 with GGL90
+#   V3    fjord_vmf, summer, no wind, M2 only at the open boundaries
+#   V4    fjord_vmf at ~400 m, as F1
+configs:
+  fjord_vmf: &fjord_vmf
+    # Model box (Task 1b; approved or changed in PD1, then Task 1b is re-run). UTM 33N (EPSG:32633),
+    # not rotated, [x0, x1, y0, y1] in m, 100 km x 60 km at 200 m (500 x 300 cells). It holds
+    # Van Mijenfjorden with Vallunden (head at y ~ 8 651.5 km), Akseloya, Bellsund, Van Keulenfjorden,
+    # Recherchefjorden and a 10-20 km strip of the shelf. The plan's ~45 km N-S cannot hold both
+    # Van Mijenfjorden and the two side fjords of Bellsund (Van Keulenfjorden reaches y ~ 8 599.5 km
+    # in the NPI coastline), and a narrower box would put an open boundary across a fjord; so the
+    # box is 60 km N-S. Open boundaries W (all water), N (water for x < 467.8 km) and S (water for
+    # x < 474.4 km), land elsewhere; the east edge is land. The NW and SW corners are water.
+    bbox_utm: [455000, 555000, 8594000, 8654000]
+    dx_m: 200
+    ob_sides: [W, N, S]
+    n_sponge: 10
+    # partial cells, also rendered into the data namelist by Task 4 (ruling R1)
+    hFacMin: 0.2
+    hFacMinDr: 2.0
+    # minimum depth (m); clean() uses max(min_depth_m, bottom of level 2) = 3.0 m, > 3x the tidal
+    # amplitude outside Akseloya (0.3-0.8 m, Stoylen and Fer 2014, p. 89)
+    min_depth_m: 3.0
+    max_step_cells: null        # smooth_if_needed is off unless PD1 asks for it
+    # vertical grid (ruling R2): delR = gendata/vgrid.stretched_delR(nz, dz_top, H_m, p),
+    # dz_k = dz_top + (dz_bot - dz_top) (k/(nz-1))^p, rounded to 1 mm, sum = H_m exactly.
+    # H_m is the maximum depth of the final model sea cells (238.8 m after the sponge copy, which
+    # replaces the deepest IBCAO cells, 261.7 m, in the southern sponge band; bathy_report.json
+    # max_depth.box_grid_m) rounded up to the next bin_m. 25 levels in the top 60 m (1.5-5.1 m),
+    # 21.1 m at the bottom, neighbour ratio <= 1.11.
+    vgrid: {nz: 40, dz_top: 1.5, H_m: 240.0, bin_m: 10.0, p: 3.5}
+    delR: [1.5, 1.5, 1.501, 1.502, 1.507, 1.515, 1.528, 1.548, 1.577, 1.616, 1.667, 1.734, 1.817, 1.92, 2.044, 2.192, 2.368, 2.573, 2.81, 3.084, 3.395, 3.748, 4.145, 4.59, 5.087, 5.638, 6.247, 6.917, 7.652, 8.456, 9.333, 10.285, 11.318, 12.434, 13.638, 14.934, 16.327, 17.819, 19.415, 21.119]
+    bathy:
+      ibcao_dir: ibcao                                            # relative to data_external/
+      coastline: npi_coast/extracted/NP_S100_SHP/S100_Land_f.shp  # NPI S100 land polygons
+      mask_rule: npi                                              # the NPI coastline decides
+      # sound sections: shortest segment between the island polygon and the shore polygon, both
+      # clipped to search_box [x0, x1, y0, y1]; points are on land inside each polygon
+      sounds:
+        Akselsundet: {island_point: [492000, 8627300], shore_point: [489000, 8632500],
+                      search_box: [488500, 492500, 8629000, 8633000]}
+        Mariasundet: {island_point: [492000, 8627300], shore_point: [497000, 8621000],
+                      search_box: [494000, 497000, 8621500, 8624500],
+                      islet_points: [[495400, 8622700]]}   # 0.35 km2 islet splitting the sound
+      closure_margin_m: 600       # a sound is closed by a disk of radius half its section + this
+      inner_buffer_cells: 3       # IBCAO inner-fjord volume: coastal land cells within 600 m of the inner sea
+      seeds: {west: [465000, 8620000], east: [510000, 8632000]}   # Bellsund/shelf, inner fjord
+      vallunden_point: [543500, 8648000]
+      # PD1 mask edits (applied after the NPI mask, before clean). Regions: polygon (EPSG:32633
+      # vertices; cells whose centre is inside) and/or seed (flood fill of the 4-connected cells).
+      # force_sea fills the IBCAO sea from the seed; force_land fills the current sea from the seed.
+      force_land:
+        # ruling R6: Vallunden closed by default. Polygon = the lagoon north of its mouth west of
+        # the sand spit (y >= 8646.6 km) and east of the spit (x >= 542.3 km, y >= 8644.2 km)
+        Vallunden: {seed: [543500, 8648000],
+                    polygon: [[539800, 8646600], [542300, 8646600], [542300, 8644200],
+                              [547500, 8644200], [547500, 8652500], [539800, 8652500]]}
+      force_sea:
+        # ruling R7: Van Keulenfjorden head, IBCAO sea under the old S100 glacier front; only
+        # cells with measured IBCAO data (TID 10-17) deeper than 2 model levels (3.0 m). The
+        # polygon stops at y = 8598 km (2 km north of the southern sponge band) so the fjord head
+        # does not reach the open boundary; IBCAO sea continues south of the box.
+        VanKeulen_head: {seed: [528400, 8600000], require_measured_tid: true, min_depth_cells: 2,
+                         polygon: [[523000, 8598000], [534000, 8598000], [534000, 8606000],
+                                   [523000, 8606000]]}
+      # Controls (tolerances fixed before running the pipeline). Stoylen and Fer (2014), NPG 21:87,
+      # read in the online version: Mariasundet 0.7 km wide (p. 96, Sect. 5); Akselsundet
+      # cross-section similar to 20 m x 1300 m (p. 93, Sect. 4.2); deepest CTD section depth in the
+      # basin 117 m (Table 1, p. 89). They give no sill depth, so sill depths are checked against
+      # IBCAO at 100 m.
+      controls:
+        mariasundet_width_npi: {value: sounds.Mariasundet.width_npi_m, reference: 700.0, abs_tol: 200.0,
+                                source: "Stoylen and Fer 2014, p. 96"}
+        mariasundet_width_grid: {value: sounds.Mariasundet.grid.wet_length_m, reference: 700.0, abs_tol: 200.0,
+                                 source: "Stoylen and Fer 2014, p. 96; tolerance one 200 m cell"}
+        akselsundet_area_grid: {value: sounds.Akselsundet.grid.area_m2, reference: 26000.0, rel_tol: 0.5,
+                                source: "Stoylen and Fer 2014, p. 93 (idealised sound of equal area)"}
+        akselsundet_sill_grid_vs_ibcao: {value: sounds.Akselsundet.sill_depth_grid_m,
+                                         reference: sounds.Akselsundet.sill_depth_ibcao_m, rel_tol: 0.2,
+                                         source: "IBCAO v5.2 100 m (no sill depth in Stoylen and Fer 2014)"}
+        mariasundet_sill_grid_vs_ibcao: {value: sounds.Mariasundet.sill_depth_grid_m,
+                                         reference: sounds.Mariasundet.sill_depth_ibcao_m, rel_tol: 0.2,
+                                         source: "IBCAO v5.2 100 m (no sill depth in Stoylen and Fer 2014)"}
+        inner_max_depth_vs_stoylen_fer: {value: max_depth.inner_grid_m, reference: 117.0, rel_tol: 0.1,
+                                         source: "Stoylen and Fer 2014, Table 1, p. 89"}
+        inner_max_depth_grid_vs_ibcao: {value: max_depth.inner_grid_m, reference: max_depth.inner_ibcao_m,
+                                        rel_tol: 0.05, source: "IBCAO v5.2 100 m"}
+        inner_volume_grid_vs_ibcao: {value: inner_fjord.volume_grid_m3, reference: inner_fjord.volume_ibcao_m3,
+                                     rel_tol: 0.05, source: "IBCAO v5.2 100 m"}
+      # classification (a)-(d) of any failed control, written after the run (post hoc labels;
+      # the control itself stays failed in bathy_report.json)
+      classifications:
+        mariasundet_width_npi: >-
+          (a) metric definition, post hoc: the control measures the water on the shortest
+          Akseloya-mainland line across the 0.35 km2 islet (1.26 km), not the two NPI passages
+          (0.50 and 0.48 km); the larger passage (0.50 km) is 0.20 km narrower than 0.7 km
+        mariasundet_width_grid: >-
+          (a) metric definition, post hoc, as mariasundet_width_npi; the grid reproduces the NPI
+          section within 73 m (1.33 km of wet cells on the line vs 1.26 km of NPI water)
+    # Linear EOS of all fjord runs and of the bridge runs R2/R3 (PD0 decision 3, Esteban 2026-11-11);
+    # R1/R1k keep the thesis EOS (tAlpha 2e-4, sBeta 7.4e-4, rhoNil 999.8; data.stage1:15-17).
+    # MITgcm eosType='LINEAR': rho = rhoNil (sBeta (S - sRef) - tAlpha (T - tRef)) + rhoNil - rhoConst
+    # (model/src/find_rho.F:104-107): use these tAlpha, sBeta, rhoNil and tRef/sRef = tRef/sRef below.
+    eos:
+      tAlpha: 3.0456e-05      # K^-1
+      sBeta: 8.4068e-04       # PSU^-1
+      tRef: 0.4676            # deg C
+      sRef: 33.6395           # PSU
+      rhoNil: 1026.96         # kg m^-3 (= 1000 + sigma0 at tRef, sRef)
+      fit_lon: 15.310         # deg E, mean of the QC casts (absolute salinity anomaly)
+      fit_lat: 77.768
+      provenance: >-
+        analysis/theory_numbers.py --fit-eos (2026-11-11): least-squares fit of TEOS-10 sigma0
+        (gsw 3.6.21, p = 0) to in-situ T and practical S at the 66 levels above 120 m of the summer
+        and winter representative profiles (T -1.60 to 4.74 C, S 30.81 to 34.76; profiles
+        stabilised with the thesis EOS for the fit). Residual max 0.0156, rms 0.0055 kg m^-3.
+    # Representative T/S profiles (Task 2; approved at the PD0, notes/pd0_preregistro.md).
+    # gendata/profiles.py: select -> qc -> representative on the delR cell centres above, made
+    # statically stable with the fitted EOS above.
+    profiles:
+      source: unis_hd/profiles                # relative to data_external/
+      # Inner Van Mijenfjorden, east of Akseloya. Vertices chosen in EPSG:32633 (polygon_utm) and
+      # converted to lon/lat (EPSG:4326, straight edges in lon/lat). The west edge runs through the
+      # Akselsundet and Mariasundet sections of the Task 1b bathymetry, the south edge at
+      # y = 8618 km stays north of Van Keulenfjorden. Control (theory_numbers.py): the polygon holds
+      # 13167 of the 13169 inner-fjord cells and no other sea cell outside the sound closure disks.
+      polygon_utm: [[489850, 8630270], [489850, 8631350], [488000, 8632000], [488000, 8640000],
+                    [556000, 8656000], [556000, 8618000], [500000, 8618000], [495560, 8622980]]
+      polygon_lonlat: [[14.57154, 77.74788], [14.57121, 77.75756], [14.49282, 77.76325],
+                       [14.48988, 77.83493], [17.40719, 77.96846], [17.34196, 77.62824],
+                       [15.00000, 77.63826], [14.81355, 77.68282]]
+      seasons:
+        summer: {months: [8, 9], years: [1990, 2019]}    # spec 3.3: August-September
+        winter: {months: [3, 4], years: [1990, 2019]}    # spec 3.3: March-April (late winter, ice)
+      # inversion_tol_kg_m3 = 0.004 is post hoc (chosen after seeing the data; see PD0 1.1)
+      qc: {s_range: [0.0, 35.5], t_range: [-2.1, 10.0], smooth_m: 3.0, max_inversion_fraction: 0.10,
+           inversion_tol_kg_m3: 0.004, min_levels: 5}
+      min_profiles: 20            # per season, after QC
+      min_count_per_level: 5      # a level enters the median if >= 5 casts reach it
+    # ---- MITgcm runs of the fjord (Task 4; gendata/make_case.py, config/fjord_vmf). The values
+    # marked PD1 are fixed by Esteban at the PD1 (notes/pd1_config.md) from the timing runs.
+    template_config: fjord_vmf
+    nx: 500                     # (x1 - x0) / dx_m
+    ny: 300
+    nz: 40
+    # Time step, PD1 decision 1 (Esteban, 2026-11-12; notes/pd1_config.md): staggered stepping
+    # with 120 s. The synchronous step grows grid-scale noise at every deltaT tried, as MITgcm warns
+    # (pkg/generic_advdiff/gad_check.F:94-107: scheme 77 is not Adams-Bashforth); 120 s is the
+    # largest deltaT dividing 1200 s with advective and internal-wave CFL <= 0.5. Class (c).
+    deltaT: 120.0               # s
+    stagger_time_step: 1        # 1: staggerTimeStep = .TRUE.
+    forced_h: 60.0              # stage 1 with the wind file (plan: 60 h forced), then free
+    t_end_h: 280.0              # PD1 decision 3 (Esteban, 2026-11-12): 280 h for every run
+    f0: 1.4266e-4               # s^-1, 2 Omega sin 78 deg, f-plane (beta = 0)
+    profile: vmf_summer         # figures/profiles_vmf.json, on the delR cell centres (Task 2)
+    surface: open water
+    # Wind pulse (spec 3.4; PD0 section 7): thesis half Gaussian, spatially uniform. angle_deg is
+    # the direction the stress points to, from UTM east, counter-clockwise: the down-fjord axis
+    # (theory.json wind: axis 12.412 deg north of east, stress towards 192.412 deg, i.e. wind
+    # from 077.6 deg = "078" of the PD0; unit vector (-0.977, -0.215)). F5 adds 90 deg.
+    wind: {tau_max: 0.1, sigma_h: 1.0, center_h: 2.5, angle_deg: 192.412, record_period_s: 1200.0}
+    wind_angle_deg: 192.412
+    # Sea ice (spec 3.5): h, A inside the profile polygon (inner fjord east of Akseloya)
+    ice: {polygon: profiles, h_m: 1.0, A: 1.0}
+    # V3 tide (M2 only): uniform inward barotropic normal velocity on the three open boundaries,
+    # U0 = omega eta0 A_wet / A_OB (volume balance of a basin rising eta0; make_case.tide_v3),
+    # ramped in over one M2 cycle (ramp_s = EXP4_TIDE_RAMP_S of code/OBCS_OPTIONS.h, used by the
+    # modified obcs_add_tides.F). PD1 decision 4 (eta0 in 0.1-0.2 m), 2-cycle diagnostic runs at
+    # 120 s staggered: 0.2 m diverged (1.7 cycles); 0.15 m ran with vertical CFL 0.93; 0.1 m ran
+    # with vertical CFL 0.55 (notes/pd1_config.md section 0). 0.1 m is taken as the one closest
+    # to the plan's CFL <= 0.5. Not the real 0.3-0.8 m of Stoylen and Fer (2014, p. 89). V3
+    # measures the phase speed of the internal Kelvin wave against the frozen PD0 range
+    # (0.21-0.84 m/s around 0.42 m/s). Fallback (ruling R18): if V3 diverges in the campaign it
+    # is rerun once with eta0 = 0.05 m (half), declared; if that diverges too, V3 is reported as
+    # a validation not done.
+    tide: {period_s: 44714.16, eta0_m: 0.1, ramp_s: 44714.16}
+    pickup_stems: [pickup]
+    edits: []
+    # wlev diagnostics: WVEL at the cell centres nearest 10, 30 and 60 m (k = 7, 18, 26)
+    wlev_levels: [7, 18, 26]
+    namelist_sets:
+      kpp:                     # default closure: KPP output (data.pkg already has useKPP)
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1,5)": "'KPPhbl  '", "fileName(5)": "'kpp2d'",
+                             "frequency(5)": "-1200.", "timePhase(5)": "0.",
+                             "fields(1:2,6)": "'KPPviscA','KPPdiffT'", "fileName(6)": "'kpp3d'",
+                             "frequency(6)": "-10800.", "timePhase(6)": "0."}
+      thesis_closure:          # F1c: constant 1e-5 vertical viscosity and diffusivity, thesis
+        data.pkg: {PACKAGES: {useKPP: ".FALSE."}}           # convective adjustment ivdc_kappa
+        data: {PARM01: {viscAr: "1.E-5", ivdc_kappa: "1."}}  # (thesis data.stage1)
+      ggl90:                   # F1g: GGL90 with its defaults instead of KPP
+        data.pkg: {PACKAGES: {useKPP: ".FALSE.", useGGL90: ".TRUE."}}
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1:2,6)": "'GGL90Kr ','GGL90ArU'", "fileName(6)": "'ggl90'",
+                             "frequency(6)": "-10800.", "timePhase(6)": "0."}
+      seaice_landfast:         # F2: no dynamics, the ice does not move (spec 3.5)
+        data.pkg: {PACKAGES: {useSEAICE: ".TRUE."}}
+        data.seaice: {SEAICE_PARM01: {SEAICEuseDYNAMICS: ".FALSE."}}
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1:4,7)": "'SIarea  ','SIheff  ','SIuice  ','SIvice  '",
+                             "fileName(7)": "'seaice'", "frequency(7)": "-1200.",
+                             "timePhase(7)": "0."}
+      seaice_free_drift:       # F4: free drift (no internal stress), SEAICE_ALLOW_FREEDRIFT
+        data.pkg: {PACKAGES: {useSEAICE: ".TRUE."}}
+        data.seaice: {SEAICE_PARM01: {SEAICEuseDYNAMICS: ".TRUE.", SEAICEuseFREEDRIFT: ".TRUE."}}
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1:4,7)": "'SIarea  ','SIheff  ','SIuice  ','SIvice  '",
+                             "fileName(7)": "'seaice'", "frequency(7)": "-1200.",
+                             "timePhase(7)": "0."}
+      no_wind:                 # V3: no wind file
+        data:
+          PARM03: {periodicExternalForcing: null, externForcingPeriod: null, externForcingCycle: null}
+          PARM05: {zonalWindFile: null, meridWindFile: null}
+      tide_m2:                 # V3: barotropic M2 at the open boundaries (ALLOW_OBCS_TIDES)
+        data.obcs:
+          OBCS_PARM01: {useOBCStides: ".TRUE.", OBCS_tidalPeriod: "44714.16, 9*0.",
+                        OBW_uTidAmFile: "'OBW_uTidAm.bin'", OBW_uTidPhFile: "'OBW_uTidPh.bin'",
+                        OBN_vTidAmFile: "'OBN_vTidAm.bin'", OBN_vTidPhFile: "'OBN_vTidPh.bin'",
+                        OBS_vTidAmFile: "'OBS_vTidAm.bin'", OBS_vTidPhFile: "'OBS_vTidPh.bin'"}
+  # V4: resolution test, the same box at 400 m (bathy.build at dx_m = 400, Task 1b pipeline)
+  fjord_vmf_400:
+    <<: *fjord_vmf
+    dx_m: 400
+    nx: 250
+    ny: 150
+  # Winter runs at 100 m (PD0 decision 1, ruling R13): timing only until the PD1. The Task 1b
+  # pipeline does not run at 100 m (bathy.to_model_grid: 31729 cells hold no IBCAO point), so
+  # the timing case uses the 200 m bathymetry split 2 x 2 (bathy_source: refine_200m).
+  fjord_vmf_100:
+    <<: *fjord_vmf
+    dx_m: 100
+    nx: 1000
+    ny: 600
+    deltaT: 30.0
+    bathy_source: refine_200m
+  # Alternative of R13 (timing only): a 100 m sub-box over the inner fjord, the two sounds and
+  # the inner Bellsund (73 x 38 km). Its bathymetry is cut from the fjord_vmf_100 grid; the west
+  # and south edges cross Bellsund (open), the north edge is land. A production run would need
+  # open-boundary values from a 200 m parent run (one-way nesting), which does not exist yet.
+  fjord_vmf_100s:
+    <<: *fjord_vmf
+    dx_m: 100
+    nx: 730
+    ny: 380
+    deltaT: 30.0
+    bathy_source: subbox_of_refine_200m
+    parent_bbox_utm: [455000, 555000, 8594000, 8654000]
+    bbox_utm: [482000, 555000, 8616000, 8654000]
+    ob_sides: [W, S]
+  # Thesis rectangular bay (MSc thesis BayIW_Rectan, run_expand; Task 3). Inputs are read from the
+  # read-only thesis tree (thesis_dir): bathymetry, grid spacing and the "realistic" (Feb) T/S are
+  # copied byte for byte; the wind patch is regenerated (gendata/make_case.thesis_wind_patch, equal
+  # to the thesis merid_local_bay_560x352.bin byte for byte). Namelists: config/bay_thesis/
+  # input_templates (thesis namelists with I/O changes only) plus the edit sets named by `edits`
+  # (namelist_sets below). Runs: stage 1 forced (data, forced_h), then one free stage (data.free)
+  # to t_end_h, as the thesis data.stage1 / data.stage2. notes/pd1_puente.md lists every change.
+  bay_thesis: &bay_thesis
+    thesis_dir: /Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan
+    nx: 560
+    ny: 352
+    nz: 50
+    deltaT: 30.0             # s, data.stage1
+    forced_h: 60.0           # stage 1 (thesis data.stage1 endTime = 216000 s)
+    t_end_h: 120.0           # thesis: 60 h forced + 60 h free (data.stage2 endTime = 432000 s)
+    bathy_file: bahia_01_expand_bat.bin
+    delx_file: bahia_01_expand_dx.bin
+    dely_file: bahia_01_expand_dy.bin
+    profile: thesis_realistic           # feb_{temp,salt}_50zlev_560x352.bin, byte copy
+    surface: open water
+    # make_meridional_wind_patch (thesis input/wind_patch.py) with the arguments of the thesis
+    # notebook input/make_wind_forcing_local.ipynb that wrote merid_local_bay_560x352.bin
+    wind: {nt: 180, end_time_h: 60.0, max_tau: 0.10, sigma_t_h: 1.0, center_t_h: 2.5,
+           cx: 280, cy: 310, radius: 60}
+    pickup_stems: [pickup]
+    edits: []
+    # Namelist edit sets: {file: {group: {key: value or null (remove)}}}. Edits of `data` apply
+    # to data and data.free (both stages). eos_vmf is built by make_case from configs.fjord_vmf.eos.
+    namelist_sets:
+      kpp:                    # R1k: only what KPP needs (PD0 section 6; pkg/kpp/kpp_check.F:128-145)
+        data.pkg: {PACKAGES: {useKPP: ".TRUE."}}
+        data:
+          PARM01: {viscAr: "1.E-4", ivdc_kappa: null, implicitViscosity: ".TRUE."}
+        data.diagnostics:
+          DIAGNOSTICS_LIST: {"fields(1,4)": "'KPPhbl'", "fileName(4)": "'kpp2d'",
+                             "frequency(4)": "-900.", "timePhase(4)": "0.",
+                             "fields(1:2,5)": "'KPPviscA','KPPdiffT'", "fileName(5)": "'kpp3d'",
+                             "frequency(5)": "-10800.", "timePhase(5)": "0."}
+      pd0_mixing:             # R2/R3: horizontal mixing, bottom drag and advection of PD0 section 6
+        data:
+          PARM01: {viscAh: null, viscC2smag: "2.2", viscC4smag: "1.", diffKhT: "0.", diffKhS: "0.",
+                   bottomDragQuadratic: "2.5E-3", tempAdvScheme: "77", saltAdvScheme: "77"}
+      f78n:                   # R2/R3: f-plane at 78 N, f = 2 Omega sin 78 deg (plan, Configuracion)
+        data:
+          PARM01: {f0: "1.4266E-4", beta: "0."}
+  bay_thesis_kpp:
+    # same inputs; build with pkg/kpp and OLx = OLy = 4 (config/bay_thesis_kpp/code)
+    <<: *bay_thesis
+cases:
+  R1: {config: bay_thesis}            # thesis physics exactly (V1)
+  R1b: {config: bay_thesis_kpp}       # R1 on the KPP build: control of the build effect (short run)
+  R1k: {config: bay_thesis_kpp, edits: [kpp], t_end_h: 240.0}   # H4d with R1 over 0-120 h
+  # bridge (generated in Task 3, run after the PD1 fixes T_end; 280 h is provisional, PD0 decision 2)
+  R2: {config: bay_thesis_kpp, edits: [kpp, pd0_mixing, f78n, eos_vmf],
+       profile: vmf_summer_thesis_levels, t_end_h: 280.0}
+  R3: {config: bay_thesis_kpp, edits: [kpp, pd0_mixing, f78n, eos_vmf],
+       profile: vmf_summer_thesis_levels, t_end_h: 280.0,
+       bathy_file: nobahia_01_expand_bat.bin, delx_file: nobahia_01_expand_dx.bin,
+       dely_file: nobahia_01_expand_dy.bin}
+  # ---- fjord (Task 4). Case keys override the config; edits are applied in order.
+  F1: {config: fjord_vmf, edits: [kpp]}
+  F2: {config: fjord_vmf, edits: [kpp, seaice_landfast], profile: vmf_winter, surface: landfast ice,
+       ice_mode: landfast, pickup_stems: [pickup, pickup_seaice]}
+  F3: {config: fjord_vmf, edits: [kpp], profile: vmf_winter}
+  F4: {config: fjord_vmf, edits: [kpp, seaice_free_drift], profile: vmf_winter,
+       surface: drifting ice, ice_mode: free_drift, pickup_stems: [pickup, pickup_seaice]}
+  F5: {config: fjord_vmf, edits: [kpp], wind_angle_deg: 282.412}    # cross-axis, PD0 section 7
+  F1c: {config: fjord_vmf, edits: [thesis_closure]}
+  F1g: {config: fjord_vmf, edits: [ggl90]}
+  V3: {config: fjord_vmf, edits: [kpp, no_wind, tide_m2], surface: open water, wind_angle_deg: null}
+  V4: {config: fjord_vmf_400, edits: [kpp]}
+  # 100 m winter timing (R13); production only if the PD1 approves 100 m (then with a 100 m bathymetry)
+  F2_100: {config: fjord_vmf_100, edits: [kpp, seaice_landfast], profile: vmf_winter,
+           surface: landfast ice, ice_mode: landfast, pickup_stems: [pickup, pickup_seaice]}
+  F2_100s: {config: fjord_vmf_100s, edits: [kpp, seaice_landfast], profile: vmf_winter,
+            surface: landfast ice, ice_mode: landfast, pickup_stems: [pickup, pickup_seaice]}
+  # F3 (winter, open water) on the same 100 m grids: the timing of R13 runs F3_100s, because
+  # pkg/obcs refuses Orlanski boundaries with pkg/seaice (notes/pd1_seaice.md section 7)
+  F3_100: {config: fjord_vmf_100, edits: [kpp], profile: vmf_winter}
+  F3_100s: {config: fjord_vmf_100s, edits: [kpp], profile: vmf_winter}

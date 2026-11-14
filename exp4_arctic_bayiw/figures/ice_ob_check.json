@@ -1,0 +1,32 @@
+{
+  "/Volumes/LaCie/portfolio_runs/exp4/F2": {
+    "min_cells": 145.7737973711325,
+    "at_iter": 0,
+    "required_cells": 10,
+    "records": 840,
+    "first_iter": 0,
+    "last_iter_read": 8390,
+    "expected_last_iter": 8400,
+    "record_interval_iter": 10,
+    "gaps": [],
+    "passes": true,
+    "reason": "",
+    "status_sha256": "1ab30d267068ce566cbb551bc05bc9bef7dc0c2eed4d88a810303823c29e3947",
+    "source": "notes/pd1_seaice.md section 8"
+  },
+  "/Volumes/LaCie/portfolio_runs/exp4/F4": {
+    "min_cells": 119.0,
+    "at_iter": 8380,
+    "required_cells": 10,
+    "records": 840,
+    "first_iter": 0,
+    "last_iter_read": 8390,
+    "expected_last_iter": 8400,
+    "record_interval_iter": 10,
+    "gaps": [],
+    "passes": true,
+    "reason": "",
+    "status_sha256": "07419815f8041eacd5b2784f61e8b9c10039da4d501311decc344ca92ea1ff96",
+    "source": "notes/pd1_seaice.md section 8"
+  }
+}

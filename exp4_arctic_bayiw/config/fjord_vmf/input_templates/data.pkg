@@ -1,0 +1,7 @@
+# Exp. 4 fjord_vmf packages. KPP is the default closure (PD0 section 6); the edit sets of
+# cases.yaml switch to the thesis closure (F1c), GGL90 (F1g) or add the sea ice (F2, F4).
+ &PACKAGES
+ useDiagnostics=.TRUE.,
+ useOBCS=.TRUE.,
+ useKPP=.TRUE.,
+ &

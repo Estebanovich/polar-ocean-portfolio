@@ -1,0 +1,1473 @@
+{
+ "H4a": {
+  "bands_out_J": {
+   "low": -1144408334.5802736,
+   "kelvin_subinertial": 17886800.874136165,
+   "near_inertial": -43101393.14731635,
+   "superinertial": 10192029.901507122,
+   "seiche": -14629769.077109015
+  },
+  "resolved_sum_out_J": -29652331.44878208,
+  "phi": {
+   "kelvin_subinertial": -0.603217352572485,
+   "near_inertial": 1.45355832210916,
+   "superinertial": -0.34371765738257803,
+   "seiche": 0.4933766878459032
+  },
+  "low_band_share": 0.930248159146804,
+  "resolved_net_inward": true,
+  "outcome": "inconclusive_T_fin",
+  "outcome_pd0": "no concluyente con T_fin",
+  "rule": "low share > 0.25 -> inconclusive; else phi_NI > 0.5 supported, phi_K > 0.5 alternative, else mixed (PD0 5; rulings: share = |F_low| / sum of the 5 |F_b|)",
+  "descriptive_F_plus_A": {
+   "bands_out_J": {
+    "low": -1176660625.8232884,
+    "kelvin_subinertial": 27524332.069344275,
+    "near_inertial": -43139119.04026061,
+    "superinertial": 8868127.603473999,
+    "seiche": -11932738.851463698
+   },
+   "phi": {
+    "kelvin_subinertial": -1.4735127838051008,
+    "near_inertial": 2.309449080463314,
+    "superinertial": -0.47475445940749167,
+    "seiche": 0.6388181627492784
+   },
+   "resolved_sum_out_J": -18679398.218906038,
+   "low_band_share": 0.9278743643980434
+  },
+  "run": "F1",
+  "window": {
+   "t_h": [
+    0.0,
+    279.6666666666667
+   ],
+   "n_records": 840
+  }
+ },
+ "H4b": {
+  "i": {
+   "E_in_F2_J": 578092769.6691573,
+   "E_in_F3_J": 2541056144.0818872,
+   "ratio": 0.22750098261918916,
+   "threshold": 0.5,
+   "met": true,
+   "flags": [],
+   "post_hoc_ke_bc_only": {
+    "label": "POST HOC sensitivity (written after seeing the exact-APE drift of the winter runs): ratio of the high-passed KE_bc alone; not the criterion",
+    "KE_bc_hp_F2_J": 581475.4462502556,
+    "KE_bc_hp_F3_J": 1239166851.394482,
+    "ratio": 0.000469247095817564
+   }
+  },
+  "ii": {
+   "F_bc_in_J": 6744107.912286057,
+   "F_bt_in_J": 20577429.834137097,
+   "met": false,
+   "descriptive_F_plus_A": {
+    "FA_bc_in_J": 7789051.070107445,
+    "FA_bt_in_J": 18886782.252046097,
+    "FA_bc_in_ge_abs_FA_bt_in": false
+   }
+  },
+  "budget_residual_D_bc_rel": {
+   "F2": -52.181192314324306,
+   "F3": 0.78018988730124
+  },
+  "window": {
+   "t_h": [
+    0.0,
+    279.6666666666667
+   ],
+   "n_records": 840
+  }
+ },
+ "H4c": {
+  "i": {
+   "W_NI_F1_J": 6053507130.889118,
+   "W_NI_F3_J": 7330244281.189795,
+   "ratio": 0.8258261114739487
+  },
+  "ii": {
+   "F_res_out_F1_J": -29652331.44878208,
+   "F_res_out_F3_J": -247902.20727051652,
+   "ratio": 119.61301908225764,
+   "descriptive_F_plus_A": {
+    "F1": -18679398.218906038,
+    "F3": 1811095.913955089,
+    "ratio": -10.31386470201558
+   }
+  },
+  "threshold": 1.5,
+  "outcome": "not_distinguishable",
+  "outcome_pd0": "no distinguible",
+  "flags": [
+   "f_res_f1 <= 0",
+   "f_res_f3 <= 0"
+  ],
+  "warning": "PD0 5 (H4c): the winter mode 1 is poorly resolved at 200 m (R1/dx = 1.7-6.6, PD0 2.3 point 1; winter at 200 m is a declared limitation, PD1). A supported H4c may be partly a resolution effect.",
+  "window": {
+   "t_h": [
+    0.0,
+    279.6666666666667
+   ],
+   "n_records": 840
+  }
+ },
+ "H4d": {
+  "R1k_vs_R1": {
+   "eta_kpp": 0.003215570936781626,
+   "eta_closure": 0.0008189178772403364,
+   "ratio": 3.9266097690011943,
+   "threshold": 1.5,
+   "outcome": "supported",
+   "outcome_pd0": "apoyada",
+   "flags": [],
+   "numerator_J": {
+    "kpp": 332731651.501322,
+    "closure": 283601668.2597841
+   },
+   "W_wind_J": {
+    "kpp": 103475139576.40869,
+    "closure": 346312708687.5801
+   },
+   "eta_prime_kpp_descriptive": 0.0032479867559326034,
+   "eta_prime_closure_descriptive": 0.0008213722101375159,
+   "post_hoc_amendment1_numerator": {
+    "label": "POST HOC descriptive (final review I2): eta with the numerator of Enmienda 1 point 2, F_bc + A_bc out, over the same P_bt + P_bc; Enmienda 2 replaced it by the pressure work alone; not a verdict: 'literal_rule_would_read' is the frozen ratio rule applied to it for disclosure only",
+    "FA_bc_out_J": {
+     "kpp": 268449815.1231867,
+     "closure": -5399241840.911466
+    },
+    "eta_kpp": 0.0025943411743354692,
+    "eta_closure": -0.015590654646700525,
+    "ratio": -0.16640360736131846,
+    "flags": [],
+    "literal_rule_would_read": "refuted"
+   },
+   "descriptive_FA_bc_out_J": {
+    "kpp": 268449815.1231867,
+    "closure": -5399241840.911466
+   },
+   "window_h": [
+    0.0,
+    120.0
+   ]
+  },
+  "F1_vs_F1c": {
+   "eta_kpp": -0.060670358594512294,
+   "eta_closure": 0.001856426804399973,
+   "ratio": -32.68125543690473,
+   "threshold": 1.5,
+   "outcome": "refuted",
+   "outcome_pd0": "refutada",
+   "flags": [
+    "kpp: numerator F_bc_pressure_out <= 0 (-1.171e+09 J)"
+   ],
+   "numerator_J": {
+    "kpp": -1171008778.9744017,
+    "closure": 67859113.22429831
+   },
+   "W_wind_J": {
+    "kpp": 19301167919.589664,
+    "closure": 36553616368.53303
+   },
+   "eta_prime_kpp_descriptive": -0.06365710355612687,
+   "eta_prime_closure_descriptive": 0.0019041947998240812,
+   "post_hoc_amendment1_numerator": {
+    "label": "POST HOC descriptive (final review I2): eta with the numerator of Enmienda 1 point 2, F_bc + A_bc out, over the same P_bt + P_bc; Enmienda 2 replaced it by the pressure work alone; not a verdict: 'literal_rule_would_read' is the frozen ratio rule applied to it for disclosure only",
+    "FA_bc_out_J": {
+     "kpp": -1192229251.7260256,
+     "closure": 351908812.29216224
+    },
+    "eta_kpp": -0.061769798423233026,
+    "eta_closure": 0.009627195535025118,
+    "ratio": -6.416177816115362,
+    "flags": [],
+    "literal_rule_would_read": "refuted"
+   },
+   "descriptive_FA_bc_out_J": {
+    "kpp": -1192229251.7260256,
+    "closure": 351908812.29216224
+   },
+   "window_h": [
+    0.0,
+    279.6666666666667
+   ]
+  }
+ },
+ "post_hoc_h4d_resolved_bands": {
+  "label": "POST HOC descriptive (PI decision 2026-11-13): eta from the 4 resolved bands only; never a verdict, the frozen H4d outcome stands",
+  "explanation": "The literal H4d F1/F1c 'refutada' comes from the sign of the low-frequency net exchange term (the unresolved > 140 h band of the strait pressure work, which also shares the fixed-reference drift), not from KPP radiating less.",
+  "runs": [
+   "F1",
+   "F1c"
+  ],
+  "F1": {
+   "resolved_out_J": -29652331.44878208,
+   "low_out_J": -1144408334.5802736,
+   "P_J": 19301167919.589664,
+   "eta_resolved": -0.0015362972630628498
+  },
+  "F1c": {
+   "resolved_out_J": 77519598.84704588,
+   "low_out_J": -9726786.797526015,
+   "P_J": 36553616368.533035,
+   "eta_resolved": 0.002120709427638962
+  },
+  "ratio_F1_over_F1c": -0.7244261014924837
+ },
+ "general": {
+  "factor_rule_note": "PD0 5: the factor-1.5 rule (H4c, H4d) is kept as frozen. It rests on the V4a resolution bound (25 %); V4 FAILED (figures/validation.json: V4a and V4b), so that bound is not demonstrated. No threshold is changed.",
+  "low_band_caveat": "The KF pressure work uses p' from rho' relative to the FIXED initial rho_b (Enmienda 1). The background profile drifts during the runs (the exact APE grows even without wind, F2), so the low band of the strait pressure work shares the fixed-reference drift: a term int p'_drift(z) Q'(z) dz wherever there is a mean baroclinic exchange Q'. The low band (which makes H4a inconclusive and sets the sign of eta(F1)) cannot be attributed to physical exchange without the POST HOC moving-reference check (figures/posthoc_moving_reference.json).",
+  "windows": "Windows: fjord runs 0-279.67 h (840 records every 1200 s; the state after the last step is not a diagnostic record); R1 and R1k_0_120h 0-120 h (481 records every 900 s); R2/R3 0-280 h (1121 records every 900 s).",
+  "flux_definition": "PD0 Enmienda 3 (2026-11-13): H4a, H4b(ii), H4c(ii) and H4d are decided by the KF pressure work (F_bc; F_bt in H4b(ii)); F + A is descriptive",
+  "thresholds": {
+   "factor_min": 1.5,
+   "H4a": {
+    "phi_ni_support": 0.5,
+    "phi_k_alternative": 0.5,
+    "low_band_max_frac": 0.25
+   },
+   "H4b": {
+    "energy_ratio_max": 0.5
+   },
+   "H4c": {
+    "ratio_min": 1.5
+   },
+   "H4d": {
+    "ratio_min": 1.5
+   }
+  },
+  "sources": "PD0 5, Enmiendas 1-2; task-7 rulings (R25); partition.json, budget.json"
+ },
+ "post_hoc": {
+  "label": "POST HOC descriptive (task-7 rulings, R24): not a verdict, no threshold",
+  "band_flux_per_strait": {
+   "F1": {
+    "Akselsundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 52029730.82434623,
+      "near_inertial": -33988436.274433635,
+      "superinertial": 10805907.566135228,
+      "seiche": -9331898.008875273
+     },
+     "low_out_J": -997023903.0729153,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 91244512.35581028,
+      "near_inertial": -31542183.004751053,
+      "superinertial": 12281874.975413445,
+      "seiche": -6104542.02555291
+     },
+     "low_F_plus_A_out_J": -885731767.2568964
+    },
+    "Mariasundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -34142929.95021006,
+      "near_inertial": -9112956.872882713,
+      "superinertial": -613877.6646281055,
+      "seiche": -5297871.0682337405
+     },
+     "low_out_J": -147384431.50735837,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -63720180.286465995,
+      "near_inertial": -11596936.035509555,
+      "superinertial": -3413747.371939446,
+      "seiche": -5828196.825910787
+     },
+     "low_F_plus_A_out_J": -290928858.5663922
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 17886800.874136165,
+      "near_inertial": -43101393.14731635,
+      "superinertial": 10192029.901507122,
+      "seiche": -14629769.077109015
+     },
+     "low_out_J": -1144408334.5802736,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 27524332.069344275,
+      "near_inertial": -43139119.04026061,
+      "superinertial": 8868127.603473999,
+      "seiche": -11932738.851463698
+     },
+     "low_F_plus_A_out_J": -1176660625.8232884
+    }
+   },
+   "F2": {
+    "Akselsundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -328903.128901241,
+      "near_inertial": -181434.10816622816,
+      "superinertial": -42890.11301322804,
+      "seiche": -11672.531884138789
+     },
+     "low_out_J": -5030438.989700944,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -471686.90967127593,
+      "near_inertial": -242618.37667520143,
+      "superinertial": -103146.65652576691,
+      "seiche": 7959.4112249368845
+     },
+     "low_F_plus_A_out_J": -5834969.071160853
+    },
+    "Mariasundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -202291.73597088375,
+      "near_inertial": 4124.155813106838,
+      "superinertial": 2127.0393298979593,
+      "seiche": -4636.273170325277
+     },
+     "low_out_J": -948633.5367865505,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -133214.34517036105,
+      "near_inertial": 26224.225892033493,
+      "superinertial": 29100.982009067637,
+      "seiche": 74245.69053152844
+     },
+     "low_F_plus_A_out_J": -1141060.0634985846
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -531194.8648721247,
+      "near_inertial": -177309.95235312133,
+      "superinertial": -40763.07368333008,
+      "seiche": -16308.80505446407
+     },
+     "low_out_J": -5979072.526487495,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -604901.254841637,
+      "near_inertial": -216394.15078316795,
+      "superinertial": -74045.67451669925,
+      "seiche": 82205.10175646533
+     },
+     "low_F_plus_A_out_J": -6976029.134659437
+    }
+   },
+   "F3": {
+    "Akselsundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -19888.69966345803,
+      "near_inertial": -269904.542032764,
+      "superinertial": -13784.450447835903,
+      "seiche": 22056.921230573036
+     },
+     "low_out_J": 22201805.31190182,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 1373664.691460559,
+      "near_inertial": 323673.22166890925,
+      "superinertial": 98441.24888929234,
+      "seiche": -46990.27376582459
+     },
+     "low_F_plus_A_out_J": 25534834.292274818
+    },
+    "Mariasundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 23359.305171819226,
+      "near_inertial": 80169.90233086587,
+      "superinertial": -5490.667874485799,
+      "seiche": -64419.9759852309
+     },
+     "low_out_J": 243977.06877011777,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 87013.87935350608,
+      "near_inertial": 98263.92573055596,
+      "superinertial": -50335.00601056785,
+      "seiche": -72635.77337134143
+     },
+     "low_F_plus_A_out_J": -1031627.7290938646
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 3470.60550836113,
+      "near_inertial": -189734.63970189806,
+      "superinertial": -19275.118322321698,
+      "seiche": -42363.05475465787
+     },
+     "low_out_J": 22445782.38067194,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 1460678.570814065,
+      "near_inertial": 421937.1473994652,
+      "superinertial": 48106.2428787245,
+      "seiche": -119626.04713716597
+     },
+     "low_F_plus_A_out_J": 24503206.56318096
+    }
+   },
+   "F4": {
+    "Akselsundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -278657.0230190401,
+      "near_inertial": -157258.79231435282,
+      "superinertial": -65646.87181838213,
+      "seiche": 79922.83896544988
+     },
+     "low_out_J": 38035097.32348176,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 473398.0102412201,
+      "near_inertial": 91760.96066390708,
+      "superinertial": 127518.7836393229,
+      "seiche": 423350.1572364326
+     },
+     "low_F_plus_A_out_J": 51162698.28428221
+    },
+    "Mariasundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -165021.9340828666,
+      "near_inertial": 6609.296600564114,
+      "superinertial": -30699.54792964808,
+      "seiche": -77507.37197729805
+     },
+     "low_out_J": -3371064.2983404845,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -376383.1994680567,
+      "near_inertial": 34346.98165801178,
+      "superinertial": -75299.44932321127,
+      "seiche": -105027.49135442948
+     },
+     "low_F_plus_A_out_J": -12022838.482524658
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -443678.95710190677,
+      "near_inertial": -150649.49571378867,
+      "superinertial": -96346.41974803021,
+      "seiche": 2415.4669881518043
+     },
+     "low_out_J": 34664033.02514127,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 97014.81077316345,
+      "near_inertial": 126107.9423219189,
+      "superinertial": 52219.33431611165,
+      "seiche": 318322.6658820029
+     },
+     "low_F_plus_A_out_J": 39139859.801757544
+    }
+   },
+   "F5": {
+    "Akselsundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -48164072.79365159,
+      "near_inertial": -18753970.242498435,
+      "superinertial": 14114126.657166911,
+      "seiche": -1823575.8663622993
+     },
+     "low_out_J": -709315312.479099,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -104715056.82985222,
+      "near_inertial": -19697248.379431292,
+      "superinertial": 13090945.656045845,
+      "seiche": -2202141.2499242355
+     },
+     "low_F_plus_A_out_J": -795991215.899757
+    },
+    "Mariasundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 9501392.752084963,
+      "near_inertial": -4504895.183338311,
+      "superinertial": -725776.3003343508,
+      "seiche": -2163532.8188930666
+     },
+     "low_out_J": -712385004.5846967,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 40301000.500279784,
+      "near_inertial": -1840008.268123805,
+      "superinertial": 7033450.593778761,
+      "seiche": 2762422.550607173
+     },
+     "low_F_plus_A_out_J": 210306557.3765365
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -38662680.04156662,
+      "near_inertial": -23258865.425836746,
+      "superinertial": 13388350.35683256,
+      "seiche": -3987108.685255366
+     },
+     "low_out_J": -1421700317.0637956,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -64414056.32957244,
+      "near_inertial": -21537256.647555098,
+      "superinertial": 20124396.249824606,
+      "seiche": 560281.3006829373
+     },
+     "low_F_plus_A_out_J": -585684658.5232203
+    }
+   },
+   "F1c": {
+    "Akselsundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 159041375.5797735,
+      "near_inertial": -26719478.517492566,
+      "superinertial": 5325206.088156539,
+      "seiche": -14021262.195163215
+     },
+     "low_out_J": 102000058.0926257,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 188182711.63274553,
+      "near_inertial": -6185924.722133119,
+      "superinertial": 24445808.655197855,
+      "seiche": -4755129.625477934
+     },
+     "low_F_plus_A_out_J": 155830901.35472625
+    },
+    "Mariasundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -33340392.452753536,
+      "near_inertial": -10774142.079411592,
+      "superinertial": 1379811.2569186375,
+      "seiche": -3371518.832981853
+     },
+     "low_out_J": -111726844.89015175,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -30995276.01143746,
+      "near_inertial": -8182734.956933749,
+      "superinertial": 2476903.338783303,
+      "seiche": -2318724.350872135
+     },
+     "low_F_plus_A_out_J": 33429185.571123794
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 125700983.12701994,
+      "near_inertial": -37493620.59690416,
+      "superinertial": 6705017.345075174,
+      "seiche": -17392781.02814507
+     },
+     "low_out_J": -9726786.797526015,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 157187435.62130806,
+      "near_inertial": -14368659.679066867,
+      "superinertial": 26922711.993981156,
+      "seiche": -7073853.976350075
+     },
+     "low_F_plus_A_out_J": 189260086.92585006
+    }
+   },
+   "F1g": {
+    "Akselsundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -177543707.245463,
+      "near_inertial": -13171709.31663422,
+      "superinertial": 6360554.005413805,
+      "seiche": -13050357.09459638
+     },
+     "low_out_J": -1137793442.6143951,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -314817803.3385856,
+      "near_inertial": -13925434.460434599,
+      "superinertial": 4843849.862605478,
+      "seiche": -12541961.17488191
+     },
+     "low_F_plus_A_out_J": -1447445789.819212
+    },
+    "Mariasundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -137860762.26905677,
+      "near_inertial": -14184398.601766072,
+      "superinertial": 96608.38785216468,
+      "seiche": -6811988.698465961
+     },
+     "low_out_J": -984532233.640291,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -4984903.514691055,
+      "near_inertial": -12037817.244650431,
+      "superinertial": 764421.1030975379,
+      "seiche": -2204456.1219364675
+     },
+     "low_F_plus_A_out_J": 235312503.42461467
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -315404469.51451975,
+      "near_inertial": -27356107.91840029,
+      "superinertial": 6457162.393265973,
+      "seiche": -19862345.793062348
+     },
+     "low_out_J": -2122325676.2546864,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -319802706.8532766,
+      "near_inertial": -25963251.70508503,
+      "superinertial": 5608270.965703019,
+      "seiche": -14746417.296818385
+     },
+     "low_F_plus_A_out_J": -1212133286.3945978
+    }
+   },
+   "V3": {
+    "Akselsundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -404378779.51447386,
+      "near_inertial": -15362053885.866837,
+      "superinertial": -678056511.8123223,
+      "seiche": 71645239.29160507
+     },
+     "low_out_J": 1046759.86762013,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -342150345.4278133,
+      "near_inertial": -12289622973.88308,
+      "superinertial": -137672462.4510554,
+      "seiche": -155614873.33225262
+     },
+     "low_F_plus_A_out_J": 359959092.71274763
+    },
+    "Mariasundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -65665370.14791971,
+      "near_inertial": -1757984863.7274215,
+      "superinertial": 30806218.709666315,
+      "seiche": -111297547.23957595
+     },
+     "low_out_J": -1086303596.7126527,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -57165523.05742983,
+      "near_inertial": -1007202228.0589179,
+      "superinertial": -316268372.4769408,
+      "seiche": -155749523.93959475
+     },
+     "low_F_plus_A_out_J": 555201317.7281473
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -470044149.6623936,
+      "near_inertial": -17120038749.59426,
+      "superinertial": -647250293.1026558,
+      "seiche": -39652307.94797089
+     },
+     "low_out_J": -1085256836.8450325,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": -399315868.4852432,
+      "near_inertial": -13296825201.941998,
+      "superinertial": -453940834.9279961,
+      "seiche": -311364397.2718473
+     },
+     "low_F_plus_A_out_J": 915160410.4408951
+    }
+   },
+   "V4": {
+    "Akselsundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 153445231.65789473,
+      "near_inertial": -12059450.745319162,
+      "superinertial": 13066898.23766074,
+      "seiche": -1178931.2210081932
+     },
+     "low_out_J": 164726783.07494575,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 157762879.60819528,
+      "near_inertial": -10595816.679202292,
+      "superinertial": 13479763.15633454,
+      "seiche": -301485.89126324235
+     },
+     "low_F_plus_A_out_J": 181553929.0643474
+    },
+    "Mariasundet": {
+     "resolved_out_J": {
+      "kelvin_subinertial": -2083065.8741184324,
+      "near_inertial": -603861.81022131,
+      "superinertial": 273688.93835351255,
+      "seiche": 536253.6476693631
+     },
+     "low_out_J": 7376616.468176032,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 16232225.202932995,
+      "near_inertial": -958968.0018217529,
+      "superinertial": -256075.58000857173,
+      "seiche": 972263.4767634465
+     },
+     "low_F_plus_A_out_J": 133812974.83380012
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 151362165.78377634,
+      "near_inertial": -12663312.555540472,
+      "superinertial": 13340587.176014254,
+      "seiche": -642677.5733388299
+     },
+     "low_out_J": 172103399.5431218,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 173995104.8111283,
+      "near_inertial": -11554784.681024047,
+      "superinertial": 13223687.576325968,
+      "seiche": 670777.5855002038
+     },
+     "low_F_plus_A_out_J": 315366903.8981476
+    }
+   },
+   "R1": {
+    "mouth": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 3790264.7522989,
+      "near_inertial": 134466059.44920796,
+      "superinertial": -43927311.23682722,
+      "seiche": 8581096.053800737
+     },
+     "low_out_J": 182910663.0491696,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 3191446631.0742536,
+      "near_inertial": -4607485017.862265,
+      "superinertial": -6321726581.286943,
+      "seiche": -917580573.7681074
+     },
+     "low_F_plus_A_out_J": 3258867280.292567
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 3790264.7522989,
+      "near_inertial": 134466059.44920796,
+      "superinertial": -43927311.23682722,
+      "seiche": 8581096.053800737
+     },
+     "low_out_J": 182910663.0491696,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 3191446631.0742536,
+      "near_inertial": -4607485017.862265,
+      "superinertial": -6321726581.286943,
+      "seiche": -917580573.7681074
+     },
+     "low_F_plus_A_out_J": 3258867280.292567
+    }
+   },
+   "R1k": {
+    "mouth": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 35036236.9809109,
+      "near_inertial": 564375680.7250781,
+      "superinertial": -95964692.12592441,
+      "seiche": 3379964.4097631075
+     },
+     "low_out_J": 223314525.4798833,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 93463750.12228766,
+      "near_inertial": 516368863.46961373,
+      "superinertial": -181293244.67511737,
+      "seiche": -6130675.763086263
+     },
+     "low_F_plus_A_out_J": 219660208.62760672
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 35036236.9809109,
+      "near_inertial": 564375680.7250781,
+      "superinertial": -95964692.12592441,
+      "seiche": 3379964.4097631075
+     },
+     "low_out_J": 223314525.4798833,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 93463750.12228766,
+      "near_inertial": 516368863.46961373,
+      "superinertial": -181293244.67511737,
+      "seiche": -6130675.763086263
+     },
+     "low_F_plus_A_out_J": 219660208.62760672
+    }
+   },
+   "R2": {
+    "mouth": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 204159150.13619485,
+      "near_inertial": 2315446324.3966274,
+      "superinertial": -110037704.68445869,
+      "seiche": -69834035.1363219
+     },
+     "low_out_J": 1685309050.9976394,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 239858428.57389688,
+      "near_inertial": 2432751927.424361,
+      "superinertial": -191808331.80329776,
+      "seiche": -181938854.9389735
+     },
+     "low_F_plus_A_out_J": 1576846240.4069583
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 204159150.13619485,
+      "near_inertial": 2315446324.3966274,
+      "superinertial": -110037704.68445869,
+      "seiche": -69834035.1363219
+     },
+     "low_out_J": 1685309050.9976394,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 239858428.57389688,
+      "near_inertial": 2432751927.424361,
+      "superinertial": -191808331.80329776,
+      "seiche": -181938854.9389735
+     },
+     "low_F_plus_A_out_J": 1576846240.4069583
+    }
+   },
+   "R1k_0_120h": {
+    "mouth": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 5559597.247445554,
+      "near_inertial": 167011611.36141792,
+      "superinertial": -43433581.335315086,
+      "seiche": 6014584.64220876
+     },
+     "low_out_J": 199738854.0311712,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 31870192.89744682,
+      "near_inertial": 122226548.50790942,
+      "superinertial": -114509255.27491516,
+      "seiche": -6692186.537754995
+     },
+     "low_F_plus_A_out_J": 237645741.6361266
+    },
+    "total": {
+     "resolved_out_J": {
+      "kelvin_subinertial": 5559597.247445554,
+      "near_inertial": 167011611.36141792,
+      "superinertial": -43433581.335315086,
+      "seiche": 6014584.64220876
+     },
+     "low_out_J": 199738854.0311712,
+     "resolved_F_plus_A_out_J": {
+      "kelvin_subinertial": 31870192.89744682,
+      "near_inertial": 122226548.50790942,
+      "superinertial": -114509255.27491516,
+      "seiche": -6692186.537754995
+     },
+     "low_F_plus_A_out_J": 237645741.6361266
+    }
+   }
+  },
+  "arneborg_liljebladh_net_in_J": {
+   "F1": {
+    "Akselsundet": {
+     "FA_bc_in_J": -14962591.31882388,
+     "F_bc_in_J": 11652169.66811609
+    },
+    "Mariasundet": {
+     "FA_bc_in_J": 39134553.962319896,
+     "F_bc_in_J": 25867678.58063353
+    },
+    "total": {
+     "FA_bc_in_J": 24171962.643496018,
+     "F_bc_in_J": 37519848.24874962
+    }
+   },
+   "F2": {
+    "Akselsundet": {
+     "FA_bc_in_J": 376008.23409651825,
+     "F_bc_in_J": 272031.94280895364
+    },
+    "Mariasundet": {
+     "FA_bc_in_J": 15098.398588023658,
+     "F_bc_in_J": 84347.33872421538
+    },
+    "total": {
+     "FA_bc_in_J": 391106.6326845419,
+     "F_bc_in_J": 356379.28153316904
+    }
+   },
+   "F3": {
+    "Akselsundet": {
+     "FA_bc_in_J": -857390.4538104464,
+     "F_bc_in_J": 309562.33351827
+    },
+    "Mariasundet": {
+     "FA_bc_in_J": -74308.32153158209,
+     "F_bc_in_J": -15024.862816277333
+    },
+    "total": {
+     "FA_bc_in_J": -931698.7753420286,
+     "F_bc_in_J": 294537.47070199274
+    }
+   },
+   "F4": {
+    "Akselsundet": {
+     "FA_bc_in_J": -382427.1479364197,
+     "F_bc_in_J": 224705.48587862312
+    },
+    "Mariasundet": {
+     "FA_bc_in_J": 205010.1735581803,
+     "F_bc_in_J": 127931.54173008875
+    },
+    "total": {
+     "FA_bc_in_J": -177416.9743782393,
+     "F_bc_in_J": 352637.0276087118
+    }
+   },
+   "F5": {
+    "Akselsundet": {
+     "FA_bc_in_J": 58016418.110455,
+     "F_bc_in_J": 24862170.27379536
+    },
+    "Mariasundet": {
+     "FA_bc_in_J": -16641535.51175604,
+     "F_bc_in_J": -9533810.672357062
+    },
+    "total": {
+     "FA_bc_in_J": 41374882.59869896,
+     "F_bc_in_J": 15328359.601438299
+    }
+   },
+   "F1c": {
+    "Akselsundet": {
+     "FA_bc_in_J": -63981690.88815371,
+     "F_bc_in_J": -41301514.98356243
+    },
+    "Mariasundet": {
+     "FA_bc_in_J": 16556624.582909917,
+     "F_bc_in_J": 20149069.711973373
+    },
+    "total": {
+     "FA_bc_in_J": -47425066.30524379,
+     "F_bc_in_J": -21152445.27158906
+    }
+   },
+   "F1g": {
+    "Akselsundet": {
+     "FA_bc_in_J": 197921960.85563707,
+     "F_bc_in_J": 119367120.89405727
+    },
+    "Mariasundet": {
+     "FA_bc_in_J": -4767685.86651136,
+     "F_bc_in_J": 81169263.56840512
+    },
+    "total": {
+     "FA_bc_in_J": 193154274.98912567,
+     "F_bc_in_J": 200536384.46246237
+    }
+   },
+   "V3": {
+    "Akselsundet": {
+     "FA_bc_in_J": 349725597.0756674,
+     "F_bc_in_J": 398881044.5776823
+    },
+    "Mariasundet": {
+     "FA_bc_in_J": 62934051.3504264,
+     "F_bc_in_J": 60961176.92602818
+    },
+    "total": {
+     "FA_bc_in_J": 412659648.4260938,
+     "F_bc_in_J": 459842221.5037105
+    }
+   },
+   "V4": {
+    "Akselsundet": {
+     "FA_bc_in_J": -81066968.16364892,
+     "F_bc_in_J": -77117467.01820965
+    },
+    "Mariasundet": {
+     "FA_bc_in_J": -3107452.419512235,
+     "F_bc_in_J": 1047451.223574577
+    },
+    "total": {
+     "FA_bc_in_J": -84174420.58316115,
+     "F_bc_in_J": -76070015.79463507
+    }
+   },
+   "R1": {
+    "mouth": {
+     "FA_bc_in_J": 4138579093.122717,
+     "F_bc_in_J": -112014010.8814839
+    },
+    "total": {
+     "FA_bc_in_J": 4138579093.122717,
+     "F_bc_in_J": -112014010.8814839
+    }
+   },
+   "R1k": {
+    "mouth": {
+     "FA_bc_in_J": -491960782.24007326,
+     "F_bc_in_J": -530740412.08433217
+    },
+    "total": {
+     "FA_bc_in_J": -491960782.24007326,
+     "F_bc_in_J": -530740412.08433217
+    }
+   },
+   "R2": {
+    "mouth": {
+     "FA_bc_in_J": -239858428.57389688,
+     "F_bc_in_J": -204159150.13619485
+    },
+    "total": {
+     "FA_bc_in_J": -239858428.57389688,
+     "F_bc_in_J": -204159150.13619485
+    }
+   },
+   "R1k_0_120h": {
+    "mouth": {
+     "FA_bc_in_J": -91467355.08120951,
+     "F_bc_in_J": -143748478.79035938
+    },
+    "total": {
+     "FA_bc_in_J": -91467355.08120951,
+     "F_bc_in_J": -143748478.79035938
+    }
+   }
+  },
+  "bridge": {
+   "F1": {
+    "flux_share_signed": {
+     "low": -0.930248159146804,
+     "kelvin_subinertial": 0.014539533734078614,
+     "near_inertial": -0.03503556416046119,
+     "superinertial": 0.00828473261453789,
+     "seiche": -0.011892010344118029
+    },
+    "station_fraction": {
+     "shelf": {
+      "low": 0.3363439072183787,
+      "kelvin_subinertial": 0.05201352381186728,
+      "near_inertial": 0.5410238069183708,
+      "superinertial": 0.06959382823848574,
+      "seiche": 0.0010249338128975449
+     },
+     "coast_south_mean": {
+      "low": 0.2964221993999046,
+      "kelvin_subinertial": 0.5571576320169357,
+      "near_inertial": 0.08460289805669609,
+      "superinertial": 0.05789515102005286,
+      "seiche": 0.003922119506410869
+     }
+    }
+   },
+   "F2": {
+    "flux_share_signed": {
+     "low": -0.886491250958655,
+     "kelvin_subinertial": -0.0787579675906593,
+     "near_inertial": -0.02628898056891078,
+     "superinertial": -0.006043764818434786,
+     "seiche": -0.002418036063340087
+    },
+    "station_fraction": {
+     "shelf": {
+      "low": 0.0023951325966054763,
+      "kelvin_subinertial": 0.0003013046974434458,
+      "near_inertial": 0.996676848126765,
+      "superinertial": 0.0006171857480373705,
+      "seiche": 9.528831148735896e-06
+     },
+     "coast_south_mean": {
+      "low": 0.48667299128269403,
+      "kelvin_subinertial": 0.512276130338873,
+      "near_inertial": 0.0001622675171851497,
+      "superinertial": 0.0003138416099203599,
+      "seiche": 0.0005747692513273211
+     }
+    }
+   },
+   "F3": {
+    "flux_share_signed": {
+     "low": 0.9887737271851367,
+     "kelvin_subinertial": 0.00015288589570602306,
+     "near_inertial": -0.008358123753160909,
+     "superinertial": -0.0008491007469585027,
+     "seiche": -0.0018661624190378138
+    },
+    "station_fraction": {
+     "shelf": {
+      "low": 0.0023030779870934623,
+      "kelvin_subinertial": 0.0003914750224445299,
+      "near_inertial": 0.9966353094594422,
+      "superinertial": 0.0006625092089581281,
+      "seiche": 7.628322061472305e-06
+     },
+     "coast_south_mean": {
+      "low": 0.3543358984682378,
+      "kelvin_subinertial": 0.09578791303284066,
+      "near_inertial": 0.5398658199350234,
+      "superinertial": 0.009248113097006846,
+      "seiche": 0.0007622554668913244
+     }
+    }
+   },
+   "F4": {
+    "flux_share_signed": {
+     "low": 0.9803974341350411,
+     "kelvin_subinertial": -0.012548502674427269,
+     "near_inertial": -0.004260796167151539,
+     "superinertial": -0.002724950747668563,
+     "seiche": 6.831627571161055e-05
+    },
+    "station_fraction": {
+     "shelf": {
+      "low": 0.002693177500061347,
+      "kelvin_subinertial": 0.0003071840597272381,
+      "near_inertial": 0.9962686117452869,
+      "superinertial": 0.0007159245599394157,
+      "seiche": 1.510213498499948e-05
+     },
+     "coast_south_mean": {
+      "low": 0.743089423608545,
+      "kelvin_subinertial": 0.2516999512754937,
+      "near_inertial": 0.0038711427514506696,
+      "superinertial": 0.0007607189653279281,
+      "seiche": 0.0005787633991824145
+     }
+    }
+   },
+   "F5": {
+    "flux_share_signed": {
+     "low": -0.9471704556898375,
+     "kelvin_subinertial": -0.025757994025626847,
+     "near_inertial": -0.015495607548091898,
+     "superinertial": 0.008919636407345093,
+     "seiche": -0.0026563063290987315
+    },
+    "station_fraction": {
+     "shelf": {
+      "low": 0.02049972074658942,
+      "kelvin_subinertial": 0.014040810736368746,
+      "near_inertial": 0.9282598366683432,
+      "superinertial": 0.03577597817977178,
+      "seiche": 0.0014236536689268932
+     },
+     "coast_south_mean": {
+      "low": 0.42877753062651164,
+      "kelvin_subinertial": 0.3120569899149923,
+      "near_inertial": 0.13111070510504086,
+      "superinertial": 0.11918530341858125,
+      "seiche": 0.00886947093487396
+     }
+    }
+   },
+   "F1c": {
+    "flux_share_signed": {
+     "low": -0.04936974338436706,
+     "kelvin_subinertial": 0.6380139103822102,
+     "near_inertial": -0.19030441048536068,
+     "superinertial": 0.03403230610526869,
+     "seiche": -0.0882796296427935
+    },
+    "station_fraction": {
+     "shelf": {
+      "low": 0.003056175832467865,
+      "kelvin_subinertial": 0.0009675046379298753,
+      "near_inertial": 0.9937151714502884,
+      "superinertial": 0.0019566547068902967,
+      "seiche": 0.00030449337242367184
+     },
+     "coast_south_mean": {
+      "low": 0.2012460358245274,
+      "kelvin_subinertial": 0.41308959707147797,
+      "near_inertial": 0.28574990001713624,
+      "superinertial": 0.08814421343800578,
+      "seiche": 0.0117702536488525
+     }
+    }
+   },
+   "F1g": {
+    "flux_share_signed": {
+     "low": -0.8518587011127239,
+     "kelvin_subinertial": -0.1265969896759351,
+     "near_inertial": -0.010980189713386603,
+     "superinertial": 0.002591774688844404,
+     "seiche": -0.007972344809109976
+    },
+    "station_fraction": {
+     "shelf": {
+      "low": 0.14748570461506988,
+      "kelvin_subinertial": 0.041148527340074646,
+      "near_inertial": 0.7775025069294202,
+      "superinertial": 0.03236914545752832,
+      "seiche": 0.001494115657907499
+     },
+     "coast_south_mean": {
+      "low": 0.4292483611393314,
+      "kelvin_subinertial": 0.4220189229889495,
+      "near_inertial": 0.0898388938199418,
+      "superinertial": 0.0547094133859563,
+      "seiche": 0.004184408665821235
+     }
+    }
+   },
+   "V3": {
+    "flux_share_signed": {
+     "low": -0.056050162886487544,
+     "kelvin_subinertial": -0.024276328199883745,
+     "near_inertial": -0.8841971116508697,
+     "superinertial": -0.033428478057043555,
+     "seiche": -0.002047919205715443
+    },
+    "station_fraction": {
+     "shelf": {
+      "low": 0.08712867682013599,
+      "kelvin_subinertial": 0.014766385116682627,
+      "near_inertial": 0.8374912459957723,
+      "superinertial": 0.03973653962095672,
+      "seiche": 0.020877152446452333
+     },
+     "coast_south_mean": {
+      "low": 0.003087865265454209,
+      "kelvin_subinertial": 0.0030918975944707904,
+      "near_inertial": 0.9542908890428795,
+      "superinertial": 0.029249204714641572,
+      "seiche": 0.010280143382553788
+     }
+    }
+   },
+   "V4": {
+    "flux_share_signed": {
+     "low": 0.49156649709267775,
+     "kelvin_subinertial": 0.43232481069061895,
+     "near_inertial": -0.03616930409882502,
+     "superinertial": 0.03810375463053954,
+     "seiche": -0.001835633487338728
+    },
+    "station_fraction": {
+     "shelf": {
+      "low": 0.1480652758392968,
+      "kelvin_subinertial": 0.04517829689813248,
+      "near_inertial": 0.7825126292466318,
+      "superinertial": 0.02399617430030302,
+      "seiche": 0.0002476237156356124
+     },
+     "coast_south_mean": {
+      "low": 0.16068983990251393,
+      "kelvin_subinertial": 0.7015850977620781,
+      "near_inertial": 0.08061511031196451,
+      "superinertial": 0.05425228958159826,
+      "seiche": 0.0028576624418453116
+     }
+    }
+   },
+   "R1": {
+    "flux_share_signed": {
+     "low": 0.4894907872478381,
+     "kelvin_subinertial": 0.010143201312335648,
+     "near_inertial": 0.35984724018092845,
+     "superinertial": -0.11755473300763904,
+     "seiche": 0.022964038251258798
+    },
+    "station_fraction": {
+     "Seiche": {
+      "low": 0.011213714815155441,
+      "kelvin_subinertial": 0.22909139346256535,
+      "near_inertial": 0.6617225460519613,
+      "superinertial": 0.09797184611098653,
+      "seiche": 4.995593314386771e-07
+     },
+     "Seiche2": {
+      "low": 0.00838508376845277,
+      "kelvin_subinertial": 0.23429824853704104,
+      "near_inertial": 0.6630163012920465,
+      "superinertial": 0.09429996200328433,
+      "seiche": 4.0439917546088716e-07
+     },
+     "Omega": {
+      "low": 0.007210641491377561,
+      "kelvin_subinertial": 0.2593385392948347,
+      "near_inertial": 0.6479935452221361,
+      "superinertial": 0.08545678637494489,
+      "seiche": 4.876167066812924e-07
+     }
+    }
+   },
+   "R1k": {
+    "flux_share_signed": {
+     "low": 0.2421879674434197,
+     "kelvin_subinertial": 0.03799732687803672,
+     "near_inertial": 0.6120739288927981,
+     "superinertial": -0.10407515445924194,
+     "seiche": 0.0036656223265036335
+    },
+    "station_fraction": {
+     "Seiche": {
+      "low": 0.007641360697526904,
+      "kelvin_subinertial": 0.007682908176535141,
+      "near_inertial": 0.9838039719089728,
+      "superinertial": 0.0008701576637887973,
+      "seiche": 1.6015531764543434e-06
+     },
+     "Seiche2": {
+      "low": 0.0029347120486615742,
+      "kelvin_subinertial": 0.010171494914778662,
+      "near_inertial": 0.9862115980072765,
+      "superinertial": 0.0006804269335214163,
+      "seiche": 1.7680957616814145e-06
+     },
+     "Omega": {
+      "low": 0.004220763489809225,
+      "kelvin_subinertial": 0.005500557995826348,
+      "near_inertial": 0.9896909302869863,
+      "superinertial": 0.0005861642474857503,
+      "seiche": 1.5839798925702377e-06
+     }
+    }
+   },
+   "R2": {
+    "flux_share_signed": {
+     "low": 0.3843537515876246,
+     "kelvin_subinertial": 0.04656079858429331,
+     "near_inertial": 0.5280636693043348,
+     "superinertial": -0.025095340576570646,
+     "seiche": -0.015926439947176733
+    },
+    "station_fraction": {
+     "Seiche": {
+      "low": 0.003050586366890338,
+      "kelvin_subinertial": 0.0009530042133435526,
+      "near_inertial": 0.9951836574906419,
+      "superinertial": 0.0008018577389164734,
+      "seiche": 1.0894190207757366e-05
+     },
+     "Seiche2": {
+      "low": 0.0008097689575589386,
+      "kelvin_subinertial": 0.00017355378251662074,
+      "near_inertial": 0.9988829561858824,
+      "superinertial": 0.00013198679723606932,
+      "seiche": 1.7342768059761753e-06
+     },
+     "Omega": {
+      "low": 0.0006782223474939585,
+      "kelvin_subinertial": 3.347324595323185e-05,
+      "near_inertial": 0.9992407677155546,
+      "superinertial": 4.322595001574457e-05,
+      "seiche": 4.310740982578172e-06
+     }
+    }
+   },
+   "R3": {
+    "station_fraction": {
+     "Omega": {
+      "low": 0.0007733259029421149,
+      "kelvin_subinertial": 9.944126529842788e-05,
+      "near_inertial": 0.9990926582639144,
+      "superinertial": 2.846493359399151e-05,
+      "seiche": 6.109634251132295e-06
+     }
+    }
+   },
+   "R1k_0_120h": {
+    "flux_share_signed": {
+     "low": 0.4735861459914518,
+     "kelvin_subinertial": 0.013181953238159294,
+     "near_inertial": 0.3959889814333902,
+     "superinertial": -0.10298217886034357,
+     "seiche": 0.01426074047665507
+    },
+    "station_fraction": {
+     "Seiche": {
+      "low": 0.012491530019916347,
+      "kelvin_subinertial": 0.2325564060297947,
+      "near_inertial": 0.6565283121163878,
+      "superinertial": 0.09840835494211343,
+      "seiche": 1.5396891787615792e-05
+     },
+     "Seiche2": {
+      "low": 0.005195289374701134,
+      "kelvin_subinertial": 0.2182344702401561,
+      "near_inertial": 0.6754287917916739,
+      "superinertial": 0.10111496542109358,
+      "seiche": 2.648317237530817e-05
+     },
+     "Omega": {
+      "low": 0.006382288921273364,
+      "kelvin_subinertial": 0.2468102809978297,
+      "near_inertial": 0.6650248391903031,
+      "superinertial": 0.0817660015751043,
+      "seiche": 1.6589315489751108e-05
+     }
+    }
+   }
+  },
+  "trapped_fraction": {
+   "F1": {
+    "R1_Hmax": {
+     "R1_m": 3622.8635434667617,
+     "fraction": {
+      "low": 0.9999999999999982,
+      "kelvin_subinertial": 0.999999999999998,
+      "near_inertial": 0.999999999999997,
+      "superinertial": 0.9999999999999948,
+      "seiche": 1.0000000000000062
+     }
+    },
+    "R1_Hmean": {
+     "R1_m": 2465.656883318039,
+     "fraction": {
+      "low": 0.9783285295743874,
+      "kelvin_subinertial": 0.9649559129654399,
+      "near_inertial": 0.8440362121184731,
+      "superinertial": 0.880010670363423,
+      "seiche": 0.950717601440173
+     }
+    }
+   },
+   "F2": {
+    "R1_Hmax": {
+     "R1_m": 1324.3076096592513,
+     "fraction": {
+      "low": 0.5794334513492649,
+      "kelvin_subinertial": 0.585189050661645,
+      "near_inertial": 0.6851486963282323,
+      "superinertial": 0.606609888797937,
+      "seiche": 0.6506944758524628
+     }
+    },
+    "R1_Hmean": {
+     "R1_m": 344.7983084616702,
+     "fraction": {
+      "low": 0.03646481104220578,
+      "kelvin_subinertial": 0.08961775407614755,
+      "near_inertial": 0.29590747227991937,
+      "superinertial": 0.15739686883244616,
+      "seiche": 0.2125448842298937
+     }
+    }
+   },
+   "F3": {
+    "R1_Hmax": {
+     "R1_m": 1324.3076096592513,
+     "fraction": {
+      "low": 0.6881280247715525,
+      "kelvin_subinertial": 0.6181749292783529,
+      "near_inertial": 0.33614878381822605,
+      "superinertial": 0.634129277737737,
+      "seiche": 0.5547839063206516
+     }
+    },
+    "R1_Hmean": {
+     "R1_m": 344.7983084616702,
+     "fraction": {
+      "low": 0.1415455533144478,
+      "kelvin_subinertial": 0.10224718504324648,
+      "near_inertial": 0.00931992017211461,
+      "superinertial": 0.07018024277565267,
+      "seiche": 0.10203300552452894
+     }
+    }
+   }
+  },
+  "strait_limitation": {
+   "label": "POST HOC descriptive (task-7 rulings, R24): not a verdict, no threshold",
+   "reference": "Johnson & Garrett (2006, JPO 36:945, doi:10.1175/JPO2896.1), as cited by Jackson et al. (2018, JPO; literatura/Jackson_2018 ... .md, l. 704-709): 'unless a strait's width is considerably narrower than the deformation radius, the majority of incident Kelvin wave energy will be transmitted through the strait'. J&G 2006 itself is not in the local libraries [verificar]",
+   "Akselsundet": {
+    "width_m": 1072.8465847918428,
+    "grid_wet_length_m": 1072.8465847918428,
+    "R1_m": {
+     "vmf_summer": 3622.8635434667617,
+     "vmf_summer_Hmean": 2465.656883318039,
+     "vmf_winter": 1324.3076096592513,
+     "vmf_winter_Hmean": 344.7983084616702
+    },
+    "width_over_R1": {
+     "vmf_summer": 0.2961322092096306,
+     "vmf_summer_Hmean": 0.43511592876139,
+     "vmf_winter": 0.8101188703943866,
+     "vmf_winter_Hmean": 3.111519280875784
+    }
+   },
+   "Mariasundet": {
+    "width_m": 502.49612336920876,
+    "grid_wet_length_m": 1328.8202264794243,
+    "R1_m": {
+     "vmf_summer": 3622.8635434667617,
+     "vmf_summer_Hmean": 2465.656883318039,
+     "vmf_winter": 1324.3076096592513,
+     "vmf_winter_Hmean": 344.7983084616702
+    },
+    "width_over_R1": {
+     "vmf_summer": 0.13870136629224633,
+     "vmf_summer_Hmean": 0.20379807375834014,
+     "vmf_winter": 0.3794406372840391,
+     "vmf_winter_Hmean": 1.4573624958054838
+    }
+   }
+  }
+ }
+}

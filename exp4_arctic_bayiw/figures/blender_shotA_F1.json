@@ -1,0 +1,41 @@
+{
+ "shot": "A",
+ "runs": [
+  "F1"
+ ],
+ "sigma_kg_m3": 1024.7953642949365,
+ "sigma_depth_t0_m": 6.00425,
+ "step_kg_m3": 0.23017170902562611,
+ "sigma_rule": "half-way density of the max-N_b^2 interface of the t = 0 reference below the uniform top layer (3.00 m)",
+ "ve_sea": 20.0,
+ "ve_land": 2.0,
+ "colour_limit_m": 0.8,
+ "colour_limit_rule": "nice ceiling of the 99.5th percentile of |zeta'|",
+ "T_f_h": 12.234187943322091,
+ "t_first_h": 6.333333333333333,
+ "t_last_h": 95.66666666666667,
+ "frames": 269,
+ "sponge_cells": null,
+ "saturation": {
+  "F1": {
+   "mean": 0.0045411362802354706,
+   "worst": 0.09639238111255939,
+   "worst_index": 0,
+   "worst_t_h": 6.333333333333333
+  },
+  "limit_m": 0.8,
+  "frames": 269
+ },
+ "mp4": {
+  "file": "blender_shotA_F1.mp4",
+  "mb": 1.67,
+  "crf": 23,
+  "fps": 12
+ },
+ "gif": {
+  "file": "blender_shotA_F1.gif",
+  "mb": 4.28,
+  "stride": 4,
+  "width_px": 720
+ }
+}

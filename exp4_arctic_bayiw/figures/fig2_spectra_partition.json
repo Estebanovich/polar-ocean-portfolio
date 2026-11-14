@@ -1,0 +1,127 @@
+{
+ "spectra_stations": [
+  [
+   "F1",
+   "coast_south_mean"
+  ],
+  [
+   "F1",
+   "shelf"
+  ],
+  [
+   "R1k",
+   "Seiche"
+  ],
+  [
+   "R2",
+   "Seiche"
+  ],
+  [
+   "R3",
+   "Omega"
+  ]
+ ],
+ "station_share": {
+  "F1:coast_south_mean": {
+   "low": 0.2964221993999046,
+   "kelvin_subinertial": 0.5571576320169357,
+   "near_inertial": 0.08460289805669609,
+   "superinertial": 0.05789515102005286,
+   "seiche": 0.003922119506410869
+  },
+  "F1:shelf": {
+   "low": 0.3363439072183787,
+   "kelvin_subinertial": 0.05201352381186728,
+   "near_inertial": 0.5410238069183708,
+   "superinertial": 0.06959382823848574,
+   "seiche": 0.0010249338128975449
+  },
+  "R1k:Seiche": {
+   "low": 0.007641360697526904,
+   "kelvin_subinertial": 0.007682908176535141,
+   "near_inertial": 0.9838039719089728,
+   "superinertial": 0.0008701576637887973,
+   "seiche": 1.6015531764543434e-06
+  },
+  "R2:Seiche": {
+   "low": 0.003050586366890338,
+   "kelvin_subinertial": 0.0009530042133435526,
+   "near_inertial": 0.9951836574906419,
+   "superinertial": 0.0008018577389164734,
+   "seiche": 1.0894190207757366e-05
+  },
+  "R3:Omega": {
+   "low": 0.0007733259029421149,
+   "kelvin_subinertial": 9.944126529842788e-05,
+   "near_inertial": 0.9990926582639144,
+   "superinertial": 2.846493359399151e-05,
+   "seiche": 6.109634251132295e-06
+  }
+ },
+ "flux_share": {
+  "F1": {
+   "share_signed": {
+    "low": -0.930248159146804,
+    "kelvin_subinertial": 0.014539533734078614,
+    "near_inertial": -0.03503556416046119,
+    "superinertial": 0.00828473261453789,
+    "seiche": -0.011892010344118029
+   },
+   "sum_abs_J": 1230218327.5803425
+  },
+  "F1c": {
+   "share_signed": {
+    "low": -0.04936974338436706,
+    "kelvin_subinertial": 0.6380139103822102,
+    "near_inertial": -0.19030441048536068,
+    "superinertial": 0.03403230610526869,
+    "seiche": -0.0882796296427935
+   },
+   "sum_abs_J": 197019188.89467034
+  },
+  "F3": {
+   "share_signed": {
+    "low": 0.9887737271851367,
+    "kelvin_subinertial": 0.00015288589570602306,
+    "near_inertial": -0.008358123753160909,
+    "superinertial": -0.0008491007469585027,
+    "seiche": -0.0018661624190378138
+   },
+   "sum_abs_J": 22700625.79895918
+  },
+  "F2": {
+   "share_signed": {
+    "low": -0.886491250958655,
+    "kelvin_subinertial": -0.0787579675906593,
+    "near_inertial": -0.02628898056891078,
+    "superinertial": -0.006043764818434786,
+    "seiche": -0.002418036063340087
+   },
+   "sum_abs_J": 6744649.222450536
+  },
+  "R1k": {
+   "share_signed": {
+    "low": 0.2421879674434197,
+    "kelvin_subinertial": 0.03799732687803672,
+    "near_inertial": 0.6120739288927981,
+    "superinertial": -0.10407515445924194,
+    "seiche": 0.0036656223265036335
+   },
+   "sum_abs_J": 922071099.7215598
+  },
+  "R2": {
+   "share_signed": {
+    "low": 0.3843537515876246,
+    "kelvin_subinertial": 0.04656079858429331,
+    "near_inertial": 0.5280636693043348,
+    "superinertial": -0.025095340576570646,
+    "seiche": -0.015926439947176733
+   },
+   "sum_abs_J": 4384786265.351242
+  }
+ },
+ "f_cph": {
+  "fjord": 0.08173529563159077,
+  "thesis": 0.03993515832061838
+ }
+}

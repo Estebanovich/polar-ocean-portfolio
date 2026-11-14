@@ -1,0 +1,6 @@
+# Packages (lines beginning "#" are comments)
+# thesis run_expand/data.pkg without useMNC (Exp. 4 writes MDS only)
+ &PACKAGES
+ useDiagnostics=.TRUE.,
+ useOBCS=.TRUE.,
+ &

@@ -1,6 +1,6 @@
 # Running the experiments
 
-A portfolio of idealized, reproducible MITgcm polar-ocean experiments. Each experiment pairs a model configuration with theory, validation tests and analysis scripts. Experiment 1 (`exp1_fjord_plumes/`) studies subglacial plumes in a fjord; Experiment 2 (`exp2_isomip_cavity/`) an ISOMIP+ ice-shelf cavity; Experiment 3 (`exp3_melt_emulator/`) emulators of the Experiment 2 basal melt.
+A portfolio of idealized, reproducible MITgcm polar-ocean experiments. Each experiment pairs a model configuration with theory, validation tests and analysis scripts. Experiment 1 (`exp1_fjord_plumes/`) studies subglacial plumes in a fjord; Experiment 2 (`exp2_isomip_cavity/`) an ISOMIP+ ice-shelf cavity; Experiment 3 (`exp3_melt_emulator/`) emulators of the Experiment 2 basal melt; Experiment 4 (`exp4_arctic_bayiw/`) wind-driven internal waves in Van Mijenfjorden (Svalbard), with and without landfast ice, and the bay of my MSc thesis.
 
 ## Commands
 
@@ -24,6 +24,7 @@ $PY exp1_fjord_plumes/scripts/run_campaign.py --config a_line2d --cases '<glob>'
 bash exp1_fjord_plumes/reproduce.sh --quick
 bash exp2_isomip_cavity/reproduce.sh --quick      # also writes the Exp. 3 dataset (outside the repo)
 bash exp3_melt_emulator/reproduce.sh --quick      # hypotheses, figures and README from the JSON
+bash exp4_arctic_bayiw/reproduce.sh --quick       # every JSON, figure and the README from the runs (hours: caches recomputed)
 ```
 
 Experiment 2 uses the same scripts with its own configurations (`ocean0_2km`, MPI np 5; `ocean0_4km`, serial):
@@ -86,11 +87,23 @@ bash exp3_melt_emulator/reproduce.sh [--quick]                            # full
 - **Analysis** (`analysis/`): `noise_floor.py` (noise floor from the Exp. 2 runs), `hypotheses.py` (H3a–H3c and the ranking), `figures.py` (Figures 1, 2, 4), `physics_diag.py` (Figure 3), `profile_test_diag.py` (post hoc, under anemoi), `bootstrap.py` (bootstrap intervals over runs, and the post hoc paired differences), `probabilistic.py` (coverage, CRPS and skill), `compare_records.py` (re-run against committed record, used by `reproduce.sh`).
 - **README:** rendered by `scripts/render_readme.py` from `README.template.md` and `figures/*.json` (`--check` verifies that it is up to date); a test fails if the template contains a number that does not come from a placeholder.
 
+## Pipeline (Experiment 4)
+
+The same chain, `cases.yaml` → `gendata` → MITgcm run → `analysis`, with these differences:
+
+- **Configurations** (`config/`): `bay_thesis` (the thesis bay, a bit-identical copy of the thesis code and namelists, MDS output, 4 ranks), `bay_thesis_kpp` (R1k, R2, R3), `fjord_vmf` (Van Mijenfjorden at 200 m, 5 ranks), `fjord_vmf_400` (V4) and `fjord_vmf_column` (the post hoc V2a column test). Every `fjord_vmf*` configuration (`fjord_vmf`, `fjord_vmf_100`, `fjord_vmf_100s`, `fjord_vmf_400`, `fjord_vmf_column`) carries the same three modified copies of MITgcm files in its `code/` (`obcs_check.F`, `seaice_dynsolver.F`, `obcs_add_tides.F`), each with the sha256 of the original and its changes between marked lines; the MITgcm source itself is never modified.
+- **External data** (`data_external/`, not tracked): IBCAO v5.2, the NPI coastline and the UNIS Hydrographic Database profiles, with URLs and checksums in `data_external/SOURCES.md`. The thesis run and inputs are read from `/Volumes/ESTEBAN_MIT/MITgcm/verification/BayIW_Rectan` (read only).
+- **Campaign:** `scripts/run_campaign.py --config <cfg> --cases <glob> --np N --skip-ok [--dry-run]`; two-stage runs (forced, then free) restart from every pickup, including the Orlanski and sea-ice pickups. `reproduce.sh --dry-run` prints the campaign in the order actually run.
+- **Analysis** (`analysis/`): `theory_numbers.py` and `bathy_report.py` (PD0, Task 1b), `v1_thesis.py` and `thesis_contrast.py` (V1, contrast with the thesis scripts), `validate.py` (V2-V4, the ice-boundary check, `pd2-merge`), `pd2_v2_diagnostics.py` and `pd2_v4_diagnostics.py` (post hoc), `partition.py` (band partition and Kang & Fringer budgets of every run, cached in `$EXP4_RUNS/analysis_cache`), `hypotheses.py` (H4a-H4d), `posthoc_reference.py` (post hoc moving reference), `fig1_validation.py` and `figures.py` (Figures 1-4); Figure 0 is drawn with VectorCraft by `figures/src/fig0_schematic.py`.
+- **README:** rendered by `scripts/render_readme.py` from `README.template.md`, `figures/*.json` and `cases.yaml` (`--check` verifies that it is up to date); a test fails if the template contains a number that does not come from a placeholder. `scripts/compare_json.py OLD NEW` compares two sets of metrics files (used by the full mode of `reproduce.sh`).
+- **Animations (descriptive):** `analysis/animate.py fjord-ice` (F3 open water against F2 landfast ice) and `analysis/animate.py bay-fjord` (the thesis bay R1 against F1) write `figures/anim_fjord_ice_{raw,filt}.gif` and `figures/anim_bay_vs_fjord_{raw,filt}.gif`, each at most 5 MB (the frame stride doubles until it fits). `raw` is the mode-1 isopycnal displacement a₁ (projection on the local first vertical mode, fixed initial reference profile); `filt` is a₁ minus its centred running mean over one inertial period of each run, with the frames that lack a full window dropped. One pass reads one 3-D density snapshot per frame from `$EXP4_RUNS` (about 2 h for both pairs); `--check-scales` reports the fixed colour limits and their saturation, `--frame-png PREFIX --frame-h H` writes stills. `reproduce.sh --animations` redraws them (off by default). No README number comes from them.
+- **Blender animations (descriptive):** `analysis/blender_export.py {A|B} --out DIR` reads one 3-D density snapshot per 1200 s record from `$EXP4_RUNS` and writes the scene of shot A (F1) or B (F3 against F2) outside the repository: the isopycnal depth per frame and its displacement with the one-inertial-period running mean removed, the model bathymetry, the IBCAO land and the ice cells (`probe` prints the isopycnal candidates; `restyle --limit L --mask-sponge` applies the style-gate decisions: a fixed colour scale and the open-boundary sponge of `data.obcs` in grey). `blender -b -P analysis/blender_render.py -- render --scene DIR --all` draws the 3-D panels (one Blender process at a time), `blender_render.py compose --all` adds the overlay and reports the colour-scale saturation, and `blender_render.py movie --movie-out exp4_arctic_bayiw/figures --name NAME` writes the H.264 MP4 (at most 20 MB, ffmpeg) and the GIF preview (at most 5 MB) plus the summary JSON from which the README quotes their set-up (isopycnal, exaggeration, colour scale); no result in the README comes from them. `reproduce.sh --blender` runs the chain (off by default).
+
 ## Locations
 
 Run output, builds and the MITgcm source default to the paths of the original machine. Override them with environment variables:
-- `EXP1_RUNS`, `EXP2_RUNS`: run-output roots (defaults `/Volumes/LaCie/portfolio_runs/exp1` and `.../exp2`);
-- `EXP1_BUILDS`, `EXP2_BUILDS`: build roots (defaults `/Volumes/ESTEBAN_MIT/portfolio_builds/exp1` and `.../exp2`);
+- `EXP1_RUNS`, `EXP2_RUNS`, `EXP4_RUNS`: run-output roots (defaults `/Volumes/LaCie/portfolio_runs/exp1`, `.../exp2` and `.../exp4`);
+- `EXP1_BUILDS`, `EXP2_BUILDS`, `EXP4_BUILDS`: build roots (defaults `/Volumes/ESTEBAN_MIT/portfolio_builds/exp1`, `.../exp2` and `.../exp4`);
 - `MITGCM_ROOT`: MITgcm checkout.
 
 They are defined in `pfcommon/paths.py`. `reproduce.sh` also accepts `RUNS`. For Experiment 2, the analysis scripts and `exp2_isomip_cavity/reproduce.sh --quick` honour `EXP2_RUNS` / `RUNS`, but the queue scripts (`exp2_isomip_cavity/scripts/queue_*.sh`, and therefore the full mode of `reproduce.sh`) hardcode `/Volumes/LaCie/portfolio_runs/exp2` and refuse to start unless that disk is mounted.

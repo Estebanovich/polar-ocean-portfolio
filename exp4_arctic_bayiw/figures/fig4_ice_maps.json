@@ -1,0 +1,19 @@
+{
+ "box_total_ke_bc_J": {
+  "F2": {
+   "low": 6754707.336695989,
+   "kelvin_subinertial": 530308.6202687509,
+   "near_inertial": 17210.397815347194,
+   "superinertial": 14115.730136443335,
+   "seiche": 19840.698029714178
+  },
+  "F3": {
+   "low": 27304015.925871737,
+   "kelvin_subinertial": 34381356.5985045,
+   "near_inertial": 1174086774.2871203,
+   "superinertial": 26191820.17082861,
+   "seiche": 4506900.338028317
+  }
+ },
+ "units": "J m^-2 (depth-integrated time-mean KE_bc)"
+}
