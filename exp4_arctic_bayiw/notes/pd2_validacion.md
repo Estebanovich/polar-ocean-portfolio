@@ -200,3 +200,5 @@ Actualizado en `figures/validation.json` (`V2a.classification`), que ahora se re
 - los textos fijos de clasificación, que están en el código.
 
 No cambia ningún veredicto (prueba `test_pd2_merge_rebuilds_the_pd2_blocks`). El orden documentado es `evaluate` y después `pd2-merge`.
+
+*Nota de cita (Task 8, ronda de correcciones 1, 2026-11-14).* La decisión del PD2 cita «Gill (2016)». El archivo `Gill_2016 … .md` de la biblioteca de la tesis es una reimpresión de Academic Press de la edición de 1982 (International Geophysics Series 30; copyright 1982, l. 15–25 del archivo), con las mismas secciones y páginas. La cita correcta es **Gill (1982)**: §10.10, pp. 399–401, ec. 10.10.21 para V2b, y §10.3, ec. 10.3.5 para la relación de Poincaré. Así se cita en el README, en `validation.json` y en el código. El texto de arriba no se edita.

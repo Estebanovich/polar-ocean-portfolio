@@ -8,8 +8,9 @@
 #
 # Environment (see the repository RUNNING.md):
 #   PY       Python with numpy/scipy/matplotlib/xarray/pyyaml/gsw/pyproj (default: the pyocean conda env)
-#   RUNS     run-output root (default /Volumes/LaCie/portfolio_runs/exp4; must exist). For the full mode use a NEW
-#            root (default /Volumes/LaCie/portfolio_runs/exp4_rerun), so that the original runs are never overwritten
+#   RUNS     run-output root (default /Volumes/LaCie/portfolio_runs/exp4; must exist). The full mode uses a NEW root
+#            (default /Volumes/LaCie/portfolio_runs/exp4_rerun, created if missing), so the stored runs are never overwritten
+#   ORIG_RUNS  the stored runs (default /Volumes/LaCie/portfolio_runs/exp4): full mode, build-control comparison
 #   BUILDS   MITgcm build root (default /Volumes/ESTEBAN_MIT/portfolio_builds/exp4)
 #   VECTORCRAFT_CLI  optional: path to vectorcraft-cli v0.22.0 to redraw Figure 0
 # Both modes refuse to start while an MPI launcher or a model process is running (pfcommon.campaign, matched by
@@ -36,13 +37,14 @@ for a in "$@"; do
   case "$a" in
     --quick) QUICK=1 ;;
     --dry-run) DRY=1 ;;
-    -h|--help) sed -n '2,27p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,28p' "$0"; exit 0 ;;
     *) echo "unknown option: $a" >&2; exit 2 ;;
   esac
 done
 if [ "$QUICK" -eq 1 ]; then RUNS="${RUNS:-/Volumes/LaCie/portfolio_runs/exp4}"
 else RUNS="${RUNS:-/Volumes/LaCie/portfolio_runs/exp4_rerun}"; fi
 BUILDS="${BUILDS:-/Volumes/ESTEBAN_MIT/portfolio_builds/exp4}"
+ORIG_RUNS="${ORIG_RUNS:-/Volumes/LaCie/portfolio_runs/exp4}"      # the stored runs (full mode: build-control comparison)
 export EXP4_RUNS="$RUNS" EXP4_BUILDS="$BUILDS"
 
 cd "$ROOT"
@@ -54,6 +56,8 @@ if ! "$PY" -c "import sys; sys.path.insert(0, '$ROOT'); from pfcommon import cam
   echo "refusing to start: an MPI launcher or a model process is active (above)" >&2
   exit 3
 fi
+# the full mode writes to a new run root: create it (the quick mode needs the existing one)
+[ "$QUICK" -eq 1 ] || run mkdir -p "$RUNS"
 [ "$DRY" -eq 1 ] || [ -d "$RUNS" ] || { echo "run root $RUNS not found (mount the run disk or set RUNS)" >&2; exit 2; }
 
 A="$HERE/analysis"
@@ -66,10 +70,20 @@ if [ "$QUICK" -eq 0 ]; then
   step "backup of the committed figures/*.json to $BACKUP"
   run mkdir -p "$BACKUP"
   run cp -p "$F"/*.json "$BACKUP/"
+  step "inputs first: theory numbers and the representative profiles (gendata/make_case.py reads figures/profiles_vmf.json)"
+  run "$PY" "$A/theory_numbers.py"
   campaign() { step "campaign $1: $2 (np $3)"; run "$PY" "$S/run_campaign.py" --config "$1" --cases "$2" --np "$3" --skip-ok "${@:4}"; }
+  bitwise() {   # $1 $2: run directories; fails if any state2d/state3d/diag_rho record differs byte for byte
+    run "$PY" -c "import sys; sys.path.insert(0, '$ROOT'); from pfcommon import campaign as cp; bad = {p: cp.compare_bitwise('$1', '$2', p) for p in ('state2d.*.data', 'state3d.*.data', 'diag_rho.*.data')}; print(bad); sys.exit(1 if any(bad.values()) else 0)"
+  }
   # the order actually used: the thesis bridge (Task 3), the fjord campaign (Task 6), then R2/R3
   campaign bay_thesis R1 4
-  campaign bay_thesis_kpp R1b 4 --end-time 7200 --run-suffix _short2h      # build control: bit-identical to R1
+  # build control (Task 3): 2 h of R1 on its own build and on the KPP build must be bit-identical
+  campaign bay_thesis R1 4 --end-time 7200 --run-suffix _short2h
+  campaign bay_thesis_kpp R1b 4 --end-time 7200 --run-suffix _short2h
+  step "build control: R1b_short2h against R1_short2h, and R1_short2h against the stored one (bit for bit)"
+  bitwise "$R/R1b_short2h" "$R/R1_short2h"
+  bitwise "$R/R1_short2h" "$ORIG_RUNS/R1_short2h"
   campaign bay_thesis_kpp R1k 4
   for c in F1 F2 F3 F1c V3 F1g F5 F4; do campaign fjord_vmf "$c" 5; done
   campaign fjord_vmf_400 V4 5
@@ -84,7 +98,7 @@ if [ "$QUICK" -eq 0 ]; then
 fi
 
 step "theory numbers, representative profiles (PD0) and the bathymetry report (Task 1b)"
-run "$PY" "$A/theory_numbers.py"
+[ "$QUICK" -eq 0 ] || run "$PY" "$A/theory_numbers.py"        # the full mode ran it before the campaigns
 run "$PY" "$A/bathy_report.py"
 step "PD1: timing record and restart tests"
 PD1_RUNS=$("$PY" -c "import json, os; d = json.load(open('$F/pd1_timing.json')); print(' '.join(p for p in ('$R/' + os.path.basename(v['run_dir']) for v in d.values()) if os.path.isdir(p)))")

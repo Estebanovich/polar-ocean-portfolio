@@ -84,3 +84,37 @@ def test_quick_dry_run_has_no_campaign(tmp_path):
 
 def test_unknown_option(tmp_path):
     assert _run(["--bogus"], tmp_path).returncode == 2
+
+
+# ---- Task 8 fix round 1 -------------------------------------------------------------------------
+
+def test_full_mode_regenerates_the_profiles_before_the_first_campaign(tmp_path):
+    """gendata/make_case.py reads figures/profiles_vmf.json, written by theory_numbers.py."""
+    out = _run(["--dry-run"], tmp_path).stdout
+    assert out.index("theory_numbers.py") < out.index("run_campaign.py")
+    assert out.count("theory_numbers.py") == 1                      # not run again after the campaigns
+
+
+def test_quick_mode_still_runs_theory_numbers(tmp_path):
+    assert "theory_numbers.py" in _run(["--quick", "--dry-run"], tmp_path).stdout
+
+
+def test_full_mode_creates_a_fresh_run_root(tmp_path):
+    fresh = tmp_path / "does_not_exist_yet"
+    r = _run(["--dry-run"], tmp_path, env_extra={"RUNS": str(fresh)})
+    assert r.returncode == 0, r.stdout + r.stderr
+    lines = r.stdout.splitlines()
+    mk = lines.index(f"+ mkdir -p {fresh}")
+    assert mk < next(i for i, ln in enumerate(lines) if "run_campaign.py" in ln)
+    assert not fresh.exists()                                       # a dry run creates nothing
+
+
+def test_full_mode_build_control_is_compared_bit_for_bit(tmp_path):
+    out = _run(["--dry-run"], tmp_path, env_extra={"ORIG_RUNS": "/stored"}).stdout
+    assert "--config bay_thesis --cases R1 --np 4 --skip-ok --end-time 7200 --run-suffix _short2h" in out
+    assert "--config bay_thesis_kpp --cases R1b --np 4 --skip-ok --end-time 7200 --run-suffix _short2h" in out
+    cmp_ = [ln for ln in out.splitlines() if "compare_bitwise" in ln]
+    assert len(cmp_) == 2
+    assert "R1b_short2h" in cmp_[0] and "R1_short2h" in cmp_[0]
+    assert "/stored/R1_short2h" in cmp_[1]
+    assert out.index("R1b --np 4") < out.index("compare_bitwise") < out.index("--cases R1k")
