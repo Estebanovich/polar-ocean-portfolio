@@ -197,7 +197,7 @@ The limitations, each stated in full where indicated:
 
 1. The thesis bay was reproduced bit for bit, and the model reproduces the tidally forced internal Kelvin wave of Van Mijenfjorden. Three validation criteria failed and are declared: a blue-shifted near-inertial peak of unidentified cause, an ill-posed Kelvin-front metric, and a strait flux that is not resolution-converged.
 2. In the fjord, the net baroclinic flux through the straits is dominated by unresolved low frequencies and is inward in the reference run, so the frequency partition of the radiated energy (H4a) is inconclusive.
-3. Landfast ice nearly removes the internal-wave energy of the inner fjord (H4b(i) met), and what remains does not enter mainly as a baroclinic flux (H4b(ii) not met). Summer and winter open water are not distinguishable (H4c).
+3. Landfast ice reduces the internal-wave energy of the inner fjord well below half that of open water (H4b(i) met), and what remains does not enter mainly as a baroclinic flux (H4b(ii) not met). Summer and winter open water are not distinguishable (H4c).
 4. KPP raises the radiated fraction of the wind work in the bay, mostly by reducing the wind work (H4d supported, a verdict that depends on the flux amendments); in the fjord the frozen rule gives "refuted" because the net flux is inward.
 5. The bay radiates outward and near-inertially at both latitudes; the fjord does not. Descriptively this is consistent with the geometry rather than f, but the bridge runs also differ in the wind pattern, the grid, the time step, and the outer domain, and the fjord's flux carries the drift caveat. Measuring the fjord's radiation needs higher resolution in the straits, longer records, and an energy budget with an evolving reference profile.
 
