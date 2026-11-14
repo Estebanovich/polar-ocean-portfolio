@@ -131,3 +131,18 @@ def test_animations_are_off_by_default_and_opt_in(tmp_path):
     assert on.index("figures.py") < on.index("animate.py") < on.index("render_readme.py")
     full = _run(["--dry-run", "--animations"], tmp_path).stdout
     assert "animate.py fjord-ice" in full
+
+
+# ---- Task 10: the Blender animations, opt-in -------------------------------------------------------
+
+def test_blender_is_off_by_default_and_opt_in(tmp_path):
+    off = _run(["--quick", "--dry-run"], tmp_path).stdout
+    assert "blender_export.py" not in off and "blender_render.py" not in off
+    on = _run(["--quick", "--dry-run", "--blender"], tmp_path).stdout
+    assert "blender_export.py A" in on and "blender_export.py B" in on
+    assert "--limit 1.5 --mask-sponge" in on
+    assert on.count("-- render --scene") == 2 and on.count("blender_render.py movie") == 2
+    assert "--name blender_shotA_F1" in on and "--name blender_shotB_F3F2" in on
+    # after the analysis, exports before renders, before the README (which embeds the GIFs)
+    assert on.index("figures.py") < on.index("blender_export.py A") < on.index("-- render --scene") \
+        < on.index("render_readme.py")

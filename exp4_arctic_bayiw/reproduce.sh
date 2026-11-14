@@ -7,6 +7,9 @@
 #   bash exp4_arctic_bayiw/reproduce.sh [--quick] --dry-run # print the plan; run nothing, write nothing
 #   add --animations to also redraw the four descriptive GIFs (analysis/animate.py; off by default:
 #   about 2 h of reads from the run disk, one full 3-D density snapshot per frame)
+#   add --blender to also redraw the two descriptive Blender animations (analysis/blender_export.py and
+#   blender_render.py; off by default: about 1.5 h of reads plus ~1 h of rendering; needs Blender, env BLENDER,
+#   and ffmpeg; scene files and frames go to BLENDER_WORK, default $TMPDIR/exp4_blender, outside the repository)
 #
 # Environment (see the repository RUNNING.md):
 #   PY       Python with numpy/scipy/matplotlib/xarray/pyyaml/gsw/pyproj (default: the pyocean conda env)
@@ -34,12 +37,13 @@ PY="${PY:-/opt/anaconda3/envs/pyocean/bin/python}"
 export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-0}"
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
 
-QUICK=0; DRY=0; ANIM=0
+QUICK=0; DRY=0; ANIM=0; BLEND=0
 for a in "$@"; do
   case "$a" in
     --quick) QUICK=1 ;;
     --dry-run) DRY=1 ;;
     --animations) ANIM=1 ;;
+    --blender) BLEND=1 ;;
     -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
     *) echo "unknown option: $a" >&2; exit 2 ;;
   esac
@@ -144,6 +148,25 @@ if [ "$ANIM" -eq 1 ]; then
   run "$PY" "$A/animate.py" bay-fjord --runs-root "$R"
 else
   echo; echo "=== animations kept as committed (add --animations to redraw them)"
+fi
+
+if [ "$BLEND" -eq 1 ]; then
+  BLENDER="${BLENDER:-/opt/homebrew/bin/blender}"
+  BW="${BLENDER_WORK:-${TMPDIR:-/tmp}/exp4_blender}"
+  step "descriptive Blender animations (one isopycnal in 3-D; scenes and frames in $BW)"
+  run "$PY" "$A/blender_export.py" A --out "$BW/sceneA" --runs-root "$R"
+  run "$PY" "$A/blender_export.py" B --out "$BW/sceneB" --runs-root "$R"
+  # style-gate decisions (Esteban, 2026-11-14): shot B on a fixed +-1.5 m scale with the sponge masked
+  run "$PY" "$A/blender_export.py" restyle --scene "$BW/sceneA" --runs-root "$R"
+  run "$PY" "$A/blender_export.py" restyle --scene "$BW/sceneB" --runs-root "$R" --limit 1.5 --mask-sponge
+  for shot in "sceneA blender_shotA_F1 1920 1000" "sceneB blender_shotB_F3F2 1344 700"; do
+    set -- $shot
+    run "$BLENDER" -b -P "$A/blender_render.py" -- render --scene "$BW/$1" --all --samples 64 --res "$3" "$4"
+    run "$PY" "$A/blender_render.py" compose --scene "$BW/$1" --all --out-dir "$BW/$2"
+    run "$PY" "$A/blender_render.py" movie --scene "$BW/$1" --out-dir "$BW/$2" --movie-out "$F" --name "$2"
+  done
+else
+  echo; echo "=== Blender animations kept as committed (add --blender to redraw them)"
 fi
 
 step "README"; run "$PY" "$S/render_readme.py"

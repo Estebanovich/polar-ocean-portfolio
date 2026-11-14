@@ -185,3 +185,47 @@ def test_terrain_height_uses_the_land_and_sea_exaggerations_separately():
     z, rgb = br.terrain_height_rgb(ter, ve=20.0, ve_land=2.0)
     assert z[0, 0] == pytest.approx(1.0) and z[0, 1] == pytest.approx(-2.0)      # km
     assert rgb.shape == (1, 2, 3)
+
+
+# ---- full render: open-boundary sponge mask and render-time saturation ---------------------------
+
+DATA_OBCS = """ &OBCS_PARM01
+ OB_Iwest=6*1,
+ OB_Jnorth=8*-1,
+ OB_Jsouth=8*1,
+ useOBCSsponge=.TRUE.,
+ &
+ &OBCS_PARM03
+ spongeThickness=2,
+ &
+"""
+
+
+def test_sponge_mask_from_data_obcs_covers_the_boundary_and_sponge_cells():
+    m = be.sponge_mask(DATA_OBCS, (8, 8))
+    exp = np.zeros((8, 8), bool)
+    # the OB row plus spongeThickness = 2 cells inward (pkg/obcs/obcs_sponge.F:68-69, jsl = 1..T)
+    exp[:, :3] = True                     # west
+    exp[:3, :] = True                     # south
+    exp[-3:, :] = True                    # north
+    assert np.array_equal(m, exp)
+    assert not m[3:5, 3:].any()           # no east boundary in this namelist
+
+
+def test_sponge_mask_is_empty_without_the_sponge():
+    txt = DATA_OBCS.replace("useOBCSsponge=.TRUE.", "useOBCSsponge=.FALSE.")
+    m = be.sponge_mask(txt, (6, 8))
+    exp = np.zeros((6, 8), bool)
+    exp[:, 0] = exp[0, :] = exp[-1, :] = True        # the open-boundary rows themselves only
+    assert np.array_equal(m, exp)
+
+
+def test_saturation_stats_mean_and_worst_frame_per_run():
+    a = np.zeros((3, 2, 2))
+    a[1, 0, 0] = 2.0                       # frame 1: 1 of 4 pixels saturated
+    a[2, :, 0] = -1.5                      # frame 2: 2 of 4 (|x| >= L counts)
+    a[2, 1, 1] = np.nan                    # NaN pixels are not counted
+    s = be.saturation_stats({"F3": a}, 1.5)
+    assert s["F3"]["worst"] == pytest.approx(2 / 3)
+    assert s["F3"]["mean"] == pytest.approx((0 + 0.25 + 2 / 3) / 3)
+    assert s["F3"]["worst_index"] == 2

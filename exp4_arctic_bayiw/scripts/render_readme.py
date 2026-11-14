@@ -36,9 +36,9 @@ NUMBER_WHITELIST = (
     r"\bH4[a-d]?\b", r"\bR_?1\b", r"\bc_?1\b", r"\bR₁", r"\bc₁", r"\bc_n\b",
     r"\bExp(?:eriment|\.)? [1-5]\b", r"\bPD[0-3]\b", r"^#+ [0-9]+(?:\.[0-9]+)*\.?",
     r"\b[Ee]qs?\. [0-9]+(?:\.[0-9]+)*(?:[–-][0-9]+)?", r"§[0-9]+(?:\.[0-9]+)*",
-    r"\b(?:Figure|Fig\.|Figures) [0-9](?:[a-e])?(?:[–-][0-9])?", r"\bAnimations? [1-4]\b", r"\bAmendments? [1-3](?:[–-][1-3])?",
+    r"\b(?:Figure|Fig\.|Figures) [0-9](?:[a-e])?(?:[–-][0-9])?", r"\bAnimations? [1-6]\b", r"\bAmendments? [1-3](?:[–-][1-3])?",
     r"\bSentinel-2\b", r"\bMODIS\b", r"\bIBCAO\b", r"\bS100\b", r"\bTEOS-10\b", r"\bGGL90\b",
-    r"\bM2\b", r"\bk = 1\b", r"\b(?:class )?\([a-d]\)", r"\(i{1,3}\)", r"\([1-5]\)", r"\bsha256\b", r"\b(?:i|ii)\b(?=\))",
+    r"\bM2\b", r"\bMP4\b", r"\bk = 1\b", r"\b(?:class )?\([a-d]\)", r"\(i{1,3}\)", r"\([1-5]\)", r"\bsha256\b", r"\b(?:i|ii)\b(?=\))",
     r"\bv5\.2\b", r"\bcheckpoint69j\b", r"\bUTM 33N\b", r"\bΣ₅",
     r"\b(?:" + "|".join(CITATION_YEARS) + r")[a-b]?\b",
 )
@@ -368,6 +368,18 @@ def values() -> dict[str, str]:
         v["drift_F1"] = f(pd_["F1"]["max_abs_change_kg_m-3"], 3)
         v["drift_F2"] = f(pd_["F2"]["max_abs_change_kg_m-3"], 3)
         v["drift_bay"] = rng([pd_["R1"]["max_abs_change_kg_m-3"], pd_["R1k"]["max_abs_change_kg_m-3"]], 3)
+    # the Blender animations of §3.6 (analysis/blender_render.py movie writes these summaries)
+    ba, bb = _load("blender_shotA_F1.json"), _load("blender_shotB_F3F2.json")
+    if ba:
+        v["blA_sigma"], v["blA_z"] = f(ba["sigma_kg_m3"], 3), f(ba["sigma_depth_t0_m"], 0)
+        v["blA_lim"] = f"{ba['colour_limit_m']:g}"
+        v["bl_ve_sea"], v["bl_ve_land"] = f"{ba['ve_sea']:g}", f"{ba['ve_land']:g}"
+    if bb:
+        assert bb["ve_sea"] == ba["ve_sea"] and bb["ve_land"] == ba["ve_land"], "README: one VE for both shots"
+        v["blB_sigma"], v["blB_z"] = f(bb["sigma_kg_m3"], 3), f(bb["sigma_depth_t0_m"], 0)
+        v["blB_step"] = f(bb["step_kg_m3"], 4)
+        v["blB_lim"] = f"{bb['colour_limit_m']:g}"
+        v["blB_sponge"] = word(int(bb["sponge_cells"]))
     if val and h:
         check_prose(val, h, mr)
     return v
