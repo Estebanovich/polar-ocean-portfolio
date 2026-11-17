@@ -103,6 +103,14 @@ The ensemble-adjoint sensitivity to the zonal wind stress is concentrated within
 
 `reproduce.sh --check` lists every step in order: building the forward and Tapenade binaries, the spin-up, the adjoint and forward runs, the evaluation (`analysis/pd2_eval.py`, `analysis/hypotheses.py`), the figure data and figures, and the README. The configuration of every run is in `cases.yaml`.
 
+## Appendix: Animation
+
+The animation is descriptive: no number in this README comes from it, and no criterion or hypothesis uses it (`analysis/animate.py`).
+
+![Animation](figures/anim_fine_spinup.gif)
+
+**Animation.** Eddy spin-up of the {{dx_fine_km}}-km model, from the moment noise in θ breaks the zonal symmetry to the end of the registered extension. Left: five-day mean meridional velocity near the surface; the shelf is to the south, grey lines are isobaths and the dashed line is the J line. Right: the monthly eddy kinetic energy of the same runs (§2), with the current frame marked. The burst of the second month, in which the colour scale saturates, gives way to weaker eddies; over the deep basin they keep decaying, and on the shelf they decay much more slowly.
+
 ## References
 
 Dettling, N., M. Losch, F. Pollmann and T. Kanzow, 2024: Toward parameterizing eddy-mediated transport of warm deep water across the Weddell Sea continental slope. *J. Phys. Oceanogr.*, https://doi.org/10.1175/JPO-D-23-0215.1

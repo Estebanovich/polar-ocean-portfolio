@@ -75,8 +75,9 @@ run "$PY" -m exp5_adjoint_slope.analysis.crosscheck
 step "figure data: mean_state.json, diagnostics.json"
 run "$PY" -m exp5_adjoint_slope.analysis.figdata
 
-step "figures: Figs. 0-5"
+step "figures: Figs. 0-5 and the spin-up animation"
 run "$PY" -m exp5_adjoint_slope.analysis.figures
+run "$PY" -m exp5_adjoint_slope.analysis.animate
 
 step "README: render from the template"
 run "$PY" exp5_adjoint_slope/scripts/render_readme.py

@@ -976,3 +976,9 @@ Se corrigieron los puntos I1–I4 y los menores:
   - H5b, desde F1b: ΔJ = +0.50 GW, 2σ_Δ = 0.16 GW, signo correcto, pero 0.35 veces la predicción (1.43 GW): **falla** por magnitud.
   - V5 **falla**: los remolinos llevan −10 % de J. El fino es débilmente turbulento y no es la referencia supuesta por H5b; no se puede separar si la sobreestimación es del GM o del fino sin equilibrar. Clasificación (c).
   - Otros hallazgos corregidos: los 10 puntos de V1 son 4 gradientes distintos; la deriva del ensamble declarada; el desfase de los registros mensuales declarado; `drop_periodic_end` exige registro final cero; se quitó Rodriguez et al. 2016 de la motivación de H5a.
+
+## 2026-11-17 (tarde) — Exp. 5: animación del spin-up fino y correo a Mazloff
+
+- Exp. 5 publicado en `main` (e223025, commit único), merge y push hechos por Esteban.
+- Animación descriptiva `anim_fine_spinup.gif` (`analysis/animate.py`): v de 5 días a 34 m en F1 + F1b y la EKE mensual. Muestra la ráfaga del mes 2 y el decaimiento posterior; sobre la cuenca profunda la rms de v baja de 0.09 a 0.01 m/s, sobre la plataforma de 0.06 a 0.03 m/s. Apéndice nuevo en el README; ninguna cifra del README sale de ella.
+- Borrador del correo a Mazloff con el Exp. 5 en `~/Phd_project/Borradores Exp5 – Mazloff.md`.
