@@ -327,7 +327,7 @@ Para conocer a cada investigador antes de escribirle. ★ = leer primero (2–3 
 | ★✔ | Smith & Thomson (2020). Pancake sea ice kinematics and dynamics using shipboard stereo video. *Annals of Glaciology* (la turbulencia hielo–océano domina la pérdida de energía de las olas) | https://doi.org/10.1017/aog.2019.35 |
 | ★✔ | Kohout, Smith et al. (2020). Observations of exponential wave attenuation in Antarctic sea ice during the PIPERS campaign. *Annals of Glaciology* | https://doi.org/10.1017/aog.2020.36 |
 | ✔ | Roach, Smith & Dean (2018). Quantifying growth of pancake sea ice floes using images from drifting buoys. *JGR Oceans* | https://doi.org/10.1002/2017JC013693 |
-| ✔ | Light, Smith et al. (2022). Arctic sea ice albedo: spectral composition, spatial heterogeneity, and temporal evolution observed during the MOSAiC drift. *Elementa* | https://doi.org/10.1525/elementa.2021.000103 (m) |
+| ✔ | Light, Smith et al. (2022). Arctic sea ice albedo: spectral composition, spatial heterogeneity, and temporal evolution observed during the MOSAiC drift. *Elementa* | https://doi.org/10.1525/elementa.2021.000103 |
 | ★✔ | Thomson (2022). Wave propagation in the marginal ice zone: connections and feedback mechanisms within the air–ice–ocean system. *Phil. Trans. R. Soc. A* (revisión de su asesor de doctorado; la mejor entrada al tema) | https://doi.org/10.1098/rsta.2021.0251 |
 | | Smith, M. M. (2019). The role of waves in the autumn Arctic Ocean. Tesis doctoral, University of Washington (web, sin DOI) | https://digital.lib.washington.edu/researchworks/items/73b6564a-58f9-4f43-8b99-e9a2032c6f50 |
 
@@ -335,6 +335,6 @@ Para conocer a cada investigador antes de escribirle. ★ = leer primero (2–3 
 
 | | Artículo | Link |
 |---|---|---|
-| ★✔ | Williams, Maksym et al. (2015). Thick and deformed Antarctic sea ice mapped with autonomous underwater vehicles. *Nature Geoscience* | https://doi.org/10.1038/ngeo2299 |
+| ★✔ | Williams, Maksym et al. (2014). Thick and deformed Antarctic sea ice mapped with autonomous underwater vehicles. *Nature Geoscience* | https://doi.org/10.1038/ngeo2299 |
 | ✔ | Ackley et al. (2020). Sea-ice production and air/ice/ocean/biogeochemistry interactions in the Ross Sea during the PIPERS 2017 autumn field campaign. *Annals of Glaciology* (campaña con Maksym y Smith) | https://doi.org/10.1017/aog.2020.31 |
 | ✔ | Stammerjohn, Maksym et al. (2015). Seasonal sea ice changes in the Amundsen Sea, Antarctica, over the period of 1979–2014. *Elementa* | https://doi.org/10.12952/journal.elementa.000055 |
