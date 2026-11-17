@@ -235,12 +235,71 @@ Ya tienes en tu carpeta de la tesis a Cenedese (2004), Ellison & Turner (1959) y
 
 ## Exp. 5 (opcional) — Adjunto (Mazloff)
 
+Revisión del 14 nov: `exp5_adjoint_slope/notes/rev_literatura.md`. Todos los ✔ los devolvió Consensus ese día.
+
 | | Artículo | Link |
 |---|---|---|
-| ★ (m) | Mazloff, Heimbach & Wunsch (2010). An eddy-permitting Southern Ocean State Estimate. *JPO* | https://doi.org/10.1175/2009JPO4236.1 |
-| ✔ | Morrison et al. (2020). Warm Circumpolar Deep Water transport toward Antarctica driven by local dense water export in canyons. *Science Advances* (abierto) | https://doi.org/10.1126/sciadv.aav2516 |
+| ✅ ★ ✔ | Mazloff, Heimbach & Wunsch (2010). An eddy-permitting Southern Ocean State Estimate. *JPO* | https://doi.org/10.1175/2009JPO4236.1 |
+| ✅ ★ ✔ | Mazloff (2012). On the sensitivity of the Drake Passage transport to air–sea momentum flux. *J. Climate* (adjunto de SOSE respecto al viento) | https://doi.org/10.1175/JCLI-D-11-00030.1 |
+| ✅ ★ ✔ | Rodriguez, Mazloff & Gille (2016). An oceanic heat transport pathway to the Amundsen Sea Embayment. *JGR Oceans* (rotacional del viento sobre el quiebre) | https://doi.org/10.1002/2015JC011402 |
+| ✅ ★ ✔ | Thompson et al. (2018). The Antarctic Slope Current in a changing climate. *Rev. Geophys.* (revisión) | https://doi.org/10.1029/2018RG000624 |
+| ✅ ★ ✔ | Stewart & Thompson (2014). Eddy-mediated transport of warm Circumpolar Deep Water across the Antarctic shelf break. *GRL* | https://doi.org/10.1002/2014GL062281 |
+| ✅ ★ ✔ | Marotzke et al. (1999). Construction of the adjoint MIT ocean GCM and application to Atlantic heat transport sensitivity. *JGR* | https://doi.org/10.1029/1999JC900236 |
+| ✅ ★ ✔ | Lösch & Heimbach (2007). Adjoint sensitivity of an ocean general circulation model to bottom topography. *JPO* | https://doi.org/10.1175/JPO3017.1 |
+| ✅ ★ ✔ | McLay (2006). The use of adjoint models for determining the sensitivity of integral quantities in an eddy resolving ocean GCM. Tesis, Southampton (canal reentrante con remolinos; sin DOI) | https://consensus.app/papers/details/w:524ad0a0-52d2-437d-845b-dc342b6a530c/ |
+| ✅ ★ (m) | Heimbach & Losch (2012). Adjoint sensitivities of sub-ice-shelf melt rates to ocean circulation under the Pine Island Ice Shelf. *Ann. Glaciol.* (Consensus da el DOI como 10.3189/2012/aog60a025, que parece mal formado; este es el formato usual de la revista) | https://doi.org/10.3189/2012AoG60A025 |
+| ✅ ★ ✔ | Lea, Allen & Haine (2000). Sensitivity analysis of the climate of a chaotic system. *Tellus A* (abierto) | https://doi.org/10.3402/tellusa.v52i5.12283 |
+| ✅ (m) | Gaikwad et al. (2024). MITgcm-AD v2: open-source tangent linear and adjoint modeling framework for the oceans and atmosphere enabled by the automatic differentiation tool Tapenade. *Future Gener. Comput. Syst.* (en la carpeta de la tesis; criterio de V1) | https://doi.org/10.1016/j.future.2024.107512 |
+| ✅ ★ ✔ | Dettling et al. (2024). Toward parameterizing eddy-mediated transport of warm deep water across the Weddell Sea continental slope. *JPO* | https://doi.org/10.1175/JPO-D-23-0215.1 |
+| ✅ ✔ | Lanham, Mazloff et al. (2025). Seasonal regimes of warm Circumpolar Deep Water intrusion toward Antarctic ice shelves. *Commun. Earth Environ.* (abierto) | https://doi.org/10.1038/s43247-025-02091-w |
+| ✔ | Dettling, Nakayama et al. (2025). A topography-aware eddy parameterization improves warm water transport across the Cape Darnley continental slope. *JAMES* | https://doi.org/10.1029/2025MS005115 |
+| ✔ | Bull, Munday & Jenkins (2025). Influence of topography and winds on the distribution of water masses on the Antarctic continental shelf. *JPO* | https://doi.org/10.1175/JPO-D-24-0092.1 |
+| ✔ | Stewart & Thompson (2012). Sensitivity of the ocean's deep overturning circulation to easterly Antarctic winds. *GRL* | https://doi.org/10.1029/2012GL053099 |
+| ✔ | Stewart & Thompson (2016). Eddy generation and jet formation via dense water outflows across the Antarctic continental slope. *JPO* | https://doi.org/10.1175/JPO-D-16-0145.1 |
+| ✔ | Stewart, Klocker & Menemenlis (2018). Circum-Antarctic shoreward heat transport derived from an eddy- and tide-resolving simulation. *GRL* | https://doi.org/10.1002/2017GL075677 |
+| ✔ | Stewart, Klocker & Menemenlis (2019). Acceleration and overturning of the Antarctic Slope Current by winds, eddies, and tides. *JPO* | https://doi.org/10.1175/JPO-D-18-0221.1 |
+| ✅ ✔ | Si, Stewart & Eisenman (2023). Heat transport across the Antarctic Slope Front controlled by cross-slope salinity gradients. *Sci. Adv.* (abierto) | https://doi.org/10.1126/sciadv.add7049 |
+| ✔ | Si et al. (2024). Antarctic Slope Undercurrent and onshore heat transport driven by ice shelf melting. *Sci. Adv.* (abierto) | https://doi.org/10.1126/sciadv.adl0601 |
+| ✔ | Morrison et al. (2020). Warm Circumpolar Deep Water transport toward Antarctica driven by local dense water export in canyons. *Sci. Adv.* (abierto) | https://doi.org/10.1126/sciadv.aav2516 |
+| ✔ | Morrison et al. (2023). Sensitivity of Antarctic shelf waters and abyssal overturning to local winds. *J. Climate* | https://doi.org/10.1175/JCLI-D-22-0858.1 |
+| ✔ | Palóczy, Gille & McClean (2018). Oceanic heat delivery to the Antarctic continental shelf: large-scale, low-frequency variability. *JGR Oceans* | https://doi.org/10.1029/2018JC014345 |
+| ✔ | Foppert, Rintoul & England (2019). Along-slope variability of cross-slope eddy transport in East Antarctica. *GRL* | https://doi.org/10.1029/2019GL082999 |
+| ✔ | Ong et al. (2024). Intrinsically episodic Antarctic shelf intrusions of Circumpolar Deep Water via canyons. *JPO* | https://doi.org/10.1175/JPO-D-23-0067.1 |
+| ✔ | Liu et al. (2022). Topography-mediated transport of warm deep water across the continental shelf slope, East Antarctica. *JPO* | https://doi.org/10.1175/JPO-D-22-0023.1 |
+| ✔ | Wang et al. (2024). A model study of buoyancy driven cross-isobath transport over the Ross Sea continental shelf break. *JGR Oceans* | https://doi.org/10.1029/2023JC020078 |
+| ✔ | Daae et al. (2017). On the effect of topography and wind on warm water inflow: an idealized study of the southern Weddell Sea continental shelf system. *JGR Oceans* | https://doi.org/10.1002/2016JC012541 |
+| ✔ | Dinniman, Klinck & Hofmann (2012). Sensitivity of CDW transport and ice shelf basal melt along the West Antarctic Peninsula to changes in the winds. *J. Climate* | https://doi.org/10.1175/JCLI-D-11-00307.1 |
+| ✔ | Bull et al. (2021). Remote control of Filchner-Ronne Ice Shelf melt rates by the Antarctic Slope Current. *JGR Oceans* | https://doi.org/10.1029/2020JC016550 |
+| ✔ | Haigh et al. (2026). Wind-driven coastal polynya variability drives decadal ice-shelf melt variability in the Amundsen Sea. *GRL* | https://doi.org/10.1029/2025GL118546 |
+| ✔ | Rieke et al. (2025). Interannual variability of ocean heat content in the eastern Amundsen Sea controlled by wind. *GRL* | https://doi.org/10.1029/2025GL117760 |
+| ✔ | Hogg & Munday (2014). Does the sensitivity of Southern Ocean circulation depend upon bathymetric details? *Phil. Trans. R. Soc. A* | https://doi.org/10.1098/rsta.2013.0050 |
+| ✔ | Abernathey, Marshall & Ferreira (2011). The dependence of Southern Ocean meridional overturning on wind stress. *JPO* (canal reentrante) | https://doi.org/10.1175/JPO-D-11-023.1 |
+| ✔ | Morrison & Hogg (2012). On the relationship between Southern Ocean overturning and ACC transport. *JPO* | https://doi.org/10.1175/JPO-D-12-057.1 |
+| ✔ | Munday & Zhai (2015). Sensitivity of Southern Ocean circulation to wind stress changes: role of relative wind stress. *Ocean Modelling* | https://doi.org/10.1016/j.ocemod.2015.08.004 |
+| ✔ | Matsuta, Tanaka & Kubokawa (2026). Drag-controlled regime transitions in the eddy saturation mechanism of the ACC. *GRL* (canal MITgcm) | https://doi.org/10.1029/2026GL124095 |
+| ✔ | Giering & Kaminski (1998). Recipes for adjoint code construction. *ACM TOMS* | https://doi.org/10.1145/293686.293695 |
+| ✔ | Heimbach et al. (2010). On the formulation of sea-ice models. Part 2: lessons from multi-year adjoint sea-ice export sensitivities through the Canadian Arctic Archipelago. *Ocean Modelling* | https://doi.org/10.1016/j.ocemod.2010.02.002 |
+| ✔ | Forget et al. (2015). ECCO version 4: an integrated framework for non-linear inverse modeling and global ocean state estimation. *GMD* (abierto) | https://doi.org/10.5194/gmd-8-3071-2015 |
+| ✔ | Nakayama et al. (2021). Development of adjoint-based ocean state estimation for the Amundsen and Bellingshausen seas and ice shelf cavities using MITgcm–ECCO (66j). *GMD* (abierto) | https://doi.org/10.5194/gmd-14-4909-2021 |
+| ✔ | Gopalakrishnan, Cornuelle & Hoteit (2013). Adjoint sensitivity studies of loop current and eddy shedding in the Gulf of Mexico. *JGR Oceans* | https://doi.org/10.1002/jgrc.20240 |
+| ✔ | Shimizu (2024). Fundamental properties of adjoint model and adjoint sensitivity under fully nonlinear hydrostatic internal gravity waves. *JGR Oceans* | https://doi.org/10.1029/2023JC020577 |
+| ✔ | Vlasenko, Köhl & Stammer (2015). The efficiency of geophysical adjoint codes generated by automatic differentiation tools. *Comput. Phys. Commun.* | https://doi.org/10.1016/j.cpc.2015.10.008 |
+| ✔ | Jones et al. (2019). Heat distribution in the Southeast Pacific is only weakly sensitive to high-latitude heat flux and wind stress. *JGR Oceans* | https://doi.org/10.1029/2019JC015460 |
+| ✔ | Jones et al. (2020). The sensitivity of Southeast Pacific heat distribution to local and remote changes in ocean properties. *JPO* | https://doi.org/10.1175/JPO-D-19-0155.1 |
+| ✔ | Pimm et al. (2024). Surface heat fluxes drive a two-phase response in Southern Ocean mode water stratification. *JGR Oceans* | https://doi.org/10.1029/2023JC020795 |
+| ✔ | Pimm et al. (2025). Local versus far-field control on South Pacific Subantarctic mode water variability. *Ocean Sci.* (abierto) | https://doi.org/10.5194/os-21-1237-2025 |
+| ✔ | Zhan et al. (2018). Sensitivity studies of the Red Sea eddies using adjoint method. *JGR Oceans* | https://doi.org/10.1029/2018JC014531 |
+| ✔ | Wang, Köhl & Stammer (2025). Northeast Pacific marine heatwave mechanism inferred from adjoint sensitivities. *J. Climate* | https://doi.org/10.1175/JCLI-D-24-0274.1 |
+| ✔ | Na (2025). State estimation and adjoint sensitivity analysis in the South China Sea. Tesis, HKUST | https://doi.org/10.14711/thesis-hdl167731 |
+| ✔ | Köhl (1999). An adjoint method for the assimilation of statistical characteristics into eddy-resolving ocean models. Tesis, Kiel | https://doi.org/10.3289/IFM_BER_310 |
+| ✔ | Köhl et al. (2026). A pilot variational coupled reanalysis based on the CESAM climate model. *QJRMS* | https://doi.org/10.1002/qj.70092 |
+| ✔ | Gebbie & Hsieh (2017). Controllability, not chaos, key criterion for ocean state estimation. *NPG* (abierto) | https://doi.org/10.5194/npg-24-351-2017 |
+| ✔ | Wang & Zaki (2026). Mitigating adjoint chaos in wall turbulence. *JFM* | https://doi.org/10.1017/jfm.2026.11822 |
+| ✔ | Thakur & Nadarajah (2025). A stabilized march approach to adjoint-based sensitivity analysis of chaotic flows. arXiv (preprint) | https://doi.org/10.48550/arXiv.2505.00838 |
 
-Ya tienes Heimbach et al. (2005), el adjunto de MITgcm, en tu carpeta de la tesis.
+Ya tienes en tu carpeta de la tesis 📁: Heimbach, Hill & Giering (2005), el adjunto de MITgcm; Gaikwad et al. (2024), MITgcm-AD v2 con Tapenade; y Tber et al. (2007), Tapenade aplicado a OPA.
+
+**Citados por otros, sin verificar** (no los devolvió Consensus): Stewart & Thompson (2015), la resolución de ~1 km que hace falta para los remolinos del talud, citado por Bull et al. (2025); Verdy et al. (2023), las ventanas de asimilación, citado por Köhl et al. (2026).
 
 ## Notas de la búsqueda que afectan el diseño
 

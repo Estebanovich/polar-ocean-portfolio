@@ -1,0 +1,18 @@
+# Slope-aware GM (Dettling et al. 2024, Eq. 24): kappa_GM = 130/(1 + 800 s_topo) m2/s through the
+# bolus map (gm_map.bin, pkg/gmredi/gmredi_init_fixed.F:62-67); kappa_Redi = 15 m2/s uniform
+# (p. 1682); Gerdes et al. (1991) taper (p. 1678). Clipping, FM07 and AC02 are excluded under
+# Tapenade (code_tap/GMREDI_OPTIONS.h); the forward build uses the same taper.
+# Advective form with GM_Small_Number = 1e-6 (option A, post hoc; notes/v4_revision_posthoc.md):
+# the skew-flux form drifts out of bounds in the forward run (theta -7.7..2.4 degC in 2 years);
+# with the default floor (1e-20) the Tapenade adjoint of the advective form grows by
+# ~1/GM_Small_Number per step. 1e-6 kg m-4 (N2 ~ 1e-8 s-2) touches only nearly neutral cells and
+# is the same forward and adjoint. J = resolved + bolus (GM_PsiY) + Redi flux (Kvy, Kvz).
+ &GM_PARM01
+  GM_AdvForm         = .TRUE.,
+  GM_background_K    = 130.,
+  GM_isopycK         = 15.,
+  GM_bol2dFile       = 'gm_map.bin',
+  GM_taper_scheme    = 'gkw91',
+  GM_maxSlope        = 1.E-2,
+  GM_Small_Number    = 1.E-6,
+ &

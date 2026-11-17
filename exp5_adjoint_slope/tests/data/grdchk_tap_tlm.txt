@@ -1,0 +1,6 @@
+grad-res -------------------------------
+ grad-res  proc    #    i    j    k   bi   bj iobc       fc ref            fc + eps           fc - eps
+ grad-res  proc    #    i    j    k   bi   bj iobc      tlm grad            fd grad          1 - fd/tlm
+grad-res -------------------------------
+ grad-res     0    1   61    5    1    1    1    1  -6.05596159367E+11 -6.05596159457E+11 -6.05596159277E+11
+ grad-res     0    1    1    1    0    1    1    1  -8.96642030128E+06 -8.96647949219E+06 -6.60139793096E-06

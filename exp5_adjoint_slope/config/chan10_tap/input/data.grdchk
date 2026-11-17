@@ -1,0 +1,13 @@
+# Gradient check (V1): run_adjoint.py sets the control, the point and eps per run.
+ &GRDCHK_NML
+ grdchk_eps     = 1.d-3,
+ nbeg           = 1,
+ nstep          = 1,
+ nend           = 1,
+ grdchkvarname  = 'xx_theta',
+ iGloPos        = 20,
+ jGloPos        = 10,
+ kGloPos        = 1,
+ recglo         = 1,
+ useCentralDiff = .TRUE.,
+ &

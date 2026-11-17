@@ -1,0 +1,81 @@
+# Exp. 5 chan10: coarse reentrant Antarctic slope channel (spec Sec. 3; plan, Configuracion).
+# Base: verification/tutorial_reentrant_channel/input/data (copied, then changed as noted).
+ &PARM01
+# Dettling et al. (2024) Table 1 (notes/pd1b_config_dettling.md): Ah 12, grid biharmonic 0.1,
+# biharmonic Leith 1 (vorticity and divergence), Az 3e-4, kz 5e-6, linear drag 1e-3 m/s.
+ viscAh=12.,
+ viscA4Grid=0.1,
+ viscC4leith=1.,
+ viscC4leithD=1.,
+ viscAr=3.E-4,
+ implicitViscosity=.TRUE.,
+ no_slip_sides=.FALSE.,
+ no_slip_bottom=.FALSE.,
+ bottomDragLinear=1.E-3,
+ diffKhT=0.,
+ diffKhS=0.,
+ diffKrT=5.E-6,
+ diffKrS=5.E-6,
+ ivdc_kappa=10.,
+ implicitDiffusion=.TRUE.,
+ f0=-1.31E-4,
+ beta=0.,
+ selectCoriScheme=1,
+ rhoConst=1027.5,
+ rhoNil=1027.5,
+ HeatCapacity_Cp=3994.,
+ eosType='LINEAR',
+ tAlpha=3.0E-5,
+ sBeta=7.4E-4,
+ tRef=35*-1.,
+ sRef=35*34.5,
+ hFacMinDr=20.,
+ hFacMin=0.1,
+ rigidLid=.FALSE.,
+ implicitFreeSurface=.TRUE.,
+ exactConserv=.TRUE.,
+# DST3 without limiter (linear, differentiable): the same scheme in forward and adjoint builds.
+ tempAdvScheme=30,
+ saltAdvScheme=30,
+ staggerTimeStep=.TRUE.,
+ readBinaryPrec=64,
+ writeBinaryPrec=64,
+ useSingleCpuIO=.TRUE.,
+ &
+ &PARM02
+ cg2dTargetResidual=1.E-9,
+ cg2dMaxIters=1000,
+ &
+ &PARM03
+# Switch on surface relaxation (set_parms.F:250: only if tau > 0); the rates come from
+# lambdaThetaFile / lambdaSaltFile (PARM05), which override these values.
+ tauThetaClimRelax=164000.,
+ tauSaltClimRelax=2592000.,
+ nIter0=0,
+ nTimeSteps=48,
+ deltaT=1200.0,
+ pChkptFreq=31536000.0,
+ chkptFreq=0.,
+ dumpFreq=0.,
+ monitorFreq=86400.,
+ monitorSelect=2,
+ momDissip_In_AB=.FALSE.,
+ &
+ &PARM04
+ usingCartesianGrid=.TRUE.,
+ delX=40*10.E3,
+ delY=45*10.E3,
+ delRFile='delZ.bin',
+ &
+ &PARM05
+ bathyFile='bathy.bin',
+ zonalWindFile='tau_x.bin',
+ thetaClimFile='sst_relax.bin',
+ saltClimFile='sss_relax.bin',
+# Ice-like surface relaxation and polynya salt input (notes/pd1b_config_dettling.md):
+ lambdaThetaFile='lambda_t.bin',
+ lambdaSaltFile='lambda_s.bin',
+ saltFluxFile='salt_flux.bin',
+ hydrogThetaFile='T.init.bin',
+ hydrogSaltFile='S.init.bin',
+ &

@@ -1,0 +1,278 @@
+# Exp. 5 case registry (adjoint sensitivity of cross-slope heat transport in an Antarctic slope
+# channel; cross-check in an eddying version). Parses with yaml.safe_load.
+#
+# configs
+#   chan10       coarse (10 km) reentrant channel, slope-aware GM, forward
+#   chan10_tap   chan10 + code_tap: Tapenade adjoint and tangent-linear builds
+#   chan2p5      fine (2.5 km) channel, no GM, Leith viscosity
+# cases
+#   G0   chan10 spin-up                       GS   10-day adjoint smoke test (grdchk, 3 points)
+#   GA   365-day adjoint window from G0       GB   180-day adjoint window from G0
+#   F0   chan2p5 spin-up from G0 (interp.)    FC1-3 / FP1-3  control / perturbed members, 180 d
+common: &common
+  Lx_m: 400000.0
+  Ly_m: 450000.0
+  nr: 35
+  dz_top_m: 10.0
+  depth_total_m: 3000.0
+  f0: -1.31e-04
+  # J line (spec Sec. 5; notes/pd1b_config_dettling.md): the v face at y = 170 km, ~920 m
+  # isobath, a v face on both grids.
+  y_qb_m: 170000.0
+  theta_f: -1.9
+configs:
+  chan10: &chan10
+    <<: *common
+    nx: 40
+    ny: 45
+    dx_m: 10000.0
+  chan10_tap:
+    <<: *chan10
+    input_dirs: [chan10, chan10_tap]
+  chan2p5:
+    <<: *common
+    nx: 160
+    ny: 180
+    dx_m: 2500.0
+cases:
+  # T10: 30-day timing run (PD1). T2Y: 2-year stability test. G0: 30-year spin-up at
+  # deltaT = 1200 s (26280 steps per 365-day year), 30 one-year stages.
+  T10: {config: chan10, n_timesteps: 2160}
+  T2Y: {config: chan10, n_timesteps: 52560, n_stages: 2}
+  G0: {config: chan10, n_timesteps: 788400, n_stages: 30}
+  # TF2: 2-day timing run of the fine channel (Task 4 Step 5), deltaT = 240 s.
+  TF2: {config: chan2p5, n_timesteps: 720}
+  # GJ: J anchor (Fortran fc vs analysis.heat_transport on every-step snapshots), forward build.
+  GJ:
+    config: chan10_tap
+    kind: fwd
+    window_days: 2
+    last_days: 1
+    ctrl_period_days: 0
+    pickup_from: G0
+    snapshots: true
+  # GS: day-1 smoke test of the adjoint: grdchk at one point of tau_x, T0 and kappa_v, three eps.
+  # From the final G0 pickup.
+  GS:
+    config: chan10_tap
+    kind: adj
+    window_days: 10
+    last_days: 5
+    ctrl_period_days: 0
+    pickup_from: G0
+    grdchk:
+      - {var: xx_fu, i: 20, j: 18, k: 1, rec: 1, eps: [1.0e-2, 1.0e-3, 1.0e-4]}
+      - {var: xx_theta, i: 20, j: 18, k: 15, rec: 1, eps: [1.0e-1, 1.0e-2, 1.0e-3]}
+      - {var: xx_diffkr, i: 20, j: 18, k: 10, rec: 1, eps: [1.0e-5, 1.0e-6, 1.0e-7]}
+  # GSU / GSU_tlm (diagnostic, 2026-11-16): tau_x at the J row failed GS (3.1 %, FD not
+  # converging). Smaller eps at the same point, two other rows, and the tangent linear model.
+  GSU:
+    config: chan10_tap
+    kind: adj
+    window_days: 10
+    last_days: 5
+    ctrl_period_days: 0
+    pickup_from: G0
+    grdchk:
+      - {var: xx_fu, i: 20, j: 18, k: 1, rec: 1, eps: [1.0e-5, 1.0e-6]}
+      - {var: xx_fu, i: 20, j: 10, k: 1, rec: 1, eps: [1.0e-3, 1.0e-4]}
+      - {var: xx_fu, i: 20, j: 30, k: 1, rec: 1, eps: [1.0e-3, 1.0e-4]}
+  GSU_tlm:
+    config: chan10_tap
+    kind: tlm
+    window_days: 10
+    last_days: 5
+    ctrl_period_days: 0
+    pickup_from: G0
+    grdchk:
+      - {var: xx_fu, i: 20, j: 18, k: 1, rec: 1, eps: [1.0e-4]}
+  # GSF: forward binary over the GS window; gate: fc equal to the adjoint fc_ref to 1e-12.
+  GSF:
+    config: chan10_tap
+    kind: fwd
+    window_days: 10
+    last_days: 5
+    ctrl_period_days: 0
+    pickup_from: G0
+  # GM30: 30-day adjoint to measure memory and time before GA (no grdchk).
+  GM30: {config: chan10_tap, kind: adj, window_days: 30, last_days: 30, ctrl_period_days: 30, pickup_from: G0}
+  # GA / GB (PD0 + amendment): 360 and 180 days from the final G0 pickup, monthly tau controls,
+  # J = mean of the last 30 days.
+  GA: {config: chan10_tap, kind: adj, window_days: 360, last_days: 30, ctrl_period_days: 30, pickup_from: G0}
+  GB: {config: chan10_tap, kind: adj, window_days: 180, last_days: 30, ctrl_period_days: 30, pickup_from: G0}
+  # D90*: adjoint-instability diagnostics (2026-11-16, post hoc). GA/GB grow backward in time
+  # (|dJ/dtheta0| 1e-3 at 30 d, 2e11 at 180 d, 1e43 at 360 d; deep slope base, y 230-310 km).
+  # 90-day windows as GB, one suspect switched off per case (diagnostic only, not results).
+  # D90 also compares the adjoint with finite differences at the GB argmax of |dJ/dtheta0|.
+  D90:
+    {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0,
+     grdchk: [{var: xx_theta, i: 37, j: 28, k: 31, rec: 1, eps: [1.0e-3]}]}
+  D90_noleith:
+    {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0,
+     nml: {data: {PARM01: {viscC4leith: "0.", viscC4leithD: "0."}}}}
+  D90_clip:
+    {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0,
+     nml: {data.gmredi: {GM_PARM01: {GM_taper_scheme: "'clipping'"}}}}
+  D90_nogm:
+    {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0,
+     nml: {data.pkg: {PACKAGES: {useGMRedi: ".FALSE."}}}}
+  D90_noivdc:
+    {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0,
+     nml: {data: {PARM01: {ivdc_kappa: "0."}}}}
+  # E0..E4: intrinsic-variability ensemble of the coarse model (2026-11-16, post hoc). D90 showed
+  # that a 1e-3 K one-cell perturbation shifts the 90-day J by more than J itself. 360-day
+  # forwards from G0; E1-E4 add theta0 noise <= 1e-6 K (seeds 2027-2030, files written by the
+  # session in $EXP5_RUNS/xx_noise). Monthly J from state3d gives the noise floor for V2/V3.
+  E0: {config: chan10_tap, kind: fwd, window_days: 360, last_days: 30, ctrl_period_days: 0, pickup_from: G0}
+  E1: {config: chan10_tap, kind: fwd, window_days: 360, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_noise/m1}
+  E2: {config: chan10_tap, kind: fwd, window_days: 360, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_noise/m2}
+  E3: {config: chan10_tap, kind: fwd, window_days: 360, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_noise/m3}
+  E4: {config: chan10_tap, kind: fwd, window_days: 360, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_noise/m4}
+  # E0z: E0 through the xx_from path with all-zero controls (must equal E0: neutral mechanism), 90 d.
+  E0z: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_noise/m0}
+  # EA21..EA30: ensemble adjoint (Lea et al. 2000; 2026-11-16, post hoc). E0-E4 show the coarse
+  # model is chaotic (monthly-J spread ~J by month 2-3; e-folding ~4 d), so GA/GB are not
+  # deterministic sensitivities. 90-day windows (stable in D90) from the G0 yearly pickups of
+  # years 21-30 (copied from LaCie to $EXP5_RUNS/G0/yearly); monthly tau controls.
+  EA21: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 551880}
+  EA22: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 578160}
+  EA23: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 604440}
+  EA24: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 630720}
+  EA25: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 657000}
+  EA26: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 683280}
+  EA27: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 709560}
+  EA28: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 735840}
+  EA29: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 762120}
+  EA30: {config: chan10_tap, kind: adj, window_days: 90, last_days: 30, ctrl_period_days: 30, pickup_from: G0, pickup_iter: 788400}
+  # GV1 / GV1_tlm (PD2 A, post hoc): V1d on the 30-day GM30 window, points from
+  # validate.top_points on GM30 (tau_x: 3 largest + break row j13; T0; kappa_v), 1-based.
+  GV1:
+    config: chan10_tap
+    kind: adj
+    window_days: 30
+    last_days: 30
+    ctrl_period_days: 30
+    pickup_from: G0
+    grdchk:
+      - {var: xx_fu, i: 26, j: 17, k: 1, rec: 1, eps: [1.0e-5, 1.0e-6]}
+      - {var: xx_fu, i: 16, j: 17, k: 1, rec: 1, eps: [1.0e-5, 1.0e-6]}
+      - {var: xx_fu, i: 6, j: 17, k: 1, rec: 1, eps: [1.0e-5, 1.0e-6]}
+      - {var: xx_fu, i: 36, j: 13, k: 1, rec: 1, eps: [1.0e-5, 1.0e-6]}
+      - {var: xx_theta, i: 1, j: 17, k: 18, rec: 1, eps: [1.0e-3]}
+      - {var: xx_theta, i: 20, j: 17, k: 18, rec: 1, eps: [1.0e-3]}
+      - {var: xx_theta, i: 15, j: 17, k: 18, rec: 1, eps: [1.0e-3]}
+      - {var: xx_diffkr, i: 10, j: 18, k: 13, rec: 1, eps: [1.0e-5]}
+      - {var: xx_diffkr, i: 39, j: 18, k: 13, rec: 1, eps: [1.0e-5]}
+      - {var: xx_diffkr, i: 22, j: 18, k: 13, rec: 1, eps: [1.0e-5]}
+  GV1_tlm:
+    config: chan10_tap
+    kind: tlm
+    window_days: 30
+    last_days: 30
+    ctrl_period_days: 30
+    pickup_from: G0
+    grdchk:
+      - {var: xx_fu, i: 26, j: 17, k: 1, rec: 1, eps: [1.0e-5]}
+      - {var: xx_fu, i: 16, j: 17, k: 1, rec: 1, eps: [1.0e-5]}
+      - {var: xx_fu, i: 6, j: 17, k: 1, rec: 1, eps: [1.0e-5]}
+      - {var: xx_fu, i: 36, j: 13, k: 1, rec: 1, eps: [1.0e-5]}
+      - {var: xx_theta, i: 1, j: 17, k: 18, rec: 1, eps: [1.0e-3]}
+      - {var: xx_theta, i: 20, j: 17, k: 18, rec: 1, eps: [1.0e-3]}
+      - {var: xx_theta, i: 15, j: 17, k: 18, rec: 1, eps: [1.0e-3]}
+      - {var: xx_diffkr, i: 10, j: 18, k: 13, rec: 1, eps: [1.0e-5]}
+      - {var: xx_diffkr, i: 39, j: 18, k: 13, rec: 1, eps: [1.0e-5]}
+      - {var: xx_diffkr, i: 22, j: 18, k: 13, rec: 1, eps: [1.0e-5]}
+  # GV2d_<u>_<p|m> (PD2 A): V2d/V3d, forward 30 d with +/- the GM30 pattern of u (amplitudes
+  # of PD0), time-constant; files and predictions in xx_v2d (pred.json).
+  GV2d_fu_p: {config: chan10_tap, kind: fwd, window_days: 30, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_v2d/fu_p}
+  GV2d_fu_m: {config: chan10_tap, kind: fwd, window_days: 30, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_v2d/fu_m}
+  GV2d_theta_p: {config: chan10_tap, kind: fwd, window_days: 30, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_v2d/theta_p}
+  GV2d_theta_m: {config: chan10_tap, kind: fwd, window_days: 30, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_v2d/theta_m}
+  GV2d_diffkr_p: {config: chan10_tap, kind: fwd, window_days: 30, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_v2d/diffkr_p}
+  GV2d_diffkr_m: {config: chan10_tap, kind: fwd, window_days: 30, last_days: 30, ctrl_period_days: 0, pickup_from: G0, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_v2d/diffkr_m}
+  # PD2 B forward ensembles (post hoc), from the G0 yearly pickups (member = year):
+  # V3E_<y>_<p|m>: EA-mean tau_x pattern (max 0.01 N m-2), 90 d; H5A<i|ii>_<y>_<p|m>: H5a
+  # patterns (i) uniform and (ii) 37.5-km dipole, RMS 0.01 over y < 275 km, 90 d, years 26-30;
+  # H5BC_<y>_<p|m>: coarse prediction for H5b, the FP pattern (= V3E), 180 d. xx_ens/patterns.json.
+  V3E_21_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 551880, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_21_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 551880, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  V3E_22_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 578160, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_22_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 578160, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  V3E_23_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 604440, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_23_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 604440, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  V3E_24_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 630720, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_24_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 630720, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  V3E_25_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 657000, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_25_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 657000, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  V3E_26_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 683280, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_26_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 683280, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  V3E_27_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 709560, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_27_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 709560, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  V3E_28_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 735840, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_28_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 735840, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  V3E_29_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 762120, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_29_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 762120, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  V3E_30_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 788400, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  V3E_30_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 788400, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5Ai_26_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 683280, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_p}
+  H5Ai_26_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 683280, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_m}
+  H5Aii_26_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 683280, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_p}
+  H5Aii_26_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 683280, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_m}
+  H5Ai_27_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 709560, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_p}
+  H5Ai_27_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 709560, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_m}
+  H5Aii_27_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 709560, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_p}
+  H5Aii_27_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 709560, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_m}
+  H5Ai_28_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 735840, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_p}
+  H5Ai_28_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 735840, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_m}
+  H5Aii_28_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 735840, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_p}
+  H5Aii_28_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 735840, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_m}
+  H5Ai_29_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 762120, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_p}
+  H5Ai_29_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 762120, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_m}
+  H5Aii_29_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 762120, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_p}
+  H5Aii_29_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 762120, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_m}
+  H5Ai_30_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 788400, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_p}
+  H5Ai_30_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 788400, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5ai_m}
+  H5Aii_30_p: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 788400, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_p}
+  H5Aii_30_m: {config: chan10_tap, kind: fwd, window_days: 90, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 788400, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/h5aii_m}
+  H5BC_21_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 551880, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_21_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 551880, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5BC_22_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 578160, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_22_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 578160, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5BC_23_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 604440, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_23_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 604440, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5BC_24_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 630720, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_24_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 630720, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5BC_25_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 657000, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_25_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 657000, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5BC_26_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 683280, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_26_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 683280, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5BC_27_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 709560, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_27_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 709560, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5BC_28_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 735840, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_28_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 735840, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5BC_29_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 762120, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_29_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 762120, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  H5BC_30_p: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 788400, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_p}
+  H5BC_30_m: {config: chan10_tap, kind: fwd, window_days: 180, last_days: 30, ctrl_period_days: 0, pickup_from: G0, pickup_iter: 788400, xx_from: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/v3e_m}
+  # F0: fine spin-up from the last G0 pickup interpolated to 2.5 km (gendata/interp.py),
+  # 12 months (spec Sec. 4: 6-12 months, until the eddy energy levels off), two 6-month stages.
+  F0: {config: chan2p5, init_from: G0, n_timesteps: 131400, n_stages: 2}
+  # F0b: second 6 months of F0, from the stage-1 pickup (stage 1 ended normally at 65700 but
+  # its status was FAILED: the daily monitor line could not land on the 182.5-day stage end).
+  F0b: {config: chan2p5, pickup_from: F0, pickup_iter: 65700, n_timesteps: 65700}
+  # F1: eddy spin-up (correction 2026-11-17, notes/pd0_preregistro.md): F0/F0b were exactly zonally
+  # symmetric; F1 adds member-0 theta noise to the F0b pickup and runs 365 days (one stage: pChkptFreq is 182.5 d).
+  F1: {config: chan2p5, pickup_from: F0b, pickup_iter: 131400, n_timesteps: 131400, member: 0}
+  # F1b: F1 failed the EKE equilibrium rule (months 10-12 vs 7-9: -13 %), so it is extended once,
+  # without new noise, by 182.5 days (to the next pChkptFreq multiple, so the end pickup is written).
+  F1b: {config: chan2p5, pickup_from: F1, pickup_iter: 262800, n_timesteps: 65700}
+  # FC1..3: control ensemble, 180 days from the end of F1b (pickup 328500), member k gets
+  # theta noise <= 1e-3 degC (gendata/interp.perturb_pickup_theta, seed 2026).
+  FC1: {config: chan2p5, pickup_from: F1b, pickup_iter: 328500, n_timesteps: 64800, member: 1}
+  FC2: {config: chan2p5, pickup_from: F1b, pickup_iter: 328500, n_timesteps: 64800, member: 2}
+  FC3: {config: chan2p5, pickup_from: F1b, pickup_iter: 328500, n_timesteps: 64800, member: 3}
+  # FP1..3 (H5b): FC members + the EA-mean tau_x pattern (PD2: max 0.01 N m-2, constant),
+  # interpolated from the coarse rows (gendata/make_case.py tau_pert).
+  FP1: {config: chan2p5, pickup_from: F1b, pickup_iter: 328500, n_timesteps: 64800, member: 1, tau_pert: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/fp_pattern.json}
+  FP2: {config: chan2p5, pickup_from: F1b, pickup_iter: 328500, n_timesteps: 64800, member: 2, tau_pert: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/fp_pattern.json}
+  FP3: {config: chan2p5, pickup_from: F1b, pickup_iter: 328500, n_timesteps: 64800, member: 3, tau_pert: /Volumes/ESTEBAN_MIT/portfolio_runs/exp5/xx_ens/fp_pattern.json}

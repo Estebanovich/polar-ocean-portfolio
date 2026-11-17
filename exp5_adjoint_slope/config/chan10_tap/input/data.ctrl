@@ -1,0 +1,27 @@
+# Controls (spec Sec. 5): monthly zonal and meridional wind stress (gentim2d, added to fu/fv in
+# pkg/ctrl/ctrl_map_forcing.F:119), initial T and S and vertical diffusivity (genarr3d).
+# Weights are ones: the adjoint gives raw dJ/du; scaling is done in analysis/adjsens.py.
+# xx_gentim2d_period is set per case by run_adjoint.py (0 = constant in time).
+ &CTRL_NML
+ &
+ &CTRL_PACKNAMES
+ ctrlname = 'ecco_ctrl',
+ costname = 'ecco_cost',
+ scalname = 'ecco_scal',
+ maskname = 'ecco_mask',
+ metaname = 'ecco_meta',
+ &
+ &CTRL_NML_GENARR
+ xx_genarr3d_file(1)    = 'xx_theta',
+ xx_genarr3d_weight(1)  = 'ones_64b.bin',
+ xx_genarr3d_file(2)    = 'xx_salt',
+ xx_genarr3d_weight(2)  = 'ones_64b.bin',
+ xx_genarr3d_file(3)    = 'xx_diffkr',
+ xx_genarr3d_weight(3)  = 'ones_64b.bin',
+ xx_gentim2d_file(1)    = 'xx_fu',
+ xx_gentim2d_weight(1)  = 'ones_64b.bin',
+ xx_gentim2d_period(1)  = 0.,
+ xx_gentim2d_file(2)    = 'xx_fv',
+ xx_gentim2d_weight(2)  = 'ones_64b.bin',
+ xx_gentim2d_period(2)  = 0.,
+ &
