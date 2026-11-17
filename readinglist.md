@@ -306,3 +306,12 @@ Ya tienes en tu carpeta de la tesis 📁: Heimbach, Hill & Giering (2005), el ad
 - **Cenedese & Gatto ya usaron un fluido de dos capas.** Lo nuevo del Exp. 1 no es "agregar estratificación", sino estratificación continua, el forzamiento por viento o plataforma y el modelo numérico 3D.
 - **Jackson et al. (2018)** muestran que en fiordos con ancho/radio de deformación > 0.5 la respuesta al forzamiento de la plataforma es 3D: un modelo 2D no basta. La parte de viento del Exp. 1 tiene que ser 3D.
 - **El emulador ya tiene competencia reciente** (Burgard 2023, Rosier 2023, Ockenden 2026). El Exp. 3 debe plantearse como algo concreto (por ejemplo, la incertidumbre del ensamble de redes o el contraste con la ley cuadrática en una geometría controlada), no como "el primero en hacerlo".
+
+## Contactos MIT-WHOI sugeridos por Maksym (17 nov): Madison Smith y Gordon Zhang
+
+Encontrados con búsqueda web, no con Consensus: sin DOI verificado.
+
+| | Artículo | Link |
+|---|---|---|
+| | Xu, Zhang, Maksym, Ji & Li. Stratification breakdown in Antarctic coastal polynyas, Part I (modelo acoplado plataforma de hielo–hielo marino–océano; Terra Nova Bay). Revista y año por verificar | https://par.nsf.gov/servlets/purl/10448883 |
+| | Smith, M. M. (2019). The role of waves in the autumn Arctic Ocean. Tesis doctoral, University of Washington | https://digital.lib.washington.edu/researchworks/items/73b6564a-58f9-4f43-8b99-e9a2032c6f50 |
