@@ -307,11 +307,34 @@ Ya tienes en tu carpeta de la tesis 📁: Heimbach, Hill & Giering (2005), el ad
 - **Jackson et al. (2018)** muestran que en fiordos con ancho/radio de deformación > 0.5 la respuesta al forzamiento de la plataforma es 3D: un modelo 2D no basta. La parte de viento del Exp. 1 tiene que ser 3D.
 - **El emulador ya tiene competencia reciente** (Burgard 2023, Rosier 2023, Ockenden 2026). El Exp. 3 debe plantearse como algo concreto (por ejemplo, la incertidumbre del ensamble de redes o el contraste con la ley cuadrática en una geometría controlada), no como "el primero en hacerlo".
 
-## Contactos MIT-WHOI sugeridos por Maksym (17 nov): Madison Smith y Gordon Zhang
+## Contactos MIT-WHOI sugeridos por Maksym (17 nov): Smith, Zhang y el propio Maksym
 
-Encontrados con búsqueda web, no con Consensus: sin DOI verificado.
+Para conocer a cada investigador antes de escribirle. ★ = leer primero (2–3 por persona). ✔ = DOI de Consensus.
+
+**Weifeng (Gordon) Zhang** (WHOI; modelación hielo–océano, polinias, plataforma antártica). Ojo: los artículos de *Zhaoru* Zhang sobre el mar de Ross son de otra persona.
 
 | | Artículo | Link |
 |---|---|---|
-| | Xu, Zhang, Maksym, Ji & Li. Stratification breakdown in Antarctic coastal polynyas, Part I (modelo acoplado plataforma de hielo–hielo marino–océano; Terra Nova Bay). Revista y año por verificar | https://par.nsf.gov/servlets/purl/10448883 |
-| | Smith, M. M. (2019). The role of waves in the autumn Arctic Ocean. Tesis doctoral, University of Washington | https://digital.lib.washington.edu/researchworks/items/73b6564a-58f9-4f43-8b99-e9a2032c6f50 |
+| ★✔ | Xu, Zhang, Maksym et al. (2023). Stratification breakdown in Antarctic coastal polynyas. Part I: Influence of physical factors on the destratification time scale. *JPO* (con Maksym) | https://doi.org/10.1175/JPO-D-22-0218.1 |
+| ✔ | Xu, Zhang et al. (2023). Stratification breakdown in Antarctic coastal polynyas. Part II: Influence of an ice tongue and coastline geometry. *JPO* | https://doi.org/10.1175/JPO-D-22-0219.1 |
+| ★✔ | Gaul, Zhang & Cenedese (2024). Cross-shelf exchange in prograde Antarctic troughs driven by offshore-propagating dense water eddies. *JPO* (plataforma densa y remolinos: el tema del Exp. 5; coautora Cenedese) | https://doi.org/10.1175/JPO-D-23-0088.1 |
+| ★✔ | Wilcox, Zhang & Walker (2025). Coastal easterly winds impact transport into Antarctic ice shelf cavities. *JPO* (vientos del este y cavidades: Exps. 2 y 5) | https://doi.org/10.1175/JPO-D-24-0217.1 |
+
+**Madison M. Smith** (WHOI; olas–hielo, MIZ, radiación solar en el hielo).
+
+| | Artículo | Link |
+|---|---|---|
+| ★✔ | Smith & Thomson (2020). Pancake sea ice kinematics and dynamics using shipboard stereo video. *Annals of Glaciology* (la turbulencia hielo–océano domina la pérdida de energía de las olas) | https://doi.org/10.1017/aog.2019.35 |
+| ★✔ | Kohout, Smith et al. (2020). Observations of exponential wave attenuation in Antarctic sea ice during the PIPERS campaign. *Annals of Glaciology* | https://doi.org/10.1017/aog.2020.36 |
+| ✔ | Roach, Smith & Dean (2018). Quantifying growth of pancake sea ice floes using images from drifting buoys. *JGR Oceans* | https://doi.org/10.1002/2017JC013693 |
+| ✔ | Light, Smith et al. (2022). Arctic sea ice albedo: spectral composition, spatial heterogeneity, and temporal evolution observed during the MOSAiC drift. *Elementa* | https://doi.org/10.1525/elementa.2021.000103 (m) |
+| ★✔ | Thomson (2022). Wave propagation in the marginal ice zone: connections and feedback mechanisms within the air–ice–ocean system. *Phil. Trans. R. Soc. A* (revisión de su asesor de doctorado; la mejor entrada al tema) | https://doi.org/10.1098/rsta.2021.0251 |
+| | Smith, M. M. (2019). The role of waves in the autumn Arctic Ocean. Tesis doctoral, University of Washington (web, sin DOI) | https://digital.lib.washington.edu/researchworks/items/73b6564a-58f9-4f43-8b99-e9a2032c6f50 |
+
+**Ted Maksym** (WHOI; hielo marino, MIZ, observaciones con vehículos autónomos).
+
+| | Artículo | Link |
+|---|---|---|
+| ★✔ | Williams, Maksym et al. (2015). Thick and deformed Antarctic sea ice mapped with autonomous underwater vehicles. *Nature Geoscience* | https://doi.org/10.1038/ngeo2299 |
+| ✔ | Ackley et al. (2020). Sea-ice production and air/ice/ocean/biogeochemistry interactions in the Ross Sea during the PIPERS 2017 autumn field campaign. *Annals of Glaciology* (campaña con Maksym y Smith) | https://doi.org/10.1017/aog.2020.31 |
+| ✔ | Stammerjohn, Maksym et al. (2015). Seasonal sea ice changes in the Amundsen Sea, Antarctica, over the period of 1979–2014. *Elementa* | https://doi.org/10.12952/journal.elementa.000055 |
