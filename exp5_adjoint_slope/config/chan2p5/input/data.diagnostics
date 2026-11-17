@@ -1,0 +1,12 @@
+# 5-day means: VVELTH (= vVel * (theta_j + theta_j-1)/2, pkg/diagnostics) and VVEL give J
+# exactly as the mean of the per-step product; monthly means of the state for sections and EKE.
+ &DIAGNOSTICS_LIST
+ fields(1:2,1) = 'VVELTH  ','VVEL    ',
+ fileName(1) = 'jflux5d',
+ frequency(1) = 432000.,
+ fields(1:6,2) = 'THETA   ','SALT    ','UVEL    ','VVEL    ','UVELSQ  ','VVELSQ  ',
+ fileName(2) = 'state3d',
+ frequency(2) = 2592000.,
+ &
+ &DIAG_STATIS_PARMS
+ &

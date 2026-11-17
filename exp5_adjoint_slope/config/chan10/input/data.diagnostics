@@ -1,0 +1,12 @@
+# Monthly (30-day) means for the mean state and the three parts of J (spec Sec. 5): Eulerian
+# VVELTH/VVEL, GM bolus heat flux GM_vbT and Redi flux DFyE_TH (diffKhT = 0; GM_AdvSeparate = F).
+ &DIAGNOSTICS_LIST
+ fields(1:7,1) = 'THETA   ','SALT    ','UVEL    ','VVEL    ','VVELTH  ','DFyE_TH ','GM_vbT  ',
+ fileName(1) = 'state3d',
+ frequency(1) = 2592000.,
+ fields(1:2,2) = 'ETAN    ','MXLDEPTH',
+ fileName(2) = 'surf2d',
+ frequency(2) = 2592000.,
+ &
+ &DIAG_STATIS_PARMS
+ &

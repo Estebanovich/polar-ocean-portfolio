@@ -1,0 +1,6 @@
+ &PACKAGES
+ useGMRedi=.TRUE.,
+ useRBCS=.TRUE.,
+ useDiagnostics=.TRUE.,
+ useGrdchk=.FALSE.,
+ &

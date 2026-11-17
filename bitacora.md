@@ -824,3 +824,155 @@ Se corrigieron los puntos I1–I4 y los menores:
 - **Redacción:** «small» del flujo neto se refiere ahora al trabajo del viento (|η| = 6 %), porque el neto es el 66 % del bruto y «residuo pequeño del bruto» no era exacto. La fracción del Significance Statement («about a quarter») sale del JSON.
 - **`render_readme.py`:** guardas nuevas, ninguna quitada: H4b(i) se cumple también con la energía cinética sola; el neto de F1 es pequeño frente al trabajo del viento (|η| < 0.1) y menor que el intercambio bruto; las palabras de la fracción salen del cociente de H4b(i) (falla si no hay una fracción simple cercana). Hay una guarda de referencias cruzadas: cada «section 2f» o «appendix B» debe apuntar a un encabezado, y el viejo estilo «§2.6» se rechaza salvo para Gill (1982) y las notas. La lista blanca de dígitos admite Tables, sections, Animations 1–4 y las conclusiones numeradas; se añadió 2019 a los años de cita.
 - **Pruebas:** 1076 pasan y 3 se omiten; `render_readme --check` al día. Las pruebas nuevas cambian el signo del numerador de H4d y del flujo de V4a, y comprueban que el render se niega.
+
+## 2026-11-14 — Exp. 5: revisión de literatura (antes del diseño)
+
+- **Rama:** `exp5-adjoint-slope`, desde `main` (76f69fc).
+- **Qué:** `exp5_adjoint_slope/notes/rev_literatura.md`. Son 11 búsquedas en Consensus (reconocimiento, cinco subáreas, dos de revisiones, dos por época y un seguimiento), más las dos bibliotecas locales. La de la tesis tiene Heimbach et al. (2005), Gaikwad et al. (2024) y Tber et al. (2007). `readinglist.md` §Exp. 5 se rehízo con 56 entradas con DOI.
+- **Hallazgos que condicionan el diseño:**
+  - Consensus no devolvió ningún estudio adjunto del transporte de calor a través del talud antártico; todo es por perturbación.
+  - El flujo de calor hacia la costa lo llevan los remolinos, y en régimen caótico el adjunto crece más allá del tiempo no lineal. McLay (2006) estimó ese tiempo en ~200 días en un canal reentrante de MITgcm.
+  - Un GM sensible al talud reproduce el flujo de calor en modelos gruesos (Dettling et al., 2024, 2025).
+  - Tapenade soporta `gmredi` y `kpp`; `obcs` está por confirmar.
+  - `tutorial_reentrant_channel` no trae `code_tap`.
+  - `canyon_mx` está en GitHub (Tapenade 3.16, ω, `grdchk`). Tapenade no está instalado en la Mac (hay Java 11).
+- **Pendiente:** Esteban elige cómo tratar los remolinos (canal grueso con GM, con remolinos y ventana corta, o los dos con prueba cruzada) y si se instala Tapenade.
+
+## 2026-11-15 — Exp. 5: diseño y plan aprobados; inicio de la ejecución
+
+- **Diseño** aprobado por Esteban (canal grueso con GM ajustado al talud + adjunto con Tapenade; prueba cruzada en un canal de 2.5 km). **Plan** aprobado; ejecución nativa, con una revisión de toda la rama al final.
+- **Tarea 0:** paquete `exp5_adjoint_slope/`, `cases.yaml` (esqueleto), rutas `EXP5_RUNS`, `EXP5_BUILDS` y `TAPENADE_HOME` en `pfcommon/paths.py`, y `scripts/build_mitgcm_tap.sh` (objetivos `adj`, `tlm` y `fwd`, con `genmake2 -tap`). El `build_mitgcm.sh` de los Exp. 1–4 no cambia.
+- **Tareas 1–3 (15 nov):**
+  - gendata, configuraciones `chan10`, `chan10_tap` y `chan2p5`, y J en Fortran y en Python.
+  - La adjunta, la tangente lineal y la directa compilan con Tapenade.
+  - Ancla de J (GJ): Fortran y Python coinciden a 1.4×10⁻⁸.
+  - G0 (30 años) con viscAh = 1000 y Δt = 1200 s, porque con viscAh = 200 divergió en el año 2.
+
+## 2026-11-16 — Exp. 5: la puerta del día 1 falla; tres errores y una configuración nueva
+
+- **Puerta del día 1 (GS) no pasada.**
+  - **grdchk:** perturbaba i,j,k = 1,1,1, porque `nbeg = 1` ignora `iGloPos`. Se arregló con `nbeg = nend = 0`.
+  - **El adjunto de GM en forma advectiva diverge** (×10¹³ por paso), con un crecimiento que escala como 1/`GM_Small_Number`.
+  - **Primera decisión de Esteban: forma skew-flux (B).** Resultó inestable en el modelo directo una vez cerrado el canal en y.
+  - **Segunda decisión: opción A**, forma advectiva con `GM_Small_Number = 1e-6`. Directo y adjunto estables.
+  - J = resuelto + bolo + Redi. Las medias mensuales son exactas con `GM_vbT` y `DFyE_TH`.
+- **Error (a), el dominio era periódico en y.** La batimetría no tenía paredes, así que el océano de 3000 m del norte se conectaba con la plataforma del sur: 0.17 Sv netos por todas las filas. Invalida G0 y el diagnóstico de V4 (la plataforma "cálida"). La prueba que había exigía agua en todo el dominio, es decir, fijaba el error. Se cerró el canal con paredes, con su prueba.
+- **Revisión de los artículos que descargó Esteban** (`notes/revision_articulos.md`): Stewart & Thompson 2015, Dettling 2024, Si 2023, Thompson 2018, Mazloff 2010 y 2012, Rodriguez 2016, Losch & Heimbach 2007, Heimbach & Losch 2012, Lea 2000, McLay 2006 y Marotzke 1999.
+  - La configuración del PD1 se apartaba de la literatura en el talud, el viento, el sumidero de flotabilidad y κ_Redi.
+  - **Decisión de Esteban:** pasar a la configuración de Dettling et al. (2024), Tabla 1 (`notes/pd1b_config_dettling.md`): plataforma densa, línea J en 170 km.
+  - La parte "plataforma fresca" de V4 falla por construcción y se declara.
+  - Citas corregidas: Mazloff es de 2012; Stewart & Thompson es un solo artículo, de 2015.
+- **Otros:**
+  - Una declaración en Fortran pasaba de la columna 72 tras `cpp`. Se corrigió, con una prueba sobre la línea expandida.
+  - La prueba de 2 años con la configuración nueva es estable (θ de −1.81 a 0.80 °C, |u| ≤ 0.06 m/s).
+  - El disco interno se llenó con copias de diagnóstico; Esteban lo liberó.
+- **Commits:** 548d748, 07f1305, 7343ca5, 92506ce, f12f4b9. Pruebas: 70 pasan.
+- **Pendiente:** G0 nuevo (en curso), V4, ancla de J, GS (puerta) y luego GA/GB y V1–V3.
+
+## 2026-11-16 (tarde) — Exp. 5: relajación apagada, G0 nuevo, la puerta del día 1 pasa
+
+- **Error (a): G0 corrió 30 años sin relajación superficial.**
+  - MITgcm activa la relajación solo si `tauThetaClimRelax` y `tauSaltClimRelax` son > 0 (`set_parms.F:250`). Los archivos λ solo fijan la tasa.
+  - Al pasar a Dettling se quitaron los τ, y la prueba exigía que no estuvieran: fijaba el error.
+  - Antes de encontrarlo atribuí el fallo de V4 a física ausente (b). Lo corregí en la nota (§6).
+  - El eco de parámetros del modelo coincide con la tabla de Dettling.
+  - Esteban: "Lo que sea necesario para tener buenos resultados".
+- **G0 nuevo (30 años), estable:**
+  - la plataforma queda en el punto de congelación (−1.90 °C);
+  - J del año 30 = −0.0002 TW, que converge a 0: la media euleriana (−0.0022 TW) compensa el flujo de remolinos (bolo + Redi = +0.0019 TW), como en Dettling et al. (2024, p. 1679);
+  - V4 no se cumple tal como está escrito. Clasificación (a) en la expectativa: "J > 0" era del régimen de plataforma fresca. No se redefine (`v4_revision_posthoc.md` §7).
+- **Ancla de J:** diferencia absoluta de 1.4×10⁻⁸ TW, 3.9×10⁻⁶ del flujo bruto.
+- **Puerta del día 1: PASA** (`notes/puerta_dia1.md`):
+  - el fc del adjunto es igual al del directo en 15 dígitos;
+  - θ₀: 2.3×10⁻⁶; κᵥ: 9×10⁻⁶;
+  - τx en la fila de J: 2.8×10⁻⁵ con eps 1e-6 (barrido ampliado, post hoc); el tangente lineal coincide con el adjunto en 7 dígitos;
+  - el adjunto es estable en 10 días.
+- **Arreglos con prueba:**
+  - archivos `._*` del exFAT de LaCie en `run_adjoint`;
+  - el parser de grdchk (enteros de ancho fijo pegados);
+  - nombres de subcorridas que chocaban.
+  - Las corridas del adjunto se hacen en ESTEBAN_MIT y se copian a LaCie.
+- **Commits:** ee249dc, ed42702, 1d873e2, a16d7fb y el de esta entrada. Pruebas: 77 pasan.
+- **Pendiente:** Task 4 (fino), Task 5 (GA/GB, V1–V3), Tasks 6–8.
+
+## 2026-11-16 (noche) — Exp. 5: Task 4 cerrada, el adjunto largo cabe en memoria
+
+- **Fino (Task 4):**
+  - 180 días tardan ≈ 1 h con 5 rangos, así que se queda en 2.5 km.
+  - F0 (12 meses desde G0 interpolado) es estable. La KE media se estabiliza: +3 % en los últimos 6 meses y +0.8 % en los últimos 3.
+  - Tres arreglos:
+    - la interpolación dejaba θ = 0 junto a las paredes;
+    - los pickups solo se escribían una vez al año;
+    - el monitor diario no caía en el final de la etapa de 182.5 d.
+- **Memoria del adjunto:**
+  - Sin checkpointing, Tapenade guarda toda la trayectoria: 8.1 GB para 30 días. GA habría necesitado ~97 GB.
+  - Se añadió checkpointing binomial (`C$AD BINOMIAL-CKP`, 60 snapshots) en una copia de `the_main_loop.F`; el código de MITgcm no se toca.
+  - Los gradientes son idénticos bit a bit, con 1.8 GB y algo más rápido.
+  - GA (360 d) y GB (180 d) están corriendo.
+- **Preparado para V1–V3 y H5b:**
+  - corridas directas con controles perturbados (`doInitXX = .FALSE.`);
+  - el generador de patrones;
+  - la selección de puntos de V1;
+  - el ensamble FC1–3 (ruido ≤ 10⁻³ °C en θ).
+- **PD0:** enmendado para la geometría de Dettling antes de GA/GB. Ningún umbral cambia.
+- **Commits:** 8bad04a … 2afb99e. Pruebas: 99 pasan.
+
+## 2026-11-16 (noche, 2) — Exp. 5: el grueso es caótico; el adjunto pasa a ensamble
+
+- **GA y GB terminan bien** (GA: 90 min y 1.8 GB), pero el adjunto **crece exponencialmente hacia atrás**: max |∂J/∂θ₀| = 8×10⁻³ a 30 d, 2×10¹¹ a 180 d y 9×10⁴³ a 360 d, en el fondo del pie del talud.
+- **Diagnóstico (post hoc):**
+  - D90: el adjunto de 90 días es estable.
+  - Leith no es la causa.
+  - Con Tapenade, los interruptores solo-adjunto de MITgcm (`useGMRediInAdMode`, `viscFacInAd`) no existen: `AUTODIFF_INADMODE_SET` nunca se llama.
+- **Causa: el grueso de 10 km es caótico.**
+  - En el ensamble directo E0–E4 (ruido ≤ 10⁻⁶ °C), J mensual coincide en el mes 1 (3×10⁻⁸ TW) y por el mes 2–3 diverge tanto como J mismo (e-plegamiento de ~4 días).
+  - E0z prueba que la vía `xx_from` es neutra.
+  - La premisa del spec ("el grueso con GM no debería tener ese límite") es falsa; se clasifica como (c), con error nuestro (a) en la premisa.
+  - Concuerda con Lea et al. (2000) y con Mazloff et al. (2012, p. 1187).
+- **Decisión de Esteban:** ensamble + ventana corta.
+  - **Enmienda PD2** al preregistro (6f6ba78), escrita antes de ver los resultados:
+    - V1–V3 deterministas en 30 días (GM30);
+    - adjunto de ensamble EA21–EA30 (ventanas de 90 d desde los pickups anuales de G0);
+    - V2e/V3e con ensambles directos ±Δu;
+    - H5c evaluable hasta 60 d;
+    - la predicción de H5b sale de un ensamble directo del grueso.
+  - GA y GB se reportan como fallo.
+- **Código:**
+  - `nml` (sobrescrituras de namelists por caso);
+  - `analysis/ensemble.py` (criterios de ensamble);
+  - `tau_pert` para los miembros FP del fino.
+- **Tropiezo:** en zsh, `for y in $b` no separa palabras, así que el primer relanzamiento de EA no corrió nada.
+- **Cronometría:** una directa de 360 d del grueso tarda 7 min en un núcleo, y el adjunto, ~12 veces más.
+
+## 2026-11-17 (madrugada) — Exp. 5: error del control de viento, ensamble validado, Tasks 5–7 cerradas
+
+- **Error (a) del control de viento.** Sin `periodicExternalForcing`, `fu` se lee una vez y `CTRL_MAP_FORCING` le suma `xx_fu` en cada paso: el control se acumulaba.
+  - Lo destapó la primera V3E (0.01 N m⁻²), que explotó al día 7.
+  - Afectaba todas las sensibilidades a τx anteriores, que eran ~690 veces mayores.
+  - No afectaba θ₀, κᵥ ni el diagnóstico de E0–E4.
+  - Arreglo: forzamiento periódico recargado en cada paso. Prueba RED→GREEN, más una prueba vieja que codificaba el error.
+  - GSU repetido: τx pasa en las tres filas (< 0.07 %).
+- **Resultados (post hoc, PD2):**
+  - V1d pasa: 10 puntos, 2.1×10⁻⁶ contra diferencias finitas y ≤ 3×10⁻¹¹ contra el TLM.
+  - V2d falla para τx (0.18) y θ₀ (0.25) con las amplitudes del PD0. V3d pasa en los tres controles.
+  - V2e pasa (0.038) y V3e pasa (2.4 %): la predicción coincide miembro a miembro dentro de ~3 %.
+  - H5a se cumple a 37.5 km y a 75 km pero no a 18.75 km: no es robusta. La confirmación directa da el mismo orden.
+  - H5c: la sensibilidad crece con el adelanto dentro de la ventana; no es evaluable más allá de 60 d.
+  - Predicción del grueso para H5b: +1.43 ± 0.16 GW.
+- **Reinterpretación:** la respuesta al viento es lineal y determinista a 90 d. La divergencia de E0–E4 viene de eventos de umbral sensibles a θ profundo, no de caos genérico.
+- **Task 7:** Figs. 0–4, README renderizado (todo número desde JSON), `reproduce.sh --check`, fila en el README raíz.
+- **Mención prohibida:** una ruta interna en `notes/pd0_preregistro.md`; se corrigió, pero sigue en la historia de la rama.
+- **Fino:** FC1–3 y FP1–3 corriendo (~55 min cada uno).
+- **H5b (07:10, Task 8).** FC1–3 y FP1–3 terminaron (OK, ~54 min cada uno).
+  - ΔJ del fino = +3.1 GW, con el signo predicho, pero 2σ_Δ = 4.2 GW: **"no detectable con N = 3"**, como manda el PD0. No es confirmación ni refutación.
+  - Los controles solos van de 1.0 a 4.1 GW; la mayor parte de la diferencia viene de un miembro (FP3 − FC3 = +8.6 GW).
+  - Causa: tamaño del ensamble, elección numérica (c).
+  - V5 pasa: los remolinos llevan 160–210 % de J; el flujo medio lleva calor mar afuera, como el flujo resuelto del grueso frente al bolo.
+  - Fig. 5, README y fila del README raíz actualizados; `crosscheck` añadido a `reproduce.sh`.
+- **Revisión final y corrección (08:00–16:30).** La revisión independiente encontró dos errores nuestros (a):
+  - El grueso y el spin-up fino F0/F0b quedaron exactamente simétricos en x (máx |θ − media zonal| ≈ 10⁻¹⁶). El "caos" del grueso es la ruptura de esa simetría inestable. Se conserva el grueso como modelo 2-D con remolinos parametrizados, declarado en el README y en el PD0.
+  - El fino no tenía remolinos: FC/FP de la mañana muestrearon el arranque de los remolinos. Ese resultado de H5b/V5 (arriba) queda **invalidado**; las corridas se guardan como `F[CP][1-3]_transient`.
+  - Nuevo spin-up con ruido en θ (F1, 365 d) y regla de equilibrio de EKE registrada antes de correr. F1 no la cumple (−13 %); la extensión registrada F1b (182.5 d) tampoco (−22 %). Se siguió, como estaba registrado: la EKE sigue decayendo, en 4.6×10⁻⁴ m² s⁻².
+  - H5b, desde F1b: ΔJ = +0.50 GW, 2σ_Δ = 0.16 GW, signo correcto, pero 0.35 veces la predicción (1.43 GW): **falla** por magnitud.
+  - V5 **falla**: los remolinos llevan −10 % de J. El fino es débilmente turbulento y no es la referencia supuesta por H5b; no se puede separar si la sobreestimación es del GM o del fino sin equilibrar. Clasificación (c).
+  - Otros hallazgos corregidos: los 10 puntos de V1 son 4 gradientes distintos; la deriva del ensamble declarada; el desfase de los registros mensuales declarado; `drop_periodic_end` exige registro final cero; se quitó Rodriguez et al. 2016 de la motivación de H5a.

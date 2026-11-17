@@ -1,0 +1,21 @@
+# Northern sponge (Dettling et al. 2024, Table 1; S&T 2015, p. 434): the last 50 km, rate rising
+# linearly to 1/54 days for T and S (toward the initial profiles) and 1/27 days for the velocity
+# (toward zero, to avoid a spurious jet at the northern wall).
+ &RBCS_PARM01
+ useRBCtemp=.TRUE.,
+ useRBCsalt=.TRUE.,
+ useRBCuVel=.TRUE.,
+ useRBCvVel=.TRUE.,
+ tauRelaxT=4665600.,
+ tauRelaxS=4665600.,
+ tauRelaxU=2332800.,
+ tauRelaxV=2332800.,
+ relaxMaskFile(1)='rbcs_mask.bin',
+ relaxMaskFile(2)='rbcs_mask.bin',
+ relaxMaskUFile='rbcs_mask_uv.bin',
+ relaxMaskVFile='rbcs_mask_uv.bin',
+ relaxTFile='rbcs_T.bin',
+ relaxSFile='rbcs_S.bin',
+ &
+ &RBCS_PARM02
+ &

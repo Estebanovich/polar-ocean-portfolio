@@ -429,3 +429,23 @@ def test_finished_ok_needs_the_final_status_of_a_multi_stage_run(tmp_path):
     (tmp_path / "run_status_final.json").write_text(json.dumps(
         {"state": "OK", "last_iter": 8400, "expected_last_iter": 8400}))
     assert cp.finished_ok(tmp_path, staged_layout=True) and cp.finished_ok(tmp_path)
+
+
+def test_paths_exp5_defaults_and_overrides(monkeypatch):
+    import pfcommon.paths as paths
+    keys = ("EXP5_RUNS", "EXP5_BUILDS", "TAPENADE_HOME")
+    for k in keys:
+        monkeypatch.delenv(k, raising=False)
+    paths = importlib.reload(paths)
+    assert paths.EXP5_RUNS == Path("/Volumes/LaCie/portfolio_runs/exp5")
+    assert paths.EXP5_BUILDS == Path("/Volumes/ESTEBAN_MIT/portfolio_builds/exp5")
+    assert paths.TAPENADE_HOME == Path(
+        "/Volumes/ESTEBAN_MIT/tools/tapenade-e89660a5921a1ccf68b4afc331b3b0910878a179")
+    for k, v in zip(keys, ("/tmp/r5", "/tmp/b5", "/tmp/tap")):
+        monkeypatch.setenv(k, v)
+    paths = importlib.reload(paths)
+    assert (paths.EXP5_RUNS, paths.EXP5_BUILDS, paths.TAPENADE_HOME) == (
+        Path("/tmp/r5"), Path("/tmp/b5"), Path("/tmp/tap"))
+    for k in keys:
+        monkeypatch.delenv(k)
+    importlib.reload(paths)

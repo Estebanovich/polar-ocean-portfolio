@@ -1,0 +1,4 @@
+ &PACKAGES
+ useRBCS=.TRUE.,
+ useDiagnostics=.TRUE.,
+ &
