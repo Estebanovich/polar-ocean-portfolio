@@ -19,7 +19,7 @@ configs:
 cases:
   T10: {config: g50, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: 10}
   TF: {config: f10, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: null}
-  G0: {config: g50p5, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: null, deltaT_tracer: 8000.0}
+  G0: {config: g50p5, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: null, deltaT_tracer: 4000.0}
   G0s: {config: g50p5, pickup_from: G0, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: 48}
   GC: {config: g50, pickup_from: G0s, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: 251}
   GT: {config: g50, pickup_from: G0s, branch_year: null, wind_factor: 1.0, pco2_mode: transient, sponge: pi, n_years: 251}

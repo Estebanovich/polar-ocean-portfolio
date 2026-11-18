@@ -47,7 +47,7 @@ def test_fixed_year_fine(tmp_path):
 
 
 def test_all_inputs_present_and_sized(tmp_path):
-    out = make_case.write_case("G0", tmp_path, {"co2": CO2, "n_timesteps": 3942})
+    out = make_case.write_case("G0", tmp_path, {"co2": CO2, "n_timesteps": 7884})
     sizes = {"bathy.bin": 800, "zonal_wind.bin": 12 * 800, "sst_relax.bin": 12 * 800, "t_relax_mask.bin": 49 * 800,
              "temperature.bin": 49 * 800, "par.bin": 12 * 800, "dic_wind.bin": 12 * 800, "fice.bin": 12 * 800,
              "silica.bin": 12 * 800}
@@ -79,13 +79,13 @@ def test_g0_needs_length(tmp_path):
 
 
 def test_g0_accelerated_async(tmp_path):
-    out = make_case.write_case("G0", tmp_path, {"co2": CO2, "n_timesteps": 3942})
+    out = make_case.write_case("G0", tmp_path, {"co2": CO2, "n_timesteps": 7884})
     data = (out / "data").read_text()
     assert float(_nml(data, "deltaTMom")) == 2000.0
-    assert float(_nml(data, "deltaTtracer")) == 8000.0 and float(_nml(data, "deltaTClock")) == 8000.0
+    assert float(_nml(data, "deltaTtracer")) == 4000.0 and float(_nml(data, "deltaTClock")) == 4000.0
     assert _nml(data, "deltaT") is None
     c = json.loads((out / "case.json").read_text())
-    assert c["steps_per_year"] == 3942 and c["config"] == "g50p5"
+    assert c["steps_per_year"] == 7884 and c["config"] == "g50p5"
 
 
 def test_g0s_synchronous_after_g0(tmp_path):

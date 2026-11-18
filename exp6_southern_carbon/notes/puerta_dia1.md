@@ -48,3 +48,20 @@ Todas las pruebas son de 30 días, 10 días o 1 año, corridas en la laptop (nú
   - fino del 21 nov al ~2 dic;
   - README del 3 al 8 dic;
   - correo el 9–10 dic.
+
+## Evento del 18 nov: G0 a 8000 s diverge; se aplica la regla registrada (factor 2)
+
+- **Primera etapa de G0** (`deltaTtracer` = 8000 s, 100 años de trazador):
+  - del año de trazador 1 al 8 es estable: u_max ≈ 0.54 m/s y CFL vertical < 0.75;
+  - desde el año 9, el CFL vertical de los trazadores pasa de 1 (`advcfl_W_hf_max` llega a 2.4);
+  - en el año 19 el DIC da NaN y después el PO4 se vuelve negativo;
+  - en el año 31 la dinámica también da NaN.
+- **Causa:** w crece con el spin-up de la circulación profunda.
+  - En T10, síncrono, w_max sube de 0.3 a 1.3 cm/s en 10 años, cerca de la pared sur a unos 1000 m.
+  - Con celdas de ~100 m y 8000 s, el CFL queda por encima de 1, y el esquema 7 (OS7MP) no es estable así.
+  - El namelist es idéntico al del tutorial salvo `deltaT`.
+- **Clasificación:** (c), elección numérica, decidida el día 1 a partir del CFL de un solo año.
+- **Acción:** la regla registrada de antemano.
+  - `deltaTtracer` = `deltaTClock` = 4000 s, con 7884 pasos por año de trazador.
+  - G0 se reinicia desde cero. G0 dura el doble: unas 22 h en lugar de 11.
+- **Si 4000 s también diverge,** G0 pasa a ser síncrono (2000 s). Se rotula *post hoc*.
