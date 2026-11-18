@@ -17,14 +17,17 @@ def _nml(text, key):
 
 
 def test_transient_branch(tmp_path):
-    out = make_case.write_case("GT_w2060", tmp_path, {"co2": CO2, "iter_1850": 1000, "nIter0": 1000 + 210 * 31536})
-    w = np.fromfile(out / "zonal_wind.bin", ">f4").reshape(40, 20)
-    np.testing.assert_allclose(w, (1.2 * fields.taux(G50)).astype(">f4"))
+    out = make_case.write_case("GT_w2060", tmp_path, {"co2": CO2, "iter_1850": 1000, "nIter0": 1000 + 210 * 15768})
+    w = np.fromfile(out / "zonal_wind.bin", ">f4").reshape(12, 40, 20)   # periodicExternalForcing: 12 records
+    for m in range(12):
+        np.testing.assert_allclose(w[m], (1.2 * fields.taux(G50)).astype(">f4"))
+    assert "gchem_secondsPerYear=31536000." in (out / "data.gchem").read_text().replace(" ", "")
     d = (out / "data.dic").read_text()
-    assert (_nml(d, "dic_int1"), _nml(d, "dic_int2"), _nml(d, "dic_int3"), _nml(d, "dic_int4")) == ("2", "253", "1000", "31536")
+    assert (_nml(d, "dic_int1"), _nml(d, "dic_int2"), _nml(d, "dic_int3"), _nml(d, "dic_int4")) == ("2", "253", "1000", "15768")
     assert (out / "co2atmos.dat").read_text().count("\n") == 253
     data = (out / "data").read_text()
-    assert int(_nml(data, "nIter0")) == 1000 + 210 * 31536 and int(_nml(data, "nTimeSteps")) == 25 * 31536
+    assert int(_nml(data, "nIter0")) == 1000 + 210 * 15768 and int(_nml(data, "nTimeSteps")) == 25 * 15768
+    assert float(_nml(data, "deltaT")) == 2000.0 and _nml(data, "deltaTtracer") is None
     c = json.loads((out / "case.json").read_text())
     assert c["branch_year"] == 2060 and c["wind_factor"] == 1.2
 
@@ -44,8 +47,8 @@ def test_fixed_year_fine(tmp_path):
 
 
 def test_all_inputs_present_and_sized(tmp_path):
-    out = make_case.write_case("G0", tmp_path, {"co2": CO2, "n_timesteps": 31536})
-    sizes = {"bathy.bin": 800, "zonal_wind.bin": 800, "sst_relax.bin": 12 * 800, "t_relax_mask.bin": 49 * 800,
+    out = make_case.write_case("G0", tmp_path, {"co2": CO2, "n_timesteps": 3942})
+    sizes = {"bathy.bin": 800, "zonal_wind.bin": 12 * 800, "sst_relax.bin": 12 * 800, "t_relax_mask.bin": 49 * 800,
              "temperature.bin": 49 * 800, "par.bin": 12 * 800, "dic_wind.bin": 12 * 800, "fice.bin": 12 * 800,
              "silica.bin": 12 * 800}
     for i in range(1, 7):
@@ -57,6 +60,7 @@ def test_all_inputs_present_and_sized(tmp_path):
     for f in ("data", "data.pkg", "data.gmredi", "data.rbcs", "data.ptracers", "data.gchem", "data.dic",
               "data.diagnostics", "data.layers", "eedata"):
         assert (out / f).exists(), f
+    assert "debugLevel=-1," in (out / "data").read_text().replace(" ", "")   # no per-step log lines
     wind = np.fromfile(out / "dic_wind.bin", ">f4")
     assert (wind == 10.0).all()
     po4, pre = (np.fromfile(out / f"init_ptr{i}.bin", ">f4") for i in (3, 6))
@@ -72,3 +76,19 @@ def test_unknown_placeholder_raises(tmp_path, monkeypatch):
 def test_g0_needs_length(tmp_path):
     with pytest.raises(ValueError):
         make_case.write_case("G0", tmp_path, {"co2": CO2})
+
+
+def test_g0_accelerated_async(tmp_path):
+    out = make_case.write_case("G0", tmp_path, {"co2": CO2, "n_timesteps": 3942})
+    data = (out / "data").read_text()
+    assert float(_nml(data, "deltaTMom")) == 2000.0
+    assert float(_nml(data, "deltaTtracer")) == 8000.0 and float(_nml(data, "deltaTClock")) == 8000.0
+    assert _nml(data, "deltaT") is None
+    c = json.loads((out / "case.json").read_text())
+    assert c["steps_per_year"] == 3942 and c["config"] == "g50p5"
+
+
+def test_g0s_synchronous_after_g0(tmp_path):
+    out = make_case.write_case("G0s", tmp_path, {"co2": CO2, "nIter0": 3942 * 1000})
+    data = (out / "data").read_text()
+    assert float(_nml(data, "deltaT")) == 2000.0 and int(_nml(data, "nTimeSteps")) == 48 * 15768

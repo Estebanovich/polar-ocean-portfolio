@@ -29,6 +29,7 @@ ${visc_block}
  readBinaryPrec=32,
  writeBinaryPrec=64,
  useSingleCpuIO=.TRUE.,
+ debugLevel=-1,
  &
  &PARM02
  cg2dTargetResidual=1.E-7,
@@ -37,7 +38,7 @@ ${visc_block}
  &PARM03
  nIter0=${nIter0},
  nTimeSteps=${nTimeSteps},
- deltaT=${deltaT},
+${dt_block}
  pChkptFreq=31536000.0,
  chkptFreq=0.,
  dumpFreq=0.,

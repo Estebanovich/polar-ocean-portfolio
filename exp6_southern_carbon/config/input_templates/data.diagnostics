@@ -11,7 +11,7 @@
  fields(1:5,2) = 'THETA   ','UVEL    ','VVEL    ','WVEL    ','DICBIOA ',
  frequency(2) = 31536000.,
  filename(2) = 'state_ann',
- fields(1:4,3) = 'DICTFLX ','MXLDEPTH','DICPCO2 ','ETAN    ',
+ fields(1:5,3) = 'DICCFLX ','DICTFLX ','MXLDEPTH','DICPCO2 ','ETAN    ',
  frequency(3) = 2628000.,
  filename(3) = 'surf_mon',
  fields(1:3,4) = 'LaVH1TH ','LaHs1TH ','LaVa1TH ',

@@ -44,8 +44,13 @@ def grid_of(p: dict) -> Grid:
     return Grid(p["nx"], p["ny"], p["dx_m"])
 
 
+def clock_dt(p: dict) -> float:
+    """Model-clock step: deltaT, or deltaT_tracer (= deltaTClock) in the accelerated spin-up."""
+    return float(p.get("deltaT_tracer") or p["deltaT"])
+
+
 def steps_per_year(p: dict) -> int:
-    n = YEAR_S / float(p["deltaT"])
+    n = YEAR_S / clock_dt(p)
     assert n == int(n), "deltaT must divide the 365-day year"
     return int(n)
 
@@ -86,7 +91,12 @@ def template_values(p: dict, g: Grid) -> dict:
     extra_diag = (" fields(1:4,5) = 'UVEL    ','VVEL    ','UVELSQ  ','VVELSQ  ',\n frequency(5) = 2628000.,\n"
                   " filename(5) = 'eke_mon',") if fine else (
                   " fields(1:2,5) = 'GM_PsiX ','GM_PsiY ',\n frequency(5) = 31536000.,\n filename(5) = 'gm_ann',")
-    return {"visc_block": visc, "deltaT": p["deltaT"], "nx": g.nx, "ny": g.ny, "dx": f"{g.dx_m:.1f}",
+    if p.get("deltaT_tracer"):   # Bryan (1984) acceleration: tracers 4x faster than momentum
+        dt = (f" deltaTMom={float(p['deltaT']):.1f},\n deltaTtracer={clock_dt(p):.1f},\n"
+              f" deltaTClock={clock_dt(p):.1f},\n deltaTFreeSurf={float(p['deltaT']):.1f},")
+    else:
+        dt = f" deltaT={float(p['deltaT']):.1f},"
+    return {"visc_block": visc, "dt_block": dt, "nx": g.nx, "ny": g.ny, "dx": f"{g.dx_m:.1f}",
             "delR": ",\n      ".join(", ".join(f"{d:.8f}" for d in g.dr[i:i + 6]) for i in range(0, g.nr, 6)),
             "useGMRedi": ".FALSE." if fine else ".TRUE.", "ptr_gm": ".FALSE." if fine else ".TRUE.",
             "extra_diags": extra_diag}
@@ -107,7 +117,7 @@ def write_case(case: str, out_dir: Path, extra: dict | None = None) -> Path:
     out.mkdir(parents=True, exist_ok=True)
     f = fields.tutorial_fields(g)
     _w(out / "bathy.bin", f["bathy"])
-    _w(out / "zonal_wind.bin", float(p["wind_factor"]) * f["taux"])
+    _w(out / "zonal_wind.bin", float(p["wind_factor"]) * f["taux"][None] * np.ones((12, 1, 1)))  # periodic: 12 records
     _w(out / "sst_relax.bin", fields.sst_relax_monthly(g, amp=float(extra.get("sst_amp", 1.5))))
     _w(out / "t_relax_mask.bin", f["mask"])
     _w(out / "temperature.bin", f["temp"])
