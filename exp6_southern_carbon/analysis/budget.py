@@ -5,9 +5,12 @@ Terms (mol C yr-1, positive = gain of the region):
         diagnostics, fluxes in mol s-1 through the west, south and upper faces, ADVr positive up)
   mix   convergence of DFxETr01/DFyETr01/DFrETr01/DFrITr01 (explicit, GM-Redi and implicit vertical)
   forc  ForcTr01 x volume (pkg/ptracers forcing tendency: the rbcs sponge; no E-P here)
-  gchem everything pkg/gchem/pkg/dic does in GCHEM_FORCING_SEP (air-sea exchange + biology +
-        carbonate): annual mean of (TRAC01 - GC_Tr01), the tracer after and before the gchem
-        update in each step, times steps per year (pkg/gchem/gchem_forcing_sep.F:75-82)
+  gchem the tendency pkg/dic applies in GCHEM_FORCING_SEP: GDIC = car + R_CP GPO4 (+ SURC at
+        the top; pkg/dic/dic_biotic_forcing.F:311-374), diagnosed as DICGDIC (and DICGPO4 for
+        PO4) by the EXP6 blocks of code/dic_biotic_forcing.F and code/dic_diagnostics_init.F.
+        (TRAC01 - GC_Tr01 is not usable: TRAC01 is filled at the start of the step, so the
+        difference is minus the transport and forcing increment, and the budget would close
+        by construction.)
   surf  the air-sea part of gchem, from DICTFLX (top-level tendency, mol m-3 s-1)
   bio   gchem - surf
   tend  inventory change between the year's first and last pickup_ptracers
@@ -53,7 +56,7 @@ def dic_budget(run, year: int, region_mask2d=None, layer: str = "col", tracer: i
     adv = _conv(d["ADVx" + s], d["ADVy" + s], d["ADVr" + s])
     mix = _conv(d["DFxE" + s], d["DFyE" + s], d["DFrE" + s] + d["DFrI" + s])
     forc = d["Forc" + s] * vol
-    gchem = (d[f"TRAC0{tracer}"] - d[f"GC_Tr0{tracer}"]) * vol * spy / YEAR_S
+    gchem = d["DICGDIC" if tracer == 1 else "DICGPO4"] * vol
     mld = None
     if layer == "ml":
         mon = [io.fields(run, "surf_mon", it)["MXLDEPTH"] for it in io.iters(run, "surf_mon") if i0 < it <= i1]

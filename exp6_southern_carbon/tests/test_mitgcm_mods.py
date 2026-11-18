@@ -54,3 +54,17 @@ def test_size_matches_registry(cfg):
     assert get("Nr") == c["nr"] and get("nPx") * get("nPy") == c["np"]
     pk = _code(cfg, "packages.conf").split()
     assert {"gfd", "gmredi", "rbcs", "layers", "diagnostics", "ptracers", "gchem", "dic"} <= set(pk)
+
+
+DIC = Path("/Volumes/ESTEBAN_MIT/MITgcm/pkg/dic")
+
+
+@pytest.mark.parametrize("cfg", CFGS)
+@pytest.mark.parametrize("name,needle", [
+    ("dic_biotic_forcing.F", "CALL DIAGNOSTICS_FILL(GDIC   ,'DICGDIC ',0,Nr,2,bi,bj,myThid)"),
+    ("dic_diagnostics_init.F", "diagName  = 'DICGPO4 '")])
+def test_dic_copies_single_exp6_block(cfg, name, needle):
+    ours = _code(cfg, name)
+    blocks = re.findall(r"C EXP6 begin\n.*?C EXP6 end\n", ours, re.S)
+    assert len(blocks) == 1 and needle in blocks[0]
+    assert ours.replace(blocks[0], "") == (DIC / name).read_text()

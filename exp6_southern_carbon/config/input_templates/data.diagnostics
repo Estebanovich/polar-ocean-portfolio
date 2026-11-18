@@ -1,9 +1,9 @@
 # Annual (31536000 s) and monthly (2628000 s) means; names from pkg/ptracers/
-# ptracers_diagnostics_init.F:94,130-200, pkg/gchem/gchem_diagnostics_init.F:65,
+# ptracers_diagnostics_init.F:94,130-200, code/dic_diagnostics_init.F (EXP6: DICGDIC, DICGPO4),
 # pkg/dic/dic_diagnostics_init.F:32-67, pkg/layers.
  &DIAGNOSTICS_LIST
  fields(1:24,1) = 'TRAC01  ','TRAC02  ','TRAC03  ','TRAC04  ','TRAC05  ','TRAC06  ',
-                  'GC_Tr01 ','GC_Tr03 ',
+                  'DICGDIC ','DICGPO4 ',
                   'ADVxTr01','ADVyTr01','ADVrTr01','DFxETr01','DFyETr01','DFrETr01','DFrITr01','ForcTr01',
                   'ADVxTr03','ADVyTr03','ADVrTr03','DFxETr03','DFyETr03','DFrETr03','DFrITr03','ForcTr03',
  frequency(1) = 31536000.,

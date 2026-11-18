@@ -27,9 +27,25 @@ def iters(run: Path, prefix: str) -> list[int]:
     return sorted(int(f.name.split(".")[1]) for f in Path(run).glob(f"{prefix}.*.meta") if not f.name.startswith("._"))
 
 
+_2D = ("EtaN", "dEtaHdt", "EtaH", "DIC_pH2d")
+
+
 def fields(run: Path, prefix: str, itr: int) -> dict[str, np.ndarray]:
+    """{name: array}. Diagnostics: one record per field. Pickups written as 2-D records
+    (nrecords > nFlds): Nr records per 3-D field, one per 2-D field (_2D)."""
     a, meta = read_mds(Path(run) / prefix, itr)
-    return {name: a[i] for i, name in enumerate(meta["fldList"])}
+    names = meta["fldList"]
+    if a.shape[0] == len(names):
+        return {n: a[i] for i, n in enumerate(names)}
+    nr = int(case(run)["nr"])
+    out, k = {}, 0
+    for n in names:
+        m = 1 if n in _2D else nr
+        out[n] = a[k] if m == 1 else a[k:k + m]
+        k += m
+    if k != a.shape[0]:
+        raise ValueError(f"{prefix}.{itr}: {a.shape[0]} records, fields need {k}")
+    return out
 
 
 def year_iter(run: Path, year: int) -> int:

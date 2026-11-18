@@ -6,6 +6,7 @@ import pytest
 from exp6_southern_carbon.analysis import budget
 
 T10 = Path("/Volumes/LaCie/portfolio_runs/exp6/T10")
+T2 = Path("/Volumes/LaCie/portfolio_runs/exp6/T2")      # 2 years with the DICGDIC diagnostic
 
 
 def test_conv_moves_mass_between_cells_and_sums_to_surface_flux():
@@ -21,8 +22,18 @@ def test_conv_moves_mass_between_cells_and_sums_to_surface_flux():
     assert c.sum() == pytest.approx(-2.0)      # only the surface face leaves the domain
 
 
-@pytest.mark.skipif(not (T10 / "run_status.json").exists() or '"OK"' not in (T10 / "run_status.json").read_text(),
-                    reason="T10 not finished")
-def test_t10_whole_domain_closes():
-    b = budget.dic_budget(T10, year=10)
+@pytest.mark.skipif(not (T2 / "run_status.json").exists() or '"OK"' not in (T2 / "run_status.json").read_text(),
+                    reason="T2 not finished")
+def test_t2_whole_domain_closes():
+    b = budget.dic_budget(T2, year=2)
     assert abs(b["residual"]) < 0.01 * abs(b["surf"]), b
+
+
+@pytest.mark.skipif(not (T10 / "run_status.json").exists(), reason="T10 not run")
+def test_pickup_fields_split_3d_and_2d():
+    from exp6_southern_carbon.analysis import io
+    it = io.year_iter(T10, 10)
+    p = io.fields(T10, "pickup", it)
+    assert p["Theta"].shape == (49, 40, 20) and p["EtaN"].shape == (40, 20)
+    assert io.fields(T10, "pickup_ptracers", it)["pTr01"].shape == (49, 40, 20)
+    assert io.fields(T10, "pickup_dic", it)["DIC_pH2d"].shape == (40, 20)
