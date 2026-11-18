@@ -449,3 +449,21 @@ def test_paths_exp5_defaults_and_overrides(monkeypatch):
     for k in keys:
         monkeypatch.delenv(k)
     importlib.reload(paths)
+
+
+def test_exp6_paths_defaults_and_env(monkeypatch):
+    import importlib
+    from pfcommon import paths
+    keys = ("EXP6_RUNS", "EXP6_BUILDS")
+    for k in keys:
+        monkeypatch.delenv(k, raising=False)
+    paths = importlib.reload(paths)
+    assert paths.EXP6_RUNS == Path("/Volumes/LaCie/portfolio_runs/exp6")
+    assert paths.EXP6_BUILDS == Path("/Volumes/ESTEBAN_MIT/portfolio_builds/exp6")
+    for k, v in zip(keys, ("/tmp/r6", "/tmp/b6")):
+        monkeypatch.setenv(k, v)
+    paths = importlib.reload(paths)
+    assert (paths.EXP6_RUNS, paths.EXP6_BUILDS) == (Path("/tmp/r6"), Path("/tmp/b6"))
+    for k in keys:
+        monkeypatch.delenv(k)
+    importlib.reload(paths)

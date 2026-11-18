@@ -982,3 +982,10 @@ Se corrigieron los puntos I1–I4 y los menores:
 - Exp. 5 publicado en `main` (e223025, commit único), merge y push hechos por Esteban.
 - Animación descriptiva `anim_fine_spinup.gif` (`analysis/animate.py`): v de 5 días a 34 m en F1 + F1b y la EKE mensual. Muestra la ráfaga del mes 2 y el decaimiento posterior; sobre la cuenca profunda la rms de v baja de 0.09 a 0.01 m/s, sobre la plataforma de 0.06 a 0.03 m/s. Apéndice nuevo en el README; ninguna cifra del README sale de ella.
 - Borrador del correo a Mazloff con el Exp. 5 en `~/Phd_project/Borradores Exp5 – Mazloff.md`.
+
+## 2026-11-17 (noche) — Exp. 6: diseño, plan y esqueleto
+
+- Pregunta elegida con Esteban: probar *online*, en el canal de Abernathey (tutorial `tutorial_reentrant_channel` de MITgcm) con `pkg/dic`, la inferencia *offline* de Jarníková, Le Quéré et al. (2025): la erosión del gradiente vertical de DIC por el carbono antropogénico reduce la sensibilidad del sumidero a la circulación. Para la plaza ARIES de Le Quéré (UEA, cierra 16 dic).
+- Decisiones de Esteban: trayectoria transitoria (histórico + SSP3-7.0) y control fijo; ramas de viento ×1.2 en 1900, 1980, 2020 y 2060; esponja norte preindustrial (C_ant como sensibilidad); grueso 50 km con GM y fino 10 km como hipótesis H6c; H6a con signo y separación natural/antropogénica; H6b contra los términos de circulación del presupuesto; sin hierro (PO4 limita); ciclo estacional en la relajación y la luz.
+- Esqueleto del paquete `exp6_southern_carbon/`, `cases.yaml` y rutas `EXP6_RUNS`/`EXP6_BUILDS`.
+- Pendiente de Esteban (D1): el archivo de CO₂ de CMIP6 (input4MIPs) en `literatura/data/cmip6_co2/`.

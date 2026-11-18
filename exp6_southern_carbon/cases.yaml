@@ -1,0 +1,44 @@
+# Exp. 6 case registry: wind sensitivity of the CO2 sink under rising atmospheric CO2 in an
+# idealized Southern Ocean channel (MITgcm tutorial_reentrant_channel + pkg/dic). Parses with
+# yaml.safe_load. Spec: docs (local) 2026-11-17 design; runs table in the implementation plan.
+#
+# configs  g50: coarse 50 km with GM (np 1)    f10: eddy-permitting 10 km, no GM (np 5)
+# keys     pickup_from: parent case (null = cold start); branch_year: calendar year the branch
+#          starts from the parent; wind_factor: multiplies the tutorial zonal wind stress;
+#          pco2_mode: fixed1850 (CMIP6 1850 value) | transient (historical + SSP3-7.0) |
+#          fixedYear (fixed at the value of branch_year); sponge: pi (pre-industrial) | anth;
+#          n_years: model years (365 d); null for G0/F0 = until V6a / V6d.
+configs:
+  g50: {nx: 20, ny: 40, nr: 49, dx_m: 50000.0, deltaT: 1000.0, np: 1}
+  f10: {nx: 100, ny: 200, nr: 49, dx_m: 10000.0, np: 5}
+cases:
+  T10: {config: g50, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: 10}
+  TF: {config: f10, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: null}
+  G0: {config: g50, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: null}
+  GC: {config: g50, pickup_from: G0, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: 251}
+  GT: {config: g50, pickup_from: G0, branch_year: null, wind_factor: 1.0, pco2_mode: transient, sponge: pi, n_years: 251}
+  GC_w1900: {config: g50, pickup_from: GC, branch_year: 1900, wind_factor: 1.2, pco2_mode: fixed1850, sponge: pi, n_years: 25}
+  GT_w1900: {config: g50, pickup_from: GT, branch_year: 1900, wind_factor: 1.2, pco2_mode: transient, sponge: pi, n_years: 25}
+  GC_w1980: {config: g50, pickup_from: GC, branch_year: 1980, wind_factor: 1.2, pco2_mode: fixed1850, sponge: pi, n_years: 25}
+  GT_w1980: {config: g50, pickup_from: GT, branch_year: 1980, wind_factor: 1.2, pco2_mode: transient, sponge: pi, n_years: 25}
+  GC_w2020: {config: g50, pickup_from: GC, branch_year: 2020, wind_factor: 1.2, pco2_mode: fixed1850, sponge: pi, n_years: 25}
+  GT_w2020: {config: g50, pickup_from: GT, branch_year: 2020, wind_factor: 1.2, pco2_mode: transient, sponge: pi, n_years: 25}
+  GC_w2060: {config: g50, pickup_from: GC, branch_year: 2060, wind_factor: 1.2, pco2_mode: fixed1850, sponge: pi, n_years: 25}
+  GT_w2060: {config: g50, pickup_from: GT, branch_year: 2060, wind_factor: 1.2, pco2_mode: transient, sponge: pi, n_years: 25}
+  GTa: {config: g50, pickup_from: G0, branch_year: null, wind_factor: 1.0, pco2_mode: transient, sponge: anth, n_years: 251}
+  GTa_w1900: {config: g50, pickup_from: GTa, branch_year: 1900, wind_factor: 1.2, pco2_mode: transient, sponge: anth, n_years: 25}
+  GTa_w2060: {config: g50, pickup_from: GTa, branch_year: 2060, wind_factor: 1.2, pco2_mode: transient, sponge: anth, n_years: 25}
+  F0_1900: {config: f10, pickup_from: GT, branch_year: 1900, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: null}
+  FT_1900_c1: {config: f10, pickup_from: F0_1900, branch_year: 1900, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_1900_w1: {config: f10, pickup_from: F0_1900, branch_year: 1900, wind_factor: 1.2, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_1900_c2: {config: f10, pickup_from: F0_1900, branch_year: 1900, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_1900_w2: {config: f10, pickup_from: F0_1900, branch_year: 1900, wind_factor: 1.2, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_1900_c3: {config: f10, pickup_from: F0_1900, branch_year: 1900, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_1900_w3: {config: f10, pickup_from: F0_1900, branch_year: 1900, wind_factor: 1.2, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  F0_2060: {config: f10, pickup_from: GT, branch_year: 2060, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: null}
+  FT_2060_c1: {config: f10, pickup_from: F0_2060, branch_year: 2060, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_2060_w1: {config: f10, pickup_from: F0_2060, branch_year: 2060, wind_factor: 1.2, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_2060_c2: {config: f10, pickup_from: F0_2060, branch_year: 2060, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_2060_w2: {config: f10, pickup_from: F0_2060, branch_year: 2060, wind_factor: 1.2, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_2060_c3: {config: f10, pickup_from: F0_2060, branch_year: 2060, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: 15}
+  FT_2060_w3: {config: f10, pickup_from: F0_2060, branch_year: 2060, wind_factor: 1.2, pco2_mode: fixedYear, sponge: pi, n_years: 15}
