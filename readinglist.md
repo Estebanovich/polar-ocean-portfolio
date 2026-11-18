@@ -338,3 +338,43 @@ Para conocer a cada investigador antes de escribirle. ★ = leer primero (2–3 
 | ★✔ | Williams, Maksym et al. (2014). Thick and deformed Antarctic sea ice mapped with autonomous underwater vehicles. *Nature Geoscience* | https://doi.org/10.1038/ngeo2299 |
 | ✔ | Ackley et al. (2020). Sea-ice production and air/ice/ocean/biogeochemistry interactions in the Ross Sea during the PIPERS 2017 autumn field campaign. *Annals of Glaciology* (campaña con Maksym y Smith) | https://doi.org/10.1017/aog.2020.31 |
 | ✔ | Stammerjohn, Maksym et al. (2015). Seasonal sea ice changes in the Amundsen Sea, Antarctica, over the period of 1979–2014. *Elementa* | https://doi.org/10.12952/journal.elementa.000055 |
+
+## Exp. 6 — Sumidero de carbono del Océano Austral (Le Quéré)
+
+Revisión en `exp6_southern_carbon/notes/rev_literatura.md` (17 nov). ★ = bajar antes de diseñar el experimento. ✔ = DOI de Consensus.
+
+| | Artículo | Link |
+|---|---|---|
+| ★✔ | Abernathey et al. (2011). The Dependence of Southern Ocean Meridional Overturning on Wind Stress. *Journal of Physical Oceanography* | https://doi.org/10.1175/jpo-d-11-023.1 |
+| ★✔ | Dufour et al. (2013). Eddy compensation and controls of the enhanced sea‐to‐air CO2 flux during positive phases of the Southern Annular Mode. *Global Biogeochemical Cycles* | https://doi.org/10.1002/gbc.20090 |
+| ★✔ | Jarníková et al. (2025). Decreasing importance of carbon-climate feedbacks in the Southern Ocean in a warming climate. *Science Advances* | https://doi.org/10.1126/sciadv.adr3589 |
+| ★✔ | Le Quéré et al. (2007). Saturation of the Southern Ocean CO 2 Sink Due to Recent Climate Change. *Science* | https://doi.org/10.1126/science.1136188 |
+| ★✔ | Le Quéré et al. (2016). Role of zooplankton dynamics for Southern Ocean phytoplankton biomass and global biogeochemical cycles. *Biogeosciences* | https://doi.org/10.5194/bg-13-4111-2016 |
+| ★✔ | Lovenduski et al. (2008). Toward a mechanistic understanding of the decadal trends in the Southern Ocean carbon sink. *Global Biogeochemical Cycles* | https://doi.org/10.1029/2007gb003139 |
+| ★✔ | Menviel & Spence (2024). Southern Ocean circulation’s impact on atmospheric CO2 concentration. *Frontiers in Marine Science* | https://doi.org/10.3389/fmars.2023.1328534 |
+| ★✔ | Munday et al. (2014). Impacts and effects of mesoscale ocean eddies on ocean carbon storage and atmospheric pCO2. *Global Biogeochemical Cycles* | https://doi.org/10.1002/2014gb004836 |
+| ★✔ | Prend et al. (2021). Parameterizing Eddy Transport of Biogeochemical Tracers. *Geophysical Research Letters* | https://doi.org/10.1029/2021gl094405 |
+| ★✔ | Youngs et al. (2023). Air‐Sea CO2 Fluxes Localized by Topography in a Southern Ocean Channel. *Geophysical Research Letters* | https://doi.org/10.1029/2023gl104802 |
+| ✔ | Bishop et al. (2016). Southern Ocean Overturning Compensation in an Eddy-Resolving Climate Simulation. *Journal of Physical Oceanography* | https://doi.org/10.1175/jpo-d-15-0177.1 |
+| ✔ | Bronselaer et al. (2018). Southern Ocean carbon-wind stress feedback. *Climate Dynamics* | https://doi.org/10.1007/s00382-017-4041-y |
+| ✔ | Deppeler & Davidson (2017). Southern Ocean Phytoplankton in a Changing Climate. *Frontiers in Marine Science* | https://doi.org/10.3389/fmars.2017.00040 |
+| ✔ | Dietze et al. (2017). Simulating natural carbon sequestration in the Southern Ocean: on uncertainties associated with eddy parameterizations and iron deposition. *Biogeosciences* | https://doi.org/10.5194/bg-14-1561-2017 |
+| ✔ | Dietze et al. (2020). MOMSO 1.0 – an eddying Southern Ocean model configuration with fairly equilibrated natural carbon. *Geoscientific model development* | https://doi.org/10.5194/gmd-13-71-2020 |
+| ✔ | Farneti et al. (2010). The Role of Mesoscale Eddies in the Rectification of the Southern Ocean Response to Climate Change. *Journal of Physical Oceanography* | https://doi.org/10.1175/2010jpo4353.1 |
+| ✔ | Gruber et al. (2018). The Variable Southern Ocean Carbon Sink. *Annual Review of Marine Science* | https://doi.org/10.1146/annurev-marine-121916-063407 |
+| ✔ | Gupta et al. (2020). The Effect of Antarctic Sea Ice on Southern Ocean Carbon Outgassing: Capping Versus Light Attenuation. *Global Biogeochemical Cycles* | https://doi.org/10.1029/2019gb006489 |
+| ✔ | Hallberg & Gnanadesikan (2006). The Role of Eddies in Determining the Structure and Response of the Wind-Driven Southern Hemisphere Overturning: Results from the Modeling Eddies in the Southern Ocean (MESO) Project. *Journal of Physical Oceanography* | https://doi.org/10.1175/jpo2980.1 |
+| ✔ | Ito et al. (2015). Sustained growth of the Southern Ocean carbon storage in a warming climate. *Geophysical Research Letters* | https://doi.org/10.1002/2015gl064320 |
+| ✔ | Keppler et al. (2024). Effects of Mesoscale Eddies on Southern Ocean Biogeochemistry. *AGU Advances* | https://doi.org/10.1029/2024av001355 |
+| ✔ | Landschützer et al. (2015). The reinvigoration of the Southern Ocean carbon sink. *Science* | https://doi.org/10.1126/science.aab2620 |
+| ✔ | Lauderdale et al. (2013). Wind-driven changes in Southern Ocean residual circulation, ocean carbon reservoirs and atmospheric CO2. *Climate Dynamics* | https://doi.org/10.1007/s00382-012-1650-3 |
+| ✔ | Lauderdale et al. (2016). The impact of Southern Ocean residual upwelling on atmospheric CO2 on centennial and millennial timescales. *Climate Dynamics* | https://doi.org/10.1007/s00382-016-3163-y |
+| ✔ | Le Quéré et al. (2005). Ecosystem dynamics based on plankton functional types for global ocean biogeochemistry models. *Global Change Biology* | https://doi.org/10.1111/j.1365-2486.2005.1004.x |
+| ✔ | Lovenduski et al. (2007). Enhanced CO2 outgassing in the Southern Ocean from a positive phase of the Southern Annular Mode. *Global Biogeochemical Cycles* | https://doi.org/10.1029/2006gb002900 |
+| ✔ | Mayot et al. (2023). Climate-driven variability of the Southern Ocean CO 2 sink. *Philosophical Transactions of the Royal Society A Mathematical Physical and Engineering Sciences* | https://doi.org/10.1098/rsta.2022.0055 |
+| ✔ | Menviel et al. (2023). Enhanced Southern Ocean CO 2 outgassing as a result of stronger and poleward shifted southern hemispheric westerlies. *Biogeosciences* | https://doi.org/10.5194/bg-20-4413-2023 |
+| ✔ | Olivier & Haumann (2025). Southern Ocean freshening stalls deep ocean CO2 release in a changing climate. *Nature Climate Change* | https://doi.org/10.1038/s41558-025-02446-3 |
+| ✔ | Patara et al. (2026). Stronger Southern Ocean Anthropogenic Carbon Uptake in Eddying Ocean Simulations. *Journal of Climate* | https://doi.org/10.1175/jcli-d-25-0198.1 |
+| ✔ | Poulsen et al. (2018). Parameterized and resolved Southern Ocean eddy compensation. *Ocean Modelling* | https://doi.org/10.1016/j.ocemod.2018.01.008 |
+| ✔ | Rodgers et al. (2014). Strong sensitivity of Southern Ocean carbon uptake and nutrient cycling to wind stirring. *Biogeosciences* | https://doi.org/10.5194/bg-11-4077-2014 |
+| ✔ | Swart et al. (2014). Wind-driven changes in the ocean carbon sink. *Biogeosciences* | https://doi.org/10.5194/bg-11-6107-2014 |
