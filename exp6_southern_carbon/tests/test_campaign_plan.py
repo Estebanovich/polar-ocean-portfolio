@@ -54,3 +54,33 @@ def test_dry_run_writes_nothing(tmp_path, capsys):
     assert rc.main(["--cases", "GC_w19*", "--dry-run", "--runs-root", str(tmp_path)]) == 0
     assert list(tmp_path.iterdir()) == []
     assert "GC_w1900" in capsys.readouterr().out
+
+
+def test_prepare_cold_start_writes_inputs(tmp_path):
+    (item,) = rc.plan(["G0"], tmp_path, n_timesteps=3942)
+    inp = rc.prepare(item, tmp_path)
+    assert (inp / "case.json").exists() and (inp / "data").exists()
+    assert "nTimeSteps=3942" in (inp / "data").read_text().replace(" ", "")
+
+
+def test_prepare_size_mismatch_raises(tmp_path):
+    (item,) = rc.plan(["G0"], tmp_path, n_timesteps=3942)
+    item["config"] = "f10"                  # f10 SIZE.h is 100 x 200, the case is 20 x 40
+    with pytest.raises(RuntimeError, match="Nx"):
+        rc.prepare(item, tmp_path)
+
+
+def test_rmtree_tolerates_vanishing_appledouble(tmp_path, monkeypatch):
+    d = tmp_path / "input"
+    d.mkdir()
+    for n in ("bathy.bin", "._bathy.bin"):
+        (d / n).write_text("x")
+    real = __import__("os").unlink
+
+    def unlink(path, *a, **k):              # exFAT: removing bathy.bin also removes ._bathy.bin
+        real(path, *a, **k)
+        if str(path) == "bathy.bin":
+            real("._bathy.bin", *a, **k)
+    monkeypatch.setattr(rc.os, "unlink", unlink)
+    rc.rmtree_exfat(d)
+    assert not d.exists()

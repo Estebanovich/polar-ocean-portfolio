@@ -137,17 +137,40 @@ def plan(cases: list[str], runs_root: Path, n_timesteps: int | None = None, cont
     return out
 
 
+def rmtree_exfat(d: Path) -> None:
+    """shutil.rmtree that tolerates files vanishing mid-walk: on exFAT (LaCie) macOS deletes the
+    ._ AppleDouble companion together with its file, so rmtree then fails on the ._ entry."""
+    def onerror(func, path, exc):
+        if not issubclass(exc[0], FileNotFoundError):
+            raise exc[1]
+    shutil.rmtree(d, onerror=onerror)
+
+
+def check_size(case_dir: Path, size_h: Path) -> None:
+    """RuntimeError unless SIZE.h matches the flat Exp. 6 case.json (nx, ny, nr). The pfcommon
+    version reads the Exp. 5 schema (case.json["params"]) and cannot be used here."""
+    c = json.loads((Path(case_dir) / "case.json").read_text())
+    t = Path(size_h).read_text()
+    sp = cp._size_param
+    got = {"Nx": sp(t, "sNx") * sp(t, "nSx") * sp(t, "nPx"), "Ny": sp(t, "sNy") * sp(t, "nSy") * sp(t, "nPy"),
+           "Nr": sp(t, "Nr")}
+    want = {"Nx": c["nx"], "Ny": c["ny"], "Nr": c["nr"]}
+    bad = [f"{k}: SIZE.h {got[k]} != case {want[k]}" for k in got if got[k] != want[k]]
+    if bad:
+        raise RuntimeError(f"{size_h} does not match {case_dir}: " + "; ".join(bad))
+
+
 def prepare(item: dict, runs_root: Path) -> Path:
     inp = Path(runs_root) / item["case"] / "input"
     if inp.exists():
-        shutil.rmtree(inp)
+        rmtree_exfat(inp)
     extra = dict(item["extra"])
     if item["config"] != "f10" and mc.load_case(item["case"])["sponge"] == "anth":
         extra["cant_sup"] = {int(k): v for k, v in json.loads((Path(runs_root) / "cant_sup.json").read_text()).items()}
     mc.write_case(item["case"], inp, extra)
     for f in item["pickups"]:
         shutil.copyfile(f, inp / f.name)
-    cp.check_size(inp, PKG / "config" / item["config"] / "code" / "SIZE.h")
+    check_size(inp, PKG / "config" / item["config"] / "code" / "SIZE.h")
     return inp
 
 
