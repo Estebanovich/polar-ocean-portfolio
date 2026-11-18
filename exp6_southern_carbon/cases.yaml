@@ -11,7 +11,8 @@
 # keys     pickup_from: parent case (null = cold start); branch_year: calendar year the branch
 #          starts from the parent; wind_factor: multiplies the tutorial zonal wind stress;
 #          pco2_mode: fixed1850 (CMIP6 1850 value) | transient (historical + SSP3-7.0) |
-#          fixedYear (fixed at the value of branch_year); sponge: pi (pre-industrial) | anth;
+#          fixedYear (fixed at the value of branch_year); sponge: pi (pre-industrial) | anth
+#          (C_ant sponge; supported by make_case but no case uses it: GTa cut on 18 Nov for time);
 #          n_years: model years (365 d); null for G0/F0 = until V6a / V6d.
 configs:
   g50: {nx: 20, ny: 40, nr: 49, dx_m: 50000.0, deltaT: 1000.0, np: 1}
@@ -32,9 +33,6 @@ cases:
   GT_w2020: {config: g50, pickup_from: GT, branch_year: 2020, wind_factor: 1.2, pco2_mode: transient, sponge: pi, n_years: 25}
   GC_w2060: {config: g50, pickup_from: GC, branch_year: 2060, wind_factor: 1.2, pco2_mode: fixed1850, sponge: pi, n_years: 25}
   GT_w2060: {config: g50, pickup_from: GT, branch_year: 2060, wind_factor: 1.2, pco2_mode: transient, sponge: pi, n_years: 25}
-  GTa: {config: g50, pickup_from: G0s, branch_year: null, wind_factor: 1.0, pco2_mode: transient, sponge: anth, n_years: 251}
-  GTa_w1900: {config: g50, pickup_from: GTa, branch_year: 1900, wind_factor: 1.2, pco2_mode: transient, sponge: anth, n_years: 25}
-  GTa_w2060: {config: g50, pickup_from: GTa, branch_year: 2060, wind_factor: 1.2, pco2_mode: transient, sponge: anth, n_years: 25}
   F0_1900: {config: f10, pickup_from: GT, branch_year: 1900, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: null}
   FT_1900_c1: {config: f10, pickup_from: F0_1900, branch_year: 1900, wind_factor: 1.0, pco2_mode: fixedYear, sponge: pi, n_years: 15}
   FT_1900_w1: {config: f10, pickup_from: F0_1900, branch_year: 1900, wind_factor: 1.2, pco2_mode: fixedYear, sponge: pi, n_years: 15}

@@ -99,3 +99,10 @@ Costos medidos: 13.9 min por año síncrono con np 1 (D2, corriendo junto a D3b)
 
 - La regla de recorte del fino no se activa (229 h < 250 h).
 - Grueso y fino suman ~360 h, unos 15 días de máquina. Con G0 arrancando el 18 nov, el grueso termina hacia el 24 nov y el fino hacia el 4 dic. Quedan 4–5 días para el README antes del correo del 9–10 dic, sin margen para fallos.
+
+## Decisión del 18 nov: se quita GTa
+
+- **Velocidad real de G0:** la primera etapa (100 años de trazador) tardó 6965 s, es decir 1.16 min por año de trazador con np 5, contra los ~1.85 estimados. G0 completo baja de ~31 h a ~20 h.
+- **Recorte:** Esteban aprobó quitar GTa y sus dos ramas (la sensibilidad a la esponja con C_ant; V6e era descriptiva y no entra en ninguna hipótesis). Ahorra ~36 h.
+- **Proyección resultante:** grueso ≈ 84 h (G0 ~20, G0s ~6, GC y GT con sus ramas ~58) y fino ≈ 229 h; ~313 h en total. El grueso termina hacia el 22 nov y el fino hacia el 2 dic.
+- **Limitación que se reporta:** sin GTa, la esponja norte no lleva carbono antropogénico, así que el C_ant del canal entra solo por la superficie.

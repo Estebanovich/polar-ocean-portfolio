@@ -11,9 +11,8 @@
 - **Intercambio de gas:** viento fijo de 10 m s⁻¹. Salinidad uniforme de 34.5.
 - **Pasos de tiempo:** `g50` y `f10` a 1000 s (`g50` a 2000 s resultó inestable; ver `puerta_dia1.md`). G0 es acelerado (momento 1000 s, trazadores 4000 s, ×4) y le siguen 48 años síncronos (G0s).
 - **CO₂:** GC en el valor CMIP6 de 1850. GT con el histórico CMIP6 y luego SSP3-7.0, desde el archivo de D1.
-- **Esponja norte:**
-  - caso principal: preindustrial, con los perfiles `PTRACERS_ref` de `tutorial_global_oce_biogeo`;
-  - GTa: con C_ant y P(z) = exp(−z/1000 m).
+- **Esponja norte:** preindustrial, con los perfiles `PTRACERS_ref` de `tutorial_global_oce_biogeo`.
+  - La sensibilidad con C_ant (GTa) se quitó del alcance el 18 nov por tiempo, con el visto bueno de Esteban; ver `puerta_dia1.md`. Se menciona como limitación.
 - **Ramas:** viento ×1.2 como escalón, en 1900, 1980, 2020 y 2060, sobre GT y sobre GC. Las gruesas duran 25 años; las finas, 15.
 - **Miembros del fino:** 3. La regla de recorte de `puerta_dia1.md` no se activa con la cronometría del día 1.
 
@@ -41,7 +40,7 @@
 - **V6c:** Δ_GC = S_GC(2060) − S_GC(1900). Entra en H6a.
 - **V6d:** la EKE mensual del fino cumple la regla del Exp. 5 (los últimos 3 meses dentro del 10 % de los 3 anteriores), con al menos 3 años de spin-up.
   - Tope de 8 años. Si no la cumple, H6c se marca "con remolinos sin equilibrar".
-- **V6e:** S_GTa(1900) y S_GTa(2060) junto a las de GT. Descriptiva.
+- **V6e:** eliminada junto con GTa (18 nov, antes de congelar).
 
 ## Hipótesis
 
