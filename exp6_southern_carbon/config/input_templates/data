@@ -1,0 +1,63 @@
+# Model parameters: verification/tutorial_reentrant_channel/input/data, with the Exp. 6 changes
+# marked (seasonal forcing, 365-day year, 32-bit inputs / 64-bit outputs, pickups each year).
+ &PARM01
+${visc_block}
+ viscAr=3.E-3,
+ implicitViscosity=.TRUE.,
+ diffKhT=0.,
+ diffKrT=1.E-5,
+ ivdc_kappa=1.,
+ implicitDiffusion=.TRUE.,
+ f0=-1.363e-4,
+ beta=1.313e-11,
+ selectCoriScheme=1,
+ rhoConst=1035.,
+ rhoNil=1035.,
+ eosType='LINEAR',
+ tAlpha=2.E-4,
+ sBeta =0.E-4,
+ tRef= 49*5.,
+ sRef= 49*34.5,
+ saltStepping=.FALSE.,
+ hFacMinDr=5.,
+ hFacMin=0.1,
+ rigidLid=.FALSE.,
+ implicitFreeSurface=.TRUE.,
+ exactConserv=.TRUE.,
+ tempAdvScheme=7,
+ staggerTimeStep=.TRUE.,
+ readBinaryPrec=32,
+ writeBinaryPrec=64,
+ useSingleCpuIO=.TRUE.,
+ &
+ &PARM02
+ cg2dTargetResidual=1.E-7,
+ cg2dMaxIters=1000,
+ &
+ &PARM03
+ nIter0=${nIter0},
+ nTimeSteps=${nTimeSteps},
+ deltaT=${deltaT},
+ pChkptFreq=31536000.0,
+ chkptFreq=0.,
+ dumpFreq=0.,
+ monitorFreq=31536000.,
+ monitorSelect=2,
+ tauThetaClimRelax=864000.,
+ momDissip_In_AB=.FALSE.,
+ periodicExternalForcing=.TRUE.,
+ externForcingPeriod=2628000.,
+ externForcingCycle=31536000.,
+ &
+ &PARM04
+ usingCartesianGrid=.TRUE.,
+ delX=${nx}*${dx},
+ delY=${ny}*${dx},
+ delR=${delR},
+ &
+ &PARM05
+ bathyFile='bathy.bin',
+ zonalWindFile='zonal_wind.bin',
+ thetaClimFile='sst_relax.bin',
+ hydrogThetaFile='temperature.bin',
+ &

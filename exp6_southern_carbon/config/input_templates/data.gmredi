@@ -1,0 +1,6 @@
+# tutorial_reentrant_channel/input/data.gmredi
+ &GM_PARM01
+  GM_background_K    = 1000.,
+  GM_taper_scheme    = 'dm95',
+  GM_AdvForm         =.TRUE.,
+ &

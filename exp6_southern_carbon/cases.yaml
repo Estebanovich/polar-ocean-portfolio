@@ -10,7 +10,7 @@
 #          n_years: model years (365 d); null for G0/F0 = until V6a / V6d.
 configs:
   g50: {nx: 20, ny: 40, nr: 49, dx_m: 50000.0, deltaT: 1000.0, np: 1}
-  f10: {nx: 100, ny: 200, nr: 49, dx_m: 10000.0, np: 5}
+  f10: {nx: 100, ny: 200, nr: 49, dx_m: 10000.0, deltaT: 500.0, np: 5}
 cases:
   T10: {config: g50, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: 10}
   TF: {config: f10, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: null}

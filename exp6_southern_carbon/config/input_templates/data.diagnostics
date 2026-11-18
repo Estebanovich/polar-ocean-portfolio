@@ -1,0 +1,23 @@
+# Annual (31536000 s) and monthly (2628000 s) means; names from pkg/ptracers/
+# ptracers_diagnostics_init.F:94,130-200, pkg/gchem/gchem_diagnostics_init.F:65,
+# pkg/dic/dic_diagnostics_init.F:32-67, pkg/layers.
+ &DIAGNOSTICS_LIST
+ fields(1:24,1) = 'TRAC01  ','TRAC02  ','TRAC03  ','TRAC04  ','TRAC05  ','TRAC06  ',
+                  'GC_Tr01 ','GC_Tr03 ',
+                  'ADVxTr01','ADVyTr01','ADVrTr01','DFxETr01','DFyETr01','DFrETr01','DFrITr01','ForcTr01',
+                  'ADVxTr03','ADVyTr03','ADVrTr03','DFxETr03','DFyETr03','DFrETr03','DFrITr03','ForcTr03',
+ frequency(1) = 31536000.,
+ filename(1) = 'carbon_ann',
+ fields(1:5,2) = 'THETA   ','UVEL    ','VVEL    ','WVEL    ','DICBIOA ',
+ frequency(2) = 31536000.,
+ filename(2) = 'state_ann',
+ fields(1:4,3) = 'DICTFLX ','MXLDEPTH','DICPCO2 ','ETAN    ',
+ frequency(3) = 2628000.,
+ filename(3) = 'surf_mon',
+ fields(1:3,4) = 'LaVH1TH ','LaHs1TH ','LaVa1TH ',
+ frequency(4) = 31536000.,
+ filename(4) = 'layers_ann',
+${extra_diags}
+ &
+ &DIAG_STATIS_PARMS
+ &

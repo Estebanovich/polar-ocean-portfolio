@@ -1,0 +1,8 @@
+ &PACKAGES
+ useGMRedi=${useGMRedi},
+ useRBCS=.TRUE.,
+ useLayers=.TRUE.,
+ useDiagnostics=.TRUE.,
+ usePTRACERS=.TRUE.,
+ useGCHEM=.TRUE.,
+ &

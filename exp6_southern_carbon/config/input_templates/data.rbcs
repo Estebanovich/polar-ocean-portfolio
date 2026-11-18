@@ -1,0 +1,22 @@
+# Northern sponge: temperature as in the tutorial; DIC, Alk and PO4 (Exp. 6, spec Sec. 3.4)
+# share the temperature mask (pkg/rbcs/rbcs_init_fixed.F:156: ptracer i uses mask MIN(maskLEN,2+i) = 3).
+ &RBCS_PARM01
+ useRBCtemp=.TRUE.,
+ useRBCptracers=.TRUE.,
+ tauRelaxT=864000.,
+ relaxMaskFile(1)='t_relax_mask.bin',
+ relaxMaskFile(3)='t_relax_mask.bin',
+ relaxTFile='temperature.bin',
+${rbcs_period}
+ &
+ &RBCS_PARM02
+ useRBCpTrNum(1)=.TRUE.,
+ useRBCpTrNum(2)=.TRUE.,
+ useRBCpTrNum(3)=.TRUE.,
+ tauRelaxPTR(1)=864000.,
+ tauRelaxPTR(2)=864000.,
+ tauRelaxPTR(3)=864000.,
+ relaxPtracerFile(1)='relax_ptr1.bin',
+ relaxPtracerFile(2)='relax_ptr2.bin',
+ relaxPtracerFile(3)='relax_ptr3.bin',
+ &

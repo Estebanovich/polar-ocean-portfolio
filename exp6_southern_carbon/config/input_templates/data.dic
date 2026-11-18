@@ -1,0 +1,18 @@
+# pkg/dic parameters: BIOTIC_PARMS of verification/tutorial_global_oce_biogeo/input/data.dic;
+# forcing files and atmospheric CO2 are Exp. 6 (spec Sec. 3.3). Monthly records, 365-day year.
+ &ABIOTIC_PARMS
+ &
+ &BIOTIC_PARMS
+  alphaUniform = 0.97e-10,
+  rainRatioUniform = 5.e-2,
+  KRemin = 0.95,
+ &
+ &DIC_FORCING
+  DIC_iceFile='fice.bin',
+  DIC_windFile='dic_wind.bin',
+  DIC_silicaFile='silica.bin',
+  DIC_parFile='par.bin',
+  DIC_forcingPeriod=2628000.,
+  DIC_forcingCycle=31536000.,
+${dic_co2}
+ &
