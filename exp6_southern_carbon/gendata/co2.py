@@ -52,5 +52,33 @@ def atm_pco2_at(it: int, co2atm, i3: int, i4: int) -> float:
     return float(a[ntim - 1] * (1.0 - aw) + a[ntim] * aw)
 
 
-def load_cmip6_co2(path) -> dict[int, float]:
-    raise NotImplementedError("format of the CMIP6 file not known until D1")
+def load_cmip6_co2(path, first: int = 1850, last: int = 2100) -> dict[int, float]:
+    """Annual global-mean CO2 (ppm) for first..last from the input4MIPs files in ``path``.
+
+    Reads the yearly ``gr1-GMNHSH`` files of UoM-CMIP-1-2-0 (historical) and
+    UoM-AIM-ssp370-1-2-1 (SSP3-7.0); sector 0 is the global mean, units 1e-6 (ppm).
+    The year comes from the decoded time midpoint; the historical file wins on overlap."""
+    import cftime
+    import xarray as xr
+
+    path = Path(path)
+    out: dict[int, float] = {}
+    for pat in ("*UoM-AIM-ssp370-1-2-1_gr1-GMNHSH_*.nc", "*UoM-CMIP-1-2-0_gr1-GMNHSH_*.nc"):
+        files = sorted(f for f in path.glob(pat) if not f.name.startswith("._"))
+        if len(files) != 1:
+            raise FileNotFoundError(f"expected one file {pat} in {path}, found {len(files)}")
+        with xr.open_dataset(files[0], decode_times=False) as d:
+            t = d["time"]
+            cal = t.attrs.get("calendar", "standard")
+            y0 = " 0-1-1" in t.attrs["units"]           # historical file: "days since 0-1-1"
+            years = [x.year for x in cftime.num2date(t.values, t.attrs["units"],
+                                                     "proleptic_gregorian" if y0 else cal,
+                                                     has_year_zero=True if y0 else None)]
+            v = d["mole_fraction_of_carbon_dioxide_in_air"].isel(sector=0).values.astype(float)
+        if d["mole_fraction_of_carbon_dioxide_in_air"].attrs.get("units") not in ("1.e-6", "1e-6", "ppm"):
+            raise ValueError(f"{files[0].name}: unexpected units")
+        out.update({int(y): float(x) for y, x in zip(years, v)})
+    missing = [y for y in range(first, last + 1) if y not in out]
+    if missing:
+        raise ValueError(f"CMIP6 CO2 missing years {missing[:5]}...")
+    return {y: out[y] for y in range(first, last + 1)}

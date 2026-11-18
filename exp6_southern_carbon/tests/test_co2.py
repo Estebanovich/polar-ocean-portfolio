@@ -54,3 +54,5 @@ def test_load_cmip6():
     c = co2.load_cmip6_co2(DATA)
     assert sorted(c) == list(range(1850, 2101))
     assert 284.0 <= c[1850] <= 286.0 and c[2100] > 800.0
+    assert abs(c[2015] - c[2014]) < 3.0                  # historical -> SSP3-7.0 seam
+    assert all(c[y + 1] > c[y] for y in range(1960, 2100))
