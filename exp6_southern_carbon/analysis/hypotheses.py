@@ -25,3 +25,67 @@ def h6b(pred: dict[int, float], meas: dict[int, float], tol: float = 0.25) -> di
     within = {y: bool(abs(pred[y] - meas[y]) <= tol * abs(meas[y])) for y in sorted(meas)}
     return {"within": within, "n_within": int(sum(within.values())), "pass": bool(all(within.values())),
             "ratio": {y: float(pred[y] / meas[y]) if meas[y] else float("nan") for y in sorted(meas)}}
+
+
+BRANCH_YEARS = (1900, 1980, 2020, 2060)
+
+
+def _jsonable(x):
+    if isinstance(x, dict):
+        return {str(k): _jsonable(v) for k, v in x.items()}
+    if isinstance(x, (np.floating, np.integer, np.bool_)):
+        return x.item()
+    return x
+
+
+def assemble(s_gt: dict, s_gc: dict, pred: dict, meas: dict, terms: dict) -> dict:
+    """H6a and H6b verdicts with the numbers the PD0 asks to report, JSON-ready (string keys)."""
+    a = h6a(s_gt, s_gc)
+    a["dS_pct_of_S1900"] = float(100.0 * a["dS"] / abs(s_gt[1900])) if s_gt[1900] else float("nan")
+    return _jsonable({"h6a": a, "h6b": h6b(pred, meas), "s_gt": s_gt, "s_gc": s_gc,
+                      "pred": pred, "meas": meas, "terms": terms})
+
+
+def evaluate(runs_root) -> dict:
+    """Reads GC, GT and their branches under runs_root (plan Task 8)."""
+    from pathlib import Path
+
+    from . import collect, decomp, io
+    root = Path(runs_root)
+    f = {c: collect.flux_series(root / c) for c in ("GC", "GT")}
+    s = {"GC": {}, "GT": {}}
+    pred, meas, terms = {}, {}, {}
+    for y in BRANCH_YEARS:
+        for par in ("GC", "GT"):
+            br = root / f"{par}_w{y}"
+            c = io.case(br)
+            n0, spy = int(c["nIter0"]), int(c["steps_per_year"])
+            s[par][y] = collect.branch_sensitivity(collect.flux_series(br), f[par], n0, spy)
+            if par == "GT":
+                p = dict(collect.parent_state(root / par, n0), **collect.circulation(root / par, n0))
+                b = collect.circulation(br, n0)
+                terms[y] = dict(decomp.terms(p, b), parent=p, branch=b)
+                pred[y] = terms[y]["sum_circ_bio"]
+                meas[y] = collect.measured(br, root / par, n0)
+    return assemble(s["GT"], s["GC"], pred, meas, terms)
+
+
+def main(argv=None) -> int:
+    import argparse
+    import json
+    from pathlib import Path
+
+    from pfcommon.paths import EXP6_RUNS
+    ap = argparse.ArgumentParser(description="Evaluate H6a and H6b; writes figures/hypotheses.json")
+    ap.add_argument("--runs-root", type=Path, default=EXP6_RUNS)
+    ap.add_argument("--out", type=Path, default=Path(__file__).resolve().parents[1] / "figures" / "hypotheses.json")
+    a = ap.parse_args(argv)
+    out = evaluate(a.runs_root)
+    a.out.parent.mkdir(parents=True, exist_ok=True)
+    a.out.write_text(json.dumps(out, indent=1) + "\n")
+    print(f"H6a {'PASS' if out['h6a']['pass'] else 'FAIL'}  H6b {'PASS' if out['h6b']['pass'] else 'FAIL'}  -> {a.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
