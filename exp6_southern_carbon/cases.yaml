@@ -4,7 +4,8 @@
 #
 # configs  g50: coarse 50 km with GM (np 1); g50p5: the same on 5 ranks (spin-up only; pickups are
 #          global files, interchangeable); f10: eddy-permitting 10 km, no GM (np 5).
-#          deltaT 2000 s (g50) and 1000 s (f10): day-1 timing, notes/puerta_dia1.md.
+#          deltaT 1000 s (g50, as the tutorial; 2000 s went unstable near dynamical year 11) and
+#          1000 s (f10): notes/puerta_dia1.md.
 # G0       accelerated spin-up (Bryan 1984): deltaT_tracer = deltaTClock = 4 x deltaTMom;
 # G0s      48 synchronous years after G0 (years in multiples of 4 keep the seasonal phase).
 # keys     pickup_from: parent case (null = cold start); branch_year: calendar year the branch
@@ -13,8 +14,8 @@
 #          fixedYear (fixed at the value of branch_year); sponge: pi (pre-industrial) | anth;
 #          n_years: model years (365 d); null for G0/F0 = until V6a / V6d.
 configs:
-  g50: {nx: 20, ny: 40, nr: 49, dx_m: 50000.0, deltaT: 2000.0, np: 1}
-  g50p5: {nx: 20, ny: 40, nr: 49, dx_m: 50000.0, deltaT: 2000.0, np: 5}
+  g50: {nx: 20, ny: 40, nr: 49, dx_m: 50000.0, deltaT: 1000.0, np: 1}
+  g50p5: {nx: 20, ny: 40, nr: 49, dx_m: 50000.0, deltaT: 1000.0, np: 5}
   f10: {nx: 100, ny: 200, nr: 49, dx_m: 10000.0, deltaT: 1000.0, np: 5}
 cases:
   T10: {config: g50, pickup_from: null, branch_year: null, wind_factor: 1.0, pco2_mode: fixed1850, sponge: pi, n_years: 10}

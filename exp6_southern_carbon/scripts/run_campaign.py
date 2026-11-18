@@ -43,7 +43,7 @@ from exp6_southern_carbon.gendata import make_case as mc  # noqa: E402
 RUN_SH = REPO / "scripts" / "run_mitgcm.sh"
 BUILD_SH = REPO / "scripts" / "build_mitgcm.sh"
 PICKUP_STEMS = ("pickup", "pickup_ptracers", "pickup_dic")
-STEPS_G50 = 15768                       # 365-day year at deltaT = 2000 s
+STEPS_G50 = 31536                       # 365-day year at deltaT = 1000 s
 
 
 def _sh(cmd: list) -> int:

@@ -17,17 +17,17 @@ def _nml(text, key):
 
 
 def test_transient_branch(tmp_path):
-    out = make_case.write_case("GT_w2060", tmp_path, {"co2": CO2, "iter_1850": 1000, "nIter0": 1000 + 210 * 15768})
+    out = make_case.write_case("GT_w2060", tmp_path, {"co2": CO2, "iter_1850": 1000, "nIter0": 1000 + 210 * 31536})
     w = np.fromfile(out / "zonal_wind.bin", ">f4").reshape(12, 40, 20)   # periodicExternalForcing: 12 records
     for m in range(12):
         np.testing.assert_allclose(w[m], (1.2 * fields.taux(G50)).astype(">f4"))
     assert "gchem_secondsPerYear=31536000." in (out / "data.gchem").read_text().replace(" ", "")
     d = (out / "data.dic").read_text()
-    assert (_nml(d, "dic_int1"), _nml(d, "dic_int2"), _nml(d, "dic_int3"), _nml(d, "dic_int4")) == ("2", "253", "1000", "15768")
+    assert (_nml(d, "dic_int1"), _nml(d, "dic_int2"), _nml(d, "dic_int3"), _nml(d, "dic_int4")) == ("2", "253", "1000", "31536")
     assert (out / "co2atmos.dat").read_text().count("\n") == 253
     data = (out / "data").read_text()
-    assert int(_nml(data, "nIter0")) == 1000 + 210 * 15768 and int(_nml(data, "nTimeSteps")) == 25 * 15768
-    assert float(_nml(data, "deltaT")) == 2000.0 and _nml(data, "deltaTtracer") is None
+    assert int(_nml(data, "nIter0")) == 1000 + 210 * 31536 and int(_nml(data, "nTimeSteps")) == 25 * 31536
+    assert float(_nml(data, "deltaT")) == 1000.0 and _nml(data, "deltaTtracer") is None
     c = json.loads((out / "case.json").read_text())
     assert c["branch_year"] == 2060 and c["wind_factor"] == 1.2
 
@@ -81,7 +81,8 @@ def test_g0_needs_length(tmp_path):
 def test_g0_accelerated_async(tmp_path):
     out = make_case.write_case("G0", tmp_path, {"co2": CO2, "n_timesteps": 7884})
     data = (out / "data").read_text()
-    assert float(_nml(data, "deltaTMom")) == 2000.0
+    assert float(_nml(data, "deltaTMom")) == 1000.0
+    assert float(_nml(data, "deltaTFreeSurf")) == 1000.0
     assert float(_nml(data, "deltaTtracer")) == 4000.0 and float(_nml(data, "deltaTClock")) == 4000.0
     assert _nml(data, "deltaT") is None
     c = json.loads((out / "case.json").read_text())
@@ -91,4 +92,4 @@ def test_g0_accelerated_async(tmp_path):
 def test_g0s_synchronous_after_g0(tmp_path):
     out = make_case.write_case("G0s", tmp_path, {"co2": CO2, "nIter0": 3942 * 1000})
     data = (out / "data").read_text()
-    assert float(_nml(data, "deltaT")) == 2000.0 and int(_nml(data, "nTimeSteps")) == 48 * 15768
+    assert float(_nml(data, "deltaT")) == 1000.0 and int(_nml(data, "nTimeSteps")) == 48 * 31536

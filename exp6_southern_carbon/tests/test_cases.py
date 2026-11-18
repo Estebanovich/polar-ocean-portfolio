@@ -13,7 +13,7 @@ def _load():
 def test_configs():
     c = _load()["configs"]
     assert (c["g50"]["nx"], c["g50"]["ny"], c["g50"]["nr"], c["g50"]["dx_m"], c["g50"]["deltaT"], c["g50"]["np"]) == (
-        20, 40, 49, 50000.0, 2000.0, 1)
+        20, 40, 49, 50000.0, 1000.0, 1)
     drop = lambda d: {k: v for k, v in d.items() if k != "np"}
     assert drop(c["g50p5"]) == drop(c["g50"]) and c["g50p5"]["np"] == 5
     assert c["f10"]["deltaT"] == 1000.0

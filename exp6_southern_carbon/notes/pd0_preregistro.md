@@ -9,7 +9,7 @@
 - **Canal:** `tutorial_reentrant_channel` con `pkg/dic`, 6 trazadores (DIC, Alk, PO4, DOP, O2, PO4pre), sin hierro.
 - **Ciclo estacional:** ±1.5 °C en la SST de relajación, con el mínimo en agosto. La luz es la de 55°S.
 - **Intercambio de gas:** viento fijo de 10 m s⁻¹. Salinidad uniforme de 34.5.
-- **Pasos de tiempo:** `g50` a 2000 s; `f10` a 1000 s. G0 es acelerado (×4) y le siguen 48 años síncronos (G0s). Ver `puerta_dia1.md`.
+- **Pasos de tiempo:** `g50` y `f10` a 1000 s (`g50` a 2000 s resultó inestable; ver `puerta_dia1.md`). G0 es acelerado (momento 1000 s, trazadores 4000 s, ×4) y le siguen 48 años síncronos (G0s).
 - **CO₂:** GC en el valor CMIP6 de 1850. GT con el histórico CMIP6 y luego SSP3-7.0, desde el archivo de D1.
 - **Esponja norte:**
   - caso principal: preindustrial, con los perfiles `PTRACERS_ref` de `tutorial_global_oce_biogeo`;

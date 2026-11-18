@@ -5,7 +5,7 @@ import pytest
 
 from exp6_southern_carbon.scripts import run_campaign as rc
 
-SPY = 15768
+SPY = 31536
 
 
 def _run(root: Path, case: str, last: int, pickups=()):
