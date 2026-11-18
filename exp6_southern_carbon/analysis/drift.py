@@ -14,9 +14,11 @@ def _century_change(years, series) -> float:
     return float(abs(s[last][-1] - s[last][0]))
 
 
-def v6a(years, flux_decadal, deep_dic_decadal) -> dict:
-    """years: tracer years of decadal means; flux in mol C m-2 yr-1; deep DIC (below 1000 m) in mol m-3."""
-    span = float(np.asarray(years, float)[-1] - np.asarray(years, float)[0])
+def v6a(years, flux_decadal, deep_dic_decadal, run_years: float | None = None) -> dict:
+    """years: tracer years of decadal means; flux in mol C m-2 yr-1; deep DIC (below 1000 m) in mol m-3.
+    run_years: length of the run in tracer years (the ">= 1000 tracer years" of the rule); without
+    it, the span of the decadal means is used, which is one decade shorter than the run."""
+    span = float(run_years) if run_years is not None else float(np.asarray(years, float)[-1] - np.asarray(years, float)[0])
     df, dd = _century_change(years, flux_decadal), _century_change(years, deep_dic_decadal)
     ok_f, ok_d, ok_n = df < FLUX_TOL, dd < DEEP_TOL, span >= MIN_YEARS
     reason = [] if ok_n else [f"span {span:.0f} < {MIN_YEARS:.0f} years"]

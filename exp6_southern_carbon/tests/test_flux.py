@@ -55,3 +55,11 @@ def test_v6a_deep_dic_threshold():
     yrs = np.arange(0, 1100, 10)
     big = drift.v6a(yrs, np.zeros(yrs.size), 1.2e-3 * yrs / 100.0)    # 1.2e-3 mol m-3 > 1.035e-3
     assert not big["pass"]
+
+
+def test_v6a_counts_run_years_not_decadal_span():
+    yrs = np.arange(5.5, 1000.0, 10.0)                  # decadal means of a 1000-year run: 5.5 .. 995.5
+    z = np.zeros(yrs.size)
+    assert drift.v6a(yrs, z, z, run_years=1000.0)["pass"]
+    short = drift.v6a(yrs, z, z, run_years=990.0)
+    assert not short["pass"] and short["span_years"] == 990.0

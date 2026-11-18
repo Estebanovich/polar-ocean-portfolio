@@ -31,3 +31,11 @@ def test_report_on_t10():
     r = spinup.report(T10, j_edge=20)
     assert set(r) >= {"v6a", "moc_R_sv", "upwelling_fraction_R", "mld_winter_R_m", "years"}
     assert 0.0 < r["mld_winter_R_m"] < 4000.0 and np.isfinite(r["moc_R_sv"])
+
+
+def test_run_years_from_first_annual_record():
+    spy = 7884
+    staged = [spy * k for k in range(1, 201)]          # G0 after two 100-year stages (cold start at 0)
+    assert list(spinup.run_years(staged, spy)) == list(range(1, 201))
+    child = [5_000_000 + spy * k for k in range(1, 49)]  # a run started from a parent's pickup
+    assert list(spinup.run_years(child, spy)) == list(range(1, 49))

@@ -34,6 +34,13 @@ def upwelling_fraction(psi_upper, j_edge: int) -> float:
     return float(d[:j_edge - 1].sum() / d.sum()) if d.sum() > 0 else float("nan")
 
 
+def run_years(ann_iters, steps_per_year: int) -> np.ndarray:
+    """Model years 1..N of the annual records, counted from the start of the run directory (the
+    first record closes year 1). Independent of case.json nIter0, which a --continue stage resets."""
+    it = np.asarray(ann_iters, dtype=np.int64)
+    return (it - (it[0] - int(steps_per_year))) / int(steps_per_year)
+
+
 def _region(g, j_edge):
     m = np.zeros((g["ny"], g["nx"]), bool)
     m[1:j_edge] = True
@@ -50,7 +57,7 @@ def report(run, j_edge: int = 20, last_years: int = 10) -> dict:
     vol = g["rac"][None] * g["drf"][:, None, None] * g["hfac"]
     deep = (g["rc"] >= 1000.0)[:, None, None] & (g["hfac"] > 0)
     ann = io.iters(run, "carbon_ann")
-    years = [(it - int(c["nIter0"])) / int(c["steps_per_year"]) for it in ann]
+    years = list(run_years(ann, int(c["steps_per_year"])))
     deep_dic = [float((io.fields(run, "carbon_ann", it)["TRAC01"] * vol)[deep].sum() / vol[deep].sum()) for it in ann]
     mon = io.iters(run, "surf_mon")
     key = "DICCFLX" if "DICCFLX" in io.fields(run, "surf_mon", mon[0]) else "DICTFLX"
@@ -73,7 +80,7 @@ def report(run, j_edge: int = 20, last_years: int = 10) -> dict:
     mld = np.array([io.fields(run, "surf_mon", it)["MXLDEPTH"] for it in mon[-12 * last_years:]])
     clim = mld.reshape(-1, 12, *mld.shape[1:]).mean(0) if mld.shape[0] % 12 == 0 else mld
     mld_R = clim[:, R].mean(axis=1)
-    return {"years": float(years[-1]), "v6a": drift.v6a(yd, fd, dd), "moc_R_sv": moc_out_of_R(psi, j_edge),
+    return {"years": float(years[-1]), "v6a": drift.v6a(yd, fd, dd, run_years=years[-1]), "moc_R_sv": moc_out_of_R(psi, j_edge),
             "moc_max_sv": float(psi.max()), "upwelling_fraction_R": upwelling_fraction(psi_upper, j_edge),
             "mld_winter_R_m": float(mld_R.max()), "mld_month_max": int(np.argmax(mld_R)) + 1,
             "flux_last_mol_m2_yr": float(fl_ann[-1]), "deep_dic_last_mol_m3": float(deep_dic[-1])}
