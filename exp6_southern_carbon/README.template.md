@@ -27,9 +27,9 @@ The channel is `tutorial_reentrant_channel` of MITgcm (Fig. 0): {{Lx_km}} km per
 
 **Fig. 0.** Geometry and forcing. (a) Zonal wind stress and the restoring temperature with its seasonal range. (b) Depth, the region R and the pre-industrial sponge.
 
-The coarse model ({{dx_coarse_km}} km, time step {{dt_s}} s) parameterizes eddies with Gent–McWilliams and Redi. Its spin-up (G0) accelerates the tracers by a factor of {{accel}} against the momentum (Bryan 1984) for {{g0_years}} tracer years, followed by {{g0s_years}} synchronous years (G0s). The drift in the last century of G0 is {{v6a_dflux}} mol C m⁻² yr⁻¹ in the channel-mean flux and {{v6a_ddic}} µmol kg⁻¹ in the DIC below the thermocline, so V6a {{v6a_verdict}}; over G0s it is {{g0s_dflux}} and {{g0s_ddic}}. At equilibrium the upper cell carries {{moc_R}} Sv out of R ({{moc_edge_frac}} % of its maximum, reached at the edge of R), the winter mixed layer in R reaches {{mld_R}} m in {{mld_month}}, and the channel takes up {{flux_g0}} mol C m⁻² yr⁻¹ at the pre-industrial CO₂. The share of the cell's growth that lies inside R is {{upw_frac}} %; the rest is noise on the plateau north of R, not upwelling.
+The coarse model ({{dx_coarse_km}} km, time step {{dt_s}} s) parameterizes eddies with Gent–McWilliams and Redi. Its spin-up (G0) accelerates the tracers by a factor of {{accel}} against the momentum (Bryan 1984) for {{g0_years}} tracer years, followed by {{g0s_years}} synchronous years (G0s), about the length Wang (2001) found sufficient after an asynchronous equilibrium. The drift in the last century of G0 is {{v6a_dflux}} mol C m⁻² yr⁻¹ in the channel-mean flux and {{v6a_ddic}} µmol kg⁻¹ in the DIC below the thermocline, so V6a {{v6a_verdict}}; over G0s it is {{g0s_dflux}} and {{g0s_ddic}}. At equilibrium the upper cell carries {{moc_R}} Sv out of R ({{moc_edge_frac}} % of its maximum, reached at the edge of R), the winter mixed layer in R reaches {{mld_R}} m in {{mld_month}}, and the channel takes up {{flux_g0}} mol C m⁻² yr⁻¹ at the pre-industrial CO₂. The share of the cell's growth that lies inside R is {{upw_frac}} %; the rest is noise on the plateau north of R, not upwelling.
 
-GC holds the atmospheric CO₂ at its {{y_first}} value for {{gt_years}} years; GT follows the CMIP6 historical concentrations and then SSP3-7.0 to {{y_last}}. Each branch starts from the parent's state on 1 January of its year, multiplies the wind stress by {{wind_factor}} and runs {{branch_len}} years. The budget of the annual channel DIC closes to {{v6b_max}} of the surface flux (V6b {{v6b_verdict}}).
+GC holds the atmospheric CO₂ at its {{y_first}} value for {{gt_years}} years; GT follows the CMIP6 historical concentrations (Meinshausen et al. 2017) and then SSP3-7.0 (Meinshausen et al. 2020) to {{y_last}}. Each branch starts from the parent's state on 1 January of its year, multiplies the wind stress by {{wind_factor}} and runs {{branch_len}} years. The budget of the annual channel DIC closes to {{v6b_max}} of the surface flux (V6b {{v6b_verdict}}).
 
 ## 3. Method
 
@@ -108,7 +108,7 @@ The {{dx_fine_km}}-km model, without GM, starts from the coarse state of GT in {
 
 ## References
 
-Bryan, K., 1984: Accelerating the convergence to equilibrium of ocean-climate models. *J. Phys. Oceanogr.* <!-- verify DOI before publishing -->
+Bryan, K., 1984: Accelerating the convergence to equilibrium of ocean-climate models. *J. Phys. Oceanogr.*, https://doi.org/10.1175/1520-0485(1984)014%3C0666:ATCTEO%3E2.0.CO;2
 
 Gruber, N., et al., 2018: The variable Southern Ocean carbon sink. *Annu. Rev. Mar. Sci.*, https://doi.org/10.1146/annurev-marine-121916-063407
 
@@ -118,6 +118,8 @@ Le Quéré, C., et al., 2007: Saturation of the Southern Ocean CO₂ sink due to
 
 Lovenduski, N. S., et al., 2008: Toward a mechanistic understanding of the decadal trends in the Southern Ocean carbon sink. *Global Biogeochem. Cycles*, https://doi.org/10.1029/2007gb003139
 
-Meinshausen, M., et al., 2017: Historical greenhouse gas concentrations for climate modelling (CMIP6). *Geosci. Model Dev.* <!-- verify DOI before publishing -->
+Meinshausen, M., et al., 2017: Historical greenhouse gas concentrations for climate modelling (CMIP6). *Geosci. Model Dev.* <!-- final DOI not verified (Consensus gives only a discussion-comment DOI) -->
 
-Meinshausen, M., et al., 2020: The shared socio-economic pathway (SSP) greenhouse gas concentrations and their extensions to 2500. *Geosci. Model Dev.* <!-- verify DOI before publishing -->
+Meinshausen, M., et al., 2020: The shared socio-economic pathway (SSP) greenhouse gas concentrations and their extensions to 2500. *Geosci. Model Dev.*, https://doi.org/10.5194/gmd-13-3571-2020
+
+Wang, D., 2001: A note on using the accelerated convergence method in climate models. *Tellus A*, https://doi.org/10.3402/tellusa.v53i1.12179
