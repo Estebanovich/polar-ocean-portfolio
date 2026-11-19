@@ -18,6 +18,7 @@ the parent and branch surface THETA, annual means of the window years over R; th
 from the parent's monthly DICCFLX and pCO2atm - DICPCO2 (atm) over the same years."""
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -174,3 +175,8 @@ def temperature(branch_run, parent_run, n0_branch: int, window=WINDOW) -> dict:
     cond = decomp.conductance(f, dp, np.broadcast_to(area, f.shape))
     return {"temp": decomp.temperature_term(dic, alk, po4, th(parent_run), th(branch_run), area, cond),
             "conductance": cond}
+
+
+def finished_ok(run) -> bool:
+    f = Path(run) / "run_status.json"
+    return f.exists() and json.loads(f.read_text()).get("state") == "OK"
