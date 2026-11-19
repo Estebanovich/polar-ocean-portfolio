@@ -12,7 +12,6 @@ from pathlib import Path
 
 import numpy as np
 
-from pfcommon.mitgcm_io import read_bin
 
 from . import drift, io
 from .flux import YEAR_S
@@ -51,7 +50,7 @@ def report(run, j_edge: int = 20, last_years: int = 10) -> dict:
     run = Path(run)
     g = io.grid(run)
     c = io.case(run)
-    dxg = read_bin(run / "DXG.data", (g["ny"], g["nx"]))
+    dxg = g["dxg"]
     R = _region(g, j_edge)
     area = g["rac"]
     vol = g["rac"][None] * g["drf"][:, None, None] * g["hfac"]

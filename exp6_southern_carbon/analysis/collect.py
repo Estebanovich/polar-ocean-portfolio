@@ -24,7 +24,6 @@ from pathlib import Path
 
 import numpy as np
 
-from pfcommon.mitgcm_io import read_bin
 
 from ..gendata import co2 as co2mod
 from . import budget, decomp, flux, gradients, io, spinup
@@ -95,7 +94,7 @@ def circulation(run, n0_branch: int, window=WINDOW) -> dict:
     R = region(run)
     mon = _window_iters(run, n0_branch, spy, "surf_mon", window)
     mld = [io.fields(run, "surf_mon", i)["MXLDEPTH"][R].mean() for i in mon]
-    dxg = read_bin(Path(run) / "DXG.data", (g["ny"], g["nx"]))
+    dxg = g["dxg"]
     ann = _window_iters(run, n0_branch, spy, "layers_ann", window)
     moc = [spinup.moc_out_of_R(spinup.residual_moc(io.fields(run, "layers_ann", i)["LaVH1TH"], dxg), J_EDGE)
            for i in ann]

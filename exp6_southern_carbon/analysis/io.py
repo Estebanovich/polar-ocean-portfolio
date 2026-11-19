@@ -34,7 +34,7 @@ def grid(run: Path) -> dict:
     r = grid_dir(run)
     return {"hfac": read_bin(r / "hFacC.data", (nr, ny, nx)), "rac": read_bin(r / "RAC.data", (ny, nx)),
             "drf": read_bin(r / "DRF.data", (nr,)), "rc": -read_bin(r / "RC.data", (nr,)),
-            "yc": read_bin(r / "YC.data", (ny, nx))[:, 0], "nr": nr, "ny": ny, "nx": nx}
+            "yc": read_bin(r / "YC.data", (ny, nx))[:, 0], "dxg": read_bin(r / "DXG.data", (ny, nx)), "nr": nr, "ny": ny, "nx": nx}
 
 
 def iters(run: Path, prefix: str) -> list[int]:

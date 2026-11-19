@@ -17,7 +17,7 @@ def _case(d, name, parent):
 
 
 def _grid_files(run, scale=1.0):
-    for f, shape in (("hFacC", (NR, NY, NX)), ("RAC", (NY, NX)), ("DRF", (NR,)), ("RC", (NR,)), ("YC", (NY, NX))):
+    for f, shape in (("hFacC", (NR, NY, NX)), ("RAC", (NY, NX)), ("DRF", (NR,)), ("RC", (NR,)), ("YC", (NY, NX)), ("DXG", (NY, NX))):
         (scale * np.arange(1, np.prod(shape) + 1)).astype(">f8").tofile(run / f"{f}.data")
 
 
@@ -29,6 +29,7 @@ def test_grid_of_restarted_run_comes_from_its_cold_start_ancestor(tmp_path):
     g = io.grid(gc)
     assert g["hfac"].shape == (NR, NY, NX)
     np.testing.assert_array_equal(g["drf"], [1, 2, 3])
+    assert g["dxg"].shape == (NY, NX)
 
 
 def test_grid_prefers_the_runs_own_files(tmp_path):
