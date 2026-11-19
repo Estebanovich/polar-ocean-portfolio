@@ -14,10 +14,24 @@ def case(run: Path) -> dict:
         else json.loads((Path(run) / "case.json").read_text())
 
 
+def grid_dir(run: Path) -> Path:
+    """Directory holding the grid files of `run`: the run itself, or, for a run restarted from a
+    pickup (MITgcm writes hFacC/RAC/... only on a cold start), the nearest ancestor along
+    pickup_from (sibling directories under the same runs root)."""
+    r, seen = Path(run), set()
+    while not (r / "hFacC.data").exists():
+        parent = case(r).get("pickup_from")
+        if not parent or parent in seen:
+            raise FileNotFoundError(f"no grid files in {Path(run)} or its pickup_from ancestors")
+        seen.add(parent)
+        r = r.parent / parent
+    return r
+
+
 def grid(run: Path) -> dict:
     c = case(run)
     nr, ny, nx = c["nr"], c["ny"], c["nx"]
-    r = Path(run)
+    r = grid_dir(run)
     return {"hfac": read_bin(r / "hFacC.data", (nr, ny, nx)), "rac": read_bin(r / "RAC.data", (ny, nx)),
             "drf": read_bin(r / "DRF.data", (nr,)), "rc": -read_bin(r / "RC.data", (nr,)),
             "yc": read_bin(r / "YC.data", (ny, nx))[:, 0], "nr": nr, "ny": ny, "nx": nx}
