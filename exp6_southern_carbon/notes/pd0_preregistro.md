@@ -1,8 +1,7 @@
 # Exp. 6: prerregistro (PD0)
 
-**Estado: BORRADOR (18 nov 2026).**
-- Se congela después de G0/G0s y antes de correr GT, con el visto bueno de Esteban. Ahí se anotan la fecha y el hash del commit.
-- Lo marcado *[se confirma con G0]* se revisa con el estado de equilibrio. Si cambia, cambia **antes** de congelar.
+**Estado: CONGELADO el 19 nov 2026, con el visto bueno de Esteban, antes de correr GT.** Código del análisis en el commit `b9c423f`.
+- Lo que se añada después se rotula *post hoc*.
 
 ## Configuración que entra al prerregistro
 
@@ -19,7 +18,10 @@
 ## Métricas
 
 - **Región R:** las filas j = 1–19 de `g50` (y < 1000 km), sin la pared.
-  - En T10 (año 10), el 99.97 % del crecimiento de la celda superior de la MOC residual cae en R. *[se confirma con G0]*
+  - En T10 (año 10), el 99.97 % del crecimiento de la celda superior de la MOC residual cae en R.
+  - En G0 (media de los últimos 10 años de trazador; el último año da lo mismo) la celda superior llega a su máximo, 0.375 Sv, justo en j = 20, el borde de R; ψ(j = 20)/máx ψ = 1.00.
+  - La métrica de crecimiento (suma de los incrementos positivos de máx_l ψ) da 81 %. El 19 % que falta son oscilaciones de ±0.04 Sv en la meseta al norte de R (0.32–0.36 Sv), no afloramiento. Se reportan las dos métricas.
+  - R no cambia (visto bueno de Esteban, 19 nov).
 - **Flujo F:** media de `DICCFLX` sobre el canal, en mol C m⁻² año⁻¹, positivo hacia el océano.
 - **Sensibilidad de una rama:** S(t_b) = media de F_rama − F_padre en los años 6–15 de la rama.
   - S_nat = S_GC y S_ant = S_GT − S_GC.
@@ -28,12 +30,12 @@
   - ΔDIC₁₀₀₀ = DIC(1000 m) − DIC(nivel 1);
   - ambos en µmol kg⁻¹ (ρ₀ = 1035).
 - **Capa de mezcla de invierno de R:** el máximo mensual de la climatología de `MXLDEPTH` en el padre.
-  - En T10 es de 671 m (septiembre). *[se confirma con G0: tiene que ser > 100 m]*
+  - En T10 es de 671 m (septiembre). En G0 (últimos 10 años) es de 752 m (septiembre): cumple la condición de > 100 m.
 - **MOC de R:** máx_l ψ(l, j = 20), con ψ la MOC residual en capas de temperatura (`LaVH1TH`, incluye el bolo de GM).
 
 ## Validaciones
 
-- **V6a:** en el último siglo de G0, |Δ flujo medio decenal| < 0.01 mol C m⁻² año⁻¹ y |Δ DIC medio bajo 1000 m| < 1 µmol kg⁻¹, con ≥ 1000 años de trazador. Se reporta además la deriva en G0s.
+- **V6a:** **pasa** en G0 (19 nov): Δ flujo 2.4×10⁻⁵ mol C m⁻² año⁻¹ y Δ DIC profundo 1.4×10⁻⁷ mol m⁻³ por siglo, en 1000 años de trazador. Criterio: en el último siglo de G0, |Δ flujo medio decenal| < 0.01 mol C m⁻² año⁻¹ y |Δ DIC medio bajo 1000 m| < 1 µmol kg⁻¹, con ≥ 1000 años de trazador. Se reporta además la deriva en G0s.
 - **V6b:** en GC y GT, en cada año de rama, el residuo del presupuesto anual de DIC del canal es < 1 % del término de superficie.
   - En T2 (año 2) es de 3×10⁻⁵.
   - En R y en la capa de mezcla se reporta, sin criterio.
@@ -51,6 +53,9 @@
   - La suma medida es el cambio de rama menos padre en los términos `adv` + `mix` + `bio` del presupuesto de DIC en la capa de mezcla de R, años 6–15, en mol C año⁻¹.
   - Pasa solo si las cuatro ramas cumplen.
   - Se reporta cada término. El término de temperatura se calcula y se reporta aparte, fuera de la suma.
+    - Es −c_R Σ_R A [pCO₂(DIC, Alk, PO4, T_rama) − pCO₂(DIC, Alk, PO4, T_padre)], con los valores superficiales del padre en los años 6–15 (`analysis/carbonate.py`).
+    - c_R = Σ A F / Σ A (pCO₂atm − pCO₂océano) se toma de los registros mensuales del padre en la misma ventana.
+    - Se desprecia el cambio de la solubilidad del lado atmosférico.
 - **H6c:** con ΔS_fino = media de miembros de S(FT_2060) − media de S(FT_1900), pasa si:
   1. |ΔS_fino| > 2σ, con σ = √(s₁₉₀₀²/N + s₂₀₆₀²/N);
   2. tiene el mismo signo que ΔS del grueso;
