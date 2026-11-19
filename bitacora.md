@@ -989,3 +989,30 @@ Se corrigieron los puntos I1–I4 y los menores:
 - Decisiones de Esteban: trayectoria transitoria (histórico + SSP3-7.0) y control fijo; ramas de viento ×1.2 en 1900, 1980, 2020 y 2060; esponja norte preindustrial (C_ant como sensibilidad); grueso 50 km con GM y fino 10 km como hipótesis H6c; H6a con signo y separación natural/antropogénica; H6b contra los términos de circulación del presupuesto; sin hierro (PO4 limita); ciclo estacional en la relajación y la luz.
 - Esqueleto del paquete `exp6_southern_carbon/`, `cases.yaml` y rutas `EXP6_RUNS`/`EXP6_BUILDS`.
 - Pendiente de Esteban (D1): el archivo de CO₂ de CMIP6 (input4MIPs) en `literatura/data/cmip6_co2/`.
+
+## 2026-11-18/19 — Exp. 6: puerta del día 1, spin-up G0 y análisis del grueso
+
+- **Paso de tiempo.**
+  - `g50` a 2000 s resultó inestable después del año ~10 de dinámica, aun en síncrono. Se volvió a los 1000 s del tutorial.
+  - G0 quedó acelerado ×4: momento a 1000 s, trazadores y reloj a 4000 s.
+  - Detalle, clasificación (c)+(a) y proyección en `notes/puerta_dia1.md`.
+- **Alcance.** Esteban aprobó quitar GTa (la esponja con C_ant). Queda como limitación.
+- **Orden.** También aprobó reordenar: figuras, README y borrador del correo del grueso antes del fino. El envío se decide con los números en la mano.
+- **G0 completo** (19 nov, 07:15; 10 etapas de ~2 h, 1000 años de trazador):
+  - V6a pasa: deriva del flujo 2.4×10⁻⁵ mol C m⁻² año⁻¹ y del DIC profundo 1.4×10⁻⁷ mol m⁻³ por siglo.
+  - La MOC de R es de 0.375 Sv, con el máximo de la celda superior justo en el borde de R.
+  - La métrica de crecimiento da 81 % porque cuenta el ruido de la meseta al norte.
+  - La capa de mezcla invernal de R llega a 752 m en septiembre.
+  - Se lanzó G0s (48 años síncronos).
+- **PD0.** Borrador actualizado con G0. Se propone no mover R. Falta el visto bueno de Esteban para congelarlo antes de GT.
+- **Código:**
+  - arreglo de V6a (contaba 990 años en lugar de 1000);
+  - lectores de la campaña y CLI de H6a/H6b;
+  - término de temperatura (conductancia empírica, aparte de H6b);
+  - `figdata.py` y las Figs. 0–5;
+  - plantilla del README, `render_readme.py` y `reproduce.sh`.
+  - La suite completa da 1338 pruebas en verde.
+- **Hallazgo para la campaña.** `run_campaign.py` no arranca si hay otro MITgcm corriendo. GC, GT y las 8 ramas van en una sola invocación con `--wait-hours 80`, porque GT llega a 2060 en ~49 h.
+- **Pendiente:**
+  - verificar los DOI de Bryan 1984 y de Meinshausen 2017 y 2020 antes de publicar el README;
+  - Esteban: visto bueno del PD0.
