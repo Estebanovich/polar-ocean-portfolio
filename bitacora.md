@@ -1016,3 +1016,5 @@ Se corrigieron los puntos I1–I4 y los menores:
 - **Pendiente:**
   - verificar los DOI de Bryan 1984 y de Meinshausen 2017 y 2020 antes de publicar el README;
   - Esteban: visto bueno del PD0.
+
+- 19 nov, 11:00 — Exp. 6: G0s terminó OK (48 años síncronos, 3.7 h, iter 9 397 728). Deriva en G0s (reportada, sin criterio propio): Δ flujo 2.1×10⁻⁴ mol C m⁻² año⁻¹ y Δ DIC bajo 1000 m 2.2×10⁻³ µmol kg⁻¹ por siglo, ambos muy por debajo de los umbrales de V6a (0.01 y 1). La MOC en R es 0.38 Sv (0.375 en G0), la MLD invernal 752 m y el flujo 0.449 mol C m⁻² año⁻¹. El campo `pass: false` de G0s en spinup.json se debe solo a la regla de ≥ 1000 años, que aplica a G0. Las corridas reiniciadas no tienen archivos de malla, así que io.grid ahora sigue `pickup_from` hasta G0 (commits ce8a11a y 658b8b8). La campaña gruesa (GC, GT y 8 ramas) se lanzó a las 11:05 en una sola invocación.

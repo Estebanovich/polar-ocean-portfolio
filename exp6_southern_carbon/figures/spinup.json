@@ -1,0 +1,36 @@
+{
+ "G0": {
+  "years": 1000.0,
+  "v6a": {
+   "d_flux_century": 2.3830059223239886e-05,
+   "d_deep_dic_century": 1.3554759625833412e-07,
+   "span_years": 1000.0,
+   "pass": true,
+   "reason": ""
+  },
+  "moc_R_sv": 0.3750812284192778,
+  "moc_max_sv": 0.3750812284192778,
+  "upwelling_fraction_R": 0.8132741371046502,
+  "mld_winter_R_m": 752.4649629301344,
+  "mld_month_max": 9,
+  "flux_last_mol_m2_yr": 0.4482353351440643,
+  "deep_dic_last_mol_m3": 2.287886233724017
+ },
+ "G0s": {
+  "years": 48.0,
+  "v6a": {
+   "d_flux_century": 0.0002074177693521806,
+   "d_deep_dic_century": 2.2525014449215064e-06,
+   "span_years": 48.0,
+   "pass": false,
+   "reason": "span 48 < 1000 years"
+  },
+  "moc_R_sv": 0.38139198231458016,
+  "moc_max_sv": 0.38139198231458016,
+  "upwelling_fraction_R": 0.8206479092356038,
+  "mld_winter_R_m": 751.9161982942893,
+  "mld_month_max": 9,
+  "flux_last_mol_m2_yr": 0.44897251056460497,
+  "deep_dic_last_mol_m3": 2.287883161032075
+ }
+}
