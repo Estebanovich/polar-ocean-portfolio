@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from exp6_southern_carbon.analysis import collect
+from exp6_southern_carbon.gendata import co2
 
 SPY = 31536
 MON = SPY // 12
@@ -65,3 +66,24 @@ def test_readers_on_t2():
     assert 0.0 < circ["mld_inv"] < 4000.0 and np.isfinite(circ["moc_sv"])
     assert collect.measured(T2, T2, nb, window=w) == 0.0
     assert collect.branch_sensitivity(f, f, nb, spy, window=w) == 0.0
+
+
+def test_atm_pco2_fixed(tmp_path):
+    (tmp_path / "data.dic").write_text(" &DIC_FORCING\n  dic_int1=1,\n  dic_pCO2=2.8431698608e-04,\n &\n")
+    assert collect.atm_pco2(tmp_path, [10, 20]) == pytest.approx([2.8431698608e-04] * 2)
+
+
+def test_atm_pco2_transient_matches_dic_atmos(tmp_path):
+    (tmp_path / "data.dic").write_text(" &DIC_FORCING\n  dic_int1=2,\n  dic_int2=4,\n  dic_int3=100,\n"
+                                       "  dic_int4=10,\n &\n")
+    (tmp_path / "co2atmos.dat").write_text("2.8e-04\n2.8e-04\n3.0e-04\n3.0e-04\n")
+    got = collect.atm_pco2(tmp_path, [105, 110])
+    want = [co2.atm_pco2_at(i, [2.8e-4, 2.8e-4, 3.0e-4, 3.0e-4], 100, 10) for i in (105, 110)]
+    assert got == pytest.approx(want)
+
+
+@pytest.mark.skipif(not T2_OK, reason="T2 not available")
+def test_temperature_term_on_t2_is_zero_against_itself():
+    c = collect.io.case(T2)
+    t = collect.temperature(T2, T2, int(c["nIter0"]), window=(2, 2))
+    assert t["temp"] == 0.0 and t["conductance"] > 0.0 and np.isfinite(t["conductance"])

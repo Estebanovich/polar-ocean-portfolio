@@ -65,6 +65,7 @@ def evaluate(runs_root) -> dict:
                 p = dict(collect.parent_state(root / par, n0), **collect.circulation(root / par, n0))
                 b = collect.circulation(br, n0)
                 terms[y] = dict(decomp.terms(p, b), parent=p, branch=b)
+                terms[y].update(collect.temperature(br, root / par, n0))   # reported, not in sum_circ_bio
                 pred[y] = terms[y]["sum_circ_bio"]
                 meas[y] = collect.measured(br, root / par, n0)
     return assemble(s["GT"], s["GC"], pred, meas, terms)

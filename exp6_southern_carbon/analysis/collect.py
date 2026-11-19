@@ -12,16 +12,21 @@ Per branch (window = branch years 6-15, PD0):
 Per parent (decade centred on the branch year for the gradients, PD0; window years for e):
   g200, ddic1000, dpo4dz200, dpo4_1000 (analysis/gradients.py, umol kg-1 [m-1]), area_R (m2),
   r_cp = 117 (pkg/dic/dic_readparms.F:198, not overridden in data.dic),
-  e = export / supply of PO4 in the mixed layer of R = -gchem / (adv + mix) of the PO4 budget."""
+  e = export / supply of PO4 in the mixed layer of R = -gchem / (adv + mix) of the PO4 budget.
+Temperature term (reported apart from H6b; analysis/decomp.py): parent surface DIC, Alk, PO4 and
+the parent and branch surface THETA, annual means of the window years over R; the conductance of R
+from the parent's monthly DICCFLX and pCO2atm - DICPCO2 (atm) over the same years."""
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
 
 from pfcommon.mitgcm_io import read_bin
 
-from . import budget, flux, gradients, io, spinup
+from ..gendata import co2 as co2mod
+from . import budget, decomp, flux, gradients, io, spinup
 
 R_CP = 117.0
 J_EDGE = 20
@@ -132,3 +137,40 @@ def measured(branch_run, parent_run, n0_branch: int, window=WINDOW) -> float:
     b, p = ml_budget(branch_run, n0_branch, 1, window), ml_budget(parent_run, n0_branch, 1, window)
     s = lambda d: d["adv"] + d["mix"] + d["bio"]
     return float(s(b) - s(p))
+
+
+def _dic_params(run) -> dict[str, float]:
+    txt = (Path(run) / "data.dic").read_text()
+    return {k: float(v.replace("d", "e").replace("D", "e"))
+            for k, v in re.findall(r"(dic_int\d|dic_pCO2)\s*=\s*([-+0-9.eEdD]+)", txt)}
+
+
+def atm_pco2(run, iters) -> list[float]:
+    """Atmospheric pCO2 (atm) that pkg/dic used at each iteration: dic_pCO2 when dic_int1 = 1,
+    co2atmos.dat interpolated as pkg/dic/dic_atmos.F (gendata.co2.atm_pco2_at) when dic_int1 = 2."""
+    p = _dic_params(run)
+    if int(p["dic_int1"]) == 1:
+        return [p["dic_pCO2"]] * len(list(iters))
+    a = np.loadtxt(Path(run) / "co2atmos.dat")[: int(p["dic_int2"])]
+    return [co2mod.atm_pco2_at(int(i), a, int(p["dic_int3"]), int(p["dic_int4"])) for i in iters]
+
+
+def temperature(branch_run, parent_run, n0_branch: int, window=WINDOW) -> dict:
+    """Temperature term of the flux into R (mol C yr-1) and the conductance used (mol m-2 yr-1 atm-1)."""
+    g = io.grid(parent_run)
+    _, spy = _start(parent_run)
+    R = region(parent_run)
+    area = g["rac"][R]
+    ann = _window_iters(parent_run, n0_branch, spy, "carbon_ann", window)
+    car = [io.fields(parent_run, "carbon_ann", i) for i in ann]
+    dic, alk, po4 = (np.mean([c[k][0][R] for c in car], axis=0) for k in ("TRAC01", "TRAC02", "TRAC03"))
+    th = lambda run: np.mean([io.fields(run, "state_ann", i)["THETA"][0][R]
+                              for i in _window_iters(run, n0_branch, spy, "state_ann", window)], axis=0)
+    mon = _window_iters(parent_run, n0_branch, spy, "surf_mon", window)
+    atm = atm_pco2(parent_run, mon)
+    sm = [io.fields(parent_run, "surf_mon", i) for i in mon]
+    f = np.array([flux.flux_into_ocean(s["DICCFLX"])[R] for s in sm])
+    dp = np.array([a - s["DICPCO2"][R] for a, s in zip(atm, sm)])
+    cond = decomp.conductance(f, dp, np.broadcast_to(area, f.shape))
+    return {"temp": decomp.temperature_term(dic, alk, po4, th(parent_run), th(branch_run), area, cond),
+            "conductance": cond}
