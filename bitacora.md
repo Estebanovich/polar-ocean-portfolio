@@ -1036,3 +1036,23 @@ Se corrigieron los puntos I1–I4 y los menores:
   - clasificación tentativa (d): proceso ausente en la descomposición, que es el cambio de mezcla diapicna y de remolinos bajo viento. Queda sin excluir un error (a) en nuestra eq. 1. **Decisión de Esteban.**
 - **Término de temperatura** (reportado, no entra en ningún veredicto): la conductancia de 1900 es 3.3×10⁵ mol m⁻² año⁻¹ atm⁻¹, contra 0.8–1.0×10⁵ en las demás ramas, porque el ΔpCO₂ medio en R es chico en 1900. Queda anotado en Limitaciones.
 - Figuras 0–4, README con H6c en [pending] y entrada del Exp. 6 en el README raíz. En la Fig. 1 los niveles de contorno ahora cubren las dos décadas.
+
+## 2026-11-22 (tarde) — Exp. 6: arranque del modelo fino y borrador del correo
+
+- **Espacio** (Esteban pidió verificarlo antes de lanzar):
+  - LaCie tiene 833 GB libres;
+  - el fino escribe unos 1.3 GB por año de modelo: los diagnósticos del grueso multiplicados por 25 y float64, más `eke_mon`;
+  - F0 más las 12 ramas FT suman ~196 años, o sea ~260 GB. Cabe.
+  - La RAM (18 GB) no limita.
+- **Arranque de F0:**
+  - es un arranque en frío (iteración 0, en reposo);
+  - θ y los 6 trazadores vienen de GT en el 1 ene del año de la rama, interpolados a 10 km;
+  - cada trazador se reescala para conservar su inventario: el cociente queda en 1.000000 en 1900 y 2060;
+  - los volúmenes del fino (`interp.wet_volume`) reproducen el hFacC del propio modelo con una diferencia de 8×10⁻⁷, en g50 y f10.
+- **Hallazgo:** la interpolación junto a la topografía dejaba 351 inversiones de θ (0.04 % de las celdas), que el grueso no tiene. Se agregó un ajuste convectivo por columna (`stabilize_wet`) que conserva el calor. Las inversiones que quedan (≤1.9×10⁻³ °C) son solo el ruido del miembro, ≤1×10⁻³ °C por celda.
+- **Miembros:** FT_c_k y FT_w_k comparten el ruido del miembro k sobre la copia del pickup final de F0, con la misma semilla y amplitud que el Exp. 5.
+- **Campaña:**
+  - `scripts/run_fine.py` corre F0_1900 en etapas (3 años, luego +1 hasta V6d o 8), después F0_2060 y luego las parejas FT, primero 1900;
+  - se lanzó el 22 nov (commit cee4bb4); log en `/Volumes/LaCie/portfolio_runs/exp6/run_fine.log`;
+  - terminaría hacia el 2–3 dic si se mantienen ~70 min por año.
+- **Borrador del correo** a Le Quéré, con copia a Jarníková: `~/Phd_project/Borradores Exp6 – Le Quéré y Jarníková.md`, fuera del repo y **sin enviar**. Tiene dos versiones, seguimiento o primer contacto, porque no consta si el primero salió.
