@@ -23,13 +23,21 @@ Validation tests V6a–V6d have thresholds fixed in the same document; a failure
 
 ## 2. Configuration
 
-The channel is the re-entrant channel of Abernathey et al. (2011) as distributed in the MITgcm tutorial `tutorial_reentrant_channel` (Fig. 0): 1000 km periodic in x, 2000 km closed in y, 49 levels, with the tutorial's zonal wind stress, its sloping southern boundary and its restoring of surface temperature. We add a seasonal cycle to the restoring temperature (Fig. 0a) and to the light, so that the winter mixed layer deepens and the entrainment term of Jarníková et al. has something to act on. Carbon is carried by `pkg/dic` with six tracers (DIC, alkalinity, phosphate, dissolved organic phosphorus, oxygen and preformed phosphate); there is no iron, no explicit ecosystem and no sea ice. Gas exchange uses a fixed wind speed, so a change of the wind stress acts on the carbon only through the circulation. The northern rows are a sponge that restores the tracers to pre-industrial profiles. The analysis region R is the southern 19 rows (y < 1000 km), where the upper overturning cell upwells.
+The channel is the MITgcm tutorial `tutorial_reentrant_channel` (Fig. 0), a configuration close to the channel of Abernathey et al. (2011) with a deep north–south ridge added: 1000 km periodic in x, 2000 km closed in y, 49 levels, with the tutorial's zonal wind stress, its sloping southern boundary and its restoring of surface temperature. We add a seasonal cycle to the restoring temperature (Fig. 0a) and to the light, so that the winter mixed layer deepens and the entrainment term of Jarníková et al. has something to act on. Carbon is carried by `pkg/dic` (Dutkiewicz et al. 2005) with six tracers (DIC, alkalinity, phosphate, dissolved organic phosphorus, oxygen and preformed phosphate); there is no iron, no explicit ecosystem and no sea ice. Gas exchange uses a fixed wind speed, so a change of the wind stress acts on the carbon only through the circulation. The northern rows are a sponge that restores the tracers to pre-industrial profiles. The analysis region R is the southern 19 rows (y < 1000 km), where the upper overturning cell upwells.
+
+**Why this channel.** The question is about a mechanism, not about the size of the real Southern Ocean sink: does the erosion of the vertical DIC gradient weaken the response of the air–sea flux to a wind change? The two physical terms of the decomposition of Jarníková et al. (eqs. 1 and 4) involve only the circulation and the DIC gradients, and the channel has the three ingredients they need:
+
+- an upper overturning cell, driven by the wind and partly compensated by eddies, that brings deep water up into the surface layer; this is the system Abernathey et al. (2011) designed their channel to study;
+- a winter mixed layer that entrains DIC from below, once the seasonal cycle is added;
+- natural and anthropogenic carbon, with a simple phosphate-based export.
+
+The same building blocks have been used for related questions. Munday et al. (2014) used this biogeochemistry in an idealized MITgcm sector to separate the wind response of the carbon pumps with and without parameterized eddies. Youngs et al. (2023) used `pkg/dic` in a re-entrant MITgcm channel to locate the air–sea CO₂ flux. The channel is also small enough to be spun up for 1000 tracer years and run as paired control and transient experiments with four wind steps, which would be out of reach in a global model at this cost. What it lacks (iron, sea ice, ozone forcing, the lateral supply of anthropogenic carbon) is listed in §5. Because of those gaps, the channel tests the direction of the effect, not its magnitude in the ocean.
 
 ![Fig. 0](figures/fig0_schematic.png)
 
 **Fig. 0.** Geometry and forcing. (a) Zonal wind stress and the restoring temperature with its seasonal range. (b) Depth, the region R and the pre-industrial sponge.
 
-The coarse model (50 km, time step 1000 s) parameterizes eddies with Gent–McWilliams and Redi. Its spin-up (G0) accelerates the tracers by a factor of 4 against the momentum (Bryan 1984) for 1000 tracer years, followed by 48 synchronous years (G0s), about the length Wang (2001) found sufficient after an asynchronous equilibrium. The drift in the last century of G0 is 2.4 × 10⁻⁵ mol C m⁻² yr⁻¹ in the channel-mean flux and 1.3 × 10⁻⁴ µmol kg⁻¹ in the DIC below the thermocline, so V6a passes; over G0s it is 2.1 × 10⁻⁴ and 2.2 × 10⁻³. At equilibrium the upper cell carries 0.38 Sv out of R (100 % of its maximum, reached at the edge of R), the winter mixed layer in R reaches 752 m in September, and the channel takes up 0.45 mol C m⁻² yr⁻¹ at the pre-industrial CO₂. The share of the cell's growth that lies inside R is 81 %; the rest is noise on the plateau north of R, not upwelling.
+The coarse model (50 km, time step 1000 s) parameterizes eddies with Gent and McWilliams (1990) and Redi (1982). Its spin-up (G0) accelerates the tracers by a factor of 4 against the momentum (Bryan 1984) for 1000 tracer years, followed by 48 synchronous years (G0s), about the length Wang (2001) found sufficient after an asynchronous equilibrium. The drift in the last century of G0 is 2.4 × 10⁻⁵ mol C m⁻² yr⁻¹ in the channel-mean flux and 1.3 × 10⁻⁴ µmol kg⁻¹ in the DIC below the thermocline, so V6a passes; over G0s it is 2.1 × 10⁻⁴ and 2.2 × 10⁻³. At equilibrium the upper cell carries 0.38 Sv out of R (100 % of its maximum, reached at the edge of R), the winter mixed layer in R reaches 752 m in September, and the channel takes up 0.45 mol C m⁻² yr⁻¹ at the pre-industrial CO₂. The share of the cell's growth that lies inside R is 81 %; the rest is noise on the plateau north of R, not upwelling.
 
 GC holds the atmospheric CO₂ at its 1850 value for 251 years; GT follows the CMIP6 historical concentrations (Meinshausen et al. 2017) and then SSP3-7.0 (Meinshausen et al. 2020) to 2100. Each branch starts from the parent's state on 1 January of its year, multiplies the wind stress by 1.2 and runs 25 years. The budget of the annual channel DIC closes to 3.7 × 10⁻⁶ of the surface flux (V6b passes).
 
@@ -39,7 +47,7 @@ GC holds the atmospheric CO₂ at its 1850 value for 251 years; GT follows the C
 
 **Gradients.** G₂₀₀ = [DIC(200 m) − DIC(surface)]/200 m and ΔDIC₁₀₀₀ = DIC(1000 m) − DIC(surface), over R, in the decade of the parent centred on the branch year (Jarníková et al. 2025, eqs. 1 and 4).
 
-**Offline decomposition.** With the parent's gradients and the branch-minus-parent changes of the winter mixed-layer depth δMLD and of the upwelling δMOC (residual overturning in temperature layers, including the GM bolus), the terms in mol C yr⁻¹ are δMLD × G₂₀₀ × ρ₀ × A_R (eq. 1), δMOC × ΔDIC₁₀₀₀ × ρ₀ (eq. 4), and −R_CP × e × (the extra phosphate supply by the same two routes), with R_CP = 117 and e the export fraction of the supplied phosphate in the parent. The measured counterpart is the branch-minus-parent change of advection + mixing + biology in the DIC budget of the mixed layer of R, from the model's own tendency diagnostics. A temperature term, the change of the flux from the branch-minus-parent surface temperature alone (carbonate chemistry of `pkg/dic`), acts through gas exchange rather than circulation; it is reported but not added to the sum.
+**Offline decomposition.** With the parent's gradients and the branch-minus-parent changes of the winter mixed-layer depth δMLD and of the upwelling δMOC (residual overturning in temperature layers, including the GM bolus), the terms in mol C yr⁻¹ are δMLD × G₂₀₀ × ρ₀ × A_R (eq. 1), δMOC × ΔDIC₁₀₀₀ × ρ₀ (eq. 4), and −R_CP × e × (the extra phosphate supply by the same two routes), with R_CP = 117 and e the export fraction of the supplied phosphate in the parent. The measured counterpart is the branch-minus-parent change of advection + mixing + biology in the DIC budget of the mixed layer of R, from the model's own tendency diagnostics. A temperature term, the change of the flux from the branch-minus-parent surface temperature alone (carbonate chemistry of `pkg/dic`, Follows et al. 2006), acts through gas exchange rather than circulation; it is reported but not added to the sum.
 
 ## 4. Results
 
@@ -134,6 +142,12 @@ Abernathey, R., J. Marshall, and D. Ferreira, 2011: The dependence of Southern O
 
 Bryan, K., 1984: Accelerating the convergence to equilibrium of ocean-climate models. *J. Phys. Oceanogr.*, **14**, 666–673, https://doi.org/10.1175/1520-0485(1984)014%3C0666:ATCTEO%3E2.0.CO;2
 
+Dutkiewicz, S., A. Sokolov, J. Scott, and P. Stone, 2005: A three-dimensional ocean-seaice-carbon cycle model and its coupling to a two-dimensional atmospheric model: uses in climate change studies. MIT Joint Program on the Science and Policy of Global Change, Report 122, https://dspace.mit.edu/handle/1721.1/18091
+
+Follows, M. J., T. Ito, and S. Dutkiewicz, 2006: On the solution of the carbonate chemistry system in ocean biogeochemistry models. *Ocean Modell.*, **12**, 290–301, https://doi.org/10.1016/j.ocemod.2005.05.004
+
+Gent, P. R., and J. C. McWilliams, 1990: Isopycnal mixing in ocean circulation models. *J. Phys. Oceanogr.*, **20**, 150–155, https://doi.org/10.1175/1520-0485(1990)020%3C0150:IMIOCM%3E2.0.CO;2
+
 Gruber, N., P. Landschützer, and N. S. Lovenduski, 2019: The variable Southern Ocean carbon sink. *Annu. Rev. Mar. Sci.*, **11**, 159–186, https://doi.org/10.1146/annurev-marine-121916-063407
 
 Jarníková, T., et al., 2025: Decreasing importance of carbon-climate feedbacks in the Southern Ocean in a warming climate. *Sci. Adv.*, **11**, eadr3589, https://doi.org/10.1126/sciadv.adr3589
@@ -148,4 +162,10 @@ Meinshausen, M., et al., 2020: The shared socio-economic pathway (SSP) greenhous
 
 Menviel, L., and P. Spence, 2024: Southern Ocean circulation's impact on atmospheric CO₂ concentration. *Front. Mar. Sci.*, **10**, 1328534, https://doi.org/10.3389/fmars.2023.1328534
 
+Munday, D. R., H. L. Johnson, and D. P. Marshall, 2014: Impacts and effects of mesoscale ocean eddies on ocean carbon storage and atmospheric pCO₂. *Global Biogeochem. Cycles*, **28**, 877–896, https://doi.org/10.1002/2014GB004836
+
+Redi, M. H., 1982: Oceanic isopycnal mixing by coordinate rotation. *J. Phys. Oceanogr.*, **12**, 1154–1158, https://doi.org/10.1175/1520-0485(1982)012%3C1154:OIMBCR%3E2.0.CO;2
+
 Wang, D., 2001: A note on using the accelerated convergence method in climate models. *Tellus A*, **53**, 27–34, https://doi.org/10.3402/tellusa.v53i1.12179
+
+Youngs, M. K., M. A. Freilich, and N. S. Lovenduski, 2023: Air–sea CO₂ fluxes localized by topography in a Southern Ocean channel. *Geophys. Res. Lett.*, **50**, e2023GL104802, https://doi.org/10.1029/2023GL104802

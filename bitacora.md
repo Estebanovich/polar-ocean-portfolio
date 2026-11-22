@@ -1064,3 +1064,12 @@ Se corrigieron los puntos I1–I4 y los menores:
   - Gruber et al. es de 2019 (vol. 11), no de 2018;
   - el DOI final de Meinshausen et al. (2017) quedó verificado en Crossref: 10.5194/gmd-10-2057-2017;
   - las referencias llevan ahora volumen y páginas, con los datos de Crossref.
+- **Citas y validez del canal** (pedido de Esteban):
+  - se citan Gent & McWilliams (1990), Redi (1982), Dutkiewicz et al. (2005) y Follows et al. (2006), las fuentes que la documentación de MITgcm da para gmredi y pkg/dic, con los datos verificados en Crossref y DSpace@MIT;
+  - el tutorial se describe ahora como la doc de MITgcm lo dice ("fairly close" a Abernathey et al. 2011, con una dorsal agregada), no como el mismo canal;
+  - nuevo párrafo "Why this channel":
+    - la pregunta es de mecanismo;
+    - los términos físicos de las ecs. 1 y 4 solo necesitan circulación y gradientes de DIC, y el canal tiene los tres ingredientes;
+    - precedentes: Munday et al. (2014) y Youngs et al. (2023);
+    - el costo permite el spin-up y los pares de corridas;
+    - lo que falta (§5) limita la conclusión a la dirección del efecto, no a su magnitud.

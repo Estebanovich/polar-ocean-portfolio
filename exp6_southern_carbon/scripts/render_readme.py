@@ -31,7 +31,7 @@ RHO0 = 1035.0
 MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September",
           "October", "November", "December")
 
-CITATION_YEARS = ("1984", "2001", "2006", "2007", "2008", "2011", "2013", "2014", "2015", "2016", "2017", "2018",
+CITATION_YEARS = ("1982", "1984", "1990", "2001", "2005", "2006", "2007", "2008", "2011", "2013", "2014", "2015", "2016", "2017", "2018",
                   "2019", "2020", "2023", "2024", "2025", "2026")
 NUMBER_WHITELIST = (
     r"\b(?:G0s?|GC|GT|F0|FT|T10|T2|R_CP)\b", r"\bH6[a-c]\b", r"\bV6[a-e]\b", r"\bPD0\b",
