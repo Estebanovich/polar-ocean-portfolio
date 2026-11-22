@@ -67,7 +67,8 @@ def evaluate(runs_root) -> dict:
                 terms[y] = dict(decomp.terms(p, b), parent=p, branch=b)
                 terms[y].update(collect.temperature(br, root / par, n0))   # reported, not in sum_circ_bio
                 pred[y] = terms[y]["sum_circ_bio"]
-                meas[y] = collect.measured(br, root / par, n0)
+                terms[y]["meas_parts"] = collect.measured_parts(br, root / par, n0)   # post hoc (22 nov), reported
+                meas[y] = float(sum(terms[y]["meas_parts"].values()))
     return assemble(s["GT"], s["GC"], pred, meas, terms)
 
 

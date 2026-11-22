@@ -87,3 +87,11 @@ def test_temperature_term_on_t2_is_zero_against_itself():
     c = collect.io.case(T2)
     t = collect.temperature(T2, T2, int(c["nIter0"]), window=(2, 2))
     assert t["temp"] == 0.0 and t["conductance"] > 0.0 and np.isfinite(t["conductance"])
+
+
+def test_measured_parts_sum_to_measured(monkeypatch):
+    budgets = {"b": {"adv": 5.0, "mix": 2.0, "bio": -3.0, "surf": 9.0}, "p": {"adv": 1.0, "mix": 1.0, "bio": -1.0, "surf": 0.0}}
+    monkeypatch.setattr(collect, "ml_budget", lambda run, n0, tracer, window: budgets[run])
+    parts = collect.measured_parts("b", "p", 0)
+    assert parts == {"adv": 4.0, "mix": 1.0, "bio": -2.0}
+    assert collect.measured("b", "p", 0) == sum(parts.values())

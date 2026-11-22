@@ -1018,3 +1018,21 @@ Se corrigieron los puntos I1–I4 y los menores:
   - Esteban: visto bueno del PD0.
 
 - 19 nov, 11:00 — Exp. 6: G0s terminó OK (48 años síncronos, 3.7 h, iter 9 397 728). Deriva en G0s (reportada, sin criterio propio): Δ flujo 2.1×10⁻⁴ mol C m⁻² año⁻¹ y Δ DIC bajo 1000 m 2.2×10⁻³ µmol kg⁻¹ por siglo, ambos muy por debajo de los umbrales de V6a (0.01 y 1). La MOC en R es 0.38 Sv (0.375 en G0), la MLD invernal 752 m y el flujo 0.449 mol C m⁻² año⁻¹. El campo `pass: false` de G0s en spinup.json se debe solo a la regla de ≥ 1000 años, que aplica a G0. Las corridas reiniciadas no tienen archivos de malla, así que io.grid ahora sigue `pickup_from` hasta G0 (commits ce8a11a y 658b8b8). La campaña gruesa (GC, GT y 8 ramas) se lanzó a las 11:05 en una sola invocación.
+
+## 2026-11-22 — Exp. 6: resultados del modelo grueso
+
+- La campaña gruesa terminó la noche del 21 nov: GC, GT y las 8 ramas de viento cerraron con estado OK, y `pgrep` quedó vacío.
+- V6b **pasa**: el residuo máximo del presupuesto de DIC del canal es 3.7×10⁻⁶ del término de superficie (umbral 1 %).
+- G₂₀₀ en R cae de 0.395 a 0.150 µmol kg⁻¹ m⁻¹ entre las décadas de 1900 y 2060 (−62 %).
+- **H6a pasa:**
+  - ΔS = +0.378 mol C m⁻² año⁻¹, contra una deriva del control de 3.0×10⁻⁴;
+  - S_GT pasa de −0.210 (1900) a +0.168 (2060), así que la respuesta al viento cambia de signo en la rama de 2060;
+  - S_nat = S_GC vale −0.233 en todas las ramas, como debe.
+- **H6b falla** (0/4 ramas dentro de ±25 %): el cociente de las sumas offline/medida es 0.16, 0.04, −0.52 y 1.79.
+- **Diagnóstico post hoc, no registrado** (término a término, ahora en hypotheses.json → `meas_parts`):
+  - la bio PO₄ offline vale −385 contra −312 medida, constante en las cuatro ramas;
+  - la física offline (eq. 1 + eq. 4) recupera 0.65, 0.67, 0.72 y 0.94 de adv+mix medidos;
+  - la mezcla medida cae de +162 a −1 Gmol año⁻¹, mientras que la eq. 1 da 12 y 5;
+  - clasificación tentativa (d): proceso ausente en la descomposición, que es el cambio de mezcla diapicna y de remolinos bajo viento. Queda sin excluir un error (a) en nuestra eq. 1. **Decisión de Esteban.**
+- **Término de temperatura** (reportado, no entra en ningún veredicto): la conductancia de 1900 es 3.3×10⁵ mol m⁻² año⁻¹ atm⁻¹, contra 0.8–1.0×10⁵ en las demás ramas, porque el ΔpCO₂ medio en R es chico en 1900. Queda anotado en Limitaciones.
+- Figuras 0–4, README con H6c en [pending] y entrada del Exp. 6 en el README raíz. En la Fig. 1 los niveles de contorno ahora cubren las dos décadas.

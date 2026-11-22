@@ -65,3 +65,11 @@ def test_main_skips_figures_without_their_json(tmp_path, monkeypatch):
     made = fg.main()
     assert "fig5_fine" not in made and {"fig0_schematic", "fig3_central"} <= set(made)
     assert (tmp_path / "fig3_central.png").exists() and not (tmp_path / "fig5_fine.png").exists()
+
+
+def test_section_levels_cover_both_decades():
+    from exp6_southern_carbon.analysis.figures import _levels
+    a = np.array([[2000.0, 2100.0], [np.nan, 2150.0]])
+    b = np.array([[1990.0, 2250.0], [2200.0, np.nan]])
+    lv = _levels(a, b, 15)
+    assert lv[0] <= 1990.0 and lv[-1] >= 2250.0 and len(lv) == 15

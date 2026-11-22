@@ -28,6 +28,12 @@ def _arr(x):
     return np.array([np.nan if v is None else v for v in np.ravel(x)], float).reshape(np.shape(x))
 
 
+def _levels(*fields, n: int = 15):
+    """Contour levels spanning every field (NaN ignored), so no section falls outside them."""
+    a = np.concatenate([_arr(f).ravel() for f in fields])
+    return np.linspace(np.nanmin(a), np.nanmax(a), n)
+
+
 def fig0_schematic(d, stem):
     """Geometry and forcing of the channel (tutorial_reentrant_channel + pkg/dic, spec Sec. 3)."""
     g = d["figdata"]["geometry"]
@@ -64,7 +70,7 @@ def fig1_sections(d, stem):
     fig = plt.figure(figsize=(7.0, 6.0), layout="constrained")
     gs = fig.add_gridspec(2, 2, height_ratios=[1.6, 1])
     top = []
-    lv = np.linspace(np.nanmin(_arr(s["dic"]["2060"])), np.nanmax(_arr(s["dic"]["1900"])), 15)
+    lv = _levels(s["dic"]["1900"], s["dic"]["2060"])
     for k, yr in enumerate(("1900", "2060")):
         a = fig.add_subplot(gs[0, k], sharey=top[0] if top else None)
         top.append(a)

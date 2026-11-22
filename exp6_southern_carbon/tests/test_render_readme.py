@@ -20,7 +20,8 @@ Y = ("1900", "1980", "2020", "2060")
 
 def _synthetic(tmp):
     terms = {y: {"mld": 1e10, "moc": 3e10, "bio": -1e10, "sum_circ_bio": 3e10, "temp": -2e9,
-                 "conductance": 5e4, "parent": {"g200": 0.3}, "branch": {}} for y in Y}
+                 "conductance": 5e4, "parent": {"g200": 0.3}, "branch": {},
+                 "meas_parts": {"adv": 3e10, "mix": 2e10, "bio": -1.5e10}} for y in Y}
     hyp = {"h6a": {"dS": 0.08, "drift_gc": 0.004, "pass": True, "dS_pct_of_S1900": 80.0,
                    "s_nat": {y: -0.1 for y in Y}, "s_ant": {y: 0.02 for y in Y}, "zero_crossing_year": None},
            "h6b": {"within": {y: True for y in Y}, "n_within": 4, "pass": True, "ratio": {y: 1.07 for y in Y}},
@@ -90,3 +91,11 @@ def test_committed_readme_is_the_rendering():
         pytest.skip("README.md not rendered yet")
     pending = not all((rr.FIG / f"{n}.json").exists() for n in rr.SOURCES)
     assert rr.OUT.read_text() == rr.render(allow_pending=pending)
+
+
+def test_post_hoc_term_by_term_values(tmp_path, monkeypatch):
+    _synthetic(tmp_path)
+    monkeypatch.setattr(rr, "FIG", tmp_path)
+    v = rr.values()
+    assert (v["phys_off_1"], v["phys_meas_1"], v["phys_ratio_1"]) == ("+40.0", "+50.0", "0.80")
+    assert (v["mix_meas_4"], v["bio_meas_4"]) == ("+20.0", "-15.0")

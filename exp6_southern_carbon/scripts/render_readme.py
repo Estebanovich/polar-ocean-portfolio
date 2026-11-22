@@ -164,6 +164,11 @@ def values(allow_pending: bool = False) -> dict[str, str]:
             for key in ("mld", "moc", "bio", "temp"):
                 v[f"{key}_{k}"] = f"{t[key] * 1e-9:+.1f}" if key in t else PENDING
             v[f"meas_{k}"] = f"{h['meas'][y] * 1e-9:+.1f}"
+            if "meas_parts" in t:                                       # post hoc (22 nov): term by term
+                m, off = t["meas_parts"], t["mld"] + t["moc"]
+                v[f"phys_off_{k}"], v[f"phys_meas_{k}"] = f"{off * 1e-9:+.1f}", f"{(m['adv'] + m['mix']) * 1e-9:+.1f}"
+                v[f"phys_ratio_{k}"] = f"{off / (m['adv'] + m['mix']):.2f}"
+                v[f"mix_meas_{k}"], v[f"bio_meas_{k}"] = f"{m['mix'] * 1e-9:+.1f}", f"{m['bio'] * 1e-9:+.1f}"
     if d["crosscheck"]:
         c = d["crosscheck"]["H6c"]
         n = int(c["n"])

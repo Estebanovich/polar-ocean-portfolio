@@ -132,11 +132,15 @@ def parent_state(run, n0_branch: int) -> dict:
             "area_R": float(g["rac"][R].sum()), "r_cp": R_CP, "e": export_fraction(p4)}
 
 
+def measured_parts(branch_run, parent_run, n0_branch: int, window=WINDOW) -> dict[str, float]:
+    """Branch - parent of each of adv, mix and bio of the DIC budget of the mixed layer of R (mol C yr-1)."""
+    b, p = ml_budget(branch_run, n0_branch, 1, window), ml_budget(parent_run, n0_branch, 1, window)
+    return {k: float(b[k] - p[k]) for k in ("adv", "mix", "bio")}
+
+
 def measured(branch_run, parent_run, n0_branch: int, window=WINDOW) -> float:
     """Branch - parent of adv + mix + bio of the DIC budget of the mixed layer of R (mol C yr-1)."""
-    b, p = ml_budget(branch_run, n0_branch, 1, window), ml_budget(parent_run, n0_branch, 1, window)
-    s = lambda d: d["adv"] + d["mix"] + d["bio"]
-    return float(s(b) - s(p))
+    return float(sum(measured_parts(branch_run, parent_run, n0_branch, window).values()))
 
 
 def _dic_params(run) -> dict[str, float]:

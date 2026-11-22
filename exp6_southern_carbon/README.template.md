@@ -47,7 +47,7 @@ GC holds the atmospheric CO₂ at its {{y_first}} value for {{gt_years}} years; 
 
 **Fig. 1.** DIC in GT, zonal mean, in the decades centred on (a) {{y1}} and (b) {{y4}}; (c) G₂₀₀ by row, with R shaded.
 
-Anthropogenic carbon enters at the surface and is carried down in the subducting water north of R, while the upwelling in R brings up water that has not yet seen it (Fig. 1). Over R, G₂₀₀ falls from {{g200_first}} to {{g200_last}} µmol kg⁻¹ m⁻¹ between the {{y1}} and {{y4}} decades.
+Anthropogenic carbon enters at the surface and raises the DIC of the upper ocean, while the deep water that upwells in R changes little over the run, so the vertical contrast shrinks (Fig. 1). Over R, G₂₀₀ falls from {{g200_first}} to {{g200_last}} µmol kg⁻¹ m⁻¹ between the {{y1}} and {{y4}} decades.
 
 ![Fig. 2](figures/fig2_series.png)
 
@@ -70,6 +70,8 @@ Anthropogenic carbon enters at the surface and is carried down in the subducting
 
 ΔS = {{dS}} mol C m⁻² yr⁻¹ ({{dS_pct}} % of |S_GT({{y1}})|), against a control drift of {{drift_gc}}: H6a {{h6a_verdict}}. S_GT {{zero_cross}}.
 
+The whole change is in S_ant. S_nat, the response of the control, is the same in every branch, as it should be: the control has the same circulation and the same atmospheric CO₂ in every branch year. Under the stronger wind the transient channel loses less carbon than the control from the first branch on, and in the last branch it takes up more than it did before the wind step. The direction of the change is the one Jarníková et al. (2025) infer; in this channel it is large enough to reverse the sign of the response.
+
 ### 4.3 H6b: the offline decomposition
 
 ![Fig. 4](figures/fig4_h6b.png)
@@ -87,6 +89,23 @@ Anthropogenic carbon enters at the surface and is carried down in the subducting
 
 The offline sum is within ±25 % of the measured change in {{h6b_n}} of the four branches: H6b {{h6b_verdict}}.
 
+**Post hoc (not registered).** Compared term by term (Table 3), the physical and the biological parts fail in different ways.
+
+| Branch | offline physics (eq. 1 + eq. 4) | measured advection + mixing | offline / measured | measured mixing | measured bio |
+|---|---|---|---|---|---|
+| {{y1}} | {{phys_off_1}} | {{phys_meas_1}} | {{phys_ratio_1}} | {{mix_meas_1}} | {{bio_meas_1}} |
+| {{y2}} | {{phys_off_2}} | {{phys_meas_2}} | {{phys_ratio_2}} | {{mix_meas_2}} | {{bio_meas_2}} |
+| {{y3}} | {{phys_off_3}} | {{phys_meas_3}} | {{phys_ratio_3}} | {{mix_meas_3}} | {{bio_meas_3}} |
+| {{y4}} | {{phys_off_4}} | {{phys_meas_4}} | {{phys_ratio_4}} | {{mix_meas_4}} | {{bio_meas_4}} |
+
+**Table 3.** As Table 2, with the measured change split into its physical and biological parts (post hoc).
+
+- **Biology.** The phosphate-based term is the same in every branch, and so is the measured biological change: neither the circulation nor phosphate depends on CO₂. The offline term overestimates it in every branch.
+- **Physics.** The offline sum of eqs. 1 and 4 declines as G₂₀₀ erodes, as does the measured supply, which is the mechanism Jarníková et al. propose. But it recovers only part of the measured supply in the early branches, and only part of its decline. Most of the gap is mixing: in the budget it falls from {{mix_meas_1}} to {{mix_meas_4}} Gmol C yr⁻¹ between the {{y1}} and {{y4}} branches, while eq. 1, which sees only the change of mixed-layer depth, gives {{mld_1}} and {{mld_4}}.
+- **The sum.** The physical and biological changes have opposite signs and similar sizes, so modest errors in each become large errors in their sum.
+
+The decomposition gets the direction of the change right but not its size. We classify the failure tentatively as (d), a process the offline decomposition does not represent (the change of diapycnal and eddy mixing under the stronger wind). An error of class (a) in our implementation of eq. 1 is not excluded.
+
 ### 4.4 H6c: eddies
 
 ![Fig. 5](figures/fig5_fine.png)
@@ -100,6 +119,7 @@ The {{dx_fine_km}}-km model, without GM, starts from the coarse state of GT in {
 - **Missing physics.** There is no iron, which limits Southern Ocean productivity, no explicit ecosystem (the biology of `pkg/dic` is a nutrient-restoring export, a null hypothesis for the biological term), no sea ice and no ozone forcing. The biological term of H6b therefore uses phosphate where Jarníková et al. use iron.
 - **The sponge.** The northern sponge restores to pre-industrial profiles, so anthropogenic carbon enters the channel only through the surface; the lateral supply of anthropogenic carbon from the north is missing. A sensitivity run with an anthropogenic sponge was cut from the scope for time.
 - **Resolution.** At {{dx_fine_km}} km the eddies are only partly resolved, and the fine branches are short; H6c tests the sign and the order of magnitude, not the eddy compensation itself.
+- **The temperature term.** The temperature term uses an empirical conductance: the parent's air–sea flux over R divided by its mean air–sea pCO₂ difference. In the first branch that difference is small, so the conductance, and with it the temperature term, is poorly conditioned. The term is reported but not used in any verdict.
 - **Idealization.** One channel, one wind profile and a fixed gas-exchange wind; the step in wind stress is a sensitivity experiment, not a scenario.
 
 ## 6. Reproducibility
