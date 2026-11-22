@@ -5,13 +5,15 @@ or the analysis constants. Edit README.template.md, never README.md. -->
 
 ## Abstract
 
-Stronger westerlies over the Southern Ocean bring more carbon-rich deep water to the surface and, in the pre-industrial ocean, release CO₂. Jarníková et al. (2025) argue, from an offline decomposition of an ocean biogeochemical model, that this wind response weakens as anthropogenic carbon accumulates near the surface and erodes the vertical gradient of dissolved inorganic carbon (DIC). We test that inference online, in the idealized re-entrant channel of the MITgcm tutorial (50 km, Gent–McWilliams eddies) coupled to `pkg/dic`. A control run at the 1850 atmospheric CO₂ (GC) and a transient run under historical and SSP3-7.0 CO₂ (GT) share a spin-up of 1000 tracer years. From both, the zonal wind stress is stepped up by a factor of 1.2 in 1900, 1980, 2020 and 2060, and the sensitivity S is the change of the air–sea flux over branch years 6–15. Between the 1900 and 2060 branches the upper-200 m DIC gradient in the upwelling region falls by 62 %. The wind sensitivity of the transient run changes by ΔS = +0.378 mol C m⁻² yr⁻¹, against a control drift of 3.0 × 10⁻⁴, so the registered hypothesis H6a passes. The offline decomposition of Jarníková et al. (eqs. 1 and 4, with a phosphate-based biological term) reproduces the measured change of the mixed-layer carbon budget within ±25 % in zero of the four branches (H6b fails). In a 10-km eddy-permitting version, H6c [pending].
+Stronger westerlies over the Southern Ocean bring more carbon-rich deep water to the surface and, in the pre-industrial ocean, release CO₂. Jarníková et al. (2025) infer, from an offline decomposition of surface DIC in an Earth system model (UKESM1), that this wind response weakens as anthropogenic carbon accumulates near the surface and erodes the vertical gradient of dissolved inorganic carbon (DIC). We test that inference online, in the idealized re-entrant channel of the MITgcm tutorial (50 km, Gent–McWilliams eddies) coupled to `pkg/dic`. A control run at the 1850 atmospheric CO₂ (GC) and a transient run under historical and SSP3-7.0 CO₂ (GT) share a spin-up of 1000 tracer years. From both, the zonal wind stress is stepped up by a factor of 1.2 in 1900, 1980, 2020 and 2060, and the sensitivity S is the change of the air–sea flux over branch years 6–15. Between the 1900 and 2060 branches the upper-200 m DIC gradient in the upwelling region falls by 62 %. The wind sensitivity of the transient run changes by ΔS = +0.378 mol C m⁻² yr⁻¹, against a control drift of 3.0 × 10⁻⁴, so the registered hypothesis H6a passes. The offline decomposition of Jarníková et al. (eqs. 1 and 4, with a phosphate-based biological term) reproduces the measured change of the mixed-layer carbon budget within ±25 % in zero of the four branches (H6b fails). In a 10-km eddy-permitting version, H6c [pending].
 
 ## 1. Question and design
 
-The Southern Ocean takes up a large share of the anthropogenic CO₂ that enters the ocean, and its sink responds to the wind (Le Quéré et al. 2007; Lovenduski et al. 2008; Gruber et al. 2018). Stronger westerlies drive more upwelling of old, DIC-rich water: the natural carbon outgasses, while the anthropogenic carbon is taken up faster by the newly exposed water (Lovenduski et al. 2008). Jarníková et al. (2025) decompose this response in a global model into mixed-layer entrainment (their eq. 1), upwelling by the overturning (eq. 4) and the biological response (eqs. 2, 3 and 5), and infer that the outgassing term shrinks as the vertical DIC gradient is eroded by anthropogenic carbon. The inference is offline: the gradients of one state are combined with the circulation change of another.
+The Southern Ocean takes up a large share of the anthropogenic CO₂ that enters the ocean, and its sink varies with the westerly winds (Le Quéré et al. 2007; Lovenduski et al. 2008; Gruber et al. 2019). Stronger westerlies drive more upwelling of old, DIC-rich deep water, from which natural carbon outgasses (Lovenduski et al. 2008). The upwelled water, which holds little anthropogenic carbon, also takes up more anthropogenic CO₂; in ACCESS-OM2 this extra uptake offsets about a third of the extra outgassing (Menviel & Spence 2024).
 
-We ask whether the same physics, run online, gives the same answer. Three hypotheses were registered before the transient run started (`notes/pd0_preregistro.md`):
+Jarníková et al. (2025) decompose the response of surface DIC in UKESM1 into mixed-layer entrainment (their eq. 1), upwelling by the overturning circulation (eq. 4) and the supply of iron and the biological response (eqs. 2, 3 and 5). They identify three compensating factors: the erosion of the vertical DIC gradient by anthropogenic carbon, which shrinks the outgassing term; a shoaling mixed layer that offsets a stronger overturning; and the recovery of stratospheric ozone, which reverses part of the wind trend. Their inference is offline: the gradients of one state are combined with the circulation change of another.
+
+We isolate the first factor and ask whether it holds when circulation and carbon evolve together, online. The wind change is imposed as a step, and there is no ozone forcing. Three hypotheses were registered before the transient run started (`notes/pd0_preregistro.md`):
 
 - **H6a.** The wind sensitivity of the transient run moves toward uptake between the 1900 and 2060 branches, ΔS = S_GT(2060) − S_GT(1900) > 0, and by more than twice the drift of the control, |S_GC(2060) − S_GC(1900)|.
 - **H6b.** In each of the four transient branches, the offline sum (eq. 1 + eq. 4 + a biological term with phosphate in place of iron) is within ±25 % of the measured change of advection, mixing and biology in the mixed-layer DIC budget of the upwelling region.
@@ -21,7 +23,7 @@ Validation tests V6a–V6d have thresholds fixed in the same document; a failure
 
 ## 2. Configuration
 
-The channel is `tutorial_reentrant_channel` of MITgcm (Fig. 0): 1000 km periodic in x, 2000 km closed in y, 49 levels, with the tutorial's zonal wind stress, its sloping southern boundary and its restoring of surface temperature. We add a seasonal cycle to the restoring temperature (Fig. 0a) and to the light, so that the winter mixed layer deepens and the entrainment term of Jarníková et al. has something to act on. Carbon is carried by `pkg/dic` with six tracers (DIC, alkalinity, phosphate, dissolved organic phosphorus, oxygen and preformed phosphate); there is no iron, no explicit ecosystem and no sea ice. Gas exchange uses a fixed wind speed, so a change of the wind stress acts on the carbon only through the circulation. The northern rows are a sponge that restores the tracers to pre-industrial profiles. The analysis region R is the southern 19 rows (y < 1000 km), where the upper overturning cell upwells.
+The channel is the re-entrant channel of Abernathey et al. (2011) as distributed in the MITgcm tutorial `tutorial_reentrant_channel` (Fig. 0): 1000 km periodic in x, 2000 km closed in y, 49 levels, with the tutorial's zonal wind stress, its sloping southern boundary and its restoring of surface temperature. We add a seasonal cycle to the restoring temperature (Fig. 0a) and to the light, so that the winter mixed layer deepens and the entrainment term of Jarníková et al. has something to act on. Carbon is carried by `pkg/dic` with six tracers (DIC, alkalinity, phosphate, dissolved organic phosphorus, oxygen and preformed phosphate); there is no iron, no explicit ecosystem and no sea ice. Gas exchange uses a fixed wind speed, so a change of the wind stress acts on the carbon only through the circulation. The northern rows are a sponge that restores the tracers to pre-industrial profiles. The analysis region R is the southern 19 rows (y < 1000 km), where the upper overturning cell upwells.
 
 ![Fig. 0](figures/fig0_schematic.png)
 
@@ -70,7 +72,7 @@ Anthropogenic carbon enters at the surface and raises the DIC of the upper ocean
 
 ΔS = +0.378 mol C m⁻² yr⁻¹ (180 % of |S_GT(1900)|), against a control drift of 3.0 × 10⁻⁴: H6a passes. S_GT changes sign in the 2060 branch.
 
-The whole change is in S_ant. S_nat, the response of the control, is the same in every branch, as it should be: the control has the same circulation and the same atmospheric CO₂ in every branch year. Under the stronger wind the transient channel loses less carbon than the control from the first branch on, and in the last branch it takes up more than it did before the wind step. The direction of the change is the one Jarníková et al. (2025) infer; in this channel it is large enough to reverse the sign of the response.
+The whole change is in S_ant. S_nat, the response of the control, is the same in every branch, as it should be: the control has the same circulation and the same atmospheric CO₂ in every branch year. Under the stronger wind the transient channel loses less carbon than the control from the first branch on, and in the last branch it takes up more than it did before the wind step. The change has the direction that Jarníková et al. (2025) infer for UKESM1, but in this channel it is large enough to reverse the sign of the response.
 
 ### 4.3 H6b: the offline decomposition
 
@@ -101,7 +103,7 @@ The offline sum is within ±25 % of the measured change in zero of the four bran
 **Table 3.** As Table 2, with the measured change split into its physical and biological parts (post hoc).
 
 - **Biology.** The phosphate-based term is the same in every branch, and so is the measured biological change: neither the circulation nor phosphate depends on CO₂. The offline term overestimates it in every branch.
-- **Physics.** The offline sum of eqs. 1 and 4 declines as G₂₀₀ erodes, as does the measured supply, which is the mechanism Jarníková et al. propose. But it recovers only part of the measured supply in the early branches, and only part of its decline. Most of the gap is mixing: in the budget it falls from +161.8 to −1.2 Gmol C yr⁻¹ between the 1900 and 2060 branches, while eq. 1, which sees only the change of mixed-layer depth, gives +12.4 and +4.7.
+- **Physics.** The offline sum of eqs. 1 and 4 declines as G₂₀₀ erodes, as does the measured supply, which is the mechanism proposed by Jarníková et al. (2025). However, it recovers only part of the measured supply in the early branches, and only part of its decline. Most of the gap is mixing: in the budget it falls from +161.8 to −1.2 Gmol C yr⁻¹ between the 1900 and 2060 branches, while eq. 1, which sees only the change of mixed-layer depth, gives +12.4 and +4.7.
 - **The sum.** The physical and biological changes have opposite signs and similar sizes, so modest errors in each become large errors in their sum.
 
 The decomposition gets the direction of the change right but not its size. We classify the failure tentatively as (d), a process the offline decomposition does not represent (the change of diapycnal and eddy mixing under the stronger wind). An error of class (a) in our implementation of eq. 1 is not excluded.
@@ -128,18 +130,22 @@ The 10-km model, without GM, starts from the coarse state of GT in 1900 and 2060
 
 ## References
 
-Bryan, K., 1984: Accelerating the convergence to equilibrium of ocean-climate models. *J. Phys. Oceanogr.*, https://doi.org/10.1175/1520-0485(1984)014%3C0666:ATCTEO%3E2.0.CO;2
+Abernathey, R., J. Marshall, and D. Ferreira, 2011: The dependence of Southern Ocean meridional overturning on wind stress. *J. Phys. Oceanogr.*, **41**, 2261–2278, https://doi.org/10.1175/JPO-D-11-023.1
 
-Gruber, N., et al., 2018: The variable Southern Ocean carbon sink. *Annu. Rev. Mar. Sci.*, https://doi.org/10.1146/annurev-marine-121916-063407
+Bryan, K., 1984: Accelerating the convergence to equilibrium of ocean-climate models. *J. Phys. Oceanogr.*, **14**, 666–673, https://doi.org/10.1175/1520-0485(1984)014%3C0666:ATCTEO%3E2.0.CO;2
 
-Jarníková, T., et al., 2025: Decreasing importance of carbon-climate feedbacks in the Southern Ocean in a warming climate. *Sci. Adv.*, https://doi.org/10.1126/sciadv.adr3589
+Gruber, N., P. Landschützer, and N. S. Lovenduski, 2019: The variable Southern Ocean carbon sink. *Annu. Rev. Mar. Sci.*, **11**, 159–186, https://doi.org/10.1146/annurev-marine-121916-063407
 
-Le Quéré, C., et al., 2007: Saturation of the Southern Ocean CO₂ sink due to recent climate change. *Science*, https://doi.org/10.1126/science.1136188
+Jarníková, T., et al., 2025: Decreasing importance of carbon-climate feedbacks in the Southern Ocean in a warming climate. *Sci. Adv.*, **11**, eadr3589, https://doi.org/10.1126/sciadv.adr3589
 
-Lovenduski, N. S., et al., 2008: Toward a mechanistic understanding of the decadal trends in the Southern Ocean carbon sink. *Global Biogeochem. Cycles*, https://doi.org/10.1029/2007gb003139
+Le Quéré, C., et al., 2007: Saturation of the Southern Ocean CO₂ sink due to recent climate change. *Science*, **316**, 1735–1738, https://doi.org/10.1126/science.1136188
 
-Meinshausen, M., et al., 2017: Historical greenhouse gas concentrations for climate modelling (CMIP6). *Geosci. Model Dev.* <!-- final DOI not verified (Consensus gives only a discussion-comment DOI) -->
+Lovenduski, N. S., N. Gruber, and S. C. Doney, 2008: Toward a mechanistic understanding of the decadal trends in the Southern Ocean carbon sink. *Global Biogeochem. Cycles*, **22**, https://doi.org/10.1029/2007GB003139
 
-Meinshausen, M., et al., 2020: The shared socio-economic pathway (SSP) greenhouse gas concentrations and their extensions to 2500. *Geosci. Model Dev.*, https://doi.org/10.5194/gmd-13-3571-2020
+Meinshausen, M., et al., 2017: Historical greenhouse gas concentrations for climate modelling (CMIP6). *Geosci. Model Dev.*, **10**, 2057–2116, https://doi.org/10.5194/gmd-10-2057-2017
 
-Wang, D., 2001: A note on using the accelerated convergence method in climate models. *Tellus A*, https://doi.org/10.3402/tellusa.v53i1.12179
+Meinshausen, M., et al., 2020: The shared socio-economic pathway (SSP) greenhouse gas concentrations and their extensions to 2500. *Geosci. Model Dev.*, **13**, 3571–3605, https://doi.org/10.5194/gmd-13-3571-2020
+
+Menviel, L., and P. Spence, 2024: Southern Ocean circulation's impact on atmospheric CO₂ concentration. *Front. Mar. Sci.*, **10**, 1328534, https://doi.org/10.3389/fmars.2023.1328534
+
+Wang, D., 2001: A note on using the accelerated convergence method in climate models. *Tellus A*, **53**, 27–34, https://doi.org/10.3402/tellusa.v53i1.12179

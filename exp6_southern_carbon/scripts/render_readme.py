@@ -32,11 +32,11 @@ MONTHS = ("January", "February", "March", "April", "May", "June", "July", "Augus
           "October", "November", "December")
 
 CITATION_YEARS = ("1984", "2001", "2006", "2007", "2008", "2011", "2013", "2014", "2015", "2016", "2017", "2018",
-                  "2020", "2023", "2024", "2025", "2026")
+                  "2019", "2020", "2023", "2024", "2025", "2026")
 NUMBER_WHITELIST = (
     r"\b(?:G0s?|GC|GT|F0|FT|T10|T2|R_CP)\b", r"\bH6[a-c]\b", r"\bV6[a-e]\b", r"\bPD0\b",
     r"\bExp(?:eriment|\.)? [1-6]\b", r"\bCO₂\b", r"\bPO₄\b", r"\bpCO₂\b", r"\bG₂₀₀\b", r"\bΔDIC₁₀₀₀\b",
-    r"\bSSP3-7\.0\b", r"\bCMIP6\b", r"\b(?:SST|DIC)\b",
+    r"\bSSP3-7\.0\b", r"\bCMIP6\b", r"\b(?:UKESM1|ACCESS-OM2)\b", r"\b(?:SST|DIC)\b",
     r"^#+ [0-9]+(?:\.[0-9]+)*\.?", r"\b[Ee]qs?\. [0-9]+(?:(?:, | and |–)[0-9]+)*", r"§[0-9]+(?:\.[0-9]+)*",
     r"\b(?:Figure|Fig\.|Figures|Figs\.) [0-9](?:[–-][0-9])?", r"\bTables? [1-3]\b",
     r"^[1-9]\. ", r"\(i{1,3}\)", r"\(\w\)", r"\b(?:class )?\([a-d]\)", r"±25 %", r"\b2σ\b", r"\[0\.5, 2\]",

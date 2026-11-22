@@ -1056,3 +1056,11 @@ Se corrigieron los puntos I1–I4 y los menores:
   - se lanzó el 22 nov (commit cee4bb4); log en `/Volumes/LaCie/portfolio_runs/exp6/run_fine.log`;
   - terminaría hacia el 2–3 dic si se mantienen ~70 min por año.
 - **Borrador del correo** a Le Quéré, con copia a Jarníková: `~/Phd_project/Borradores Exp6 – Le Quéré y Jarníková.md`, fuera del repo y **sin enviar**. Tiene dos versiones, seguimiento o primer contacto, porque no consta si el primero salió.
+- **Redacción de la literatura del README del Exp. 6** (pedido de Esteban):
+  - Jarníková et al. usan UKESM1 (NEMO + MEDUSA); el README decía "un modelo biogeoquímico oceánico" y "un modelo global";
+  - se nombran sus tres factores compensadores y se aclara que aquí aislamos el primero;
+  - la mayor toma antropogénica por el agua aflorada pasa a citarse con Menviel & Spence (2024), que lo cuantifican (~1/3). Lovenduski et al. (2008) no está verificado para esa frase;
+  - el canal se atribuye a Abernathey et al. (2011);
+  - Gruber et al. es de 2019 (vol. 11), no de 2018;
+  - el DOI final de Meinshausen et al. (2017) quedó verificado en Crossref: 10.5194/gmd-10-2057-2017;
+  - las referencias llevan ahora volumen y páginas, con los datos de Crossref.
