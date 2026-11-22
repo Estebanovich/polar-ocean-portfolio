@@ -32,3 +32,30 @@ def v6d(eke_monthly, min_years: float = 3.0) -> dict:
     out = dict(r, months=len(s), min_years_ok=bool(enough))
     out["pass"] = bool(r["pass"] and enough)
     return out
+
+
+def eke_series(run) -> list[float]:
+    """Monthly volume-mean EKE (m2 s-2) of a fine run from eke_mon (UVEL, VVEL, UVELSQ, VVELSQ),
+    eke of Exp. 5 on the wet cells (hFacC of the run or of its pickup_from ancestor)."""
+    from pathlib import Path
+
+    from exp5_adjoint_slope.analysis.crosscheck import eke
+    from . import io
+    from pfcommon.mitgcm_io import read_bin
+    run = Path(run)
+    c = io.case(run)
+    wet = read_bin(io.grid_dir(run) / "hFacC.data", (c["nr"], c["ny"], c["nx"])) > 0
+    out = []
+    for it in io.iters(run, "eke_mon"):
+        f = io.fields(run, "eke_mon", it)
+        out.append(eke(f["UVEL"], f["VVEL"], f["UVELSQ"], f["VVELSQ"], wet))
+    return out
+
+
+def f0_next_years(months_done: int, v6d_pass: bool, min_years: int = 3, max_years: int = 8) -> int:
+    """Years to add to an F0 spin-up: up to the 3-year minimum first, then 1 at a time until V6d
+    passes or the 8-year cap is reached (0 = stop)."""
+    years = int(months_done) // 12
+    if years < min_years:
+        return min_years - years
+    return 0 if (v6d_pass or years >= max_years) else 1

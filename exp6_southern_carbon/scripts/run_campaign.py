@@ -15,15 +15,20 @@ Start iteration:
   * pickup_from without branch_year: the parent's final pickups (its last_iter).
   * none: a cold start at iteration 0. With --continue, the case continues in its own run
     directory from its latest pickup (the G0 spin-up in 100-year stages).
+  * F0_<Y> (fine spin-up): a cold start at iteration 0 from GT at branch_iter(Y), theta and the six
+    tracers interpolated to the 10-km grid (gendata.interp.fine_init, theta noise member 0); with
+    --continue, from its own latest pickup (V6d stages).
+  * FT_<Y>_{c,w}<k>: F0_<Y>'s final pickups with theta noise of member k on the copy, the same k
+    for c and w (spec Sec. 5: the pair shares its drift).
 The three pickup families written by the model (pickup, pickup_ptracers, pickup_dic) are copied,
-never linked (LaCie is exFAT). The fine F0 cases start from an interpolated coarse state
-(plan Task 9) and are not handled here yet."""
+never linked (LaCie is exFAT)."""
 from __future__ import annotations
 
 import argparse
 import fnmatch
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -35,6 +40,7 @@ REPO = PKG.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
+import numpy as np  # noqa: E402
 import yaml  # noqa: E402
 
 from pfcommon import campaign as cp  # noqa: E402
@@ -94,19 +100,50 @@ def _wait_pickups(runs_root, parent, itr, wait_s, poll_s=60.0):
             time.sleep(poll_s)
 
 
+def member_of(case: str) -> int | None:
+    m = re.fullmatch(r"FT_\d{4}_[cw](\d+)", case)
+    return int(m.group(1)) if m else None
+
+
+def fine_init_from_run(runs_root: Path, parent: str, itr: int, case: str) -> dict:
+    """make_case `init` of an F0 case from the parent's (GT) pickups at itr."""
+    from exp6_southern_carbon.analysis import io
+    from exp6_southern_carbon.gendata import fields, interp
+    pr = Path(runs_root) / parent
+    g = io.grid(pr)
+    vol_c = g["hfac"] * g["rac"][None] * g["drf"][:, None, None]
+    th = io.fields(pr, "pickup", itr)["Theta"]
+    ptr = io.fields(pr, "pickup_ptracers", itr)
+    tr = np.stack([ptr[k] for k in sorted(ptr)])
+    if tr.shape[0] != 6:
+        raise ValueError(f"{parent} pickup_ptracers.{itr}: {sorted(ptr)}, expected 6 tracers")
+    gc, gf = mc.grid_of(mc.load_case(parent)), mc.grid_of(mc.load_case(case))
+    vol_f = interp.wet_volume(gf, fields.bathymetry(gf))
+    return interp.fine_init(th, tr, gc, gf, vol_c, vol_f, member=0)
+
+
 def plan(cases: list[str], runs_root: Path, n_timesteps: int | None = None, cont: bool = False,
          wait_s: float = 0.0) -> list[dict]:
     reg = yaml.safe_load((PKG / "cases.yaml").read_text())
     out = []
     for c in cases:
         p = mc.load_case(c)
-        if p["config"] == "f10" and c.startswith("F0_"):
-            raise NotImplementedError(f"{c}: interpolated start (plan Task 9)")
         spy = mc.steps_per_year(p)
         extra: dict = {}
         par = p["pickup_from"]
         pickups: list[Path] = []
-        if par is None:
+        if c.startswith("F0_"):
+            n0 = 0
+            if cont:
+                last = latest_pickup(Path(runs_root) / c)
+                if last is None:
+                    raise FileNotFoundError(f"{c}: --continue but no pickup in {Path(runs_root) / c}")
+                n0, pickups = last, pickup_files(runs_root, c, last)
+            else:
+                it = branch_iter(p["branch_year"], int(_status(runs_root, "G0s")["last_iter"]))
+                pickup_files(runs_root, par, it)
+                extra["fine_from"] = {"parent": par, "iter": it}
+        elif par is None:
             n0 = 0
             if cont:
                 last = latest_pickup(Path(runs_root) / c)
@@ -165,11 +202,21 @@ def prepare(item: dict, runs_root: Path) -> Path:
     if inp.exists():
         rmtree_exfat(inp)
     extra = dict(item["extra"])
+    ff = extra.pop("fine_from", None)
+    if ff:
+        extra["init"] = fine_init_from_run(runs_root, ff["parent"], ff["iter"], item["case"])
     if item["config"] != "f10" and mc.load_case(item["case"])["sponge"] == "anth":
         extra["cant_sup"] = {int(k): v for k, v in json.loads((Path(runs_root) / "cant_sup.json").read_text()).items()}
     mc.write_case(item["case"], inp, extra)
     for f in item["pickups"]:
         shutil.copyfile(f, inp / f.name)
+    k = member_of(item["case"])
+    if k is not None:
+        from exp5_adjoint_slope.gendata.interp import perturb_pickup_theta
+        from exp6_southern_carbon.gendata.interp import MEMBER_AMP, MEMBER_SEED
+        g = mc.grid_of(mc.load_case(item["case"]))
+        perturb_pickup_theta(inp / f"pickup.{item['nIter0']:010d}.data", g.nr, g.ny, g.nx,
+                             k=k, amp=MEMBER_AMP, seed=MEMBER_SEED)
     check_size(inp, PKG / "config" / item["config"] / "code" / "SIZE.h")
     return inp
 

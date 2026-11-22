@@ -120,7 +120,7 @@ def write_case(case: str, out_dir: Path, extra: dict | None = None) -> Path:
     _w(out / "zonal_wind.bin", float(p["wind_factor"]) * f["taux"][None] * np.ones((12, 1, 1)))  # periodic: 12 records
     _w(out / "sst_relax.bin", fields.sst_relax_monthly(g, amp=float(extra.get("sst_amp", 1.5))))
     _w(out / "t_relax_mask.bin", f["mask"])
-    _w(out / "temperature.bin", f["temp"])
+    _w(out / "temperature.bin", extra.get("init", {}).get("theta", f["temp"]))
     ones = np.ones((12, g.ny, g.nx))
     _w(out / "par.bin", bgc.par_monthly()[:, None, None] * ones)
     _w(out / "dic_wind.bin", WIND_GAS * ones)

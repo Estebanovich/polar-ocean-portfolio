@@ -84,3 +84,25 @@ def test_rmtree_tolerates_vanishing_appledouble(tmp_path, monkeypatch):
     monkeypatch.setattr(rc.os, "unlink", unlink)
     rc.rmtree_exfat(d)
     assert not d.exists()
+
+
+def test_plan_fine_start_from_interpolated_gt(tmp_path):
+    i1850 = 4_000_000
+    _run(tmp_path, "G0s", i1850)
+    it = rc.branch_iter(2060, i1850)
+    _run(tmp_path, "GT", i1850 + 251 * SPY, pickups=[it])
+    (p,) = rc.plan(["F0_2060"], tmp_path, n_timesteps=3 * SPY)
+    assert p["nIter0"] == 0 and p["pickups"] == [] and p["np"] == 5 and p["nTimeSteps"] == 3 * SPY
+    assert p["extra"]["fine_from"] == {"parent": "GT", "iter": it}
+
+
+def test_plan_fine_start_continue_own_pickup(tmp_path):
+    _run(tmp_path, "F0_1900", 2 * SPY, pickups=[SPY, 2 * SPY])
+    (p,) = rc.plan(["F0_1900"], tmp_path, n_timesteps=SPY, cont=True)
+    assert p["nIter0"] == 2 * SPY and "fine_from" not in p["extra"]
+    assert {f.name for f in p["pickups"]} == {f"{s}.{2 * SPY:010d}{e}" for s in rc.PICKUP_STEMS for e in (".data", ".meta")}
+
+
+def test_member_of():
+    assert rc.member_of("FT_1900_c1") == 1 and rc.member_of("FT_2060_w3") == 3
+    assert rc.member_of("F0_1900") is None and rc.member_of("GT_w1900") is None

@@ -93,3 +93,11 @@ def test_g0s_synchronous_after_g0(tmp_path):
     out = make_case.write_case("G0s", tmp_path, {"co2": CO2, "nIter0": 3942 * 1000})
     data = (out / "data").read_text()
     assert float(_nml(data, "deltaT")) == 1000.0 and int(_nml(data, "nTimeSteps")) == 48 * 31536
+
+
+def test_init_theta_overrides_temperature(tmp_path):
+    g = make_case.grid_of(make_case.load_case("F0_1900"))
+    th = np.full((g.nr, g.ny, g.nx), 3.25)
+    out = make_case.write_case("F0_1900", tmp_path, {"n_timesteps": 10, "init": {"theta": th}})
+    a = np.fromfile(out / "temperature.bin", ">f4").reshape(g.nr, g.ny, g.nx)
+    assert np.allclose(a, 3.25)
